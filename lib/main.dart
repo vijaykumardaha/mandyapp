@@ -7,8 +7,12 @@
 import 'package:another_telephony/telephony.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:mandyapp/blocs/cart/cart_bloc.dart';
+import 'package:mandyapp/blocs/checkout/checkout_bloc.dart';
 import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/blocs/user/user_bloc.dart';
+import 'package:mandyapp/blocs/product/product_bloc.dart';
+import 'package:mandyapp/blocs/category/category_bloc.dart';
 import 'package:mandyapp/helpers/localizations/app_localization_delegate.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 import 'package:mandyapp/helpers/localizations/language.dart';
@@ -54,6 +58,18 @@ class MyApp extends StatelessWidget {
           BlocProvider<UserBloc>(
             create: (context) => UserBloc(),
           ),
+          BlocProvider<ProductBloc>(
+            create: (context) => ProductBloc(),
+          ),
+          BlocProvider<CategoryBloc>(
+            create: (context) => CategoryBloc(),
+          ),
+          BlocProvider<CartBloc>(
+            create: (context) => CartBloc(),
+          ),
+          BlocProvider<CheckoutBloc>(
+            create: (context) => CheckoutBloc(),
+          ),
         ],
         child: Consumer<AppNotifier>(
             builder: (BuildContext context, AppNotifier value, Widget? child) {
@@ -69,7 +85,6 @@ class MyApp extends StatelessWidget {
             },
             localizationsDelegates: [
               AppLocalizationsDelegate(context),
-              // Add this line
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,

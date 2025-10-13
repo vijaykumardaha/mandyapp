@@ -5,6 +5,7 @@ class UserDAO {
   final dbHelper = DBHelper.instance;
 
   Future<int> insertUser(User user) async {
+    user.id = DBHelper.generateUuidInt();
     final db = await dbHelper.database;
     return await db.insert('users', user.toJson());
   }

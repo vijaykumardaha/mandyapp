@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:uuid/uuid.dart';
 
 class DBHelper {
   DBHelper._(); // Private constructor to prevent instantiation
@@ -16,12 +19,22 @@ class DBHelper {
     return _database!;
   }
 
+  static int generateUuidInt() {
+    final uuid = const Uuid().v4();
+    final hash = uuid.hashCode.abs();
+
+    // Convert to 8-digit number
+    final random = Random(hash);
+    final id = 10000000 + random.nextInt(90000000); // ensures 8 digits
+    return id;
+  }
+
   Future<Database> initDB() async {
     final String path = join(await getDatabasesPath(), 'mandyapp.db');
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS users (
@@ -31,7 +44,58 @@ class DBHelper {
               password TEXT NOT NULL
           )
         ''');
-      },
+
+        await db.execute('''
+          CREATE TABLE categories (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL UNIQUE
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE products (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            category_id INTEGER NOT NULL,
+            image_path TEXT
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE product_variants (
+            id INTEGER PRIMARY KEY,
+            product_id INTEGER NOT NULL,
+            variant_name TEXT,
+            cost_price REAL DEFAULT 0.0,
+            selling_price REAL NOT NULL,
+            quantity REAL NOT NULL,
+            unit TEXT DEFAULT 'Kg',
+            image_path TEXT
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE carts (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            name TEXT, -- optional (e.g., "Order #1", "Wholesale Cart")
+            created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+            status TEXT DEFAULT 'open' -- open, completed, cancelled
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE cart_items (
+            id INTEGER PRIMARY KEY,
+            cart_id INTEGER NOT NULL,
+            product_id INTEGER NOT NULL,
+            variant_id INTEGER NOT NULL,
+            quantity REAL NOT NULL,
+            unit_price REAL NOT NULL,
+            total_price REAL NOT NULL
+          )
+        ''');
+      }
     );
   }
 }

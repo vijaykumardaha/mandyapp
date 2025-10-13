@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Axis labelDirection = Axis.horizontal;
   bool showLabel = false, showActiveLabel = true;
   late CustomTheme customTheme;
+  final GlobalKey<SellingScreenState> _sellingScreenKey = GlobalKey<SellingScreenState>();
 
   @override
   void initState() {
@@ -38,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   
   List<Widget> get _screens => [
-    const SellingScreen(),
+    SellingScreen(key: _sellingScreenKey),
     const AIChatScreen(),
     const SettingsScreen(),
   ];
@@ -75,6 +76,15 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           titleSpacing: 16,
           title: MyText.titleMedium(_getTitle(), fontWeight: 600),
+          actions: initialIndex == 0 ? [
+            IconButton(
+              icon: const Icon(Icons.filter_list),
+              onPressed: () {
+                _sellingScreenKey.currentState?.showCategoryFilterDialog();
+              },
+              tooltip: 'filter'.tr(),
+            ),
+          ] : null,
         ),
         body: _screens[initialIndex],
         bottomNavigationBar: ConvexAppBar(

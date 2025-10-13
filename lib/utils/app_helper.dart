@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
 
 class AppHelper {
 
@@ -23,10 +22,6 @@ class AppHelper {
     sharedPreferences.remove(key);
   }
 
-  static int generateUuidInt() {
-    var uuid = const Uuid().v4();
-    return uuid.hashCode.abs();
-  }
 
   static Future<bool> isOnline() async {
     var connectivityResult = await Connectivity().checkConnectivity();

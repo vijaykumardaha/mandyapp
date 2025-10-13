@@ -49,6 +49,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             
             MySpacing.height(24),
             
+            // Business Section
+            _buildSectionHeader('Business'),
+            _buildSettingsTile(
+              icon: Icons.inventory_2,
+              title: 'Products',
+              onTap: () {
+                context.push('/products');
+              },
+            ),
+            
+            MySpacing.height(24),
+            
             // App Settings Section
             _buildSectionHeader('App Settings'),
             _buildSettingsTile(

@@ -10,6 +10,7 @@ import 'package:mandyapp/screens/terms_conditions_screen.dart';
 import 'package:mandyapp/screens/theme_settings_screen.dart';
 import 'package:mandyapp/screens/language_settings_screen.dart';
 import 'package:mandyapp/screens/notification_settings_screen.dart';
+import 'package:mandyapp/screens/product_list_screen.dart';
 import 'package:mandyapp/screens/initial_screen.dart';
 
 class AppRoutes {
@@ -82,6 +83,12 @@ class AppRoutes {
         path: '/notification-settings',
         builder: (context, state) {
           return const NotificationSettingsScreen();
+        },
+      ),
+      GoRoute(
+        path: '/products',
+        builder: (context, state) {
+          return const ProductListScreen();
         },
       ),
     ],
