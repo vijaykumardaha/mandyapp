@@ -58,6 +58,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 context.push('/products');
               },
             ),
+            _buildSettingsTile(
+              icon: Icons.account_balance_wallet,
+              title: 'Charges',
+              onTap: () {
+                context.push('/charges');
+              },
+            ),
             
             MySpacing.height(24),
             

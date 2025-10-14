@@ -34,7 +34,7 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 1,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS users (
@@ -78,10 +78,12 @@ class DBHelper {
           CREATE TABLE carts (
             id INTEGER PRIMARY KEY,
             user_id INTEGER NOT NULL,
+            buyer_id INTEGER,
+            seller_id INTEGER,
             name TEXT, -- optional (e.g., "Order #1", "Wholesale Cart")
             created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
             status TEXT DEFAULT 'open' -- open, completed, cancelled
-          )
+          );
         ''');
 
         await db.execute('''
@@ -94,6 +96,54 @@ class DBHelper {
             unit_price REAL NOT NULL,
             total_price REAL NOT NULL
           )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE cart_charges (
+            id INTEGER PRIMARY KEY,
+            cart_id TEXT NOT NULL,
+            charge_name TEXT NOT NULL UNIQUE,
+            charge_amount REAL NOT NULL
+          );
+        ''');
+
+        await db.execute('''
+          CREATE TABLE cart_payments (
+            id INTEGER PRIMARY KEY,
+            cart_id INTEGER NOT NULL,
+            item_total REAL NOT NULL DEFAULT 0,
+            charges_total REAL NOT NULL DEFAULT 0,
+            receive_amount REAL NOT NULL DEFAULT 0,
+            pending_amount REAL NOT NULL DEFAULT 0,
+            cash_payment INTEGER NOT NULL DEFAULT 0,   -- 1 = yes, 0 = no
+            upi_payment INTEGER NOT NULL DEFAULT 0,    -- 1 = yes, 0 = no
+            card_payment INTEGER NOT NULL DEFAULT 0,   -- 1 = yes, 0 = no
+            credit_payment INTEGER NOT NULL DEFAULT 0, -- 1 = yes, 0 = no
+            cash_amount REAL NOT NULL DEFAULT 0,
+            upi_amount REAL NOT NULL DEFAULT 0,
+            card_amount REAL NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+            updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+          );
+        ''');
+
+        await db.execute('''
+          CREATE TABLE charges (
+            id INTEGER PRIMARY KEY,
+            charge_name TEXT NOT NULL UNIQUE,
+            charge_amount REAL NOT NULL,
+            is_active INTEGER NOT NULL DEFAULT 1   -- 1 = active, 0 = disabled
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS customers (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            initial_credit REAL NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+          );
         ''');
       }
     );

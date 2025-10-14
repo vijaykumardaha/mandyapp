@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mandyapp/screens/about_screen.dart';
 import 'package:mandyapp/screens/home_screen.dart';
 import 'package:mandyapp/screens/login_screen.dart';
-import 'package:mandyapp/screens/signup_screen.dart';
 import 'package:mandyapp/screens/profile_screen.dart';
-import 'package:mandyapp/screens/about_screen.dart';
+import 'package:mandyapp/screens/signup_screen.dart';
+import 'package:mandyapp/screens/charges_screen.dart';
+import 'package:mandyapp/screens/initial_screen.dart';
+import 'package:mandyapp/screens/product_list_screen.dart';
 import 'package:mandyapp/screens/privacy_policy_screen.dart';
 import 'package:mandyapp/screens/terms_conditions_screen.dart';
 import 'package:mandyapp/screens/theme_settings_screen.dart';
 import 'package:mandyapp/screens/language_settings_screen.dart';
 import 'package:mandyapp/screens/notification_settings_screen.dart';
-import 'package:mandyapp/screens/product_list_screen.dart';
-import 'package:mandyapp/screens/initial_screen.dart';
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
@@ -89,6 +90,12 @@ class AppRoutes {
         path: '/products',
         builder: (context, state) {
           return const ProductListScreen();
+        },
+      ),
+      GoRoute(
+        path: '/charges',
+        builder: (context, state) {
+          return const ChargesScreen();
         },
       ),
     ],
