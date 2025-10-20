@@ -7,6 +7,7 @@ import 'package:mandyapp/blocs/charges/charges_event.dart';
 import 'package:mandyapp/blocs/charges/charges_state.dart';
 import 'package:mandyapp/models/bill_summary_model.dart';
 import 'package:mandyapp/models/cart_payment_model.dart';
+import 'package:mandyapp/models/cart_model.dart';
 
 part 'bill_list_event.dart';
 part 'bill_list_state.dart';
@@ -73,7 +74,19 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
     }
 
     final carts = List.of(cartState.carts);
-    if (carts.isEmpty) {
+    List<Cart> filteredCarts = carts;
+
+    if (event.statusFilter != null && event.statusFilter!.isNotEmpty) {
+      filteredCarts = filteredCarts
+          .where((cart) => cart.status.toLowerCase() == event.statusFilter!.toLowerCase())
+          .toList();
+    }
+
+    if (event.customerId != null) {
+      filteredCarts = filteredCarts.where((cart) => cart.customerId == event.customerId).toList();
+    }
+
+    if (filteredCarts.isEmpty) {
       emit(BillListEmpty());
       return;
     }
@@ -84,7 +97,7 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
     double totalSales = 0.0;
     double totalPending = 0.0;
 
-    for (final cart in carts) {
+    for (final cart in filteredCarts) {
       CartPayment? paymentMatch;
       for (final payment in payments) {
         if (payment.cartId == cart.id) {
@@ -105,6 +118,7 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
       summaries.add(
         BillSummary(
           cartId: cart.id,
+          customerId: cart.customerId,
           createdAt: DateTime.tryParse(cart.createdAt) ?? DateTime.now(),
           itemTotal: itemTotal,
           chargesTotal: chargesTotal,
@@ -112,6 +126,7 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
           pendingAmount: pendingAmount,
           totalAmount: totalAmount,
           billNumber: cart.id,
+          status: cart.status,
         ),
       );
     }

@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:mandyapp/blocs/bill_list/bill_list_bloc.dart';
+import 'package:mandyapp/blocs/customer/customer_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
+import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/bill_summary_model.dart';
+import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/screens/bill_details_screen.dart';
 
 class BillListScreen extends StatefulWidget {
@@ -16,6 +19,11 @@ class BillListScreen extends StatefulWidget {
 
 class _BillListScreenState extends State<BillListScreen> {
   late ThemeData theme;
+  late TextEditingController _customerController;
+  late FocusNode _customerFocusNode;
+  Customer? _selectedCustomer;
+  String? _statusFilter; // 'open', 'completed', or null for all
+  String _customerSearchText = '';
   final DateFormat _timeFormat = DateFormat('hh:mm a');
   final DateFormat _dateFormat = DateFormat('dd MMM yyyy');
 
@@ -23,14 +31,309 @@ class _BillListScreenState extends State<BillListScreen> {
   void initState() {
     super.initState();
     theme = AppTheme.shoppingManagerTheme;
-    context.read<BillListBloc>().add(const LoadBillSummaries());
+    _customerController = TextEditingController();
+    _customerFocusNode = FocusNode();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
+      _loadSummaries();
+    });
+  }
+
+  @override
+  void dispose() {
+    _customerController.dispose();
+    _customerFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _loadSummaries({bool forceRefresh = false}) {
+    context.read<BillListBloc>().add(
+          LoadBillSummaries(
+            forceRefresh: forceRefresh,
+            statusFilter: _statusFilter,
+            customerId: _selectedCustomer?.id,
+          ),
+        );
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _selectedCustomer = null;
+      _statusFilter = null;
+      _customerSearchText = '';
+      _customerController.clear();
+    });
+    _loadSummaries();
+    context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      titleSpacing: 16,
+      title: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: _buildCustomerSearchField(),
+      ),
+      actions: [
+        IconButton(
+          icon: Icon(
+            Icons.filter_list,
+            color: _hasFilters ? theme.colorScheme.primary : null,
+          ),
+          tooltip: 'Filter status',
+          onPressed: _showStatusFilterSheet,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCustomerSearchField() {
+    return BlocBuilder<CustomerBloc, CustomerState>(
+      builder: (context, customerState) {
+        final customers =
+            customerState is CustomerLoaded ? customerState.customers : <Customer>[];
+
+        return Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.shadow.withOpacity(0.08),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: RawAutocomplete<Customer>(
+            textEditingController: _customerController,
+            focusNode: _customerFocusNode,
+            optionsBuilder: (TextEditingValue textEditingValue) {
+              final query = textEditingValue.text.trim().toLowerCase();
+              if (query.isEmpty) {
+                return customers.take(15);
+              }
+              return customers.where((customer) {
+                final name = customer.name?.toLowerCase() ?? '';
+                final phone = customer.phone ?? '';
+                return name.contains(query) || phone.contains(query);
+              }).take(15);
+            },
+            displayStringForOption: _formatCustomer,
+            fieldViewBuilder: (context, textController, focusNode, onFieldSubmitted) {
+              if (textController.text != _customerSearchText) {
+                textController.value = textController.value.copyWith(
+                  text: _customerSearchText,
+                  selection: TextSelection.collapsed(offset: _customerSearchText.length),
+                );
+              }
+
+              return TextField(
+                controller: textController,
+                focusNode: focusNode,
+                decoration: InputDecoration(
+                  hintText: 'Filter by customer',
+                  prefixIcon: const Icon(Icons.search, size: 18),
+                  suffixIcon: textController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            focusNode.unfocus();
+                            textController.clear();
+                            setState(() {
+                              _customerSearchText = '';
+                              _selectedCustomer = null;
+                            });
+                            _loadSummaries();
+                            context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
+                          },
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _customerSearchText = value;
+                    if (value.isEmpty) {
+                      _selectedCustomer = null;
+                    }
+                  });
+                  context.read<CustomerBloc>().add(FetchCustomer(query: value));
+                  if (value.isEmpty) {
+                    _loadSummaries();
+                  }
+                },
+                onSubmitted: (_) => onFieldSubmitted(),
+              );
+            },
+            optionsViewBuilder: (context, onSelected, options) {
+              if (options.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              return Align(
+                alignment: Alignment.topLeft,
+                child: Material(
+                  elevation: 4,
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 260, minWidth: 280),
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shrinkWrap: true,
+                      itemCount: options.length,
+                      separatorBuilder: (context, index) => Divider(
+                        height: 1,
+                        color: theme.colorScheme.outline.withOpacity(0.1),
+                      ),
+                      itemBuilder: (context, index) {
+                        final customer = options.elementAt(index);
+                        return ListTile(
+                          dense: true,
+                          onTap: () {
+                            onSelected(customer);
+                          },
+                          leading: const Icon(Icons.person_outline, size: 20),
+                          title: MyText.bodySmall(
+                            customer.name ?? 'Unnamed',
+                            fontWeight: 600,
+                          ),
+                          subtitle: customer.phone != null
+                              ? MyText.bodySmall(
+                                  customer.phone!,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                )
+                              : null,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+            onSelected: (customer) {
+              setState(() {
+                _selectedCustomer = customer;
+                _customerSearchText = _formatCustomer(customer);
+                _customerController
+                  ..text = _customerSearchText
+                  ..selection = TextSelection.collapsed(offset: _customerSearchText.length);
+              });
+              _customerFocusNode.unfocus();
+              _loadSummaries();
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _showStatusFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: MySpacing.xy(20, 16),
+                child: MyText.titleMedium('Bill status', fontWeight: 600),
+              ),
+              _buildStatusTile(label: 'All bills', value: null),
+              _buildStatusTile(label: 'Open bills', value: 'open'),
+              _buildStatusTile(label: 'Completed bills', value: 'completed'),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatusTile({required String label, String? value}) {
+    final isSelected = value == _statusFilter || (value == null && _statusFilter == null);
+    return ListTile(
+      title: Text(label),
+      trailing: isSelected ? const Icon(Icons.check) : null,
+      onTap: () {
+        Navigator.pop(context);
+        setState(() {
+          _statusFilter = value;
+        });
+        _loadSummaries();
+      },
+    );
+  }
+
+  String _formatCustomer(Customer customer) {
+    final name = customer.name?.trim();
+    final phone = customer.phone?.trim();
+    if (name != null && name.isNotEmpty && phone != null && phone.isNotEmpty) {
+      return '$name ($phone)';
+    }
+    if (name != null && name.isNotEmpty) return name;
+    if (phone != null && phone.isNotEmpty) return phone;
+    return 'Unnamed customer';
+  }
+
+  bool get _hasFilters => _statusFilter != null || _selectedCustomer != null;
+
+  Widget _buildActiveFilters() {
+    if (!_hasFilters) return const SizedBox.shrink();
+
+    final chips = <Widget>[];
+
+    if (_statusFilter != null) {
+      final label = _statusFilter == 'completed' ? 'Status: Completed' : 'Status: Open';
+      chips.add(_buildFilterChip(label, () {
+        setState(() {
+          _statusFilter = null;
+        });
+        _loadSummaries();
+      }));
+    }
+
+    if (_selectedCustomer != null) {
+      chips.add(_buildFilterChip('Customer: ${_formatCustomer(_selectedCustomer!)}', () {
+        setState(() {
+          _selectedCustomer = null;
+          _customerSearchText = '';
+          _customerController.clear();
+        });
+        _loadSummaries();
+      }));
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        children: chips,
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, VoidCallback onDeleted) {
+    return InputChip(
+      label: Text(label),
+      onDeleted: onDeleted,
+      deleteIcon: const Icon(Icons.close, size: 16),
+      backgroundColor: theme.colorScheme.primary.withOpacity(0.12),
+      labelStyle: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: theme.colorScheme.surface,
-      child: SafeArea(
+    return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
+      appBar: _buildAppBar(),
+      body: SafeArea(
         child: BlocBuilder<BillListBloc, BillListState>(
           builder: (context, state) {
             if (state is BillListLoading) {
@@ -47,7 +350,7 @@ class _BillListScreenState extends State<BillListScreen> {
                     MyText.bodyMedium(state.message),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () => context.read<BillListBloc>().add(const LoadBillSummaries(forceRefresh: true)),
+                      onPressed: () => _loadSummaries(forceRefresh: true),
                       child: const Text('Retry'),
                     ),
                   ],
@@ -68,6 +371,13 @@ class _BillListScreenState extends State<BillListScreen> {
                       'Completed bills will appear here',
                       color: theme.colorScheme.onSurface.withOpacity(0.6),
                     ),
+                    if (_hasFilters) ...[
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _clearFilters,
+                        child: const Text('Clear filters'),
+                      ),
+                    ],
                   ],
                 ),
               );
@@ -93,6 +403,7 @@ class _BillListScreenState extends State<BillListScreen> {
                           'Bills',
                           fontWeight: 600,
                         ),
+                        _buildActiveFilters(),
                         const SizedBox(height: 12),
                       ],
                     ),
