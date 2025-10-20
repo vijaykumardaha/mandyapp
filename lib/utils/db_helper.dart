@@ -55,9 +55,8 @@ class DBHelper {
         await db.execute('''
           CREATE TABLE products (
             id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
             category_id INTEGER NOT NULL,
-            image_path TEXT
+            default_variant INTEGER NOT NULL DEFAULT 0
           )
         ''');
 
@@ -65,44 +64,31 @@ class DBHelper {
           CREATE TABLE product_variants (
             id INTEGER PRIMARY KEY,
             product_id INTEGER NOT NULL,
-            variant_name TEXT,
-            cost_price REAL DEFAULT 0.0,
+            variant_name TEXT NOT NULL,
+            buying_price REAL NOT NULL,
             selling_price REAL NOT NULL,
             quantity REAL NOT NULL,
-            unit TEXT DEFAULT 'Kg',
-            image_path TEXT
+            unit TEXT NOT NULL,
+            image_path TEXT NOT NULL,
+            manage_stock INTEGER NOT NULL DEFAULT 1
           )
         ''');
 
         await db.execute('''
           CREATE TABLE carts (
             id INTEGER PRIMARY KEY,
-            user_id INTEGER NOT NULL,
-            buyer_id INTEGER,
-            seller_id INTEGER,
-            name TEXT, -- optional (e.g., "Order #1", "Wholesale Cart")
+            customer_id INTEGER NOT NULL,
             created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-            status TEXT DEFAULT 'open' -- open, completed, cancelled
+            cart_for TEXT NOT NULL DEFAULT 'buyer' CHECK (cart_for IN ('seller','buyer')),
+            status TEXT DEFAULT 'open' -- open, completed
           );
-        ''');
-
-        await db.execute('''
-          CREATE TABLE cart_items (
-            id INTEGER PRIMARY KEY,
-            cart_id INTEGER NOT NULL,
-            product_id INTEGER NOT NULL,
-            variant_id INTEGER NOT NULL,
-            quantity REAL NOT NULL,
-            unit_price REAL NOT NULL,
-            total_price REAL NOT NULL
-          )
         ''');
 
         await db.execute('''
           CREATE TABLE cart_charges (
             id INTEGER PRIMARY KEY,
             cart_id TEXT NOT NULL,
-            charge_name TEXT NOT NULL UNIQUE,
+            charge_name TEXT NOT NULL,
             charge_amount REAL NOT NULL
           );
         ''');
@@ -131,6 +117,7 @@ class DBHelper {
           CREATE TABLE charges (
             id INTEGER PRIMARY KEY,
             charge_name TEXT NOT NULL UNIQUE,
+            charge_type TEXT NOT NULL DEFAULT 'fixed', -- fixed, percentage
             charge_amount REAL NOT NULL,
             is_active INTEGER NOT NULL DEFAULT 1   -- 1 = active, 0 = disabled
           )
@@ -142,9 +129,44 @@ class DBHelper {
             name TEXT NOT NULL,
             phone TEXT NOT NULL,
             initial_credit REAL NOT NULL DEFAULT 0,
+            borrow_amount REAL NOT NULL DEFAULT 0,
+            advanced_amount REAL NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
           );
         ''');
+
+        await db.execute('''
+          CREATE TABLE product_stocks (
+            id INTEGER PRIMARY KEY,
+            customer_id INTEGER NOT NULL,
+            product_id TEXT NOT NULL,
+            variant_id TEXT NOT NULL,
+            initial_stock REAL NOT NULL DEFAULT 0,
+            current_stock REAL NOT NULL DEFAULT 0,
+            unit TEXT DEFAULT 'Kg',
+            created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+            last_updated TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE item_sales (
+            id INTEGER PRIMARY KEY,
+            seller_id INTEGER NOT NULL,
+            buyer_cart_id INTEGER,
+            seller_cart_id INTEGER,
+            buyer_id INTEGER,
+            product_id INTEGER NOT NULL,
+            variant_id INTEGER NOT NULL,
+            buying_price REAL DEFAULT 0.0,
+            selling_price REAL NOT NULL,
+            quantity REAL NOT NULL,
+            unit TEXT DEFAULT 'Kg',
+            created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+            updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+          )
+        ''');
+        
       }
     );
   }

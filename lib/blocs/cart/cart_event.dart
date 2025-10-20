@@ -10,16 +10,6 @@ abstract class CartEvent extends Equatable {
 // Load all carts
 class LoadCarts extends CartEvent {}
 
-// Load carts by user
-class LoadCartsByUser extends CartEvent {
-  final int userId;
-
-  const LoadCartsByUser(this.userId);
-
-  @override
-  List<Object?> get props => [userId];
-}
-
 // Load cart with items
 class LoadCartWithItems extends CartEvent {
   final int cartId;
@@ -38,16 +28,6 @@ class LoadCartById extends CartEvent {
 
   @override
   List<Object?> get props => [cartId];
-}
-
-// Load open cart for user
-class LoadOpenCart extends CartEvent {
-  final int userId;
-
-  const LoadOpenCart(this.userId);
-
-  @override
-  List<Object?> get props => [userId];
 }
 
 // Create new cart
@@ -82,7 +62,7 @@ class DeleteCart extends CartEvent {
 
 // Add item to cart
 class AddItemToCart extends CartEvent {
-  final CartItem item;
+  final ItemSale item;
 
   const AddItemToCart(this.item);
 
@@ -92,7 +72,7 @@ class AddItemToCart extends CartEvent {
 
 // Update cart item
 class UpdateCartItem extends CartEvent {
-  final CartItem item;
+  final ItemSale item;
 
   const UpdateCartItem(this.item);
 
@@ -102,7 +82,7 @@ class UpdateCartItem extends CartEvent {
 
 // Remove item from cart
 class RemoveItemFromCart extends CartEvent {
-  final CartItem item;
+  final ItemSale item;
 
   const RemoveItemFromCart(this.item);
 

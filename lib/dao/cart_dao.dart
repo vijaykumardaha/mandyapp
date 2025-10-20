@@ -1,5 +1,5 @@
 import 'package:mandyapp/models/cart_model.dart';
-import 'package:mandyapp/models/cart_item_model.dart';
+import 'package:mandyapp/models/item_sale_model.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -26,8 +26,8 @@ class CartDAO {
   // Delete a cart
   Future<int> deleteCart(int id) async {
     final db = await dbHelper.database;
-    // Delete all cart items first
-    await db.delete('cart_items', where: 'cart_id = ?', whereArgs: [id]);
+    // Delete all cart-linked item sales first
+    await db.delete('item_sales', where: 'buyer_cart_id = ?', whereArgs: [id]);
     // Then delete the cart
     return await db.delete('carts', where: 'id = ?', whereArgs: [id]);
   }
@@ -61,12 +61,12 @@ class CartDAO {
   }
 
   // Get carts by user ID
-  Future<List<Cart>> getCartsByUser(int userId) async {
+  Future<List<Cart>> getCartsByCustomer(int customerId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'carts',
-      where: 'user_id = ?',
-      whereArgs: [userId],
+      where: 'customer_id = ?',
+      whereArgs: [customerId],
       orderBy: 'created_at ASC',
     );
 
@@ -75,18 +75,18 @@ class CartDAO {
     for (var map in maps) {
       final cart = Cart.fromJson(map);
       final items = await getCartItems(cart.id);
-      carts.add(cart.copyWith(id: cart.id, items: items));
+      carts.add(cart.copyWith(id: cart.id, items: items, cartFor: cart.cartFor));
     }
     return carts;
   }
 
   // Get open cart for user
-  Future<Cart?> getOpenCartForUser(int userId) async {
+  Future<Cart?> getOpenCartForCustomer(int customerId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'carts',
-      where: 'user_id = ? AND status = ?',
-      whereArgs: [userId, 'open'],
+      where: 'customer_id = ? AND status = ?',
+      whereArgs: [customerId, 'open'],
       orderBy: 'created_at DESC',
       limit: 1,
     );
@@ -95,7 +95,7 @@ class CartDAO {
       final cart = Cart.fromJson(maps.first);
       // Load items for this cart
       final items = await getCartItems(cart.id);
-      return cart.copyWith(items: items, id: DBHelper.generateUuidInt());
+      return cart.copyWith(items: items, id: DBHelper.generateUuidInt(), cartFor: cart.cartFor);
     }
     return null;
   }
@@ -127,96 +127,102 @@ class CartDAO {
     );
   }
 
-  // === Cart Items Methods ===
+  // === Cart ItemSale Methods ===
 
-  // Insert a cart item
-  Future<int> insertCartItem(CartItem item) async {
+  // Insert a cart item sale
+  Future<int> insertCartItem(ItemSale item) async {
     final db = await dbHelper.database;
-    return await db.insert('cart_items', item.toJson());
+    final now = DateTime.now().toIso8601String();
+    final prepared = item.copyWith(
+      id: item.id ?? DBHelper.generateUuidInt(),
+      createdAt: item.createdAt.isEmpty ? now : item.createdAt,
+      updatedAt: now,
+    );
+    return await db.insert('item_sales', prepared.toJson());
   }
 
-  // Update a cart item
-  Future<int> updateCartItem(CartItem item) async {
+  // Update a cart item sale
+  Future<int> updateCartItem(ItemSale item) async {
     final db = await dbHelper.database;
+    final updated = item.copyWith(updatedAt: DateTime.now().toIso8601String());
     return await db.update(
-      'cart_items',
-      item.toJson(),
+      'item_sales',
+      updated.toJson(),
       where: 'id = ?',
       whereArgs: [item.id],
     );
   }
 
-  // Delete a cart item
+  // Delete a cart item sale
   Future<int> deleteCartItem(int id) async {
     final db = await dbHelper.database;
-    return await db.delete('cart_items', where: 'id = ?', whereArgs: [id]);
+    return await db.delete('item_sales', where: 'id = ?', whereArgs: [id]);
   }
 
-  // Get cart item by ID
-  Future<CartItem?> getCartItem(int id) async {
+  // Get cart item sale by ID
+  Future<ItemSale?> getCartItem(int id) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'cart_items',
+      'item_sales',
       where: 'id = ?',
       whereArgs: [id],
     );
 
     if (maps.isNotEmpty) {
-      return CartItem.fromJson(maps.first);
+      return ItemSale.fromJson(maps.first);
     }
     return null;
   }
 
-  // Get all items for a cart
-  Future<List<CartItem>> getCartItems(int cartId) async {
+  // Get all item sales for a cart
+  Future<List<ItemSale>> getCartItems(int cartId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'cart_items',
-      where: 'cart_id = ?',
+      'item_sales',
+      where: 'buyer_cart_id = ?',
       whereArgs: [cartId],
+      orderBy: 'created_at ASC',
     );
 
-    return List.generate(maps.length, (i) {
-      return CartItem.fromJson(maps[i]);
-    });
+    return maps.map(ItemSale.fromJson).toList();
   }
 
-  // Clear all items from a cart
+  // Clear all item sales from a cart
   Future<int> clearCart(int cartId) async {
     final db = await dbHelper.database;
     return await db.delete(
-      'cart_items',
-      where: 'cart_id = ?',
+      'item_sales',
+      where: 'buyer_cart_id = ?',
       whereArgs: [cartId],
     );
   }
 
-  // Get cart item by product ID (to check if product already in cart)
-  Future<CartItem?> getCartItemByProduct(int cartId, int productId) async {
+  // Get cart item sale by product ID (when variant not specified)
+  Future<ItemSale?> getCartItemByProduct(int cartId, int productId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'cart_items',
-      where: 'cart_id = ? AND product_id = ? AND variant_id IS NULL',
+      'item_sales',
+      where: 'buyer_cart_id = ? AND product_id = ? AND variant_id IS NULL',
       whereArgs: [cartId, productId],
     );
 
     if (maps.isNotEmpty) {
-      return CartItem.fromJson(maps.first);
+      return ItemSale.fromJson(maps.first);
     }
     return null;
   }
 
-  // Get cart item by variant ID (to check if variant already in cart)
-  Future<CartItem?> getCartItemByVariant(int cartId, int variantId) async {
+  // Get cart item sale by variant ID
+  Future<ItemSale?> getCartItemByVariant(int cartId, int variantId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'cart_items',
-      where: 'cart_id = ? AND variant_id = ?',
+      'item_sales',
+      where: 'buyer_cart_id = ? AND variant_id = ?',
       whereArgs: [cartId, variantId],
     );
 
     if (maps.isNotEmpty) {
-      return CartItem.fromJson(maps.first);
+      return ItemSale.fromJson(maps.first);
     }
     return null;
   }
@@ -225,19 +231,10 @@ class CartDAO {
   Future<int> getCartItemCount(int cartId) async {
     final db = await dbHelper.database;
     final result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM cart_items WHERE cart_id = ?',
+      'SELECT COUNT(*) as count FROM item_sales WHERE buyer_cart_id = ?',
       [cartId],
     );
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
-  // Get total price of cart
-  Future<double> getCartTotalPrice(int cartId) async {
-    final db = await dbHelper.database;
-    final result = await db.rawQuery(
-      'SELECT SUM(total_price) as total FROM cart_items WHERE cart_id = ?',
-      [cartId],
-    );
-    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
-  }
 }

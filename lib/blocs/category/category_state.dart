@@ -29,11 +29,11 @@ final class CategoryError extends CategoryState {
   List<Object> get props => [message];
 }
 
-final class CategoryOperationSuccess extends CategoryState {
+final class CategoryOperationSuccess extends CategoryLoaded {
   final String message;
 
-  const CategoryOperationSuccess(this.message);
+  const CategoryOperationSuccess(List<Category> categories, this.message) : super(categories);
 
   @override
-  List<Object> get props => [message];
+  List<Object> get props => [categories, message];
 }

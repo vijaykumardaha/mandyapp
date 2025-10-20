@@ -66,24 +66,18 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       }
     });
 
-    on<UpdateProductQuantity>((event, emit) async {
-      try {
-        emit(ProductLoading());
-        await productDAO.updateProductQuantity(event.id, event.quantity);
-        final products = await productDAO.getAllProductsWithVariants();
-        emit(ProductLoaded(products));
-        emit(const ProductOperationSuccess('Quantity updated successfully'));
-      } catch (error) {
-        emit(ProductError('Failed to update quantity: ${error.toString()}'));
-      }
-    });
-
     on<SearchProducts>((event, emit) async {
       try {
         emit(ProductLoading());
         final allProducts = await productDAO.getAllProductsWithVariants();
         final filteredProducts = allProducts.where((product) {
-          return product.name.toLowerCase().contains(event.query.toLowerCase());
+          final queryLower = event.query.toLowerCase();
+          final defaultName = product.defaultVariantModel?.variantName.toLowerCase() ?? '';
+          if (defaultName.contains(queryLower)) {
+            return true;
+          }
+          if (product.variants == null) return false;
+          return product.variants!.any((variant) => variant.variantName.toLowerCase().contains(queryLower));
         }).toList();
         emit(ProductLoaded(filteredProducts));
       } catch (error) {

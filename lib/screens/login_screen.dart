@@ -42,7 +42,9 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocConsumer<LoginBloc, LoginState>(
         listener: (context, state) async {
           if (state is LoginFailure) {
-            SnackBar snackBar = SnackBar(
+            final snackBar = SnackBar(
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
               content: Text(state.error),
               backgroundColor: Colors.red,
             );

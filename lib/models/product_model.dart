@@ -2,38 +2,45 @@ import 'package:mandyapp/models/product_variant_model.dart';
 
 class Product {
   int? id;
-  String name;
   int categoryId;
-  String? imagePath;
+  int defaultVariant;
   List<ProductVariant>? variants;
 
   Product({
     this.id,
-    required this.name,
     required this.categoryId,
-    this.imagePath,
+    required this.defaultVariant,
     this.variants,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
       'category_id': categoryId,
-      'image_path': imagePath,
+      'default_variant': defaultVariant,
     };
   }
 
   factory Product.fromJson(Map<String, dynamic> json, {List<ProductVariant>? variants}) {
     return Product(
       id: json['id'] as int?,
-      name: json['name'] as String,
       categoryId: json['category_id'] as int,
-      imagePath: json['image_path'] as String?,
+      defaultVariant: (json['default_variant'] as int?) ?? 0,
       variants: variants,
     );
+  }
+
+  ProductVariant? get defaultVariantModel {
+    if (variants == null || variants!.isEmpty) return null;
+    for (final variant in variants!) {
+      if (variant.id == defaultVariant) {
+        return variant;
+      }
+    }
+    return variants!.first;
   }
 
   int get variantCount => variants?.length ?? 0;
   bool get hasVariants => variants != null && variants!.isNotEmpty;
 }
+

@@ -24,8 +24,8 @@ class PaymentMethodSelector extends StatefulWidget {
 
 class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   late Set<PaymentMethod> _selectedPaymentMethods;
-  late Map<PaymentMethod, TextEditingController> _controllers;
-  late Map<PaymentMethod, FocusNode> _focusNodes;
+  late final Map<PaymentMethod, TextEditingController> _controllers;
+  late final Map<PaymentMethod, FocusNode> _focusNodes;
 
   @override
   void initState() {
@@ -33,84 +33,88 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     _selectedPaymentMethods = Set.from(widget.selectedPaymentMethods);
     _controllers = {};
     _focusNodes = {};
-    _initializeControllers();
+    _createControllers();
+    _syncControllersFromWidget();
   }
 
   @override
   void didUpdateWidget(PaymentMethodSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.selectedPaymentMethods != widget.selectedPaymentMethods ||
-        oldWidget.paymentAmounts != widget.paymentAmounts) {
+    if (oldWidget.selectedPaymentMethods != widget.selectedPaymentMethods) {
       _selectedPaymentMethods = Set.from(widget.selectedPaymentMethods);
-      _initializeControllers();
+    }
+    if (oldWidget.paymentAmounts != widget.paymentAmounts) {
+      _syncControllersFromWidget();
     }
   }
 
-  void _initializeControllers() {
-    // Dispose existing controllers and focus nodes safely
-    if (_controllers.isNotEmpty) {
-      for (var controller in _controllers.values) {
-        controller.dispose();
-      }
-    }
-    if (_focusNodes.isNotEmpty) {
-      for (var focusNode in _focusNodes.values) {
-        focusNode.dispose();
-      }
-    }
-    _controllers = {};
-    _focusNodes = {};
-
+  void _createControllers() {
     for (var method in PaymentMethod.values) {
-      final amount = widget.paymentAmounts[method] ?? 0.0;
-      _controllers[method] = TextEditingController(text: amount > 0 ? amount.toStringAsFixed(2) : '');
+      _controllers[method] = TextEditingController();
       _focusNodes[method] = FocusNode();
+    }
+  }
+
+  void _syncControllersFromWidget() {
+    for (var method in PaymentMethod.values) {
+      final controller = _controllers[method];
+      if (controller == null) continue;
+      final focusNode = _focusNodes[method];
+      final amount = widget.paymentAmounts[method];
+      final formatted = (amount != null && amount > 0) ? amount.toStringAsFixed(2) : '';
+      if (focusNode != null && focusNode.hasFocus) {
+        continue;
+      }
+      if (controller.text != formatted) {
+        controller.value = controller.value.copyWith(
+          text: formatted,
+          selection: TextSelection.collapsed(offset: formatted.length),
+        );
+      }
     }
   }
 
   @override
   void dispose() {
-    if (_controllers.isNotEmpty) {
-      for (var controller in _controllers.values) {
-        controller.dispose();
-      }
+    for (var controller in _controllers.values) {
+      controller.dispose();
     }
-    if (_focusNodes.isNotEmpty) {
-      for (var focusNode in _focusNodes.values) {
-        focusNode.dispose();
-      }
+    for (var focusNode in _focusNodes.values) {
+      focusNode.dispose();
     }
     super.dispose();
   }
 
   void _togglePaymentMethod(PaymentMethod method) {
-    setState(() {
-      if (_selectedPaymentMethods.contains(method)) {
-        // If already selected, just focus the amount field
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _focusNodes[method]?.requestFocus();
-        });
-      } else {
-        _selectedPaymentMethods.add(method);
-        // Focus the amount field when a payment method is selected
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _focusNodes[method]?.requestFocus();
-        });
+    final updatedSelected = Set<PaymentMethod>.from(_selectedPaymentMethods);
+    final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
+
+    if (updatedSelected.contains(method)) {
+      updatedSelected.remove(method);
+      _focusNodes[method]?.unfocus();
+      updatedAmounts.remove(method);
+      _controllers[method]?.clear();
+    } else {
+      updatedSelected.add(method);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _focusNodes[method]?.requestFocus();
+      });
+      final currentText = _controllers[method]?.text ?? '';
+      final amount = double.tryParse(currentText);
+      if (amount != null && amount > 0) {
+        updatedAmounts[method] = amount;
       }
+    }
+
+    setState(() {
+      _selectedPaymentMethods = updatedSelected;
     });
-    _notifyChanges();
+
+    widget.onSelectionChanged(updatedSelected, updatedAmounts);
   }
 
   void _updatePaymentAmount(PaymentMethod method, String value) {
     final amount = double.tryParse(value) ?? 0.0;
-
-    setState(() {
-      if (amount > 0) {
-        _controllers[method]?.text = amount.toStringAsFixed(2);
-      } else {
-        _controllers[method]?.text = '';
-      }
-    });
 
     final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
     if (amount > 0) {
@@ -119,12 +123,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
       updatedAmounts.remove(method);
     }
 
-    // Update the widget's payment amounts immediately
     widget.onSelectionChanged(_selectedPaymentMethods, updatedAmounts);
-  }
-
-  void _notifyChanges() {
-    widget.onSelectionChanged(_selectedPaymentMethods, widget.paymentAmounts);
   }
 
   double get totalAmount {
@@ -235,16 +234,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                         ),
                         keyboardType: TextInputType.numberWithOptions(decimal: true),
                         textAlign: TextAlign.center,
-                        onChanged: (value) {
-                          // Ensure immediate visual feedback
-                          final amount = double.tryParse(value) ?? 0.0;
-                          if (amount > 0) {
-                            _controllers[method]!.text = amount.toStringAsFixed(2);
-                          } else {
-                            _controllers[method]!.text = '';
-                          }
-                          _updatePaymentAmount(method, value);
-                        },
+                        onChanged: (value) => _updatePaymentAmount(method, value),
                       ),
                     ),
                   ),

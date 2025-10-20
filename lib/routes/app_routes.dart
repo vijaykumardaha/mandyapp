@@ -9,10 +9,14 @@ import 'package:mandyapp/screens/charges_screen.dart';
 import 'package:mandyapp/screens/initial_screen.dart';
 import 'package:mandyapp/screens/product_list_screen.dart';
 import 'package:mandyapp/screens/privacy_policy_screen.dart';
+import 'package:mandyapp/screens/printer_settings_screen.dart';
 import 'package:mandyapp/screens/terms_conditions_screen.dart';
 import 'package:mandyapp/screens/theme_settings_screen.dart';
 import 'package:mandyapp/screens/language_settings_screen.dart';
 import 'package:mandyapp/screens/notification_settings_screen.dart';
+import 'package:mandyapp/screens/customer_management_screen.dart';
+import 'package:mandyapp/screens/stock_screen.dart';
+import 'package:mandyapp/screens/bill_list_screen.dart';
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
@@ -96,6 +100,30 @@ class AppRoutes {
         path: '/charges',
         builder: (context, state) {
           return const ChargesScreen();
+        },
+      ),
+      GoRoute(
+        path: '/printer-settings',
+        builder: (context, state) {
+          return const PrinterSettingsScreen();
+        },
+      ),
+      GoRoute(
+        path: '/customers',
+        builder: (context, state) {
+          return const CustomerManagementScreen();
+        },
+      ),
+      GoRoute(
+        path: '/stock',
+        builder: (context, state) {
+          return const StockScreen();
+        },
+      ),
+      GoRoute(
+        path: '/bills',
+        builder: (context, state) {
+          return const BillListScreen();
         },
       ),
     ],

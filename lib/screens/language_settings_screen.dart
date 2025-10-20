@@ -72,6 +72,8 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
+                            behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
                             content: Text('Language changed to ${language.languageName}'),
                             backgroundColor: Colors.green,
                             duration: const Duration(seconds: 2),

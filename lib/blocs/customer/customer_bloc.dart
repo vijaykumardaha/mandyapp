@@ -24,16 +24,62 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     on<FetchCustomer>((event, emit) async {
       try {
         emit(CustomerLoading());
-        List<Customer> contacts = await contactDAO.getCustomers();
-        final filteredItems = contacts
-            .where((item) =>
-                item.name!.toLowerCase().contains(event.query.toLowerCase()) ||
-                item.phone!.contains(event.query.toLowerCase()))
-            .toList();
-        emit(CustomerLoaded(customers: filteredItems));
+        final contacts = await contactDAO.getCustomers();
+        emit(CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
+      } catch (error) {
+        emit(SyncCustomerError(errorMsg: error.toString()));
+      }
+    });
+
+    on<AddCustomer>((event, emit) async {
+      try {
+        emit(CustomerLoading());
+        await contactDAO.insertCustomer(
+          Customer(
+            name: event.name.trim(),
+            phone: event.phone.trim(),
+            borrowAmount: event.borrowAmount,
+            advancedAmount: event.advancedAmount,
+          ),
+        );
+        final contacts = await contactDAO.getCustomers();
+        emit(CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
+      } catch (error) {
+        emit(SyncCustomerError(errorMsg: error.toString()));
+      }
+    });
+
+    on<DeleteCustomer>((event, emit) async {
+      try {
+        emit(CustomerLoading());
+        await contactDAO.deleteCustomer(event.customerId);
+        final contacts = await contactDAO.getCustomers();
+        emit(CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
+      } catch (error) {
+        emit(SyncCustomerError(errorMsg: error.toString()));
+      }
+    });
+
+    on<UpdateCustomer>((event, emit) async {
+      try {
+        emit(CustomerLoading());
+        await contactDAO.updateCustomer(event.customer);
+        final contacts = await contactDAO.getCustomers();
+        emit(CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
       } catch (error) {
         emit(SyncCustomerError(errorMsg: error.toString()));
       }
     });
   }
+
+  List<Customer> _filterCustomers(List<Customer> contacts, String query) {
+    final normalizedQuery = query.toLowerCase();
+    return contacts.where((item) {
+      final name = item.name?.toLowerCase() ?? '';
+      final phone = item.phone ?? '';
+      if (normalizedQuery.isEmpty) return true;
+      return name.contains(normalizedQuery) || phone.contains(normalizedQuery);
+    }).toList();
+  }
 }
+

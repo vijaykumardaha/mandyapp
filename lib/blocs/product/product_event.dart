@@ -45,16 +45,6 @@ class DeleteProduct extends ProductEvent {
   List<Object?> get props => [id];
 }
 
-class UpdateProductQuantity extends ProductEvent {
-  final int id;
-  final double quantity;
-
-  const UpdateProductQuantity(this.id, this.quantity);
-
-  @override
-  List<Object?> get props => [id, quantity];
-}
-
 class SearchProducts extends ProductEvent {
   final String query;
 

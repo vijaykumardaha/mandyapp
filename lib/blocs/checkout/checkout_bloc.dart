@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:mandyapp/models/cart_model.dart';
-import 'package:mandyapp/models/cart_item_model.dart';
+import 'package:mandyapp/models/item_sale_model.dart';
 import 'package:mandyapp/dao/cart_dao.dart';
 import 'package:mandyapp/dao/product_dao.dart';
 import 'package:mandyapp/dao/product_variant_dao.dart';
@@ -115,8 +115,29 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     on<UpdateCheckoutItem>((event, emit) async {
       try {
         await cartDAO.updateCartItem(event.item);
-        // Reload current cart to get updated items
-        add(LoadCheckoutCart(event.item.cartId));
+
+        Cart? updatedCart;
+        if (state is CheckoutDataLoaded) {
+          final current = state as CheckoutDataLoaded;
+          final updatedItems = current.cart.items?.map((existing) {
+            if (existing.id == event.item.id) {
+              return event.item;
+            }
+            return existing;
+          }).toList();
+
+          updatedCart = current.cart.copyWith(
+            id: current.cart.id,
+            items: updatedItems,
+          );
+
+          emit(CheckoutDataLoaded(updatedCart, _products, _variants));
+        } else {
+          final cartId = event.item.buyerCartId;
+          if (cartId != null) {
+            add(LoadCheckoutCart(cartId));
+          }
+        }
       } catch (error) {
         emit(CheckoutError('Failed to update item: ${error.toString()}'));
       }
@@ -127,7 +148,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       try {
         await cartDAO.deleteCartItem(event.item.id!);
         // Reload current cart to get updated items
-        add(LoadCheckoutCart(event.item.cartId));
+        add(LoadCheckoutCart(event.item.buyerCartId!));
       } catch (error) {
         emit(CheckoutError('Failed to remove item: ${error.toString()}'));
       }

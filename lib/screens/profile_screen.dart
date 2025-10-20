@@ -55,6 +55,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (state is UserUpdated) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
+                behavior: SnackBarBehavior.floating,
+                margin: EdgeInsets.only(top: 16, left: 16, right: 16),
                 content: Text('Profile updated successfully'),
                 backgroundColor: Colors.green,
               ),
@@ -62,6 +64,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           } else if (state is UserError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
                 content: Text(state.errorMsg),
                 backgroundColor: Colors.red,
               ),

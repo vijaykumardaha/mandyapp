@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/category/category_bloc.dart';
@@ -20,6 +22,32 @@ class ProductListScreen extends StatefulWidget {
 class _ProductListScreenState extends State<ProductListScreen> {
   late ThemeData theme;
   int? _selectedCategoryId;
+
+  Widget _buildVariantImage(String imagePath) {
+    final placeholder = Icon(
+      Icons.inventory_2,
+      size: 32,
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+
+    if (imagePath.isEmpty) {
+      return placeholder;
+    }
+
+    if (imagePath.startsWith('assets/')) {
+      return Image.asset(
+        imagePath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => placeholder,
+      );
+    }
+
+    return Image.file(
+      File(imagePath),
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => placeholder,
+    );
+  }
 
   @override
   void initState() {
@@ -65,7 +93,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
             onPressed: () async {
               if (nameController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('please_enter_category_name'.tr())),
+                  SnackBar(
+                    behavior: SnackBarBehavior.floating,
+                    margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                    content: Text('please_enter_category_name'.tr()),
+                  ),
                 );
                 return;
               }
@@ -233,6 +265,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget _buildProductCard(Product product, Map<int, String> categoryMap) {
     final categoryName = categoryMap[product.categoryId] ?? 'unknown'.tr();
     final variantCount = product.variantCount;
+    final defaultVariant = product.defaultVariantModel;
+    final variants = product.variants ?? [];
     
     return Card(
       margin: MySpacing.bottom(12),
@@ -251,18 +285,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   color: theme.colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: product.imagePath != null
+                child: defaultVariant != null && defaultVariant.imagePath.isNotEmpty
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          product.imagePath!,
-                          fit: BoxFit.cover,
-                        ),
+                        child: _buildVariantImage(defaultVariant.imagePath),
                       )
-                    : Icon(
-                        Icons.inventory_2,
-                        size: 32,
-                        color: theme.colorScheme.primary,
+                    : Center(
+                        child: Icon(
+                          Icons.inventory_2,
+                          size: 32,
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
               ),
               MySpacing.width(16),
@@ -291,7 +324,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         MySpacing.width(8),
                         Expanded(
                           child: MyText.bodyLarge(
-                            product.name,
+                            defaultVariant?.variantName ?? 'Product #${product.id ?? ''}',
                             fontWeight: 600,
                           ),
                         ),
@@ -324,18 +357,26 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             ],
                           ),
                         ),
-                        if (variantCount > 0 && product.variants != null && product.variants!.isNotEmpty) ...[
+                        if (variantCount > 0 && variants.isNotEmpty) ...[
                           MySpacing.width(12),
                           Expanded(
                             child: MyText.bodySmall(
-                              product.variants!.take(2).map((v) => 
-                                '₹${v.sellingPrice.toStringAsFixed(0)} (${v.quantity}${v.unit})'
-                              ).join(', ') + (product.variants!.length > 2 ? '...' : ''),
+                              variants.take(2).map((variant) =>
+                                '₹${variant.sellingPrice.toStringAsFixed(0)} (${variant.quantity}${variant.unit})'
+                              ).join(', ') + (variants.length > 2 ? '...' : ''),
                               color: theme.colorScheme.onBackground.withOpacity(0.6),
                               fontSize: 11,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
+                          ),
+                        ],
+                        if (defaultVariant != null) ...[
+                          MySpacing.height(8),
+                          MyText.bodyMedium(
+                            '₹${defaultVariant.sellingPrice.toStringAsFixed(0)}',
+                            fontWeight: 600,
+                            color: theme.colorScheme.primary,
                           ),
                         ],
                       ],

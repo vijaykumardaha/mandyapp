@@ -31,6 +31,7 @@ class _ChargesScreenState extends State<ChargesScreen> {
     final amountController = TextEditingController(
       text: charge?.chargeAmount.toString() ?? '',
     );
+    String selectedType = charge?.chargeType ?? 'fixed';
 
     showDialog(
       context: context,
@@ -58,6 +59,23 @@ class _ChargesScreenState extends State<ChargesScreen> {
               ),
               keyboardType: TextInputType.number,
             ),
+            MySpacing.height(16),
+            DropdownButtonFormField<String>(
+              value: selectedType,
+              decoration: const InputDecoration(
+                labelText: 'Charge Type',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'fixed', child: Text('Fixed Amount')),
+                DropdownMenuItem(value: 'percentage', child: Text('Percentage')),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  selectedType = value;
+                }
+              },
+            ),
           ],
         ),
         actions: [
@@ -69,7 +87,11 @@ class _ChargesScreenState extends State<ChargesScreen> {
             onPressed: () async {
               if (nameController.text.isEmpty || amountController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please fill all fields')),
+                  const SnackBar(
+                    behavior: SnackBarBehavior.floating,
+                    margin: EdgeInsets.only(top: 16, left: 16, right: 16),
+                    content: Text('Please fill all fields'),
+                  ),
                 );
                 return;
               }
@@ -77,7 +99,11 @@ class _ChargesScreenState extends State<ChargesScreen> {
               final chargeAmount = double.tryParse(amountController.text);
               if (chargeAmount == null || chargeAmount < 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter a valid amount')),
+                  const SnackBar(
+                    behavior: SnackBarBehavior.floating,
+                    margin: EdgeInsets.only(top: 16, left: 16, right: 16),
+                    content: Text('Please enter a valid amount'),
+                  ),
                 );
                 return;
               }
@@ -85,6 +111,7 @@ class _ChargesScreenState extends State<ChargesScreen> {
               final newCharge = Charge(
                 id: charge?.id,
                 chargeName: nameController.text,
+                chargeType: selectedType,
                 chargeAmount: chargeAmount,
                 isActive: charge?.isActive ?? 1,
               );
@@ -149,7 +176,11 @@ class _ChargesScreenState extends State<ChargesScreen> {
         listener: (context, state) {
           if (state is ChargesError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+              SnackBar(
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                content: Text(state.message),
+              ),
             );
           }
         },
@@ -206,7 +237,9 @@ class _ChargesScreenState extends State<ChargesScreen> {
                       fontWeight: 500,
                     ),
                     subtitle: MyText.bodyMedium(
-                      '\$${charge.chargeAmount.toStringAsFixed(2)}',
+                      charge.chargeType == 'percentage'
+                          ? '${charge.chargeAmount.toStringAsFixed(2)}%'
+                          : '\$${charge.chargeAmount.toStringAsFixed(2)}',
                       color: theme.colorScheme.primary,
                     ),
                     trailing: Row(

@@ -1,22 +1,24 @@
 class ProductVariant {
   int? id;
   int productId;
-  String? variantName;
-  double costPrice;
+  String variantName;
+  double buyingPrice;
   double sellingPrice;
   double quantity;
   String unit;
-  String? imagePath;
+  String imagePath;
+  bool manageStock;
 
   ProductVariant({
     this.id,
     required this.productId,
-    this.variantName,
-    this.costPrice = 0.0,
+    required this.variantName,
+    required this.buyingPrice,
     required this.sellingPrice,
     required this.quantity,
-    this.unit = 'Kg',
-    this.imagePath,
+    required this.unit,
+    required this.imagePath,
+    this.manageStock = true,
   });
 
   Map<String, dynamic> toJson() {
@@ -24,11 +26,12 @@ class ProductVariant {
       'id': id,
       'product_id': productId,
       'variant_name': variantName,
-      'cost_price': costPrice,
+      'buying_price': buyingPrice,
       'selling_price': sellingPrice,
       'quantity': quantity,
       'unit': unit,
       'image_path': imagePath,
+      'manage_stock': manageStock ? 1 : 0,
     };
   }
 
@@ -36,15 +39,16 @@ class ProductVariant {
     return ProductVariant(
       id: json['id'] as int?,
       productId: json['product_id'] as int,
-      variantName: json['variant_name'] as String?,
-      costPrice: (json['cost_price'] as num?)?.toDouble() ?? 0.0,
+      variantName: json['variant_name'] as String,
+      buyingPrice: (json['buying_price'] as num).toDouble(),
       sellingPrice: (json['selling_price'] as num).toDouble(),
       quantity: (json['quantity'] as num).toDouble(),
-      unit: json['unit'] as String? ?? 'Kg',
-      imagePath: json['image_path'] as String?,
+      unit: json['unit'] as String,
+      imagePath: json['image_path'] as String,
+      manageStock: (json['manage_stock'] as int? ?? 1) == 1,
     );
   }
 
-  double get profit => sellingPrice - costPrice;
-  double get profitMargin => costPrice > 0 ? ((profit / costPrice) * 100) : 0;
+  double get profit => sellingPrice - buyingPrice;
+  double get profitMargin => buyingPrice > 0 ? ((profit / buyingPrice) * 100) : 0;
 }

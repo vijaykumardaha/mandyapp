@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:mandyapp/dao/cart_dao.dart';
 import 'package:mandyapp/models/cart_model.dart';
-import 'package:mandyapp/models/cart_item_model.dart';
+import 'package:mandyapp/models/item_sale_model.dart';
 
 part 'cart_event.dart';
 part 'cart_state.dart';
@@ -15,8 +15,8 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<LoadCarts>((event, emit) async {
       try {
         emit(CartLoading());
-        // Use default user ID = 1
-        final cart = await cartDAO.getCartsByUser(1);
+        // Use default customer ID = 1
+        final cart = await cartDAO.getCartsByCustomer(1);
         if (cart.isEmpty) {
           emit(CartEmpty());
         } else {
@@ -24,21 +24,6 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         }
       } catch (error) {
         emit(CartError('Failed to load carts: ${error.toString()}'));
-      }
-    });
-
-    // Load carts by user
-    on<LoadCartsByUser>((event, emit) async {
-      try {
-        emit(CartLoading());
-        final carts = await cartDAO.getCartsByUser(event.userId);
-        if (carts.isEmpty) {
-          emit(CartEmpty());
-        } else {
-          emit(CartsLoaded(carts));
-        }
-      } catch (error) {
-        emit(CartError('Failed to load user carts: ${error.toString()}'));
       }
     });
 
@@ -71,21 +56,6 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         }
       } catch (error) {
         emit(CartError('Failed to load cart: ${error.toString()}'));
-      }
-    });
-
-    // Load open cart for user
-    on<LoadOpenCart>((event, emit) async {
-      try {
-        emit(CartLoading());
-        final cart = await cartDAO.getOpenCartForUser(event.userId);
-        if (cart != null) {
-          emit(CartsLoaded([cart]));
-        } else {
-          emit(CartEmpty());
-        }
-      } catch (error) {
-        emit(CartError('Failed to load open cart: ${error.toString()}'));
       }
     });
 
@@ -148,7 +118,10 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         await cartDAO.updateCartItem(event.item);
         // Reload carts to get updated items
         add(LoadCarts());
-        add(LoadCartById(event.item.cartId));
+        final cartId = event.item.buyerCartId;
+        if (cartId != null) {
+          add(LoadCartById(cartId));
+        }
       } catch (error) {
         emit(CartError('Failed to update item: ${error.toString()}'));
       }
@@ -160,7 +133,10 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         await cartDAO.deleteCartItem(event.item.id!);
         // Reload carts to get updated items
         add(LoadCarts());
-        add(LoadCartById(event.item.cartId));
+        final cartId = event.item.buyerCartId;
+        if (cartId != null) {
+          add(LoadCartById(cartId));
+        }
       } catch (error) {
         emit(CartError('Failed to remove item: ${error.toString()}'));
       }

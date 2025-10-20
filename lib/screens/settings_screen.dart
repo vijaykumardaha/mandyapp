@@ -65,6 +65,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 context.push('/charges');
               },
             ),
+            _buildSettingsTile(
+              icon: Icons.people_outline,
+              title: 'Customers',
+              onTap: () {
+                context.push('/customers');
+              },
+            ),
+            _buildSettingsTile(
+              icon: Icons.inventory,
+              title: 'Stock',
+              onTap: () {
+                context.push('/stock');
+              },
+            ),
+            _buildSettingsTile(
+              icon: Icons.print_outlined,
+              title: 'Printer',
+              onTap: () {
+                context.push('/printer-settings');
+              },
+            ),
             
             MySpacing.height(24),
             

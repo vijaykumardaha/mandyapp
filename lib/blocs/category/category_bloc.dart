@@ -25,8 +25,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         emit(CategoryLoading());
         await categoryDAO.insertCategory(event.category);
         final categories = await categoryDAO.getAllCategories();
-        emit(CategoryLoaded(categories));
-        emit(const CategoryOperationSuccess('Category added successfully'));
+        emit(CategoryOperationSuccess(categories, 'Category added successfully'));
       } catch (error) {
         emit(CategoryError('Failed to add category: ${error.toString()}'));
       }
@@ -37,8 +36,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         emit(CategoryLoading());
         await categoryDAO.updateCategory(event.category);
         final categories = await categoryDAO.getAllCategories();
-        emit(CategoryLoaded(categories));
-        emit(const CategoryOperationSuccess('Category updated successfully'));
+        emit(CategoryOperationSuccess(categories, 'Category updated successfully'));
       } catch (error) {
         emit(CategoryError('Failed to update category: ${error.toString()}'));
       }
@@ -49,8 +47,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         emit(CategoryLoading());
         await categoryDAO.deleteCategory(event.id);
         final categories = await categoryDAO.getAllCategories();
-        emit(CategoryLoaded(categories));
-        emit(const CategoryOperationSuccess('Category deleted successfully'));
+        emit(CategoryOperationSuccess(categories, 'Category deleted successfully'));
       } catch (error) {
         emit(CategoryError('Failed to delete category: ${error.toString()}'));
       }

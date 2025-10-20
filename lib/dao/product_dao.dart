@@ -13,7 +13,7 @@ class ProductDAO {
 
   Future<List<Product>> getAllProducts() async {
     final db = await dbHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query('products', orderBy: 'name ASC');
+    final List<Map<String, dynamic>> maps = await db.query('products');
     return List.generate(maps.length, (i) => Product.fromJson(maps[i]));
   }
 
@@ -23,7 +23,6 @@ class ProductDAO {
       'products',
       where: 'category_id = ?',
       whereArgs: [categoryId],
-      orderBy: 'name ASC',
     );
     return List.generate(maps.length, (i) => Product.fromJson(maps[i]));
   }
@@ -51,6 +50,16 @@ class ProductDAO {
     );
   }
 
+  Future<int> updateDefaultVariant(int productId, int? variantId) async {
+    final db = await dbHelper.database;
+    return await db.update(
+      'products',
+      {'default_variant': variantId},
+      where: 'id = ?',
+      whereArgs: [productId],
+    );
+  }
+
   Future<int> deleteProduct(int id) async {
     final db = await dbHelper.database;
     return await db.delete(
@@ -60,20 +69,10 @@ class ProductDAO {
     );
   }
 
-  Future<int> updateProductQuantity(int id, double quantity) async {
-    final db = await dbHelper.database;
-    return await db.update(
-      'products',
-      {'quantity': quantity},
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
   Future<List<Product>> getAllProductsWithVariants() async {
     final db = await dbHelper.database;
-    final List<Map<String, dynamic>> productMaps = await db.query('products', orderBy: 'name ASC');
-    
+    final List<Map<String, dynamic>> productMaps = await db.query('products');
+
     List<Product> products = [];
     for (var productMap in productMaps) {
       final productId = productMap['id'] as int?;
@@ -87,12 +86,18 @@ class ProductDAO {
         );
         if (variantMaps.isNotEmpty) {
           variants = variantMaps.map((map) => ProductVariant.fromJson(map)).toList();
+          variants.sort((a, b) => a.variantName.compareTo(b.variantName));
         }
       }
-      
+
       products.add(Product.fromJson(productMap, variants: variants));
     }
-    
+
+    products.sort((a, b) {
+      final aName = a.defaultVariantModel?.variantName.toLowerCase() ?? '';
+      final bName = b.defaultVariantModel?.variantName.toLowerCase() ?? '';
+      return aName.compareTo(bName);
+    });
     return products;
   }
 
@@ -102,9 +107,8 @@ class ProductDAO {
       'products',
       where: 'category_id = ?',
       whereArgs: [categoryId],
-      orderBy: 'name ASC',
     );
-    
+
     List<Product> products = [];
     for (var productMap in productMaps) {
       final productId = productMap['id'] as int?;
@@ -118,12 +122,18 @@ class ProductDAO {
         );
         if (variantMaps.isNotEmpty) {
           variants = variantMaps.map((map) => ProductVariant.fromJson(map)).toList();
+          variants.sort((a, b) => a.variantName.compareTo(b.variantName));
         }
       }
-      
+
       products.add(Product.fromJson(productMap, variants: variants));
     }
-    
+
+    products.sort((a, b) {
+      final aName = a.defaultVariantModel?.variantName.toLowerCase() ?? '';
+      final bName = b.defaultVariantModel?.variantName.toLowerCase() ?? '';
+      return aName.compareTo(bName);
+    });
     return products;
   }
 }

@@ -51,7 +51,7 @@ class CompleteCheckout extends CheckoutEvent {
 
 // Update cart item (for increment/decrement in checkout)
 class UpdateCheckoutItem extends CheckoutEvent {
-  final CartItem item;
+  final ItemSale item;
 
   const UpdateCheckoutItem(this.item);
 
@@ -61,7 +61,7 @@ class UpdateCheckoutItem extends CheckoutEvent {
 
 // Remove item from cart (for removing items in checkout)
 class RemoveCheckoutItem extends CheckoutEvent {
-  final CartItem item;
+  final ItemSale item;
 
   const RemoveCheckoutItem(this.item);
 

@@ -7,7 +7,7 @@ class Info {
       {GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey,
       BuildContext? context,
       Duration? duration,
-      SnackBarBehavior snackBarBehavior = SnackBarBehavior.fixed}) {
+      SnackBarBehavior snackBarBehavior = SnackBarBehavior.floating}) {
     duration ??= Duration(seconds: 3);
     ThemeData theme = AppTheme.theme;
 
@@ -19,6 +19,7 @@ class Info {
       ),
       backgroundColor: theme.colorScheme.primary,
       behavior: snackBarBehavior,
+      margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
     );
 
     if (scaffoldMessengerKey != null) {
@@ -32,7 +33,7 @@ class Info {
       {GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey,
       BuildContext? context,
       Duration? duration,
-      SnackBarBehavior snackBarBehavior = SnackBarBehavior.fixed}) {
+      SnackBarBehavior snackBarBehavior = SnackBarBehavior.floating}) {
     duration ??= Duration(seconds: 3);
     ThemeData theme = AppTheme.theme;
 
@@ -44,6 +45,7 @@ class Info {
       ),
       backgroundColor: theme.colorScheme.error,
       behavior: snackBarBehavior,
+      margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
     );
 
     if (scaffoldMessengerKey != null) {
