@@ -15,12 +15,11 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<LoadCarts>((event, emit) async {
       try {
         emit(CartLoading());
-        // Use default customer ID = 1
-        final cart = await cartDAO.getCartsByCustomer(1);
-        if (cart.isEmpty) {
+        final carts = await cartDAO.getAllCarts();
+        if (carts.isEmpty) {
           emit(CartEmpty());
         } else {
-          emit(CartsLoaded(cart));
+          emit(CartsLoaded(carts));
         }
       } catch (error) {
         emit(CartError('Failed to load carts: ${error.toString()}'));

@@ -160,7 +160,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final quantityController = TextEditingController(text: variant != null ? variant.quantity.toString() : '');
     String selectedUnit = variant?.unit ?? 'Kg';
     String imagePath = variant?.imagePath ?? '';
-    bool manageStock = variant?.manageStock ?? true;
+    bool manageStock = variant?.manageStock ?? false;
     final ImagePicker imagePicker = ImagePicker();
 
     showDialog(

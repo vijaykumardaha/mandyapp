@@ -268,6 +268,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const Icon(Icons.arrow_back_ios_new),
+              label: const Text('Back'),
+            ),
+          ),
+        ),
+      ),
       body: BlocBuilder<CheckoutBloc, CheckoutState>(
         builder: (context, state) {
           if (state is CheckoutLoading) {

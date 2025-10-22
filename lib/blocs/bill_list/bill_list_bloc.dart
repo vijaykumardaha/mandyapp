@@ -23,6 +23,7 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
     required this.chargesBloc,
   }) : super(BillListInitial()) {
     on<LoadBillSummaries>(_onLoadBillSummaries);
+    on<DeleteBillRequested>(_onDeleteBillRequested);
   }
 
   Future<void> _onLoadBillSummaries(
@@ -127,6 +128,7 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
           totalAmount: totalAmount,
           billNumber: cart.id,
           status: cart.status,
+          billType: cart.cartFor,
         ),
       );
     }
@@ -143,5 +145,22 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
         totalPending: totalPending,
       ),
     );
+  }
+
+  Future<void> _onDeleteBillRequested(
+    DeleteBillRequested event,
+    Emitter<BillListState> emit,
+  ) async {
+    try {
+      await cartBloc.cartDAO.deleteCart(event.bill.cartId);
+
+      chargesBloc.add(LoadCharges());
+      paymentBloc.add(const LoadCartPayments());
+      cartBloc.add(LoadCarts());
+
+      add(const LoadBillSummaries(forceRefresh: true));
+    } catch (error) {
+      emit(BillListError('Failed to delete bill: ${error.toString()}'));
+    }
   }
 }

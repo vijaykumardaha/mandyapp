@@ -158,6 +158,7 @@ class DBHelper {
             buyer_id INTEGER,
             product_id INTEGER NOT NULL,
             variant_id INTEGER NOT NULL,
+            stock_id INTEGER,
             buying_price REAL DEFAULT 0.0,
             selling_price REAL NOT NULL,
             quantity REAL NOT NULL,

@@ -38,6 +38,36 @@ class ProductStockDAO {
     return maps.map((m) => ProductStock.fromJson(m)).toList();
   }
 
+  Future<ProductStock?> getStockForVariant({
+    required int productId,
+    required int variantId,
+  }) async {
+    final db = await dbHelper.database;
+    final maps = await db.query(
+      'product_stocks',
+      where: 'product_id = ? AND variant_id = ? COLLATE NOCASE',
+      whereArgs: [
+        productId.toString(),
+        variantId.toString(),
+      ],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return ProductStock.fromJson(maps.first);
+  }
+
+  Future<ProductStock?> getStockById(int id) async {
+    final db = await dbHelper.database;
+    final maps = await db.query(
+      'product_stocks',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return ProductStock.fromJson(maps.first);
+  }
+
   Future<int> deleteStock(int id) async {
     final db = await dbHelper.database;
     return db.delete(

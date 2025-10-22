@@ -8,7 +8,7 @@ import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_bottom_navigation_bar.dart';
 import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/screens/ai_chat_screen.dart';
+import 'package:mandyapp/screens/home_tab_screen.dart';
 import 'package:mandyapp/screens/reports_screen.dart';
 import 'package:mandyapp/screens/selling_screen.dart';
 import 'package:mandyapp/screens/settings_screen.dart';
@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<Widget> get _screens => [
-        const AIChatScreen(),
+        const HomeTabScreen(),
         const ReportsScreen(),
         const SellingScreen(),
         const BillListScreen(),
@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const TabItem(
         icon: Icons.qr_code,
         activeIcon: Icons.qr_code_outlined,
-        title: "AI Chat"),
+        title: "Home"),
     const TabItem(
         icon: Icons.bar_chart,
         activeIcon: Icons.bar_chart_outlined,

@@ -9,6 +9,7 @@ class BillSummary {
   final double totalAmount;
   final int? billNumber;
   final String status;
+  final String billType;
 
   const BillSummary({
     required this.cartId,
@@ -21,6 +22,7 @@ class BillSummary {
     required this.totalAmount,
     this.billNumber,
     this.status = 'open',
+    this.billType = 'buyer',
   });
 
   double get totalCollected => receiveAmount;

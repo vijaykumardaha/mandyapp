@@ -17,3 +17,12 @@ class LoadBillSummaries extends BillListEvent {
   @override
   List<Object?> get props => [forceRefresh, statusFilter, customerId];
 }
+
+class DeleteBillRequested extends BillListEvent {
+  final BillSummary bill;
+
+  const DeleteBillRequested(this.bill);
+
+  @override
+  List<Object?> get props => [bill];
+}
