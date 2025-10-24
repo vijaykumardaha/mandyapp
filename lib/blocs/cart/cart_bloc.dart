@@ -117,9 +117,15 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         await cartDAO.updateCartItem(event.item);
         // Reload carts to get updated items
         add(LoadCarts());
-        final cartId = event.item.buyerCartId;
+
+        // Determine cart ID based on cart type
+        final cartId = event.item.sellerCartId ?? event.item.buyerCartId;
         if (cartId != null) {
-          add(LoadCartById(cartId));
+          // Get cart to determine its type
+          final cart = await cartDAO.getCartById(cartId);
+          if (cart != null) {
+            add(LoadCartById(cartId));
+          }
         }
       } catch (error) {
         emit(CartError('Failed to update item: ${error.toString()}'));
@@ -132,9 +138,15 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         await cartDAO.deleteCartItem(event.item.id!);
         // Reload carts to get updated items
         add(LoadCarts());
-        final cartId = event.item.buyerCartId;
+
+        // Determine cart ID based on cart type
+        final cartId = event.item.sellerCartId ?? event.item.buyerCartId;
         if (cartId != null) {
-          add(LoadCartById(cartId));
+          // Get cart to determine its type
+          final cart = await cartDAO.getCartById(cartId);
+          if (cart != null) {
+            add(LoadCartById(cartId));
+          }
         }
       } catch (error) {
         emit(CartError('Failed to remove item: ${error.toString()}'));

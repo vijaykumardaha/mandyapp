@@ -133,7 +133,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
           emit(CheckoutDataLoaded(updatedCart, _products, _variants));
         } else {
-          final cartId = event.item.buyerCartId;
+          // Determine cart ID based on cart type
+          final cartId = event.item.sellerCartId ?? event.item.buyerCartId;
           if (cartId != null) {
             add(LoadCheckoutCart(cartId));
           }
@@ -147,8 +148,11 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     on<RemoveCheckoutItem>((event, emit) async {
       try {
         await cartDAO.deleteCartItem(event.item.id!);
-        // Reload current cart to get updated items
-        add(LoadCheckoutCart(event.item.buyerCartId!));
+        // Determine cart ID based on cart type and reload current cart
+        final cartId = event.item.sellerCartId ?? event.item.buyerCartId;
+        if (cartId != null) {
+          add(LoadCheckoutCart(cartId));
+        }
       } catch (error) {
         emit(CheckoutError('Failed to remove item: ${error.toString()}'));
       }

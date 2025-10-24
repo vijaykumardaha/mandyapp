@@ -6,6 +6,7 @@ class BillSummary {
   final double chargesTotal;
   final double receiveAmount;
   final double pendingAmount;
+  final double pendingPayment;
   final double totalAmount;
   final int? billNumber;
   final String status;
@@ -19,6 +20,7 @@ class BillSummary {
     required this.chargesTotal,
     required this.receiveAmount,
     required this.pendingAmount,
+    required this.pendingPayment,
     required this.totalAmount,
     this.billNumber,
     this.status = 'open',
@@ -32,4 +34,23 @@ class BillSummary {
   bool get isOpen => status.toLowerCase() == 'open';
 
   bool get isCompleted => status.toLowerCase() == 'completed';
+
+  // Payment status based on cart type and pending amounts
+  String get paymentStatus {
+    if (billType == 'seller') {
+      // For seller bills, check if payment is fully received
+      return pendingPayment <= 0 ? 'Paid' : 'Unpaid';
+    } else {
+      // For buyer bills, check if all amount is collected
+      return pendingAmount <= 0 ? 'Paid' : 'Unpaid';
+    }
+  }
+
+  bool get isPaid {
+    return paymentStatus == 'Paid';
+  }
+
+  bool get isUnpaid {
+    return paymentStatus == 'Unpaid';
+  }
 }

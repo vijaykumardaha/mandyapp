@@ -74,9 +74,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
+    // Get cart from CheckoutBloc to check cartFor
+    final checkoutState = context.read<CheckoutBloc>().state;
+    if (checkoutState is! CheckoutDataLoaded) {
+      return;
+    }
+    final cart = checkoutState.cart;
+
     final Map<pms.PaymentMethod, double> initialAmounts = {};
 
     void addMethod(pms.PaymentMethod method, bool flag, double amount) {
+      // Skip credit payment for seller carts
+      if (method == pms.PaymentMethod.credit && cart.cartFor == 'seller') {
+        return;
+      }
       if (flag || amount > 0) {
         initialAmounts[method] = amount; // allow zero to show explicitly
       }
@@ -227,7 +238,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
 
     double receivedAmount = _paymentAmounts.values.fold(0.0, (sum, amount) => sum + amount);
-    double pendingAmount = (subtotal + chargesTotal) - receivedAmount;
+    double grandTotal = cart.cartFor == 'seller'
+        ? subtotal - chargesTotal
+        : subtotal + chargesTotal;
+    double pendingAmount = grandTotal - receivedAmount;
+
+    // Calculate paymentAmount and pendingPayment based on cart type
+    double paymentAmount, pendingPayment;
+    if (cart.cartFor == 'seller') {
+      // For seller carts: paymentAmount is the amount to be paid to seller
+      paymentAmount = grandTotal;
+      // pendingPayment is the amount still owed to seller
+      pendingPayment = paymentAmount - receivedAmount;
+    } else {
+      // For buyer carts: paymentAmount is the amount received
+      paymentAmount = receivedAmount;
+      // pendingPayment is the remaining amount to be paid
+      pendingPayment = pendingAmount;
+    }
 
     CartPayment? existingPayment = _currentPayment ??
         await _cartPaymentDAO.getCartPaymentByCartId(cart.id);
@@ -240,10 +268,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       chargesTotal: chargesTotal,
       receiveAmount: receivedAmount,
       pendingAmount: pendingAmount,
+      pendingPayment: pendingPayment,
+      paymentAmount: paymentAmount,
       cashPayment: _paymentAmounts.containsKey(pms.PaymentMethod.cash) && (_paymentAmounts[pms.PaymentMethod.cash] ?? 0) > 0,
       upiPayment: _paymentAmounts.containsKey(pms.PaymentMethod.upi) && (_paymentAmounts[pms.PaymentMethod.upi] ?? 0) > 0,
       cardPayment: _paymentAmounts.containsKey(pms.PaymentMethod.card) && (_paymentAmounts[pms.PaymentMethod.card] ?? 0) > 0,
-      creditPayment: _paymentAmounts.containsKey(pms.PaymentMethod.credit) && (_paymentAmounts[pms.PaymentMethod.credit] ?? 0) > 0,
+      creditPayment: cart.cartFor != 'seller' && _paymentAmounts.containsKey(pms.PaymentMethod.credit) && (_paymentAmounts[pms.PaymentMethod.credit] ?? 0) > 0,
       cashAmount: _paymentAmounts[pms.PaymentMethod.cash] ?? 0.0,
       upiAmount: _paymentAmounts[pms.PaymentMethod.upi] ?? 0.0,
       cardAmount: _paymentAmounts[pms.PaymentMethod.card] ?? 0.0,
@@ -735,11 +765,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           }
         }
 
-        double grandTotal = subtotal + chargesTotal;
+        double grandTotal = cart.cartFor == 'seller'
+            ? subtotal - chargesTotal
+            : subtotal + chargesTotal;
 
         // Calculate received amount from payment methods
         double receivedAmount = _paymentAmounts.values.fold(0.0, (sum, amount) => sum + amount);
         double pendingAmount = grandTotal - receivedAmount;
+
+        // Calculate paymentAmount and pendingPayment based on cart type
+        double paymentAmount, pendingPayment;
+        if (cart.cartFor == 'seller') {
+          // For seller carts: paymentAmount is the amount to be paid to seller
+          paymentAmount = grandTotal;
+          // pendingPayment is the amount still owed to seller
+          pendingPayment = paymentAmount - receivedAmount;
+        } else {
+          // For buyer carts: paymentAmount is the amount received
+          paymentAmount = receivedAmount;
+          // pendingPayment is the remaining amount to be paid
+          pendingPayment = pendingAmount;
+        }
 
         return Container(
           padding: MySpacing.all(0),
@@ -775,12 +821,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     _summaryRow('Item Totals', subtotal, context),
                     _summaryRow('Charge Total', chargesTotal, context),
                     _summaryRow('Grand Total', grandTotal, context, emphasized: true),
-                    _summaryRow('Received Amount', receivedAmount, context, valueColor: Colors.green),
                     _summaryRow(
-                      pendingAmount >= 0 ? 'Pending Amount' : 'Pending Due',
-                      pendingAmount.abs(),
+                      cart.cartFor == 'seller' ? 'Amount Owed' : 'Payment Amount',
+                      paymentAmount,
                       context,
-                      valueColor: pendingAmount > 0 ? Colors.orange : Colors.green,
+                      valueColor: Colors.blue,
+                    ),
+                    _summaryRow(
+                      cart.cartFor == 'seller' ? 'Amount Received' : 'Received Amount',
+                      receivedAmount,
+                      context,
+                      valueColor: Colors.green,
+                    ),
+                    _summaryRow(
+                      cart.cartFor == 'seller' ? 'Amount Pending' : (pendingPayment >= 0 ? 'Pending Payment' : 'Payment Due'),
+                      pendingPayment.abs(),
+                      context,
+                      valueColor: pendingPayment > 0 ? Colors.orange : Colors.green,
                     ),
                   ],
                 ),
@@ -789,6 +846,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               pms.PaymentMethodSelector(
                 selectedPaymentMethods: _selectedPaymentMethods,
                 paymentAmounts: _paymentAmounts,
+                cartFor: cart.cartFor,
                 onSelectionChanged: (selectedMethods, paymentAmounts) {
                   setState(() {
                     _selectedPaymentMethods = selectedMethods;

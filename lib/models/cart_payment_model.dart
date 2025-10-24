@@ -5,6 +5,8 @@ class CartPayment {
   double chargesTotal;
   double receiveAmount;
   double pendingAmount;
+  double pendingPayment;
+  double paymentAmount;
   bool cashPayment; // 1 = yes, 0 = no
   bool upiPayment; // 1 = yes, 0 = no
   bool cardPayment; // 1 = yes, 0 = no
@@ -22,6 +24,8 @@ class CartPayment {
     required this.chargesTotal,
     required this.receiveAmount,
     required this.pendingAmount,
+    required this.pendingPayment,
+    required this.paymentAmount,
     required this.cashPayment,
     required this.upiPayment,
     required this.cardPayment,
@@ -42,6 +46,8 @@ class CartPayment {
       'charges_total': chargesTotal,
       'receive_amount': receiveAmount,
       'pending_amount': pendingAmount,
+      'pending_payment': pendingPayment,
+      'payment_amount': paymentAmount,
       'cash_payment': cashPayment ? 1 : 0,
       'upi_payment': upiPayment ? 1 : 0,
       'card_payment': cardPayment ? 1 : 0,
@@ -63,6 +69,8 @@ class CartPayment {
       chargesTotal: (json['charges_total'] as num).toDouble(),
       receiveAmount: (json['receive_amount'] as num).toDouble(),
       pendingAmount: (json['pending_amount'] as num).toDouble(),
+      pendingPayment: (json['pending_payment'] as num?)?.toDouble() ?? 0.0,
+      paymentAmount: (json['payment_amount'] as num).toDouble(),
       cashPayment: (json['cash_payment'] as int) == 1,
       upiPayment: (json['upi_payment'] as int) == 1,
       cardPayment: (json['card_payment'] as int) == 1,
@@ -83,6 +91,8 @@ class CartPayment {
     double? chargesTotal,
     double? receiveAmount,
     double? pendingAmount,
+    double? pendingPayment,
+    double? paymentAmount,
     bool? cashPayment,
     bool? upiPayment,
     bool? cardPayment,
@@ -100,6 +110,8 @@ class CartPayment {
       chargesTotal: chargesTotal ?? this.chargesTotal,
       receiveAmount: receiveAmount ?? this.receiveAmount,
       pendingAmount: pendingAmount ?? this.pendingAmount,
+      pendingPayment: pendingPayment ?? this.pendingPayment,
+      paymentAmount: paymentAmount ?? this.paymentAmount,
       cashPayment: cashPayment ?? this.cashPayment,
       upiPayment: upiPayment ?? this.upiPayment,
       cardPayment: cardPayment ?? this.cardPayment,
@@ -118,9 +130,15 @@ class CartPayment {
   // Helper method to get total amount (item + charges)
   double get totalAmount => itemTotal + chargesTotal;
 
+  // Helper method to get total pending (pendingAmount + pendingPayment)
+  double get totalPending => pendingAmount + pendingPayment;
+
+  // Helper method to check if payment is fully settled
+  bool get isFullyPaid => totalPending <= 0;
+
   @override
   String toString() {
-    return 'CartPayment{id: $id, cartId: $cartId, itemTotal: $itemTotal, chargesTotal: $chargesTotal, receiveAmount: $receiveAmount, pendingAmount: $pendingAmount, totalPaid: $totalPaid}';
+    return 'CartPayment{id: $id, cartId: $cartId, itemTotal: $itemTotal, chargesTotal: $chargesTotal, receiveAmount: $receiveAmount, pendingAmount: $pendingAmount, pendingPayment: $pendingPayment, totalPaid: $totalPaid}';
   }
 
   @override
@@ -133,6 +151,8 @@ class CartPayment {
         other.chargesTotal == chargesTotal &&
         other.receiveAmount == receiveAmount &&
         other.pendingAmount == pendingAmount &&
+        other.pendingPayment == pendingPayment &&
+        other.paymentAmount == paymentAmount &&
         other.cashPayment == cashPayment &&
         other.upiPayment == upiPayment &&
         other.cardPayment == cardPayment &&
@@ -152,6 +172,8 @@ class CartPayment {
         chargesTotal.hashCode ^
         receiveAmount.hashCode ^
         pendingAmount.hashCode ^
+        pendingPayment.hashCode ^
+        paymentAmount.hashCode ^
         cashPayment.hashCode ^
         upiPayment.hashCode ^
         cardPayment.hashCode ^

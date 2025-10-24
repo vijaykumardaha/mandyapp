@@ -29,6 +29,7 @@ class _SellerSaleSelectionSheet extends StatefulWidget {
   final String Function(Customer) formatCustomer;
   final VoidCallback onReload;
   final void Function(ItemSale sale, int index) onDeleteSale;
+  final Future<void> Function(List<ItemSale> selected) onConfirm;
 
   const _SellerSaleSelectionSheet({
     required this.seller,
@@ -36,6 +37,7 @@ class _SellerSaleSelectionSheet extends StatefulWidget {
     required this.formatCustomer,
     required this.onReload,
     required this.onDeleteSale,
+    required this.onConfirm,
   });
 
   @override
@@ -75,7 +77,7 @@ class _SellerSaleSelectionSheetState extends State<_SellerSaleSelectionSheet> {
     });
   }
 
-  void _confirm() {
+  Future<void> _confirm() async {
     final selected = _selectedIndices.map((index) => _sales[index]).toList(growable: false);
     if (selected.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -84,7 +86,8 @@ class _SellerSaleSelectionSheetState extends State<_SellerSaleSelectionSheet> {
       return;
     }
 
-    Navigator.of(context).pop(selected);
+    Navigator.of(context).pop();
+    await widget.onConfirm(selected);
   }
 
   @override
@@ -150,16 +153,6 @@ class _SellerSaleSelectionSheetState extends State<_SellerSaleSelectionSheet> {
                             final isChecked = _selectedIndices.contains(index);
                             final quantityLabel = '${sale.quantity.toStringAsFixed(sale.quantity % 1 == 0 ? 0 : 2)} ${sale.unit}';
 
-                            void handleDelete() {
-                              if (sale.id == null) {
-                                return;
-                              }
-                              setState(() {
-                                _selectedIndices.remove(index);
-                                _sales.removeAt(index);
-                              });
-                              widget.onDeleteSale(sale, index);
-                            }
 
                             return Material(
                               color: Colors.transparent,
@@ -218,13 +211,7 @@ class _SellerSaleSelectionSheetState extends State<_SellerSaleSelectionSheet> {
                                             ),
                                           ],
                                         ),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete_outline),
-                                        tooltip: 'Delete sale',
-                                        color: theme.colorScheme.error,
-                                        onPressed: sale.id == null ? null : handleDelete,
-                                      ),
+                                      )
                                     ],
                                   ),
                                 ),
@@ -333,7 +320,8 @@ class _BillListScreenState extends State<BillListScreen> {
     final itemSaleBloc = context.read<ItemSaleBloc>();
     itemSaleBloc.add(LoadItemSales(sellerId: seller!.id, excludeCartLinked: false));
 
-    final selectedSales = await showModalBottomSheet<List<ItemSale>>(
+    var confirmed = false;
+    await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (context) {
@@ -359,6 +347,13 @@ class _BillListScreenState extends State<BillListScreen> {
                   bloc.add(LoadItemSales(sellerId: seller.id, excludeCartLinked: false));
                 }
               },
+              onConfirm: (selected) async {
+                confirmed = true;
+                if (!mounted) {
+                  return;
+                }
+                await _handleCreateSellerBill(selected, seller);
+              },
             );
           },
         );
@@ -370,13 +365,10 @@ class _BillListScreenState extends State<BillListScreen> {
       return;
     }
 
-    if (selectedSales == null || selectedSales.isEmpty) {
+    if (!confirmed) {
       _resetBillCreationState();
       return;
     }
-
-    // await _handleCreateSellerBill(selectedSales, seller);
-    _resetBillCreationState();
   }
 
   Future<void> _handleCreateSellerBill(List<ItemSale> selectedSales, Customer seller) async {
@@ -757,6 +749,57 @@ class _BillListScreenState extends State<BillListScreen> {
     );
   }
 
+  Widget _buildPaymentSummary(BillListLoaded summary) {
+    final paidBills = summary.bills.where((bill) => bill.isPaid).length;
+    final unpaidBills = summary.bills.where((bill) => bill.isUnpaid).length;
+    final paidAmount = summary.bills.where((bill) => bill.isPaid).fold(0.0, (sum, bill) => sum + bill.receiveAmount);
+    final unpaidAmount = summary.totalPending;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
+        boxShadow: [
+          BoxShadow(
+            color: theme.shadowColor.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MyText.bodyLarge('Payment Summary', fontWeight: 600),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildSummaryCard(
+                  'Paid Bills',
+                  paidBills.toString(),
+                  NumberFormat.currency(locale: 'en_IN', symbol: '₹').format(paidAmount),
+                  Colors.green,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildSummaryCard(
+                  'Unpaid Bills',
+                  unpaidBills.toString(),
+                  NumberFormat.currency(locale: 'en_IN', symbol: '₹').format(unpaidAmount),
+                  Colors.red,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFilterChip(String label, VoidCallback onDeleted) {
     return InputChip(
       label: Text(label),
@@ -764,6 +807,26 @@ class _BillListScreenState extends State<BillListScreen> {
       deleteIcon: const Icon(Icons.close, size: 16),
       backgroundColor: theme.colorScheme.primary.withOpacity(0.12),
       labelStyle: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
+    );
+  }
+
+  Widget _buildSummaryCard(String title, String count, String amount, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MyText.bodySmall(title, color: color, fontWeight: 600),
+          const SizedBox(height: 4),
+          MyText.titleSmall(count, fontWeight: 700, color: color),
+          MyText.bodySmall(amount, color: color.withOpacity(0.8), fontWeight: 500),
+        ],
+      ),
     );
   }
 
@@ -846,6 +909,7 @@ class _BillListScreenState extends State<BillListScreen> {
                       children: [
                         _buildActiveFilters(),
                         const SizedBox(height: 12),
+                        if (summary.bills.isNotEmpty) _buildPaymentSummary(summary),
                       ],
                     ),
                   ),
@@ -969,6 +1033,19 @@ class _BillCard extends StatelessWidget {
         typeColor = theme.colorScheme.secondary;
     }
 
+    // Payment status color
+    Color paymentStatusColor;
+    switch (bill.paymentStatus.toLowerCase()) {
+      case 'paid':
+        paymentStatusColor = Colors.green;
+        break;
+      case 'unpaid':
+        paymentStatusColor = Colors.red;
+        break;
+      default:
+        paymentStatusColor = theme.colorScheme.primary;
+    }
+
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
@@ -1008,6 +1085,19 @@ class _BillCard extends StatelessWidget {
                         child: MyText.bodySmall(
                           'Status: $statusText',
                           color: statusColor,
+                          fontWeight: 600,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: paymentStatusColor.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: MyText.bodySmall(
+                          'Payment: ${bill.paymentStatus}',
+                          color: paymentStatusColor,
                           fontWeight: 600,
                         ),
                       ),

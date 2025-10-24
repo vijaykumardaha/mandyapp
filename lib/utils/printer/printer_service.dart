@@ -185,7 +185,123 @@ class PrinterService {
     await refreshConnectionStatus();
   }
 
+  Future<bool> printInvoice({
+    required int cartId,
+    required String customerName,
+    required String cartType,
+    required List<dynamic> items,
+    required double itemTotal,
+    required double chargesTotal,
+    required double grandTotal,
+    required double receivedAmount,
+    required double pendingAmount,
+    required String paymentMethod,
+  }) async {
+    if (!connectionStatus.value) {
+      statusMessage.value = 'No printer connected';
+      return false;
+    }
+
+    try {
+      statusMessage.value = 'Printing invoice...';
+
+      final StringBuffer invoiceText = StringBuffer();
+
+      // Header
+      invoiceText.writeln(_centerText('INVOICE'));
+      invoiceText.writeln(_centerText('#$cartId'));
+      invoiceText.writeln('');
+
+      // Date and customer info
+      final now = DateTime.now();
+      final dateStr = '${now.day.toString().padLeft(2, '0')}/'
+                     '${now.month.toString().padLeft(2, '0')}/'
+                     '${now.year} ${now.hour.toString().padLeft(2, '0')}:'
+                     '${now.minute.toString().padLeft(2, '0')}';
+
+      invoiceText.writeln('Date: $dateStr');
+      invoiceText.writeln('Customer: $customerName');
+      invoiceText.writeln('Type: ${cartType.toUpperCase()}');
+      invoiceText.writeln('');
+
+      // Items header
+      invoiceText.writeln('Items:');
+      invoiceText.writeln('-' * 32);
+
+      for (final item in items) {
+        invoiceText.writeln(item.productName);
+        invoiceText.writeln('  ${item.quantity} ${item.unit} x ₹${item.price} = ₹${item.total}');
+      }
+
+      invoiceText.writeln('');
+      invoiceText.writeln('-' * 32);
+
+      // Summary
+      invoiceText.writeln('Item Total: ₹${itemTotal.toStringAsFixed(2)}');
+
+      if (chargesTotal > 0) {
+        invoiceText.writeln('Charges: ₹${chargesTotal.toStringAsFixed(2)}');
+      }
+
+      invoiceText.writeln('Grand Total: ₹${grandTotal.toStringAsFixed(2)}');
+      invoiceText.writeln('');
+
+      // Payment info based on cart type
+      if (cartType == 'seller') {
+        invoiceText.writeln('Amount Received: ₹${receivedAmount.toStringAsFixed(2)}');
+        invoiceText.writeln('Amount Pending: ₹${pendingAmount.toStringAsFixed(2)}');
+      } else {
+        invoiceText.writeln('Received Amount: ₹${receivedAmount.toStringAsFixed(2)}');
+        invoiceText.writeln('Pending Amount: ₹${pendingAmount.toStringAsFixed(2)}');
+      }
+
+      if (paymentMethod.isNotEmpty && paymentMethod != 'Not recorded') {
+        invoiceText.writeln('Payment Method: $paymentMethod');
+      }
+
+      invoiceText.writeln('');
+      invoiceText.writeln(_centerText('Thank you!'));
+      invoiceText.writeln('');
+      invoiceText.writeln('');
+
+      final bool result = await PrintBluetoothThermal.writeBytes(invoiceText.toString().codeUnits);
+
+      if (result) {
+        statusMessage.value = 'Invoice printed successfully';
+      } else {
+        statusMessage.value = 'Failed to print invoice';
+      }
+
+      return result;
+    } catch (error) {
+      statusMessage.value = 'Print error: $error';
+      return false;
+    }
+  }
+
+  String _centerText(String text) {
+    const int maxWidth = 32;
+    final int padding = (maxWidth - text.length) ~/ 2;
+    return ' ' * padding + text;
+  }
+
   void clearStatus() {
     statusMessage.value = null;
   }
+}
+
+class InvoiceItem {
+  final String productName;
+  final double quantity;
+  final String unit;
+  final double price;
+  final double total;
+
+  const InvoiceItem({
+    required this.productName,
+    required this.quantity,
+    required this.unit,
+    required this.price,
+    required this.total,
+  });
 }

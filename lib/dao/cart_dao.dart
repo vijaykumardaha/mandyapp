@@ -26,8 +26,9 @@ class CartDAO {
   // Delete a cart
   Future<int> deleteCart(int id) async {
     final db = await dbHelper.database;
+    final cart = await getCartById(id);
     // Delete all cart-linked item sales first
-    await db.delete('item_sales', where: 'buyer_cart_id = ?', whereArgs: [id]);
+    await db.delete('item_sales', where: '${cart?.cartFor == 'seller' ? 'seller_cart_id' : 'buyer_cart_id'} = ?', whereArgs: [id]);
     // Then delete the cart
     return await db.delete('carts', where: 'id = ?', whereArgs: [id]);
   }
@@ -74,7 +75,7 @@ class CartDAO {
     List<Cart> carts = [];
     for (var map in maps) {
       final cart = Cart.fromJson(map);
-      final items = await getCartItems(cart.id);
+      final items = await getCartItems(cart.id, cartFor: cart.cartFor);
       carts.add(cart.copyWith(id: cart.id, items: items, cartFor: cart.cartFor));
     }
     return carts;
@@ -94,7 +95,7 @@ class CartDAO {
     if (maps.isNotEmpty) {
       final cart = Cart.fromJson(maps.first);
       // Load items for this cart
-      final items = await getCartItems(cart.id);
+      final items = await getCartItems(cart.id, cartFor: cart.cartFor);
       return cart.copyWith(items: items, id: DBHelper.generateUuidInt(), cartFor: cart.cartFor);
     }
     return null;
@@ -110,7 +111,8 @@ class CartDAO {
     );
 
     if (cartMaps.isNotEmpty) {
-      final items = await getCartItems(cartId);
+      final cart = Cart.fromJson(cartMaps.first);
+      final items = await getCartItems(cartId, cartFor: cart.cartFor);
       return Cart.fromJson(cartMaps.first, items: items);
     }
     return null;
@@ -175,11 +177,14 @@ class CartDAO {
   }
 
   // Get all item sales for a cart
-  Future<List<ItemSale>> getCartItems(int cartId) async {
+  Future<List<ItemSale>> getCartItems(
+    int cartId, {
+    String? cartFor,
+  }) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'item_sales',
-      where: 'buyer_cart_id = ?',
+      where: '${cartFor == 'seller' ? 'seller_cart_id' : 'buyer_cart_id'} = ?',
       whereArgs: [cartId],
       orderBy: 'created_at ASC',
     );
@@ -190,9 +195,10 @@ class CartDAO {
   // Clear all item sales from a cart
   Future<int> clearCart(int cartId) async {
     final db = await dbHelper.database;
+    final cart = await getCartById(cartId);
     return await db.delete(
       'item_sales',
-      where: 'buyer_cart_id = ?',
+      where: '${cart?.cartFor == 'seller' ? 'seller_cart_id' : 'buyer_cart_id'} = ?',
       whereArgs: [cartId],
     );
   }
@@ -200,9 +206,10 @@ class CartDAO {
   // Get cart item sale by product ID (when variant not specified)
   Future<ItemSale?> getCartItemByProduct(int cartId, int productId) async {
     final db = await dbHelper.database;
+    final cart = await getCartById(cartId);
     final List<Map<String, dynamic>> maps = await db.query(
       'item_sales',
-      where: 'buyer_cart_id = ? AND product_id = ? AND variant_id IS NULL',
+      where: '${cart?.cartFor == 'seller' ? 'seller_cart_id' : 'buyer_cart_id'} = ? AND product_id = ? AND variant_id IS NULL',
       whereArgs: [cartId, productId],
     );
 
@@ -215,9 +222,10 @@ class CartDAO {
   // Get cart item sale by variant ID
   Future<ItemSale?> getCartItemByVariant(int cartId, int variantId) async {
     final db = await dbHelper.database;
+    final cart = await getCartById(cartId);
     final List<Map<String, dynamic>> maps = await db.query(
       'item_sales',
-      where: 'buyer_cart_id = ? AND variant_id = ?',
+      where: '${cart?.cartFor == 'seller' ? 'seller_cart_id' : 'buyer_cart_id'} = ? AND variant_id = ?',
       whereArgs: [cartId, variantId],
     );
 
@@ -230,8 +238,9 @@ class CartDAO {
   // Get total items count in cart
   Future<int> getCartItemCount(int cartId) async {
     final db = await dbHelper.database;
+    final cart = await getCartById(cartId);
     final result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM item_sales WHERE buyer_cart_id = ?',
+      'SELECT COUNT(*) as count FROM item_sales WHERE ${cart?.cartFor == 'seller' ? 'seller_cart_id' : 'buyer_cart_id'} = ?',
       [cartId],
     );
     return Sqflite.firstIntValue(result) ?? 0;

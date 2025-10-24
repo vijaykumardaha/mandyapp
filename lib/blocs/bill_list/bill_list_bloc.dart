@@ -110,7 +110,23 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
       final itemTotal = paymentMatch?.itemTotal ?? cart.totalPrice;
       final chargesTotal = paymentMatch?.chargesTotal ?? 0.0;
       final receiveAmount = paymentMatch?.receiveAmount ?? 0.0;
-      final pendingAmount = paymentMatch?.pendingAmount ?? (itemTotal + chargesTotal);
+
+      // Calculate amounts based on cart type
+      double grandTotal, pendingAmount, pendingPayment;
+      if (cart.cartFor == 'seller') {
+        // For seller carts: grandTotal = subtotal - charges (seller gets less due to charges)
+        grandTotal = itemTotal - chargesTotal;
+        pendingAmount = grandTotal - receiveAmount;
+        // For seller: pendingPayment is the amount still owed to seller
+        pendingPayment = grandTotal - receiveAmount;
+      } else {
+        // For buyer carts: grandTotal = subtotal + charges (buyer pays more due to charges)
+        grandTotal = itemTotal + chargesTotal;
+        pendingAmount = grandTotal - receiveAmount;
+        // For buyer: pendingPayment is the same as pendingAmount
+        pendingPayment = pendingAmount;
+      }
+
       final totalAmount = itemTotal + chargesTotal;
 
       totalSales += receiveAmount;
@@ -125,6 +141,7 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
           chargesTotal: chargesTotal,
           receiveAmount: receiveAmount,
           pendingAmount: pendingAmount,
+          pendingPayment: pendingPayment,
           totalAmount: totalAmount,
           billNumber: cart.id,
           status: cart.status,

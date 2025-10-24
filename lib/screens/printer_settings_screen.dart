@@ -227,7 +227,7 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
           ),
           IconButton(
             icon: Icon(Icons.close, color: theme.colorScheme.error),
-            onPressed: _printerService.clearStatus,
+            onPressed: () => _printerService.clearStatus(),
           ),
         ],
       ),

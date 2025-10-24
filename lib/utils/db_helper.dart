@@ -99,8 +99,13 @@ class DBHelper {
             cart_id INTEGER NOT NULL,
             item_total REAL NOT NULL DEFAULT 0,
             charges_total REAL NOT NULL DEFAULT 0,
+
             receive_amount REAL NOT NULL DEFAULT 0,
             pending_amount REAL NOT NULL DEFAULT 0,
+
+            pending_payment REAL NOT NULL DEFAULT 0,
+            payment_amount REAL NOT NULL DEFAULT 0,
+            
             cash_payment INTEGER NOT NULL DEFAULT 0,   -- 1 = yes, 0 = no
             upi_payment INTEGER NOT NULL DEFAULT 0,    -- 1 = yes, 0 = no
             card_payment INTEGER NOT NULL DEFAULT 0,   -- 1 = yes, 0 = no

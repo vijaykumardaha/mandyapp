@@ -9,12 +9,14 @@ class PaymentMethodSelector extends StatefulWidget {
   final Set<PaymentMethod> selectedPaymentMethods;
   final Map<PaymentMethod, double> paymentAmounts;
   final Function(Set<PaymentMethod>, Map<PaymentMethod, double>) onSelectionChanged;
+  final String? cartFor; // 'seller' or 'buyer' - if seller, hide credit option
 
   const PaymentMethodSelector({
     super.key,
     Set<PaymentMethod>? selectedPaymentMethods,
     Map<PaymentMethod, double>? paymentAmounts,
     required this.onSelectionChanged,
+    this.cartFor,
   }) : selectedPaymentMethods = selectedPaymentMethods ?? const {PaymentMethod.cash},
        paymentAmounts = paymentAmounts ?? const {};
 
@@ -27,10 +29,25 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   late final Map<PaymentMethod, TextEditingController> _controllers;
   late final Map<PaymentMethod, FocusNode> _focusNodes;
 
+  // Get available payment methods based on cart type
+  List<PaymentMethod> get _availablePaymentMethods {
+    final methods = [PaymentMethod.cash, PaymentMethod.upi, PaymentMethod.card];
+    if (widget.cartFor != 'seller') {
+      methods.add(PaymentMethod.credit);
+    }
+    return methods;
+  }
+
   @override
   void initState() {
     super.initState();
     _selectedPaymentMethods = Set.from(widget.selectedPaymentMethods);
+
+    // If cartFor is seller, remove credit payment method if it was selected
+    if (widget.cartFor == 'seller' && _selectedPaymentMethods.contains(PaymentMethod.credit)) {
+      _selectedPaymentMethods.remove(PaymentMethod.credit);
+    }
+
     _controllers = {};
     _focusNodes = {};
     _createControllers();
@@ -40,6 +57,23 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   @override
   void didUpdateWidget(PaymentMethodSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // Handle cartFor changes
+    if (oldWidget.cartFor != widget.cartFor) {
+      if (widget.cartFor == 'seller' && _selectedPaymentMethods.contains(PaymentMethod.credit)) {
+        _selectedPaymentMethods.remove(PaymentMethod.credit);
+        // Clear credit controller and focus node if they exist
+        _controllers[PaymentMethod.credit]?.dispose();
+        _focusNodes[PaymentMethod.credit]?.dispose();
+        _controllers.remove(PaymentMethod.credit);
+        _focusNodes.remove(PaymentMethod.credit);
+        // Remove credit from payment amounts
+        final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
+        updatedAmounts.remove(PaymentMethod.credit);
+        widget.onSelectionChanged(_selectedPaymentMethods, updatedAmounts);
+      }
+    }
+
     if (oldWidget.selectedPaymentMethods != widget.selectedPaymentMethods) {
       _selectedPaymentMethods = Set.from(widget.selectedPaymentMethods);
     }
@@ -49,14 +83,14 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   }
 
   void _createControllers() {
-    for (var method in PaymentMethod.values) {
+    for (var method in _availablePaymentMethods) {
       _controllers[method] = TextEditingController();
       _focusNodes[method] = FocusNode();
     }
   }
 
   void _syncControllersFromWidget() {
-    for (var method in PaymentMethod.values) {
+    for (var method in _availablePaymentMethods) {
       final controller = _controllers[method];
       if (controller == null) continue;
       final focusNode = _focusNodes[method];
@@ -86,6 +120,11 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   }
 
   void _togglePaymentMethod(PaymentMethod method) {
+    // Prevent selecting credit for seller carts
+    if (widget.cartFor == 'seller' && method == PaymentMethod.credit) {
+      return;
+    }
+
     final updatedSelected = Set<PaymentMethod>.from(_selectedPaymentMethods);
     final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
 
@@ -161,13 +200,13 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
           // Payment Method Selection Row
           Row(
             children: [
-              _buildPaymentMethodOption(PaymentMethod.cash, 'Cash'),
-              MySpacing.width(8),
-              _buildPaymentMethodOption(PaymentMethod.upi, 'UPI'),
-              MySpacing.width(8),
-              _buildPaymentMethodOption(PaymentMethod.card, 'Card'),
-              MySpacing.width(8),
-              _buildPaymentMethodOption(PaymentMethod.credit, 'Credit'),
+              ..._availablePaymentMethods.map((method) {
+                final label = _getPaymentMethodLabel(method);
+                return [
+                  _buildPaymentMethodOption(method, label),
+                  if (method != _availablePaymentMethods.last) MySpacing.width(8),
+                ];
+              }).expand((element) => element),
             ],
           ),
 
@@ -176,7 +215,9 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             MySpacing.height(16),
             Divider(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
             MySpacing.height(12),
-            ..._selectedPaymentMethods.map((method) => Padding(
+            ..._selectedPaymentMethods
+                .where((method) => _availablePaymentMethods.contains(method))
+                .map((method) => Padding(
               padding: MySpacing.bottom(12),
               child: Row(
                 children: [

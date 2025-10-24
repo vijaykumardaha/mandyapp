@@ -15,6 +15,7 @@ import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/screens/checkout_screen.dart';
+import 'package:mandyapp/utils/printer/printer_service.dart' as printer_service;
 
 class BillDetailsScreen extends StatefulWidget {
   final int cartId;
@@ -23,6 +24,22 @@ class BillDetailsScreen extends StatefulWidget {
 
   @override
   State<BillDetailsScreen> createState() => _BillDetailsScreenState();
+}
+
+class InvoiceItem {
+  final String productName;
+  final double quantity;
+  final String unit;
+  final double price;
+  final double total;
+
+  const InvoiceItem({
+    required this.productName,
+    required this.quantity,
+    required this.unit,
+    required this.price,
+    required this.total,
+  });
 }
 
 class _BillDetailsScreenState extends State<BillDetailsScreen> {
@@ -52,6 +69,80 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     });
   }
 
+  Future<void> _handlePrint(_BillDetailsData data) async {
+    final printerService = printer_service.PrinterService.instance;
+
+    // Check if printer is connected
+    if (!printerService.connectionStatus.value) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No printer connected. Please connect a printer first.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Check if Bluetooth is enabled
+    if (!printerService.bluetoothEnabled.value) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bluetooth is not enabled. Please enable Bluetooth.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Show loading indicator
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Printing invoice...'),
+          backgroundColor: Colors.blue,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+
+    // Convert line items to invoice items
+    final invoiceItems = data.lineItems.map((item) => InvoiceItem(
+      productName: item.productName,
+      quantity: item.sale.quantity,
+      unit: item.unitLabel.isNotEmpty ? item.unitLabel : 'pc',
+      price: item.sellingPrice,
+      total: item.totalPrice,
+    )).toList();
+
+    // Print the invoice
+    final success = await printerService.printInvoice(
+      cartId: data.cart.id,
+      customerName: data.customerName,
+      cartType: data.cart.cartFor,
+      items: invoiceItems,
+      itemTotal: data.itemTotal,
+      chargesTotal: data.chargesTotal,
+      grandTotal: data.grandTotal,
+      receivedAmount: data.receivedAmount,
+      pendingAmount: data.pendingPayment,
+      paymentMethod: data.paymentMethodLabel,
+    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success ? 'Invoice printed successfully!' : 'Failed to print invoice. Please try again.'),
+          backgroundColor: success ? Colors.green : Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
   Future<_BillDetailsData> _loadBillDetails() async {
     final cartDAO = CartDAO();
     final cartPaymentDAO = CartPaymentDAO();
@@ -65,7 +156,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       throw StateError('Cart not found');
     }
 
-    final items = cart.items ?? await cartDAO.getCartItems(cart.id);
+    final items = cart.items ?? await cartDAO.getCartItems(cart.id, cartFor: cart.cartFor);
     final payment = await cartPaymentDAO.getCartPaymentByCartId(cart.id);
     final charges = await cartChargeDAO.getCartCharges(cart.id.toString());
     final customers = await customerDAO.getCustomers();
@@ -93,6 +184,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       payment: payment,
       lineItems: lineItems,
       charges: charges,
+      customerById: customerById,
     );
   }
 
@@ -213,7 +305,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                                   Expanded(
                                     flex: 3,
                                     child: _buildInfoMetric(
-                                      'Received',
+                                      data.cart.cartFor == 'seller' ? 'Amount Received' : 'Received Amount',
                                       currency.format(data.receivedAmount),
                                       theme,
                                       valueColor: theme.colorScheme.primary,
@@ -223,7 +315,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                                   Expanded(
                                     flex: 3,
                                     child: _buildInfoMetric(
-                                      data.outstandingAmount >= 0 ? 'Pending' : 'Change Due',
+                                      data.cart.cartFor == 'seller' ? 'Amount Pending' : 'Pending Amount',
                                       currency.format(data.outstandingAmount.abs()),
                                       theme,
                                       valueColor: data.outstandingAmount > 0
@@ -282,7 +374,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
             icon: Icons.print,
             label: 'Print',
             color: Colors.orange,
-            onPressed: () {},
+            onPressed: () => _handlePrint(data),
           ),
         ),
       ],
@@ -456,12 +548,15 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
 
   Widget _buildSummarySection(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
     final rows = <MapEntry<String, String>>[
-      MapEntry('Subtotal', currency.format(data.subtotal)),
+      MapEntry('Item Total', currency.format(data.itemTotal)),
       if (data.chargesTotal > 0) MapEntry('Charge Total', currency.format(data.chargesTotal)),
       MapEntry('Grand Total', currency.format(data.grandTotal)),
-      MapEntry('Received', currency.format(data.receivedAmount)),
       MapEntry(
-        data.outstandingAmount >= 0 ? 'Pending' : 'Change Due',
+        data.cart.cartFor == 'seller' ? 'Amount Received' : 'Received Amount',
+        currency.format(data.receivedAmount),
+      ),
+      MapEntry(
+        data.cart.cartFor == 'seller' ? 'Amount Pending' : 'Pending Amount',
         currency.format(data.outstandingAmount.abs()),
       ),
     ];
@@ -514,9 +609,9 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                       child: MyText.bodyMedium(
                         entry.value,
                         fontWeight: entry.key == 'Grand Total' ? 700 : 600,
-                        color: entry.key == 'Pending'
+                        color: (entry.key.contains('Pending') || entry.key.contains('Amount Pending'))
                             ? Colors.orange
-                            : (entry.key == 'Change Due' ? Colors.green : null),
+                            : (entry.key.contains('Amount Received') || entry.key.contains('Received') ? theme.colorScheme.primary : null),
                       ),
                     ),
                   ),
@@ -593,17 +688,26 @@ class _BillDetailsData {
   final CartPayment? payment;
   final List<_BillLineItem> lineItems;
   final List<CartCharge> charges;
+  final Map<int, Customer> customerById;
 
   const _BillDetailsData({
     required this.cart,
     required this.payment,
     required this.lineItems,
     required this.charges,
+    required this.customerById,
   });
+
+  String get customerName {
+    final customer = customerById[cart.customerId];
+    return customer?.name?.trim().isNotEmpty ?? false
+        ? customer!.name!.trim()
+        : 'Customer ${cart.customerId}';
+  }
 
   String get invoiceLabel => 'Invoice #${cart.id}';
 
-  double get subtotal {
+  double get itemTotal {
     return lineItems.fold(0.0, (sum, item) => sum + item.totalPrice);
   }
 
@@ -611,11 +715,39 @@ class _BillDetailsData {
     return charges.fold(0.0, (sum, charge) => sum + charge.chargeAmount);
   }
 
-  double get grandTotal => subtotal + chargesTotal;
+  double get grandTotal {
+    if (cart.cartFor == 'seller') {
+      return itemTotal - chargesTotal;
+    } else {
+      // For buyer carts, use current implementation (subtotal + chargesTotal)
+      return itemTotal + chargesTotal;
+    }
+  }
 
   double get receivedAmount => payment?.receiveAmount ?? 0.0;
 
   double get outstandingAmount => grandTotal - receivedAmount;
+
+  // Calculate paymentAmount and pendingPayment based on cart type
+  double get paymentAmount {
+    if (cart.cartFor == 'seller') {
+      // For seller carts, paymentAmount is the amount to be paid to seller (after deducting charges)
+      return grandTotal;
+    } else {
+      // For buyer carts, paymentAmount is the total amount received
+      return receivedAmount;
+    }
+  }
+
+  double get pendingPayment {
+    if (cart.cartFor == 'seller') {
+      // For seller carts, pendingPayment is the amount still owed to seller
+      return paymentAmount - receivedAmount;
+    } else {
+      // For buyer carts, pendingPayment is the remaining amount to be paid
+      return outstandingAmount;
+    }
+  }
 
   String get paymentMethodLabel {
     if (payment == null) {
