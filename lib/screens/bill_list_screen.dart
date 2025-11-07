@@ -749,57 +749,6 @@ class _BillListScreenState extends State<BillListScreen> {
     );
   }
 
-  Widget _buildPaymentSummary(BillListLoaded summary) {
-    final paidBills = summary.bills.where((bill) => bill.isPaid).length;
-    final unpaidBills = summary.bills.where((bill) => bill.isUnpaid).length;
-    final paidAmount = summary.bills.where((bill) => bill.isPaid).fold(0.0, (sum, bill) => sum + bill.receiveAmount);
-    final unpaidAmount = summary.totalPending;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-        boxShadow: [
-          BoxShadow(
-            color: theme.shadowColor.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          MyText.bodyLarge('Payment Summary', fontWeight: 600),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildSummaryCard(
-                  'Paid Bills',
-                  paidBills.toString(),
-                  NumberFormat.currency(locale: 'en_IN', symbol: '₹').format(paidAmount),
-                  Colors.green,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildSummaryCard(
-                  'Unpaid Bills',
-                  unpaidBills.toString(),
-                  NumberFormat.currency(locale: 'en_IN', symbol: '₹').format(unpaidAmount),
-                  Colors.red,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFilterChip(String label, VoidCallback onDeleted) {
     return InputChip(
       label: Text(label),
@@ -807,26 +756,6 @@ class _BillListScreenState extends State<BillListScreen> {
       deleteIcon: const Icon(Icons.close, size: 16),
       backgroundColor: theme.colorScheme.primary.withOpacity(0.12),
       labelStyle: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
-    );
-  }
-
-  Widget _buildSummaryCard(String title, String count, String amount, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          MyText.bodySmall(title, color: color, fontWeight: 600),
-          const SizedBox(height: 4),
-          MyText.titleSmall(count, fontWeight: 700, color: color),
-          MyText.bodySmall(amount, color: color.withOpacity(0.8), fontWeight: 500),
-        ],
-      ),
     );
   }
 
@@ -901,19 +830,6 @@ class _BillListScreenState extends State<BillListScreen> {
 
             return CustomScrollView(
               slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildActiveFilters(),
-                        const SizedBox(height: 12),
-                        if (summary.bills.isNotEmpty) _buildPaymentSummary(summary),
-                      ],
-                    ),
-                  ),
-                ),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
@@ -922,7 +838,7 @@ class _BillListScreenState extends State<BillListScreen> {
                       final customerName = (customer?.name?.trim().isNotEmpty ?? false)
                           ? customer!.name!.trim()
                           : 'Customer ${bill.customerId}';
-                      final billLabel = 'Bill #${bill.billNumber ?? bill.cartId} ($customerName)';
+                      final billLabel = '#${bill.billNumber ?? bill.cartId} | $customerName';
                       return Padding(
                         padding: EdgeInsets.fromLTRB(16, index == 0 ? 0 : 8, 16, 8),
                         child: _BillCard(
@@ -936,7 +852,6 @@ class _BillListScreenState extends State<BillListScreen> {
                               ),
                             );
                           },
-                          onDelete: () => _confirmDeleteBill(bill),
                         ),
                       );
                     },
@@ -951,37 +866,6 @@ class _BillListScreenState extends State<BillListScreen> {
       ),
     );
   }
-
-  Future<void> _confirmDeleteBill(BillSummary bill) async {
-    final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Delete bill?'),
-            content: Text(
-              'This will remove the selected bill and its details.\nBill ID: ${bill.billNumber ?? bill.cartId}',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Delete'),
-              ),
-            ],
-          ),
-        ) ??
-        false;
-
-    if (!confirmed) {
-      return;
-    }
-
-    if (!mounted) return;
-
-    context.read<BillListBloc>().add(DeleteBillRequested(bill));
-  }
 }
 
 class _BillCard extends StatelessWidget {
@@ -989,14 +873,12 @@ class _BillCard extends StatelessWidget {
   final ThemeData theme;
   final String billLabel;
   final VoidCallback? onTap;
-  final VoidCallback? onDelete;
 
   const _BillCard({
     required this.bill,
     required this.theme,
     required this.billLabel,
     this.onTap,
-    this.onDelete,
   });
 
   @override
@@ -1118,30 +1000,6 @@ class _BillCard extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    MyText.titleMedium(
-                      NumberFormat.currency(locale: 'en_IN', symbol: '₹').format(bill.totalAmount),
-                      fontWeight: 600,
-                    ),
-                    if (onDelete != null) ...[
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        tooltip: 'Delete bill',
-                        color: theme.colorScheme.error,
-                        onPressed: onDelete,
-                      ),
-                    ],
-                  ],
-                ),
-              ],
             ),
           ],
         ),

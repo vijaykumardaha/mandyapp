@@ -124,6 +124,8 @@ class DBHelper {
             charge_name TEXT NOT NULL UNIQUE,
             charge_type TEXT NOT NULL DEFAULT 'fixed', -- fixed, percentage
             charge_amount REAL NOT NULL,
+            charge_for TEXT NOT NULL,
+            is_default INTEGER NOT NULL DEFAULT 0,
             is_active INTEGER NOT NULL DEFAULT 1   -- 1 = active, 0 = disabled
           )
         ''');

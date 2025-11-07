@@ -3,6 +3,8 @@ class Charge {
   String chargeName;
   String chargeType;
   double chargeAmount;
+  String chargeFor;
+  int isDefault;
   int isActive;
 
   Charge({
@@ -10,7 +12,9 @@ class Charge {
     required this.chargeName,
     this.chargeType = 'fixed',
     required this.chargeAmount,
-    required this.isActive,
+    required this.chargeFor,
+    this.isDefault = 0,
+    this.isActive = 1,
   });
 
   Map<String, dynamic> toJson() {
@@ -19,6 +23,8 @@ class Charge {
       'charge_name': chargeName,
       'charge_type': chargeType,
       'charge_amount': chargeAmount,
+      'charge_for': chargeFor,
+      'is_default': isDefault,
       'is_active': isActive,
     };
   }
@@ -29,7 +35,9 @@ class Charge {
       chargeName: json['charge_name'] as String,
       chargeType: (json['charge_type'] as String?) ?? 'fixed',
       chargeAmount: (json['charge_amount'] as num).toDouble(),
-      isActive: json['is_active'] as int,
+      chargeFor: json['charge_for'] as String,
+      isDefault: json['is_default'] as int? ?? 0,
+      isActive: json['is_active'] as int? ?? 1,
     );
   }
 

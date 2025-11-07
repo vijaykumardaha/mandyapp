@@ -114,12 +114,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
+    // Get cart information to filter charges by type
+    final checkoutState = context.read<CheckoutBloc>().state;
+    if (checkoutState is! CheckoutDataLoaded) {
+      _initialChargesApplied = true;
+      return;
+    }
+    final cart = checkoutState.cart;
+
+    // Filter available charges by cart type
+    final relevantCharges = availableCharges.where((charge) => charge.chargeFor == cart.cartFor).toList();
+
     final Map<int, double> matched = {};
     for (final saved in initialCharges) {
-      for (final charge in availableCharges) {
+      for (final charge in relevantCharges) {
         if (charge.chargeName.toLowerCase() == saved.chargeName.toLowerCase()) {
           if (charge.id != null) {
-            matched[charge.id!] = saved.chargeAmount;
+            // Use calculated amount for percentage charges, fixed amount for fixed charges
+            final calculatedAmount = charge.chargeType == 'percentage'
+                ? cart.totalPrice * charge.chargeAmount / 100
+                : charge.chargeAmount;
+            matched[charge.id!] = calculatedAmount;
           }
           break;
         }
@@ -304,10 +319,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: SizedBox(
             width: double.infinity,
-            child: OutlinedButton.icon(
+            child: OutlinedButton(
               onPressed: () => Navigator.of(context).maybePop(),
-              icon: const Icon(Icons.arrow_back_ios_new),
-              label: const Text('Back'),
+              child: const Text('Done'),
             ),
           ),
         ),
@@ -492,6 +506,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
   void _showChargeSelectionDialog(List<Charge> availableCharges) {
+    // Get cart information from CheckoutBloc state
+    final checkoutState = context.read<CheckoutBloc>().state;
+    if (checkoutState is! CheckoutDataLoaded) {
+      return;
+    }
+    final cart = checkoutState.cart;
+
+    // Filter charges based on cart type
+    final filteredCharges = availableCharges.where((charge) => charge.chargeFor == cart.cartFor).toList();
+
     // Create a temporary set for dialog selection
     Set<int> tempSelectedIds = Set.from(_selectedChargeIds);
 
@@ -502,48 +526,133 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           title: MyText.titleMedium('Select Charges', fontWeight: 600),
           content: SizedBox(
             width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: availableCharges.length,
-              itemBuilder: (context, index) {
-                final charge = availableCharges[index];
-                final isSelected = tempSelectedIds.contains(charge.id);
+            child: filteredCharges.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: 48,
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                        MySpacing.height(16),
+                        MyText.bodyMedium(
+                          'No charges available for ${cart.cartFor == 'buyer' ? 'buyers' : 'sellers'}',
+                          color: Theme.of(context).colorScheme.outline,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: filteredCharges.length,
+                    itemBuilder: (context, index) {
+                      final charge = filteredCharges[index];
+                      final isSelected = tempSelectedIds.contains(charge.id);
 
-                return CheckboxListTile(
-                  title: MyText.bodyMedium(charge.chargeName),
-                  subtitle: MyText.bodySmall('₹${charge.chargeAmount.toStringAsFixed(2)}'),
-                  value: isSelected,
-                  onChanged: (value) {
-                    dialogSetState(() {
-                      if (value == true) {
-                        tempSelectedIds.add(charge.id!);
-                      } else {
-                        tempSelectedIds.remove(charge.id!);
-                      }
-                    });
-                  },
-                  controlAffinity: ListTileControlAffinity.leading,
-                );
-              },
-            ),
+                      return Container(
+                        margin: MySpacing.bottom(8),
+                        padding: MySpacing.all(12),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                              : Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected
+                                ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
+                                : Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            // Checkbox
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Checkbox(
+                                value: isSelected,
+                                onChanged: (value) {
+                                  dialogSetState(() {
+                                    if (value == true) {
+                                      tempSelectedIds.add(charge.id!);
+                                    } else {
+                                      tempSelectedIds.remove(charge.id!);
+                                    }
+                                  });
+                                },
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                            ),
+                            MySpacing.width(12),
+
+                            // Charge Name
+                            Expanded(
+                              flex: 3,
+                              child: MyText.bodyMedium(
+                                charge.chargeName,
+                                fontWeight: 500,
+                              ),
+                            ),
+
+                            // Charge Type Badge
+                            Container(
+                              padding: MySpacing.xy(4, 2),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
+                                ),
+                              ),
+                              child: MyText.bodySmall(
+                                charge.chargeType == 'percentage'
+                                    ? '${charge.chargeAmount.toStringAsFixed(1)}%'
+                                    : 'Fixed',
+                                color: Theme.of(context).colorScheme.secondary,
+                                fontWeight: 500,
+                                fontSize: 10,
+                              ),
+                            ),
+
+                            MySpacing.width(8),
+
+                            // Amount - Show calculated amount for both types
+                            MyText.bodyMedium(
+                              charge.chargeType == 'percentage'
+                                  ? '₹${(cart.totalPrice * charge.chargeAmount / 100).toStringAsFixed(2)}'
+                                  : '₹${charge.chargeAmount.toStringAsFixed(2)}',
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: 600,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: MyText.bodyMedium('Cancel'),
             ),
-            ElevatedButton(
-              onPressed: () {
-                // Update parent state with selected charges
-                setState(() {
-                  _selectedChargeIds = tempSelectedIds;
-                  _chargesExpanded = true;
-                });
-                _schedulePersistCheckout();
-                Navigator.pop(context);
-              },
-              child: MyText.bodyMedium('Apply'),
-            ),
+            if (filteredCharges.isNotEmpty)
+              ElevatedButton(
+                onPressed: () {
+                  // Update parent state with selected charges
+                  setState(() {
+                    _selectedChargeIds = tempSelectedIds;
+                    _chargesExpanded = true;
+                  });
+                  _schedulePersistCheckout();
+                  Navigator.pop(context);
+                },
+                child: MyText.bodyMedium('Apply'),
+              ),
           ],
         ),
       ),
@@ -557,7 +666,43 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           if (!_initialChargesApplied) {
             _applyInitialCharges(state.charges);
           }
-          final activeCharges = state.charges.where((charge) => charge.isActive == 1).toList();
+
+          // Get cart information to filter charges by type
+          final checkoutState = context.read<CheckoutBloc>().state;
+          if (checkoutState is! CheckoutDataLoaded) {
+            return Container(
+              margin: MySpacing.bottom(12),
+              padding: MySpacing.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.account_balance_wallet,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  MySpacing.width(8),
+                  MyText.bodyMedium('Charges', fontWeight: 600),
+                  const Spacer(),
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ],
+              ),
+            );
+          }
+          final cart = checkoutState.cart;
+
+          // Filter active charges by cart type
+          final activeCharges = state.charges
+              .where((charge) => charge.isActive == 1 && charge.chargeFor == cart.cartFor)
+              .toList();
 
           _chargesById
             ..clear()
@@ -588,7 +733,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                   MySpacing.height(8),
                   MyText.bodySmall(
-                    'No active charges',
+                    'No active charges for ${cart.cartFor == 'buyer' ? 'buyers' : 'sellers'}',
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ],
@@ -618,7 +763,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     MyText.bodyMedium('Charges', fontWeight: 600),
                     const Spacer(),
                     TextButton(
-                      onPressed: () => _showChargeSelectionDialog(activeCharges),
+                      onPressed: () => _showChargeSelectionDialog(state.charges.where((charge) => charge.isActive == 1).toList()),
                       child: MyText.bodySmall(
                         'Add Charges',
                         color: Theme.of(context).colorScheme.primary,
@@ -633,8 +778,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ...activeCharges.where((charge) => _selectedChargeIds.contains(charge.id)).map((charge) {
                     // Create controller for this charge if it doesn't exist
                     if (!_chargeControllers.containsKey(charge.id)) {
+                      final calculatedAmount = charge.chargeType == 'percentage'
+                          ? cart.totalPrice * charge.chargeAmount / 100
+                          : charge.chargeAmount;
                       _chargeControllers[charge.id!] = TextEditingController(
-                        text: charge.chargeAmount.toStringAsFixed(2),
+                        text: calculatedAmount.toStringAsFixed(2),
                       );
                     }
 
@@ -756,11 +904,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         double chargesTotal = 0.0;
 
         if (chargesState is ChargesLoaded) {
-          // Calculate total from edited charge amounts for selected charges only
-          for (var charge in chargesState.charges) {
-            if (charge.isActive == 1 && _selectedChargeIds.contains(charge.id) && _chargeControllers.containsKey(charge.id)) {
-              final editedAmount = double.tryParse(_chargeControllers[charge.id!]!.text) ?? charge.chargeAmount;
-              chargesTotal += editedAmount;
+          // Get cart information to filter charges by type
+          final checkoutState = context.read<CheckoutBloc>().state;
+          if (checkoutState is CheckoutDataLoaded) {
+            final cart = checkoutState.cart;
+
+            // Calculate total from edited charge amounts for selected charges only, filtered by cart type
+            for (var charge in chargesState.charges) {
+              if (charge.isActive == 1 && charge.chargeFor == cart.cartFor && _selectedChargeIds.contains(charge.id) && _chargeControllers.containsKey(charge.id)) {
+                final editedAmount = double.tryParse(_chargeControllers[charge.id!]!.text) ?? charge.chargeAmount;
+                chargesTotal += editedAmount;
+              }
             }
           }
         }

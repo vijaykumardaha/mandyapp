@@ -102,4 +102,51 @@ class ChargeDAO {
     );
     return result.first['total'] as double? ?? 0.0;
   }
+
+  // Get charges for a specific type (buyer/seller)
+  Future<List<Charge>> getChargesByType(String chargeFor) async {
+    final db = await dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'charges',
+      where: 'charge_for = ?',
+      whereArgs: [chargeFor],
+      orderBy: 'charge_name ASC',
+    );
+    return List.generate(maps.length, (i) => Charge.fromJson(maps[i]));
+  }
+
+  // Get active charges for a specific type
+  Future<List<Charge>> getActiveChargesByType(String chargeFor) async {
+    final db = await dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'charges',
+      where: 'charge_for = ? AND is_active = ?',
+      whereArgs: [chargeFor, 1],
+      orderBy: 'charge_name ASC',
+    );
+    return List.generate(maps.length, (i) => Charge.fromJson(maps[i]));
+  }
+
+  // Get default charges for a specific type
+  Future<List<Charge>> getDefaultCharges(String chargeFor) async {
+    final db = await dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'charges',
+      where: 'charge_for = ? AND is_default = ?',
+      whereArgs: [chargeFor, 1],
+      orderBy: 'charge_name ASC',
+    );
+    return List.generate(maps.length, (i) => Charge.fromJson(maps[i]));
+  }
+
+  // Check if a charge name already exists for a specific type
+  Future<bool> chargeExistsForType(String chargeName, String chargeFor) async {
+    final db = await dbHelper.database;
+    final result = await db.query(
+      'charges',
+      where: 'charge_name = ? AND charge_for = ?',
+      whereArgs: [chargeName, chargeFor],
+    );
+    return result.isNotEmpty;
+  }
 }

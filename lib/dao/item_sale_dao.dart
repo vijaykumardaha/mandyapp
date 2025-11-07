@@ -77,4 +77,46 @@ class ItemSaleDAO {
 
     return maps.map(ItemSale.fromJson).toList();
   }
+
+  Future<List<Map<String, dynamic>>> getDailySalesReport({
+    required DateTime startDate,
+    required DateTime endDate,
+    int? productId,
+    int? categoryId,
+  }) async {
+    final db = await dbHelper.database;
+
+    final whereClauses = <String>[];
+    final whereArgs = <Object?>[];
+
+    // Date range filter
+    whereClauses.add('date(is.created_at) >= date(?)');
+    whereArgs.add(startDate.toIso8601String().split('T')[0]);
+    whereClauses.add('date(is.created_at) <= date(?)');
+    whereArgs.add(endDate.toIso8601String().split('T')[0]);
+
+    if (productId != null) {
+      whereClauses.add('is.product_id = ?');
+      whereArgs.add(productId);
+    }
+
+    final query = '''
+      SELECT
+        date(is.created_at) as date,
+        is.product_id,
+        is.variant_id,
+        pv.variant_name,
+        pv.unit,
+        SUM(is.quantity) as total_quantity,
+        COUNT(*) as transaction_count,
+        SUM(is.quantity * is.selling_price) as total_revenue
+      FROM item_sales is
+      LEFT JOIN product_variants pv ON is.variant_id = pv.id
+      ${whereClauses.isNotEmpty ? 'WHERE ${whereClauses.join(' AND ')}' : ''}
+      GROUP BY date(is.created_at), is.product_id, is.variant_id, pv.variant_name, pv.unit
+      ORDER BY date DESC, total_revenue DESC
+    ''';
+
+    return db.rawQuery(query, whereArgs);
+  }
 }

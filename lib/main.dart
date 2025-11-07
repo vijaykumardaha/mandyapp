@@ -16,9 +16,11 @@ import 'package:mandyapp/blocs/customer/customer_bloc.dart';
 import 'package:mandyapp/blocs/item_sale/item_sale_bloc.dart';
 import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
+import 'package:mandyapp/blocs/reports/reports_bloc.dart';
 import 'package:mandyapp/blocs/stock/stock_bloc.dart';
 import 'package:mandyapp/blocs/user/user_bloc.dart';
 import 'package:mandyapp/blocs/cart_payment/cart_payment_bloc.dart';
+import 'package:mandyapp/dao/report_dao.dart';
 import 'package:mandyapp/helpers/localizations/app_localization_delegate.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 import 'package:mandyapp/helpers/localizations/language.dart';
@@ -118,6 +120,9 @@ class MyApp extends StatelessWidget {
           ),
           BlocProvider<ItemSaleBloc>(
             create: (context) => ItemSaleBloc(),
+          ),
+          BlocProvider<ReportsBloc>(
+            create: (context) => ReportsBloc(reportDAO: ReportDAO()),
           ),
         ],
         child: Consumer<AppNotifier>(
