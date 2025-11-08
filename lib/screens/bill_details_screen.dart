@@ -58,6 +58,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
           cartId: data.cart.id,
           initialCartCharges: data.charges,
           initialPayment: data.payment,
+          isEdit: true,
         ),
       ),
     );

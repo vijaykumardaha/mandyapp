@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:mandyapp/blocs/bill_list/bill_list_bloc.dart';
 import 'package:mandyapp/blocs/cart/cart_bloc.dart';
 import 'package:mandyapp/blocs/customer/customer_bloc.dart';
 import 'package:mandyapp/blocs/item_sale/item_sale_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
-import 'package:mandyapp/models/bill_summary_model.dart';
-import 'package:mandyapp/models/cart_model.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/item_sale_model.dart';
 import 'package:mandyapp/screens/bill_details_screen.dart';
+import 'package:mandyapp/models/cart_model.dart';
 import 'package:mandyapp/screens/checkout_screen.dart';
 import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandyapp/widgets/billing/seller_sale_selection_sheet.dart';
+import 'package:mandyapp/widgets/billing/bill_card.dart';
 
 class BillListScreen extends StatefulWidget {
   const BillListScreen({super.key});
@@ -23,245 +22,11 @@ class BillListScreen extends StatefulWidget {
   State<BillListScreen> createState() => _BillListScreenState();
 }
 
-class _SellerSaleSelectionSheet extends StatefulWidget {
-  final Customer seller;
-  final List<ItemSale> sales;
-  final String Function(Customer) formatCustomer;
-  final VoidCallback onReload;
-  final void Function(ItemSale sale, int index) onDeleteSale;
-  final Future<void> Function(List<ItemSale> selected) onConfirm;
-
-  const _SellerSaleSelectionSheet({
-    required this.seller,
-    required this.sales,
-    required this.formatCustomer,
-    required this.onReload,
-    required this.onDeleteSale,
-    required this.onConfirm,
-  });
-
-  @override
-  State<_SellerSaleSelectionSheet> createState() => _SellerSaleSelectionSheetState();
-}
-
-class _SellerSaleSelectionSheetState extends State<_SellerSaleSelectionSheet> {
-  final Set<int> _selectedIndices = {};
-  List<ItemSale> _sales = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _sales = widget.sales;
-  }
-
-  @override
-  void didUpdateWidget(covariant _SellerSaleSelectionSheet oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.sales != widget.sales) {
-      setState(() {
-        _sales = widget.sales;
-        _selectedIndices
-          ..clear()
-          ..addAll(_selectedIndices.where((index) => index < _sales.length));
-      });
-    }
-  }
-
-  void _toggleSelection(int index, bool value) {
-    setState(() {
-      if (value) {
-        _selectedIndices.add(index);
-      } else {
-        _selectedIndices.remove(index);
-      }
-    });
-  }
-
-  Future<void> _confirm() async {
-    final selected = _selectedIndices.map((index) => _sales[index]).toList(growable: false);
-    if (selected.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select at least one sale item.')),
-      );
-      return;
-    }
-
-    Navigator.of(context).pop();
-    await widget.onConfirm(selected);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
-
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      child: Container(
-        color: theme.colorScheme.surface,
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: bottomPadding + 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.outline.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                MySpacing.height(16),
-                MyText.titleMedium('Create seller bill', fontWeight: 700),
-                MySpacing.height(8),
-                MyText.bodySmall(
-                  'Seller: ${widget.formatCustomer(widget.seller)}',
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
-                ),
-                MySpacing.height(20),
-                SizedBox(
-                  height: 360,
-                  child: _sales.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.inventory_outlined, size: 48),
-                              MySpacing.height(12),
-                              MyText.bodyMedium('No unsold items recorded for this seller.'),
-                              MySpacing.height(12),
-                              OutlinedButton.icon(
-                                onPressed: widget.onReload,
-                                icon: const Icon(Icons.refresh),
-                                label: const Text('Reload'),
-                              ),
-                            ],
-                          ),
-                        )
-                      : ListView.separated(
-                          shrinkWrap: true,
-                          itemCount: _sales.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            final sale = _sales[index];
-                            final isChecked = _selectedIndices.contains(index);
-                            final quantityLabel = '${sale.quantity.toStringAsFixed(sale.quantity % 1 == 0 ? 0 : 2)} ${sale.unit}';
-
-
-                            return Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(10),
-                                onTap: () => _toggleSelection(index, !isChecked),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 220),
-                                  curve: Curves.easeOut,
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.surface,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: isChecked
-                                          ? theme.colorScheme.primary
-                                          : theme.colorScheme.outline.withOpacity(0.15),
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: theme.colorScheme.shadow.withOpacity(isChecked ? 0.16 : 0.08),
-                                        blurRadius: 14,
-                                        offset: const Offset(0, 6),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Checkbox(
-                                        value: isChecked,
-                                        onChanged: (value) => _toggleSelection(index, value ?? false),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            MyText.bodyMedium(
-                                              'Sale #${sale.id ?? '-'}',
-                                              fontWeight: 700,
-                                            ),
-                                            MySpacing.height(4),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                MyText.bodySmall('Qty: $quantityLabel'),
-                                                MyText.bodySmall('Rate: ₹${sale.sellingPrice.toStringAsFixed(2)}'),
-                                                MyText.bodySmall(
-                                                  'Total: ₹${sale.totalPrice.toStringAsFixed(2)}',
-                                                  fontWeight: 600,
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                ),
-                MySpacing.height(24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                          side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.4)),
-                        ),
-                        child: const Text('Cancel'),
-                      ),
-                    ),
-                    MySpacing.width(16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _confirm,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                        ),
-                        child: const Text('Select Items'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _BillListScreenState extends State<BillListScreen> {
   late ThemeData theme;
   late TextEditingController _customerController;
   late FocusNode _customerFocusNode;
   Customer? _selectedCustomer;
-  String? _statusFilter; // 'open', 'completed', or null for all
   String _customerSearchText = '';
   Customer? _selectedSellerForBill;
   bool _isCreatingBill = false;
@@ -332,7 +97,8 @@ class _BillListScreenState extends State<BillListScreen> {
                     sale.sellerId == seller.id &&
                     sale.sellerCartId == null)
                 .toList(growable: false);
-            return _SellerSaleSelectionSheet(
+            return SellerSaleSelectionSheet(
+              key: const ValueKey('seller_sale_selection_sheet'),
               seller: seller,
               sales: sales,
               formatCustomer: (customer) => _formatCustomer(customer),
@@ -460,22 +226,11 @@ class _BillListScreenState extends State<BillListScreen> {
     context.read<BillListBloc>().add(
           LoadBillSummaries(
             forceRefresh: forceRefresh,
-            statusFilter: _statusFilter,
             customerId: _selectedCustomer?.id,
           ),
         );
   }
 
-  void _clearFilters() {
-    setState(() {
-      _selectedCustomer = null;
-      _statusFilter = null;
-      _customerSearchText = '';
-      _customerController.clear();
-    });
-    _loadSummaries();
-    context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
-  }
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
@@ -489,14 +244,6 @@ class _BillListScreenState extends State<BillListScreen> {
           icon: const Icon(Icons.post_add_outlined),
           tooltip: 'Create bill',
           onPressed: _createBill,
-        ),
-        IconButton(
-          icon: Icon(
-            Icons.filter_list,
-            color: _hasFilters ? theme.colorScheme.primary : null,
-          ),
-          tooltip: 'Filter status',
-          onPressed: _showStatusFilterSheet,
         ),
       ],
     );
@@ -644,44 +391,6 @@ class _BillListScreenState extends State<BillListScreen> {
     );
   }
 
-  void _showStatusFilterSheet() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: MySpacing.xy(20, 16),
-                child: MyText.titleMedium('Bill status', fontWeight: 600),
-              ),
-              _buildStatusTile(label: 'All bills', value: null),
-              _buildStatusTile(label: 'Open bills', value: 'open'),
-              _buildStatusTile(label: 'Completed bills', value: 'completed'),
-              const SizedBox(height: 12),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildStatusTile({required String label, String? value}) {
-    final isSelected = value == _statusFilter || (value == null && _statusFilter == null);
-    return ListTile(
-      title: Text(label),
-      trailing: isSelected ? const Icon(Icons.check) : null,
-      onTap: () {
-        Navigator.pop(context);
-        setState(() {
-          _statusFilter = value;
-        });
-        _loadSummaries();
-      },
-    );
-  }
 
   String _formatCustomer(Customer customer) {
     final name = customer.name?.trim();
@@ -693,8 +402,6 @@ class _BillListScreenState extends State<BillListScreen> {
     if (phone != null && phone.isNotEmpty) return phone;
     return 'Unnamed customer';
   }
-
-  bool get _hasFilters => _statusFilter != null || _selectedCustomer != null;
 
   List<ItemSale> _salesFromState(ItemSaleState state) {
     if (state is ItemSalesLoaded) {
@@ -716,51 +423,6 @@ class _BillListScreenState extends State<BillListScreen> {
     );
   }
 
-  Widget _buildActiveFilters() {
-    if (!_hasFilters) return const SizedBox.shrink();
-
-    final chips = <Widget>[];
-
-    if (_statusFilter != null) {
-      final label = _statusFilter == 'completed' ? 'Status: Completed' : 'Status: Open';
-      chips.add(_buildFilterChip(label, () {
-        setState(() {
-          _statusFilter = null;
-        });
-        _loadSummaries();
-      }));
-    }
-
-    if (_selectedCustomer != null) {
-      chips.add(_buildFilterChip('Customer: ${_formatCustomer(_selectedCustomer!)}', () {
-        setState(() {
-          _selectedCustomer = null;
-          _customerSearchText = '';
-          _customerController.clear();
-        });
-        _loadSummaries();
-      }));
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 4,
-        children: chips,
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, VoidCallback onDeleted) {
-    return InputChip(
-      label: Text(label),
-      onDeleted: onDeleted,
-      deleteIcon: const Icon(Icons.close, size: 16),
-      backgroundColor: theme.colorScheme.primary.withOpacity(0.12),
-      labelStyle: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -805,13 +467,6 @@ class _BillListScreenState extends State<BillListScreen> {
                       'Completed bills will appear here',
                       color: theme.colorScheme.onSurface.withOpacity(0.6),
                     ),
-                    if (_hasFilters) ...[
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _clearFilters,
-                        child: const Text('Clear filters'),
-                      ),
-                    ],
                   ],
                 ),
               );
@@ -844,7 +499,8 @@ class _BillListScreenState extends State<BillListScreen> {
                       final billLabel = '#${bill.billNumber ?? bill.cartId} | $customerName';
                       return Padding(
                         padding: EdgeInsets.fromLTRB(16, index == 0 ? 0 : 8, 16, 8),
-                        child: _BillCard(
+                        child: BillCard(
+                          key: ValueKey('bill_card_${bill.cartId}'),
                           bill: bill,
                           theme: theme,
                           billLabel: billLabel,
@@ -854,6 +510,9 @@ class _BillListScreenState extends State<BillListScreen> {
                                 builder: (_) => BillDetailsScreen(cartId: bill.cartId),
                               ),
                             );
+                          },
+                          onDelete: () {
+                            context.read<BillListBloc>().add(DeleteBillRequested(bill));
                           },
                         ),
                       );
@@ -871,142 +530,3 @@ class _BillListScreenState extends State<BillListScreen> {
   }
 }
 
-class _BillCard extends StatelessWidget {
-  final BillSummary bill;
-  final ThemeData theme;
-  final String billLabel;
-  final VoidCallback? onTap;
-
-  const _BillCard({
-    required this.bill,
-    required this.theme,
-    required this.billLabel,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final statusText = (bill.status.isNotEmpty)
-        ? bill.status[0].toUpperCase() + bill.status.substring(1).toLowerCase()
-        : 'Unknown';
-
-    final billTypeText = (bill.billType.isNotEmpty)
-        ? bill.billType[0].toUpperCase() + bill.billType.substring(1).toLowerCase()
-        : 'Unknown';
-
-    Color statusColor;
-    switch (bill.status.toLowerCase()) {
-      case 'completed':
-        statusColor = Colors.green;
-        break;
-      case 'open':
-        statusColor = Colors.orange;
-        break;
-      default:
-        statusColor = theme.colorScheme.primary;
-    }
-
-    Color typeColor;
-    switch (bill.billType.toLowerCase()) {
-      case 'seller':
-        typeColor = Colors.indigo;
-        break;
-      case 'buyer':
-        typeColor = Colors.teal;
-        break;
-      default:
-        typeColor = theme.colorScheme.secondary;
-    }
-
-    // Payment status color
-    Color paymentStatusColor;
-    switch (bill.paymentStatus.toLowerCase()) {
-      case 'paid':
-        paymentStatusColor = Colors.green;
-        break;
-      case 'unpaid':
-        paymentStatusColor = Colors.red;
-        break;
-      default:
-        paymentStatusColor = theme.colorScheme.primary;
-    }
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: theme.shadowColor.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-          border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.05)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  MyText.bodyMedium(
-                    billLabel,
-                    fontWeight: 600,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: MyText.bodySmall(
-                          'Status: $statusText',
-                          color: statusColor,
-                          fontWeight: 600,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: paymentStatusColor.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: MyText.bodySmall(
-                          'Payment: ${bill.paymentStatus}',
-                          color: paymentStatusColor,
-                          fontWeight: 600,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: typeColor.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: MyText.bodySmall(
-                          'Type: $billTypeText',
-                          color: typeColor,
-                          fontWeight: 600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

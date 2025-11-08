@@ -3,34 +3,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/charges/charges_bloc.dart';
 import 'package:mandyapp/blocs/charges/charges_event.dart';
-import 'package:mandyapp/blocs/charges/charges_state.dart';
 import 'package:mandyapp/blocs/checkout/checkout_bloc.dart';
-import 'package:mandyapp/helpers/widgets/checkout_stepper_field.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
-import 'package:mandyapp/helpers/widgets/payment_method_selector.dart' as pms;
+import 'package:mandyapp/widgets/checkout/payment_method_selector.dart' as pms;
 import 'package:mandyapp/models/charge_model.dart';
 import 'package:mandyapp/models/cart_model.dart';
 import 'package:mandyapp/models/item_sale_model.dart';
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
+import 'package:mandyapp/widgets/checkout/bill_summary_tile.dart';
 import 'package:mandyapp/models/cart_charge_model.dart';
 import 'package:mandyapp/models/cart_payment_model.dart';
 import 'package:mandyapp/dao/cart_charge_dao.dart';
 import 'package:mandyapp/dao/cart_payment_dao.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 import 'package:mandyapp/blocs/item_sale/item_sale_bloc.dart';
+import 'package:mandyapp/widgets/checkout/payment_section.dart';
+import 'package:mandyapp/widgets/checkout/charges_section.dart';
+import 'package:mandyapp/widgets/checkout/charge_selection_dialog.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final int cartId;
   final List<CartCharge>? initialCartCharges;
   final CartPayment? initialPayment;
+  final bool isEdit;
 
   const CheckoutScreen({
     Key? key,
     required this.cartId,
     this.initialCartCharges,
     this.initialPayment,
+    this.isEdit = false,
   }) : super(key: key);
 
   @override
@@ -451,306 +455,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     Product product,
     ProductVariant variant,
   ) {
-    final theme = Theme.of(context);
-    return Container(
-      margin: MySpacing.bottom(12),
-      padding: MySpacing.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 20),
-              child: MyText.bodyMedium(
-                variant.variantName,
-                fontWeight: 600,
-              ),
-            ),
-          ),
-          CheckoutStepperField(
-            key: ValueKey('qty-${item.id ?? item.variantId}-${item.buyerCartId}'),
-            label: 'Qty (${variant.unit})',
-            initialValue: item.quantity,
-            step: 1,
-            minValue: 0.1,
-            onChanged: (value) {
-              if (value == item.quantity) return;
-              final updatedItem = item.copyWith(quantity: value);
-              context.read<CheckoutBloc>().add(UpdateCheckoutItem(updatedItem));
-              _schedulePersistCheckout();
-            },
-          ),
-          MySpacing.width(6),
-          CheckoutStepperField(
-            key: ValueKey('rate-${item.id ?? item.variantId}-${item.buyerCartId}'),
-            label: 'Rate',
-            initialValue: item.sellingPrice,
-            step: 0.5,
-            minValue: 0.1,
-            prefixText: '₹',
-            onChanged: (value) {
-              if (value == item.sellingPrice) return;
-              final updatedItem = item.copyWith(sellingPrice: value);
-              context.read<CheckoutBloc>().add(UpdateCheckoutItem(updatedItem));
-              _schedulePersistCheckout();
-            },
-          ),
-          MySpacing.width(12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              MyText.bodyLarge(
-                '₹${item.totalPrice.toStringAsFixed(2)}',
-                fontWeight: 700,
-                color: theme.colorScheme.primary,
-              ),
-            ],
-          ),
-        ],
-      ),
+    return BillSummaryTile(
+      isEdit: widget.isEdit,
+      item: item,
+      product: product,
+      variant: variant,
+      onPersistCheckout: _schedulePersistCheckout,
     );
   }
-  void _showChargeSelectionDialog(List<Charge> availableCharges) {
-    // Get cart information from CheckoutBloc state
-    final checkoutState = context.read<CheckoutBloc>().state;
-    if (checkoutState is! CheckoutDataLoaded) {
-      return;
-    }
-    final cart = checkoutState.cart;
 
-    // Filter charges based on cart type
-    final filteredCharges = availableCharges.where((charge) => charge.chargeFor == cart.cartFor).toList();
-
-    // Create a temporary set for dialog selection
-    Set<int> tempSelectedIds = Set.from(_selectedChargeIds);
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, dialogSetState) => AlertDialog(
-          title: MyText.titleMedium('Select Charges', fontWeight: 600),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: filteredCharges.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.info_outline,
-                          size: 48,
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                        MySpacing.height(16),
-                        MyText.bodyMedium(
-                          'No charges available for ${cart.cartFor == 'buyer' ? 'buyers' : 'sellers'}',
-                          color: Theme.of(context).colorScheme.outline,
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: filteredCharges.length,
-                    itemBuilder: (context, index) {
-                      final charge = filteredCharges[index];
-                      final isSelected = tempSelectedIds.contains(charge.id);
-
-                      return Container(
-                        margin: MySpacing.bottom(8),
-                        padding: MySpacing.all(12),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-                              : Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isSelected
-                                ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
-                                : Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            // Checkbox
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: Checkbox(
-                                value: isSelected,
-                                onChanged: (value) {
-                                  dialogSetState(() {
-                                    if (value == true) {
-                                      tempSelectedIds.add(charge.id!);
-                                    } else {
-                                      tempSelectedIds.remove(charge.id!);
-                                    }
-                                  });
-                                },
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                              ),
-                            ),
-                            MySpacing.width(12),
-
-                            // Charge Name
-                            Expanded(
-                              flex: 3,
-                              child: MyText.bodyMedium(
-                                charge.chargeName,
-                                fontWeight: 500,
-                              ),
-                            ),
-
-                            // Charge Type Badge
-                            Container(
-                              padding: MySpacing.xy(4, 2),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
-                                ),
-                              ),
-                              child: MyText.bodySmall(
-                                charge.chargeType == 'percentage'
-                                    ? '${charge.chargeAmount.toStringAsFixed(1)}%'
-                                    : 'Fixed',
-                                color: Theme.of(context).colorScheme.secondary,
-                                fontWeight: 500,
-                                fontSize: 10,
-                              ),
-                            ),
-
-                            MySpacing.width(8),
-
-                            // Amount - Show calculated amount for both types
-                            MyText.bodyMedium(
-                              charge.chargeType == 'percentage'
-                                  ? '₹${(cart.totalPrice * charge.chargeAmount / 100).toStringAsFixed(2)}'
-                                  : '₹${charge.chargeAmount.toStringAsFixed(2)}',
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: 600,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: MyText.bodyMedium('Cancel'),
-            ),
-            if (filteredCharges.isNotEmpty)
-              ElevatedButton(
-                onPressed: () {
-                  // Update parent state with selected charges
-                  setState(() {
-                    _selectedChargeIds = tempSelectedIds;
-                    _chargesExpanded = true;
-                  });
-                  _schedulePersistCheckout();
-                  Navigator.pop(context);
-                },
-                child: MyText.bodyMedium('Apply'),
-              ),
-          ],
-        ),
-      ),
+  Future<void> _showChargeSelectionDialog(List<Charge> availableCharges) async {
+    final selectedIds = await ChargeSelectionDialog.show(
+      context,
+      availableCharges: availableCharges,
+      selectedChargeIds: _selectedChargeIds,
     );
+
+    if (selectedIds != null) {
+      setState(() {
+        _selectedChargeIds = selectedIds;
+        _chargesExpanded = true;
+      });
+      _schedulePersistCheckout();
+    }
   }
 
   Widget _buildChargesSection() {
-    return BlocBuilder<ChargesBloc, ChargesState>(
-      builder: (context, state) {
-        if (state is ChargesLoaded) {
-          if (!_initialChargesApplied) {
-            _applyInitialCharges(state.charges);
-          }
-
-          // Get cart information to filter charges by type
-          final checkoutState = context.read<CheckoutBloc>().state;
-          if (checkoutState is! CheckoutDataLoaded) {
-            return Container(
-              margin: MySpacing.bottom(12),
-              padding: MySpacing.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.account_balance_wallet,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  MySpacing.width(8),
-                  MyText.bodyMedium('Charges', fontWeight: 600),
-                  const Spacer(),
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ],
-              ),
-            );
-          }
-          final cart = checkoutState.cart;
-
-          // Filter active charges by cart type
-          final activeCharges = state.charges
-              .where((charge) => charge.isActive == 1 && charge.chargeFor == cart.cartFor)
-              .toList();
-
-          _chargesById
-            ..clear()
-            ..addEntries(activeCharges.where((charge) => charge.id != null).map((charge) => MapEntry(charge.id!, charge)));
-
-          if (activeCharges.isEmpty) {
-            return Container(
-              margin: MySpacing.bottom(12),
-              padding: MySpacing.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.account_balance_wallet,
-                        size: 20,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      MySpacing.width(8),
-                      MyText.bodyMedium('Charges', fontWeight: 600),
-                    ],
-                  ),
-                  MySpacing.height(8),
-                  MyText.bodySmall(
-                    'No active charges for ${cart.cartFor == 'buyer' ? 'buyers' : 'sellers'}',
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                  ),
-                ],
-              ),
-            );
-          }
-
+    return BlocBuilder<CheckoutBloc, CheckoutState>(
+      builder: (context, checkoutState) {
+        if (checkoutState is! CheckoutDataLoaded) {
           return Container(
             margin: MySpacing.bottom(12),
             padding: MySpacing.all(16),
@@ -759,303 +492,60 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.account_balance_wallet,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    MySpacing.width(8),
-                    MyText.bodyMedium('Charges', fontWeight: 600),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () => _showChargeSelectionDialog(state.charges.where((charge) => charge.isActive == 1).toList()),
-                      child: MyText.bodySmall(
-                        'Add Charges',
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: 600,
-                      ),
-                    ),
-                  ],
+                Icon(
+                  Icons.account_balance_wallet,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-
-                if (_chargesExpanded) ...[
-                  MySpacing.height(12),
-                  ...activeCharges.where((charge) => _selectedChargeIds.contains(charge.id)).map((charge) {
-                    // Create controller for this charge if it doesn't exist
-                    if (!_chargeControllers.containsKey(charge.id)) {
-                      final calculatedAmount = charge.chargeType == 'percentage'
-                          ? cart.totalPrice * charge.chargeAmount / 100
-                          : charge.chargeAmount;
-                      _chargeControllers[charge.id!] = TextEditingController(
-                        text: calculatedAmount.toStringAsFixed(2),
-                      );
-                    }
-
-                    return Padding(
-                      padding: MySpacing.bottom(12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: MyText.bodySmall(
-                              charge.chargeName,
-                              fontWeight: 500,
-                            ),
-                          ),
-                          MySpacing.width(8),
-                          Expanded(
-                            flex: 1,
-                            child: SizedBox(
-                              height: 32,
-                              child: TextField(
-                                controller: _chargeControllers[charge.id!],
-                                decoration: InputDecoration(
-                                  contentPadding: MySpacing.xy(8, 8),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(6),
-                                    borderSide: BorderSide(
-                                      color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(6),
-                                    borderSide: BorderSide(
-                                      color: Theme.of(context).colorScheme.primary,
-                                    ),
-                                  ),
-                                  prefixText: '₹',
-                                ),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                                keyboardType: TextInputType.number,
-                                textAlign: TextAlign.center,
-                                onChanged: (value) {
-                                  setState(() {});
-                                  _schedulePersistCheckout();
-                                },
-                              ),
-                            ),
-                          ),
-                          MySpacing.width(8),
-                          InkWell(
-                            onTap: () {
-                              setState(() {
-                                _selectedChargeIds.remove(charge.id!);
-                                _chargeControllers.remove(charge.id!);
-                              });
-                              _schedulePersistCheckout();
-                            },
-                            child: Container(
-                              padding: MySpacing.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Icon(
-                                Icons.delete_outline,
-                                size: 16,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ],
+                MySpacing.width(8),
+                MyText.bodyMedium('Charges', fontWeight: 600),
+                const Spacer(),
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
               ],
             ),
           );
         }
 
-        return Container(
-          margin: MySpacing.bottom(12),
-          padding: MySpacing.all(16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.account_balance_wallet,
-                size: 20,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              MySpacing.width(8),
-              MyText.bodyMedium('Charges', fontWeight: 600),
-              const Spacer(),
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ],
-          ),
+        return ChargesSection(
+          cart: checkoutState.cart,
+          selectedChargeIds: _selectedChargeIds,
+          chargeControllers: _chargeControllers,
+          initialChargesApplied: _initialChargesApplied,
+          applyInitialCharges: _applyInitialCharges,
+          onChargesChanged: (selectedIds, controllers) {
+            setState(() {
+              _selectedChargeIds = selectedIds;
+              _chargeControllers.clear();
+              _chargeControllers.addAll(controllers);
+            });
+          },
+          onSchedulePersistCheckout: _schedulePersistCheckout,
+          onShowChargeSelectionDialog: _showChargeSelectionDialog,
         );
       },
     );
   }
-
 
   Widget _buildPaymentSection(Cart cart) {
-    return BlocBuilder<ChargesBloc, ChargesState>(
-      builder: (context, chargesState) {
-        double subtotal = cart.totalPrice;
-        double chargesTotal = 0.0;
-
-        if (chargesState is ChargesLoaded) {
-          // Get cart information to filter charges by type
-          final checkoutState = context.read<CheckoutBloc>().state;
-          if (checkoutState is CheckoutDataLoaded) {
-            final cart = checkoutState.cart;
-
-            // Calculate total from edited charge amounts for selected charges only, filtered by cart type
-            for (var charge in chargesState.charges) {
-              if (charge.isActive == 1 && charge.chargeFor == cart.cartFor && _selectedChargeIds.contains(charge.id) && _chargeControllers.containsKey(charge.id)) {
-                final editedAmount = double.tryParse(_chargeControllers[charge.id!]!.text) ?? charge.chargeAmount;
-                chargesTotal += editedAmount;
-              }
-            }
-          }
-        }
-
-        double grandTotal = cart.cartFor == 'seller'
-            ? subtotal - chargesTotal
-            : subtotal + chargesTotal;
-
-        // Calculate received amount from payment methods
-        double receivedAmount = _paymentAmounts.values.fold(0.0, (sum, amount) => sum + amount);
-        double pendingAmount = grandTotal - receivedAmount;
-
-        // Calculate paymentAmount and pendingPayment based on cart type
-        double paymentAmount, pendingPayment;
-        if (cart.cartFor == 'seller') {
-          // For seller carts: paymentAmount is the amount to be paid to seller
-          paymentAmount = grandTotal;
-          // pendingPayment is the amount still owed to seller
-          pendingPayment = paymentAmount - receivedAmount;
-        } else {
-          // For buyer carts: paymentAmount is the amount received
-          paymentAmount = receivedAmount;
-          // pendingPayment is the remaining amount to be paid
-          pendingPayment = pendingAmount;
-        }
-
-        return Container(
-          padding: MySpacing.all(0),
-          child: Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.1)),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: MyText.bodySmall('Summary', fontWeight: 600),
-                          ),
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: MyText.bodySmall('Amount', fontWeight: 600),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    _summaryRow('Item Totals', subtotal, context),
-                    _summaryRow('Charge Total', chargesTotal, context),
-                    _summaryRow('Grand Total', grandTotal, context, emphasized: true),
-                    _summaryRow(
-                      cart.cartFor == 'seller' ? 'Amount Owed' : 'Payment Amount',
-                      paymentAmount,
-                      context,
-                      valueColor: Colors.blue,
-                    ),
-                    _summaryRow(
-                      cart.cartFor == 'seller' ? 'Amount Received' : 'Received Amount',
-                      receivedAmount,
-                      context,
-                      valueColor: Colors.green,
-                    ),
-                    _summaryRow(
-                      cart.cartFor == 'seller' ? 'Amount Pending' : (pendingPayment >= 0 ? 'Pending Payment' : 'Payment Due'),
-                      pendingPayment.abs(),
-                      context,
-                      valueColor: pendingPayment > 0 ? Colors.orange : Colors.green,
-                    ),
-                  ],
-                ),
-              ),
-              MySpacing.height(16),
-              pms.PaymentMethodSelector(
-                selectedPaymentMethods: _selectedPaymentMethods,
-                paymentAmounts: _paymentAmounts,
-                cartFor: cart.cartFor,
-                onSelectionChanged: (selectedMethods, paymentAmounts) {
-                  setState(() {
-                    _selectedPaymentMethods = selectedMethods;
-                    _paymentAmounts = paymentAmounts;
-                  });
-                  _schedulePersistCheckout();
-                },
-              ),
-            ],
-          ),
-        );
+    return PaymentSection(
+      cart: cart,
+      selectedChargeIds: _selectedChargeIds,
+      chargeControllers: _chargeControllers,
+      selectedPaymentMethods: _selectedPaymentMethods,
+      paymentAmounts: _paymentAmounts,
+      onPaymentMethodChanged: (selectedMethods, paymentAmounts) {
+        setState(() {
+          _selectedPaymentMethods = selectedMethods;
+          _paymentAmounts = paymentAmounts;
+        });
       },
-    );
-  }
-
-  Widget _summaryRow(String label, double amount, BuildContext context, {bool emphasized = false, Color? valueColor}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.08)),
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 3,
-            child: MyText.bodyMedium(
-              label,
-              fontWeight: emphasized ? 700 : 600,
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: MyText.bodyMedium(
-                '₹${amount.toStringAsFixed(2)}',
-                fontWeight: emphasized ? 700 : 600,
-                color: valueColor,
-              ),
-            ),
-          ),
-        ],
-      ),
+      onSchedulePersistCheckout: _schedulePersistCheckout,
     );
   }
 }
