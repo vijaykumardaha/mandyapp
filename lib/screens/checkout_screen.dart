@@ -19,6 +19,7 @@ import 'package:mandyapp/models/cart_payment_model.dart';
 import 'package:mandyapp/dao/cart_charge_dao.dart';
 import 'package:mandyapp/dao/cart_payment_dao.dart';
 import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandyapp/blocs/item_sale/item_sale_bloc.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final int cartId;
@@ -59,6 +60,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     context.read<CheckoutBloc>().add(LoadCheckoutCart(widget.cartId));
     // Load charges for the charges section
     context.read<ChargesBloc>().add(LoadCharges());
+  }
+
+  @override
+  void deactivate() {
+    // Load item sales when checkout is being removed from the widget tree
+    if (mounted) {
+      context.read<ItemSaleBloc>().add(const LoadItemSales());
+    }
+    super.deactivate();
   }
 
   @override

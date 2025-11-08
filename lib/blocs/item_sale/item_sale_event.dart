@@ -45,3 +45,16 @@ class DeleteItemSaleEvent extends ItemSaleEvent {
   @override
   List<Object?> get props => [saleId];
 }
+
+class LoadBillableSales extends ItemSaleEvent {
+  final int sellerId;
+  final bool excludeCartLinked;
+
+  const LoadBillableSales({
+    required this.sellerId,
+    this.excludeCartLinked = true,
+  });
+
+  @override
+  List<Object?> get props => [sellerId, excludeCartLinked];
+}

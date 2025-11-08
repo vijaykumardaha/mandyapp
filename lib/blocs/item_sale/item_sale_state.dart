@@ -17,18 +17,9 @@ class ItemSaleLoading extends ItemSaleState {
 
 class ItemSalesLoaded extends ItemSaleState {
   final List<ItemSale> sales;
+  final String? message;
 
-  const ItemSalesLoaded(this.sales);
-
-  @override
-  List<Object?> get props => [sales];
-}
-
-class ItemSaleOperationSuccess extends ItemSaleState {
-  final List<ItemSale> sales;
-  final String message;
-
-  const ItemSaleOperationSuccess({required this.sales, required this.message});
+  const ItemSalesLoaded(this.sales, {this.message});
 
   @override
   List<Object?> get props => [sales, message];

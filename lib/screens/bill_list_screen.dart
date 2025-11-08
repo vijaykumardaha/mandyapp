@@ -318,7 +318,7 @@ class _BillListScreenState extends State<BillListScreen> {
     }
 
     final itemSaleBloc = context.read<ItemSaleBloc>();
-    itemSaleBloc.add(LoadItemSales(sellerId: seller!.id, excludeCartLinked: false));
+    itemSaleBloc.add(LoadItemSales(sellerId: seller!.id, excludeCartLinked: true));
 
     var confirmed = false;
     await showModalBottomSheet<void>(
@@ -336,7 +336,11 @@ class _BillListScreenState extends State<BillListScreen> {
               seller: seller,
               sales: sales,
               formatCustomer: (customer) => _formatCustomer(customer),
-              onReload: () => itemSaleBloc.add(LoadItemSales(sellerId: seller.id, excludeCartLinked: false)),
+              onReload: () {
+                if (seller.id != null) {
+                  itemSaleBloc.add(LoadBillableSales(sellerId: seller.id!));
+                }
+              },
               onDeleteSale: (sale, index) {
                 if (!mounted) {
                   return;
@@ -344,7 +348,9 @@ class _BillListScreenState extends State<BillListScreen> {
                 if (sale.id != null) {
                   final bloc = context.read<ItemSaleBloc>();
                   bloc.add(DeleteItemSaleEvent(sale.id!));
-                  bloc.add(LoadItemSales(sellerId: seller.id, excludeCartLinked: false));
+                  if (seller.id != null) {
+                    bloc.add(LoadBillableSales(sellerId: seller.id!));
+                  }
                 }
               },
               onConfirm: (selected) async {
@@ -692,9 +698,6 @@ class _BillListScreenState extends State<BillListScreen> {
 
   List<ItemSale> _salesFromState(ItemSaleState state) {
     if (state is ItemSalesLoaded) {
-      return state.sales;
-    }
-    if (state is ItemSaleOperationSuccess) {
       return state.sales;
     }
     return const [];

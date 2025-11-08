@@ -16,6 +16,7 @@ class ItemSaleBloc extends Bloc<ItemSaleEvent, ItemSaleState> {
         _productStockDAO = ProductStockDAO(),
         super(const ItemSaleInitial()) {
     on<LoadItemSales>(_onLoadItemSales);
+    on<LoadBillableSales>(_onLoadBillableSales);
     on<AddItemSaleEvent>(_onAddItemSale);
     on<UpdateItemSaleEvent>(_onUpdateItemSale);
     on<DeleteItemSaleEvent>(_onDeleteItemSale);
@@ -36,6 +37,24 @@ class ItemSaleBloc extends Bloc<ItemSaleEvent, ItemSaleState> {
     }
   }
 
+  Future<void> _onLoadBillableSales(LoadBillableSales event, Emitter<ItemSaleState> emit) async {
+    emit(const ItemSaleLoading());
+    try {
+      // Load sales that are billable (not linked to any cart)
+      final sales = await _itemSaleDAO.getItemSales(
+        sellerId: event.sellerId,
+        excludeCartLinked: event.excludeCartLinked,
+      );
+      
+      // Filter out sales that are already linked to a cart
+      final billableSales = sales.where((sale) => sale.sellerCartId == null).toList();
+      
+      emit(ItemSalesLoaded(billableSales, message: 'Billable sales loaded'));
+    } catch (error) {
+      emit(ItemSaleError('Failed to load billable sales: ${error.toString()}'));
+    }
+  }
+
   Future<void> _onAddItemSale(AddItemSaleEvent event, Emitter<ItemSaleState> emit) async {
     emit(const ItemSaleLoading());
     try {
@@ -44,7 +63,7 @@ class ItemSaleBloc extends Bloc<ItemSaleEvent, ItemSaleState> {
         sellerId: event.sale.sellerId,
         excludeCartLinked: true,
       );
-      emit(ItemSaleOperationSuccess(sales: sales, message: 'Sale added successfully'));
+      emit(ItemSalesLoaded(sales, message: 'Sale added successfully'));
     } catch (error) {
       emit(ItemSaleError('Failed to add sale: ${error.toString()}'));
     }
@@ -55,7 +74,7 @@ class ItemSaleBloc extends Bloc<ItemSaleEvent, ItemSaleState> {
     try {
       await _itemSaleDAO.updateItemSale(event.sale);
       final sales = await _itemSaleDAO.getItemSales(sellerId: event.sale.sellerId);
-      emit(ItemSaleOperationSuccess(sales: sales, message: 'Sale updated successfully'));
+      emit(ItemSalesLoaded(sales, message: 'Sale updated successfully'));
     } catch (error) {
       emit(ItemSaleError('Failed to update sale: ${error.toString()}'));
     }
@@ -76,8 +95,8 @@ class ItemSaleBloc extends Bloc<ItemSaleEvent, ItemSaleState> {
           await _productStockDAO.upsertStock(updatedStock);
         }
       }
-      final sales = await _itemSaleDAO.getItemSales();
-      emit(ItemSaleOperationSuccess(sales: sales, message: 'Sale removed successfully'));
+      // final sales = await _itemSaleDAO.getItemSales();
+      // emit(ItemSalesLoaded(sales, message: 'Sale removed successfully'));
     } catch (error) {
       emit(ItemSaleError('Failed to delete sale: ${error.toString()}'));
     }

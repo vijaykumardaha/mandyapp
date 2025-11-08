@@ -370,16 +370,13 @@ class SellingScreenState extends State<SellingScreen> {
         return AddToSaleBottomSheet(
           variants: variants,
           sellerLabel: sellerLabel,
-          bannerBuilder: _buildSheetFlashBanner,
-          onSubmit: (variant, quantity, rate, onBanner) async {
+          onSubmit: (variant, quantity, rate) async {
             await _submitCartItem(
               product,
               variant,
               quantity: quantity,
               overrideSellingPrice: rate,
-              onBanner: onBanner,
             );
-            onBanner('Item has been added to your list.');
           },
         );
       },
@@ -391,7 +388,6 @@ class SellingScreenState extends State<SellingScreen> {
     ProductVariant variant, {
     required double quantity,
     double? overrideSellingPrice,
-    void Function(String message)? onBanner,
   }) async {
     if (sellerCustomer == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -448,13 +444,8 @@ class SellingScreenState extends State<SellingScreen> {
       }
 
       if (stockRecord.currentStock < quantity) {
-        if (onBanner != null) {
-          onBanner(
+        _showSnack(
               'Only ${stockRecord.currentStock.toStringAsFixed(2)} ${stockRecord.unit} left in stock.');
-        } else {
-          _showSnack(
-              'Only ${stockRecord.currentStock.toStringAsFixed(2)} ${stockRecord.unit} left in stock.');
-        }
         return;
       }
     }
@@ -488,9 +479,6 @@ class SellingScreenState extends State<SellingScreen> {
 
   List<ItemSale> _salesFromState(ItemSaleState state) {
     if (state is ItemSalesLoaded) {
-      return state.sales;
-    }
-    if (state is ItemSaleOperationSuccess) {
       return state.sales;
     }
     return const [];
