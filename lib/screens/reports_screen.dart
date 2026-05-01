@@ -15,7 +15,6 @@ enum ReportType {
   customerLedger,
   pendingPayment,
   paymentMode,
-  stockMovement,
   topSellingProducts,
   chargesPerformance,
 }
@@ -73,8 +72,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
         return 'Pending Payment';
       case ReportType.paymentMode:
         return 'Payment Mode';
-      case ReportType.stockMovement:
-        return 'Stock Movement';
       case ReportType.topSellingProducts:
         return 'Top Products';
       case ReportType.chargesPerformance:
@@ -98,8 +95,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
         return Icons.pending_actions;
       case ReportType.paymentMode:
         return Icons.payment;
-      case ReportType.stockMovement:
-        return Icons.inventory;
       case ReportType.topSellingProducts:
         return Icons.star;
       case ReportType.chargesPerformance:
@@ -260,7 +255,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
           PopupMenuItem(value: ReportType.customerLedger, child: Text('Customer Ledger Report')),
           PopupMenuItem(value: ReportType.pendingPayment, child: Text('Pending Payment Report')),
           PopupMenuItem(value: ReportType.paymentMode, child: Text('Payment Mode Summary')),
-          PopupMenuItem(value: ReportType.stockMovement, child: Text('Stock Movement Report')),
           PopupMenuItem(value: ReportType.topSellingProducts, child: Text('Top Selling Products')),
           PopupMenuItem(value: ReportType.chargesPerformance, child: Text('Charges Performance Report')),
         ],
@@ -609,11 +603,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
       case ReportType.paymentMode:
         if (state is PaymentModeReportLoaded) {
           return _buildPaymentModeReport(state, theme, currencyFormat);
-        }
-        break;
-      case ReportType.stockMovement:
-        if (state is StockMovementReportLoaded) {
-          return _buildStockMovementReport(state, theme, currencyFormat);
         }
         break;
       case ReportType.topSellingProducts:
@@ -1365,110 +1354,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildStockMovementReport(StockMovementReportLoaded state, ThemeData theme, NumberFormat currencyFormat) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Summary Card
-        _buildSummaryCard(
-          'Net Stock Change',
-          '${state.netStockChange >= 0 ? '+' : ''}${state.netStockChange.toStringAsFixed(2)} units',
-          Icons.inventory,
-          state.netStockChange >= 0 ? Colors.green : Colors.red,
-          theme,
-        ),
-        MySpacing.height(16),
-
-        // Data Table
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                // Table Header
-                Container(
-                  padding: MySpacing.xy(12, 8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(flex: 2, child: MyText.bodySmall('Product', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('In', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Out', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Net', fontWeight: 600)),
-                    ],
-                  ),
-                ),
-
-                // Table Rows
-                Expanded(
-                  child: ListView.separated(
-                    padding: EdgeInsets.zero,
-                    itemCount: state.data.length,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1,
-                      color: theme.colorScheme.outline.withOpacity(0.1),
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = state.data[index];
-                      return Container(
-                        padding: MySpacing.xy(12, 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  MyText.bodySmall(item.productName, fontWeight: 600),
-                                  MyText.bodySmall(item.unit, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                '+${item.stockIn.toStringAsFixed(2)}',
-                                textAlign: TextAlign.center,
-                                color: Colors.green,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                '-${item.stockOut.toStringAsFixed(2)}',
-                                textAlign: TextAlign.center,
-                                color: Colors.red,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                '${item.netStockChange >= 0 ? '+' : ''}${item.netStockChange.toStringAsFixed(2)}',
-                                textAlign: TextAlign.center,
-                                fontWeight: 600,
-                                color: item.netStockChange >= 0 ? Colors.green : Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildTopSellingProductsReport(TopSellingProductsReportLoaded state, ThemeData theme, NumberFormat currencyFormat) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1757,12 +1642,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
         break;
       case ReportType.paymentMode:
         reportsBloc.add(LoadPaymentModeReport(
-          fromDate: _getStartDate(),
-          toDate: _getEndDate(),
-        ));
-        break;
-      case ReportType.stockMovement:
-        reportsBloc.add(LoadStockMovementReport(
           fromDate: _getStartDate(),
           toDate: _getEndDate(),
         ));

@@ -183,7 +183,6 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
       
       await cartChargeDAO.deleteCartCharges(event.bill.cartId);
       await cartPaymentDAO.deleteCartPayments(event.bill.cartId);
-      await itemSaleDAO.deleteItemSales(event.bill.cartId);
 
       chargesBloc.add(LoadCharges());
       paymentBloc.add(const LoadCartPayments());

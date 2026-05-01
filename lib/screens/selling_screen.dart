@@ -2,16 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/blocs/item_sale/item_sale_bloc.dart';
-import 'package:mandyapp/dao/product_stock_dao.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/blocs/customer/customer_bloc.dart';
-import 'package:mandyapp/models/item_sale_model.dart';
-import 'package:mandyapp/models/product_stock_model.dart';
-import 'package:mandyapp/widgets/selling/add_to_sale_bottom_sheet.dart';
 import 'package:mandyapp/widgets/selling/product_card.dart';
 
 class SellingScreen extends StatefulWidget {
@@ -25,65 +21,15 @@ class SellingScreenState extends State<SellingScreen> {
   late ThemeData theme;
   Customer? sellerCustomer;
   Customer? buyerCustomer;
-  late ProductStockDAO _productStockDAO;
   String? _selectedAlphabet;
 
   @override
   void initState() {
     super.initState();
     theme = AppTheme.shoppingManagerTheme;
-    _productStockDAO = ProductStockDAO();
     context.read<ProductBloc>().add(LoadProducts());
     context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
     context.read<ItemSaleBloc>().add(const LoadItemSales());
-  }
-
-  String? _sellerNameForSale(ItemSale sale) {
-    final customerBlocState = context.read<CustomerBloc>().state;
-    if (customerBlocState is! CustomerLoaded) {
-      return null;
-    }
-
-    final seller = customerBlocState.customers.firstWhere(
-      (customer) => customer.id == sale.sellerId,
-      orElse: () => Customer(id: sale.sellerId, name: null),
-    );
-
-    return seller.name ?? 'Seller #${sale.sellerId}';
-  }
-
-  String _productTitleForSale(ItemSale sale) {
-    final productBlocState = context.read<ProductBloc>().state;
-    if (productBlocState is! ProductLoaded) {
-      return 'Product #${sale.productId}';
-    }
-
-    final product = productBlocState.products.firstWhere(
-      (element) => element.id == sale.productId,
-      orElse: () => Product(
-          id: sale.productId,
-          categoryId: 0,
-          defaultVariant: 0,
-          variants: const <ProductVariant>[]),
-    );
-
-    final variants = product.variants;
-    if (variants != null && variants.isNotEmpty) {
-      final matchingVariant = variants.firstWhere(
-        (variant) => variant.id == sale.variantId,
-        orElse: () => product.defaultVariantModel ?? variants.first,
-      );
-      if (matchingVariant.variantName.isNotEmpty) {
-        return matchingVariant.variantName;
-      }
-    } else {
-      final defaultVariant = product.defaultVariantModel;
-      if (defaultVariant != null && defaultVariant.variantName.isNotEmpty) {
-        return defaultVariant.variantName;
-      }
-    }
-
-    return 'Product #${sale.productId}';
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -371,153 +317,6 @@ class SellingScreenState extends State<SellingScreen> {
     }
 
     FocusScope.of(context).unfocus();
-
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return AddToSaleBottomSheet(
-          variants: variants,
-          onSubmit: (variant, quantity, rate) async {
-            await _submitCartItem(
-              product,
-              variant,
-              quantity: quantity,
-              overrideSellingPrice: rate,
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Future<void> _submitCartItem(
-    Product product,
-    ProductVariant variant, {
-    required double quantity,
-    double? overrideSellingPrice,
-  }) async {
-    if (sellerCustomer == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-          content: Text('Please select a customer before adding items.'),
-        ),
-      );
-      return;
-    }
-
-    final sellerId = sellerCustomer!.id;
-    if (sellerId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-          content: Text('Selected customer is missing an identifier.'),
-        ),
-      );
-      return;
-    }
-
-    ProductStock? stockRecord;
-    if (variant.manageStock) {
-      final productId = product.id;
-      if (productId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-            content: Text(''),
-          ),
-        );
-        return;
-      }
-
-      stockRecord = await _productStockDAO.getStockForVariant(
-        productId: productId,
-        variantId: variant.id!,
-      );
-
-      if (stockRecord == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-            content:
-                Text('Product is missing an identifier for stock management.'),
-          ),
-        );
-        return;
-      }
-
-      if (stockRecord.currentStock < quantity) {
-        _showSnack(
-              'Only ${stockRecord.currentStock.toStringAsFixed(2)} ${stockRecord.unit} left in stock.');
-        return;
-      }
-    }
-
-    final effectiveSellingPrice = overrideSellingPrice ?? variant.sellingPrice;
-    final sale = ItemSale(
-      stockId: stockRecord?.id,
-      sellerId: sellerId,
-      buyerCartId: null,
-      buyerId: null,
-      productId: product.id ?? 0,
-      variantId: variant.id!,
-      buyingPrice: variant.buyingPrice,
-      sellingPrice: effectiveSellingPrice,
-      quantity: quantity,
-      unit: variant.unit,
-      createdAt: DateTime.now().toIso8601String(),
-      updatedAt: DateTime.now().toIso8601String(),
-    );
-
-    context.read<ItemSaleBloc>().add(AddItemSaleEvent(sale));
-
-    if (variant.manageStock && stockRecord != null) {
-      final updatedStock = stockRecord.copyWith(
-        currentStock: stockRecord.currentStock - quantity,
-        lastUpdated: DateTime.now().toIso8601String(),
-      );
-      await _productStockDAO.upsertStock(updatedStock);
-    }
-  }
-
-  List<ItemSale> _salesFromState(ItemSaleState state) {
-    if (state is ItemSalesLoaded) {
-      return state.sales;
-    }
-    return const [];
-  }
-
-  void _showSnack(String message) {
-    if (!mounted) {
-      return;
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-        content: Text(message),
-      ),
-    );
-  }
-
-  String _formatCustomer(Customer? customer) {
-    if (customer == null) {
-      return '';
-    }
-    final name = customer.name?.trim() ?? '';
-    final phone = customer.phone?.trim() ?? '';
-    if (name.isNotEmpty && phone.isNotEmpty) {
-      return '$name ($phone)';
-    }
-    if (name.isNotEmpty) {
-      return name;
-    }
-    return phone;
   }
 
   @override

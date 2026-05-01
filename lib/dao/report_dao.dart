@@ -193,35 +193,6 @@ class ReportDAO {
     return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
   }
 
-  // 8. Stock Movement Report
-  Future<List<Map<String, dynamic>>> getStockMovementReport({
-    required DateTime fromDate,
-    required DateTime toDate,
-  }) async {
-    final db = await dbHelper.database;
-    const sql = '''
-      SELECT
-        p.id as product_id,
-        pv.variant_name,
-        pv.unit,
-        SUM(CASE WHEN item_sales.buyer_cart_id IS NOT NULL THEN item_sales.quantity ELSE 0 END) as quantity_sold,
-        SUM(CASE WHEN item_sales.seller_cart_id IS NOT NULL THEN item_sales.quantity ELSE 0 END) as quantity_purchased,
-        (SUM(CASE WHEN item_sales.seller_cart_id IS NOT NULL THEN item_sales.quantity ELSE 0 END) -
-         SUM(CASE WHEN item_sales.buyer_cart_id IS NOT NULL THEN item_sales.quantity ELSE 0 END)) as net_stock_change,
-        COUNT(CASE WHEN item_sales.buyer_cart_id IS NOT NULL THEN 1 END) as sales_transactions,
-        COUNT(CASE WHEN item_sales.seller_cart_id IS NOT NULL THEN 1 END) as purchase_transactions
-      FROM item_sales
-      LEFT JOIN product_variants pv ON item_sales.variant_id = pv.id
-      LEFT JOIN products p ON item_sales.product_id = p.id
-      WHERE date(item_sales.created_at) >= date(?)
-        AND date(item_sales.created_at) <= date(?)
-      GROUP BY item_sales.product_id, item_sales.variant_id, pv.variant_name, pv.unit
-      ORDER BY ABS(net_stock_change) DESC
-    ''';
-
-    return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
-  }
-
   // 9. Top Selling Products
   Future<List<Map<String, dynamic>>> getTopSellingProducts({
     required DateTime fromDate,
@@ -302,44 +273,6 @@ class ReportDAO {
 
     final result = await db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
     return result.isNotEmpty ? result.first : {};
-  }
-
-  // Stock Summary Methods
-  Future<Map<String, dynamic>> getStockSummary() async {
-    final db = await dbHelper.database;
-
-    // Get total available stock
-    const totalStockSql = '''
-      SELECT
-        SUM(current_stock) as total_stock,
-        COUNT(*) as total_items
-      FROM product_stocks
-    ''';
-
-    // Get low stock items (less than or equal to 10 units)
-    const lowStockSql = '''
-      SELECT COUNT(*) as low_stock_count
-      FROM product_stocks
-      WHERE current_stock <= 10 AND current_stock > 0
-    ''';
-
-    // Get out of stock items (zero stock)
-    const outOfStockSql = '''
-      SELECT COUNT(*) as out_of_stock_count
-      FROM product_stocks
-      WHERE current_stock = 0
-    ''';
-
-    final totalStockResult = await db.rawQuery(totalStockSql);
-    final lowStockResult = await db.rawQuery(lowStockSql);
-    final outOfStockResult = await db.rawQuery(outOfStockSql);
-
-    return {
-      'total_stock': (totalStockResult.first['total_stock'] as num?)?.toDouble() ?? 0.0,
-      'total_items': (totalStockResult.first['total_items'] as num?)?.toInt() ?? 0,
-      'low_stock_count': (lowStockResult.first['low_stock_count'] as num?)?.toInt() ?? 0,
-      'out_of_stock_count': (outOfStockResult.first['out_of_stock_count'] as num?)?.toInt() ?? 0,
-    };
   }
 
   // Payment Summary Methods

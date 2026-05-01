@@ -7,7 +7,6 @@ class ProductVariant {
   double quantity;
   String unit;
   String imagePath;
-  bool manageStock;
 
   ProductVariant({
     this.id,
@@ -18,7 +17,6 @@ class ProductVariant {
     required this.quantity,
     required this.unit,
     required this.imagePath,
-    this.manageStock = true,
   });
 
   Map<String, dynamic> toJson() {
@@ -31,7 +29,6 @@ class ProductVariant {
       'quantity': quantity,
       'unit': unit,
       'image_path': imagePath,
-      'manage_stock': manageStock ? 1 : 0,
     };
   }
 
@@ -45,7 +42,6 @@ class ProductVariant {
       quantity: (json['quantity'] as num).toDouble(),
       unit: json['unit'] as String,
       imagePath: json['image_path'] as String,
-      manageStock: (json['manage_stock'] as int? ?? 1) == 1,
     );
   }
 

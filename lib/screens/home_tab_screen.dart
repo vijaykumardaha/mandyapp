@@ -294,56 +294,6 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Stock Overview Card (Single unified card)
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.shadowColor.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-              border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.1),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                MyText.titleMedium("Stock Overview", fontWeight: 600),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _FinancialMetric(
-                        title: "Available Stock",
-                        value: "${data.availableStock.toStringAsFixed(1)} Kg",
-                        icon: Icons.inventory,
-                        color: Colors.purple,
-                        theme: theme,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _FinancialMetric(
-                        title: "Out of Stock",
-                        value: "${data.outOfStockItems} items",
-                        icon: Icons.report_problem,
-                        color: Colors.redAccent,
-                        theme: theme,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
         ],
       ),
     );

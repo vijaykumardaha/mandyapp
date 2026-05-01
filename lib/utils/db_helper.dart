@@ -69,8 +69,7 @@ class DBHelper {
             selling_price REAL NOT NULL,
             quantity REAL NOT NULL,
             unit TEXT NOT NULL,
-            image_path TEXT NOT NULL,
-            manage_stock INTEGER NOT NULL DEFAULT 1
+            image_path TEXT NOT NULL
           )
         ''');
 
@@ -143,20 +142,6 @@ class DBHelper {
         ''');
 
         await db.execute('''
-          CREATE TABLE product_stocks (
-            id INTEGER PRIMARY KEY,
-            customer_id INTEGER NOT NULL,
-            product_id TEXT NOT NULL,
-            variant_id TEXT NOT NULL,
-            initial_stock REAL NOT NULL DEFAULT 0,
-            current_stock REAL NOT NULL DEFAULT 0,
-            unit TEXT DEFAULT 'Kg',
-            created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-            last_updated TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
-          )
-        ''');
-
-        await db.execute('''
           CREATE TABLE item_sales (
             id INTEGER PRIMARY KEY,
             seller_id INTEGER NOT NULL,
@@ -165,7 +150,6 @@ class DBHelper {
             buyer_id INTEGER,
             product_id INTEGER NOT NULL,
             variant_id INTEGER NOT NULL,
-            stock_id INTEGER,
             buying_price REAL DEFAULT 0.0,
             selling_price REAL NOT NULL,
             quantity REAL NOT NULL,

@@ -15,7 +15,6 @@ import 'package:mandyapp/screens/theme_settings_screen.dart';
 import 'package:mandyapp/screens/language_settings_screen.dart';
 import 'package:mandyapp/screens/notification_settings_screen.dart';
 import 'package:mandyapp/screens/customer_management_screen.dart';
-import 'package:mandyapp/screens/stock_screen.dart';
 import 'package:mandyapp/screens/bill_list_screen.dart';
 
 class AppRoutes {
@@ -112,12 +111,6 @@ class AppRoutes {
         path: '/customers',
         builder: (context, state) {
           return const CustomerManagementScreen();
-        },
-      ),
-      GoRoute(
-        path: '/stock',
-        builder: (context, state) {
-          return const StockScreen();
         },
       ),
       GoRoute(

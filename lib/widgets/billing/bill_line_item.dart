@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/item_sale_model.dart';
 import 'package:mandyapp/models/product_model.dart';

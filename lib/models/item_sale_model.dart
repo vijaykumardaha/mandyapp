@@ -6,7 +6,6 @@ class ItemSale {
   int? buyerId;
   int productId;
   int variantId;
-  int? stockId;
   double buyingPrice;
   double sellingPrice;
   double quantity;
@@ -22,7 +21,6 @@ class ItemSale {
     this.buyerId,
     required this.productId,
     required this.variantId,
-    this.stockId,
     this.buyingPrice = 0.0,
     required this.sellingPrice,
     required this.quantity,
@@ -40,7 +38,6 @@ class ItemSale {
       'buyer_id': buyerId,
       'product_id': productId,
       'variant_id': variantId,
-      'stock_id': stockId,
       'buying_price': buyingPrice,
       'selling_price': sellingPrice,
       'quantity': quantity,
@@ -59,7 +56,6 @@ class ItemSale {
       buyerId: json['buyer_id'] as int?,
       productId: json['product_id'] as int,
       variantId: json['variant_id'] as int,
-      stockId: json['stock_id'] as int?,
       buyingPrice: (json['buying_price'] as num?)?.toDouble() ?? 0.0,
       sellingPrice: (json['selling_price'] as num).toDouble(),
       quantity: (json['quantity'] as num).toDouble(),
@@ -77,7 +73,6 @@ class ItemSale {
     int? buyerId,
     int? productId,
     int? variantId,
-    int? stockId,
     double? buyingPrice,
     double? sellingPrice,
     double? quantity,
@@ -93,7 +88,6 @@ class ItemSale {
       buyerId: buyerId ?? this.buyerId,
       productId: productId ?? this.productId,
       variantId: variantId ?? this.variantId,
-      stockId: stockId ?? this.stockId,
       buyingPrice: buyingPrice ?? this.buyingPrice,
       sellingPrice: sellingPrice ?? this.sellingPrice,
       quantity: quantity ?? this.quantity,

@@ -10,7 +10,6 @@ typedef SaleSelectionSellerLookup = String? Function(ItemSale sale);
 typedef SaleSelectionTitleLookup = String Function(ItemSale sale);
 typedef SaleSelectionDeleteCallback = Future<bool> Function(ItemSale sale, int index);
 typedef SaleSelectionCheckoutCallback = Future<void> Function(
-  BuildContext sheetContext,
   List<ItemSale> selectedSales,
 );
 typedef SaleSelectionCloseCallback = void Function(BuildContext sheetContext);
@@ -24,7 +23,6 @@ class SaleSelectionBottomSheet extends StatefulWidget {
   final SaleSelectionTitleLookup productTitleForSale;
   final SaleSelectionDeleteCallback onDeleteSale;
   final SaleSelectionCheckoutCallback onCheckout;
-  final SaleSelectionCloseCallback onClose;
   final bool showCancelButton;
 
   const SaleSelectionBottomSheet({
@@ -37,7 +35,6 @@ class SaleSelectionBottomSheet extends StatefulWidget {
     required this.productTitleForSale,
     required this.onDeleteSale,
     required this.onCheckout,
-    required this.onClose,
     this.showCancelButton = true,
   });
 
@@ -73,12 +70,13 @@ class _SaleSelectionBottomSheetState extends State<SaleSelectionBottomSheet> {
               left: 20,
               right: 20,
               top: 20,
-              bottom: bottomPadding + 24,
+              bottom: bottomPadding + 16,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 Center(
                   child: Container(
                     width: 40,
@@ -224,10 +222,6 @@ class _SaleSelectionBottomSheetState extends State<SaleSelectionBottomSheet> {
                                               ..clear()
                                               ..addAll(updatedIndices);
                                           });
-
-                                          if (_saleList.isEmpty) {
-                                            widget.onClose(context);
-                                          }
                                         },
                                 ),
                               ],
@@ -241,20 +235,6 @@ class _SaleSelectionBottomSheetState extends State<SaleSelectionBottomSheet> {
                 MySpacing.height(24),
                 Row(
                   children: [
-                    if (widget.showCancelButton) ...[
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => widget.onClose(context),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                            side: BorderSide(color: sheetTheme.colorScheme.outline.withOpacity(0.4)),
-                          ),
-                          child: const Text('Cancel'),
-                        ),
-                      ),
-                      MySpacing.width(16),
-                    ],
                     Expanded(
                       child: ElevatedButton(
                         onPressed: _selectedIndices.isEmpty || _buyerCustomer == null
@@ -263,7 +243,7 @@ class _SaleSelectionBottomSheetState extends State<SaleSelectionBottomSheet> {
                                 final selectedSales = _selectedIndices
                                     .map((index) => _saleList[index])
                                     .toList(growable: false);
-                                await widget.onCheckout(context, selectedSales);
+                                await widget.onCheckout(selectedSales);
                               },
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -284,6 +264,7 @@ class _SaleSelectionBottomSheetState extends State<SaleSelectionBottomSheet> {
                   ],
                 ),
               ],
+              ),
             ),
           ),
         ),

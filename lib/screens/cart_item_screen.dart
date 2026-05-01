@@ -189,20 +189,16 @@ class _CartItemScreenState extends State<CartItemScreen> {
         context.read<ItemSaleBloc>().add(DeleteItemSaleEvent(sale.id!));
         return true;
       },
-      onCheckout: (sheetContext, selectedSales) async {
+      onCheckout: ( selectedSales) async {
         final cartId = await _createNewCart(selectedSales);
         if (cartId == null || !mounted) {
           return;
         }
-        Navigator.of(sheetContext).pop(selectedSales);
         await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => CheckoutScreen(cartId: cartId),
           ),
         );
-      },
-      onClose: (sheetContext) {
-        Navigator.of(sheetContext).pop();
       },
       showCancelButton: false,
     );

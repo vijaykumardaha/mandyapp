@@ -243,41 +243,6 @@ class PaymentModeData {
   }
 }
 
-class StockMovementData {
-  final int productId;
-  final String productName;
-  final String unit;
-  final double stockIn;
-  final double stockOut;
-  final double netStockChange;
-  final int salesTransactions;
-  final int purchaseTransactions;
-
-  const StockMovementData({
-    required this.productId,
-    required this.productName,
-    required this.unit,
-    required this.stockIn,
-    required this.stockOut,
-    required this.netStockChange,
-    required this.salesTransactions,
-    required this.purchaseTransactions,
-  });
-
-  factory StockMovementData.fromJson(Map<String, dynamic> json) {
-    return StockMovementData(
-      productId: json['product_id'] as int,
-      productName: json['variant_name'] as String? ?? 'Product ${json['product_id']}',
-      unit: json['unit'] as String? ?? 'units',
-      stockIn: (json['quantity_purchased'] as num?)?.toDouble() ?? 0.0,
-      stockOut: (json['quantity_sold'] as num?)?.toDouble() ?? 0.0,
-      netStockChange: (json['net_stock_change'] as num?)?.toDouble() ?? 0.0,
-      salesTransactions: json['sales_transactions'] as int? ?? 0,
-      purchaseTransactions: json['purchase_transactions'] as int? ?? 0,
-    );
-  }
-}
-
 class TopSellingProductData {
   final int productId;
   final int variantId;

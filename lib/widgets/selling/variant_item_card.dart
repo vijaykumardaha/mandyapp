@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/widgets/common/reusable_controls.dart';
 
@@ -7,7 +6,7 @@ class VariantItemCard extends StatefulWidget {
   final ProductVariant variant;
   final TextEditingController qtyController;
   final TextEditingController rateController;
-  final Map<int, double> currentStocks;
+
   final ThemeData theme;
   final bool isLoading;
   final Future<void> Function()? onAddPressed;
@@ -16,7 +15,6 @@ class VariantItemCard extends StatefulWidget {
     required this.variant,
     required this.qtyController,
     required this.rateController,
-    required this.currentStocks,
     required this.theme,
     this.isLoading = false,
     this.onAddPressed,
@@ -25,51 +23,17 @@ class VariantItemCard extends StatefulWidget {
   @override
   State<VariantItemCard> createState() => _VariantItemCardState();
 
-  // Helper method to get available stock for the variant
-  String get stockDisplayText {
-    if (variant.id == null || !currentStocks.containsKey(variant.id)) {
-      return variant.variantName;
-    }
-    final stock = currentStocks[variant.id]!;
-    return '${variant.variantName} (${stock.toStringAsFixed(2)} ${variant.unit})';
-  }
-
 }
 
 class _VariantItemCardState extends State<VariantItemCard> {
-  // Track the current available stock
-  double? _availableStock;
 
   @override
   void initState() {
     super.initState();
-    // Initialize available stock when widget is first created
-    _updateAvailableStock();
-  }
-
-  // Update the available stock based on current quantity
-  void _updateAvailableStock() {
-    if (widget.variant.id != null && widget.variant.manageStock) {
-      final currentStock = widget.currentStocks[widget.variant.id!] ?? 0;
-      final currentQty = double.tryParse(widget.qtyController.text) ?? 0;
-      setState(() {
-        _availableStock = currentStock - currentQty;
-      });
-    }
   }
 
   // Handle quantity changes
   void _onQuantityChanged() {
-    final quantity = double.tryParse(widget.qtyController.text) ?? 0;
-    
-    // Update available stock
-    if (widget.variant.manageStock && widget.variant.id != null) {
-      final currentStock = widget.currentStocks[widget.variant.id!] ?? 0;
-      setState(() {
-        _availableStock = currentStock - quantity;
-      });
-    }
-    
     // Update the UI
     setState(() {});
   }
@@ -99,34 +63,6 @@ class _VariantItemCardState extends State<VariantItemCard> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Variant info section
-                  Expanded(
-                    flex: 3,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: widget.theme.colorScheme.surfaceVariant,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          MyText.bodyMedium(
-                            widget.stockDisplayText,
-                            fontWeight: 600,
-                            color: widget.variant.manageStock && 
-                                   widget.variant.id != null && 
-                                   (widget.currentStocks[widget.variant.id] ?? 0) <= 0
-                                ? widget.theme.colorScheme.error
-                                : widget.theme.colorScheme.onSurfaceVariant,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
                   const SizedBox(width: 12),
 
                   // Input fields section
@@ -195,13 +131,7 @@ class _VariantItemCardState extends State<VariantItemCard> {
                                   suffixIcon: VerticalStepper(
                                     controller: widget.qtyController,
                                     onChanged: _onQuantityChanged,
-                                    step: 1,
-                                    minValue: 0,
-                                    maxValue: widget.variant.manageStock &&
-                                            widget.variant.id != null
-                                        ? (widget.currentStocks[widget.variant.id] ?? 0) + 
-                                            (double.tryParse(widget.qtyController.text) ?? 0)
-                                        : null,
+                                    step: 1
                                   ),
                                   suffixIconConstraints: const BoxConstraints(
                                     minWidth: 36,
@@ -226,23 +156,6 @@ class _VariantItemCardState extends State<VariantItemCard> {
                                         if (quantity == null || quantity <= 0) {
                                           // Show error in the UI directly
                                           return;
-                                        }
-
-                                        // Check stock availability if stock management is enabled
-                                        if (widget.variant.manageStock &&
-                                            widget.variant.id != null) {
-                                          final currentStock = widget.currentStocks[widget.variant.id!] ?? 0;
-                                          final availableStock = currentStock - quantity;
-                                          
-                                          if (availableStock < 0) {
-                                            // Show error in the UI directly
-                                            return;
-                                          }
-                                          
-                                          // Update available stock display
-                                          setState(() {
-                                            _availableStock = availableStock;
-                                          });
                                         }
 
                                         final rate = double.tryParse(

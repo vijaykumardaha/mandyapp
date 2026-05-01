@@ -19,12 +19,10 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     on<LoadCustomerLedgerReport>(_onLoadCustomerLedgerReport);
     on<LoadPendingPaymentReport>(_onLoadPendingPaymentReport);
     on<LoadPaymentModeReport>(_onLoadPaymentModeReport);
-    on<LoadStockMovementReport>(_onLoadStockMovementReport);
     on<LoadTopSellingProductsReport>(_onLoadTopSellingProductsReport);
     on<LoadChargesPerformanceReport>(_onLoadChargesPerformanceReport);
     on<LoadReportsSummary>(_onLoadReportsSummary);
     on<LoadDashboardData>(_onLoadDashboardData);
-    on<LoadStockSummary>(_onLoadStockSummary);
     on<LoadPaymentSummary>(_onLoadPaymentSummary);
     on<LoadTodayOrders>(_onLoadTodayOrders);
     on<LoadNetBalance>(_onLoadNetBalance);
@@ -253,35 +251,6 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     }
   }
 
-  Future<void> _onLoadStockMovementReport(
-    LoadStockMovementReport event,
-    Emitter<ReportsState> emit,
-  ) async {
-    emit(ReportsLoading());
-
-    try {
-      final rawData = await reportDAO.getStockMovementReport(
-        fromDate: event.fromDate,
-        toDate: event.toDate,
-      );
-
-      if (rawData.isEmpty) {
-        emit(ReportsEmpty());
-        return;
-      }
-
-      final data = rawData.map(StockMovementData.fromJson).toList();
-      final netStockChange = data.fold(0.0, (sum, item) => sum + item.netStockChange);
-
-      emit(StockMovementReportLoaded(
-        data: data,
-        netStockChange: netStockChange,
-      ));
-    } catch (error) {
-      emit(ReportsError('Failed to load stock movement report: ${error.toString()}'));
-    }
-  }
-
   Future<void> _onLoadTopSellingProductsReport(
     LoadTopSellingProductsReport event,
     Emitter<ReportsState> emit,
@@ -381,7 +350,6 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       final todaySalesFuture = reportDAO.getDailySalesReport(fromDate: fromDate, toDate: toDate);
       final profitFuture = reportDAO.getMandiProfitReport(fromDate: fromDate, toDate: toDate);
       final paymentSummaryFuture = reportDAO.getPaymentSummary();
-      final stockSummaryFuture = reportDAO.getStockSummary();
       final ordersFuture = reportDAO.getTodayOrdersCount();
       final netBalanceFuture = reportDAO.getNetBalance();
 
@@ -389,7 +357,6 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         todaySalesFuture,
         profitFuture,
         paymentSummaryFuture,
-        stockSummaryFuture,
         ordersFuture,
         netBalanceFuture,
       ]);
@@ -397,9 +364,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       final todaySalesData = results[0] as List<Map<String, dynamic>>;
       final profitData = results[1] as List<Map<String, dynamic>>;
       final paymentSummary = results[2] as Map<String, dynamic>;
-      final stockSummary = results[3] as Map<String, dynamic>;
-      final ordersCount = results[4] as int;
-      final netBalance = results[5] as double;
+      final ordersCount = results[3] as int;
+      final netBalance = results[4] as double;
 
       // Calculate today's sales
       final todaySales = todaySalesData.fold(0.0, (sum, item) => sum + (item['total_revenue'] as num).toDouble());
@@ -415,32 +381,10 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         totalReceived: paymentSummary['total_received'] ?? 0.0,
         totalPending: paymentSummary['total_pending'] ?? 0.0,
         paidToSellers: paymentSummary['total_paid_to_sellers'] ?? 0.0,
-        pendingToSellers: paymentSummary['total_pending_to_sellers'] ?? 0.0,
-        availableStock: stockSummary['total_stock'] ?? 0.0,
-        lowStockItems: stockSummary['low_stock_count'] ?? 0,
-        outOfStockItems: stockSummary['out_of_stock_count'] ?? 0,
+        pendingToSellers: paymentSummary['total_pending_to_sellers'] ?? 0.0
       ));
     } catch (error) {
       emit(ReportsError('Failed to load dashboard data: ${error.toString()}'));
-    }
-  }
-
-  Future<void> _onLoadStockSummary(
-    LoadStockSummary event,
-    Emitter<ReportsState> emit,
-  ) async {
-    emit(ReportsLoading());
-
-    try {
-      final stockSummary = await reportDAO.getStockSummary();
-
-      emit(StockSummaryLoaded(
-        availableStock: stockSummary['total_stock'] ?? 0.0,
-        lowStockItems: stockSummary['low_stock_count'] ?? 0,
-        outOfStockItems: stockSummary['out_of_stock_count'] ?? 0,
-      ));
-    } catch (error) {
-      emit(ReportsError('Failed to load stock summary: ${error.toString()}'));
     }
   }
 

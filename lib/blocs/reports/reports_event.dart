@@ -98,19 +98,6 @@ class LoadPaymentModeReport extends ReportsEvent {
   List<Object?> get props => [fromDate, toDate];
 }
 
-class LoadStockMovementReport extends ReportsEvent {
-  final DateTime fromDate;
-  final DateTime toDate;
-
-  const LoadStockMovementReport({
-    required this.fromDate,
-    required this.toDate,
-  });
-
-  @override
-  List<Object?> get props => [fromDate, toDate];
-}
-
 class LoadTopSellingProductsReport extends ReportsEvent {
   final DateTime fromDate;
   final DateTime toDate;
@@ -152,10 +139,6 @@ class LoadReportsSummary extends ReportsEvent {
 
 class LoadDashboardData extends ReportsEvent {
   const LoadDashboardData();
-}
-
-class LoadStockSummary extends ReportsEvent {
-  const LoadStockSummary();
 }
 
 class LoadPaymentSummary extends ReportsEvent {

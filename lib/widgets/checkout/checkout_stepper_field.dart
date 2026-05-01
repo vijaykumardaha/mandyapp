@@ -7,7 +7,6 @@ class CheckoutStepperField extends StatefulWidget {
   final double minValue;
   final double? maxValue;
   final String? unit;
-  final bool manageStock;
   final TextEditingController? controller;
   final ValueChanged<double> onChanged;
   final bool enabled;
@@ -20,7 +19,6 @@ class CheckoutStepperField extends StatefulWidget {
     required this.minValue,
     this.maxValue,
     this.unit,
-    this.manageStock = false,
     this.controller,
     required this.onChanged,
     this.enabled = true,

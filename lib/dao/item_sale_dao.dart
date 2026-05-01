@@ -47,16 +47,6 @@ class ItemSaleDAO {
     return ItemSale.fromJson(maps.first);
   }
 
-  // Delete all item sales for a cart
-  Future<int> deleteItemSales(int cartId) async {
-    final db = await dbHelper.database;
-    return await db.delete(
-      'item_sales',
-      where: 'buyer_cart_id = ? OR seller_cart_id = ?',
-      whereArgs: [cartId, cartId],
-    );
-  }
-
   Future<List<ItemSale>> getItemSales({int? sellerId, int? productId, int? variantId, bool excludeCartLinked = false}) async {
     final db = await dbHelper.database;
     final whereClauses = <String>[];

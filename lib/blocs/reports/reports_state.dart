@@ -129,19 +129,6 @@ class PaymentModeReportLoaded extends ReportsState {
   List<Object?> get props => [data, totalAmount];
 }
 
-class StockMovementReportLoaded extends ReportsState {
-  final List<StockMovementData> data;
-  final double netStockChange;
-
-  const StockMovementReportLoaded({
-    required this.data,
-    required this.netStockChange,
-  });
-
-  @override
-  List<Object?> get props => [data, netStockChange];
-}
-
 class TopSellingProductsReportLoaded extends ReportsState {
   final List<TopSellingProductData> data;
   final double totalRevenue;
@@ -186,9 +173,6 @@ class DashboardDataLoaded extends ReportsState {
   final double totalPending;
   final double paidToSellers;
   final double pendingToSellers;
-  final double availableStock;
-  final int lowStockItems;
-  final int outOfStockItems;
 
   const DashboardDataLoaded({
     required this.todaySales,
@@ -199,9 +183,6 @@ class DashboardDataLoaded extends ReportsState {
     required this.totalPending,
     required this.paidToSellers,
     required this.pendingToSellers,
-    required this.availableStock,
-    required this.lowStockItems,
-    required this.outOfStockItems,
   });
 
   @override
@@ -214,25 +195,7 @@ class DashboardDataLoaded extends ReportsState {
     totalPending,
     paidToSellers,
     pendingToSellers,
-    availableStock,
-    lowStockItems,
-    outOfStockItems,
   ];
-}
-
-class StockSummaryLoaded extends ReportsState {
-  final double availableStock;
-  final int lowStockItems;
-  final int outOfStockItems;
-
-  const StockSummaryLoaded({
-    required this.availableStock,
-    required this.lowStockItems,
-    required this.outOfStockItems,
-  });
-
-  @override
-  List<Object?> get props => [availableStock, lowStockItems, outOfStockItems];
 }
 
 class PaymentSummaryLoaded extends ReportsState {

@@ -1,8 +1,8 @@
 /*
-* File : Main File
-* We are using our own package (FlutX) : https://pub.dev/packages/flutx
-* Version : 13
-* */
+ * File : Main File
+ * We are using our own package (FlutX) : https://pub.dev/packages/flutx
+ * Version : 13
+ * */
 
 import 'package:another_telephony/telephony.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,7 +17,6 @@ import 'package:mandyapp/blocs/item_sale/item_sale_bloc.dart';
 import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/blocs/reports/reports_bloc.dart';
-import 'package:mandyapp/blocs/stock/stock_bloc.dart';
 import 'package:mandyapp/blocs/user/user_bloc.dart';
 import 'package:mandyapp/blocs/cart_payment/cart_payment_bloc.dart';
 import 'package:mandyapp/dao/cart_charge_dao.dart';
@@ -33,7 +32,6 @@ import 'package:mandyapp/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:mandyapp/utils/printer/printer_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
@@ -109,9 +107,6 @@ class MyApp extends StatelessWidget {
           ),
           BlocProvider<CartPaymentBloc>(
             create: (context) => CartPaymentBloc(),
-          ),
-          BlocProvider<StockBloc>(
-            create: (context) => StockBloc(),
           ),
           BlocProvider<ItemSaleBloc>(
             create: (context) => ItemSaleBloc(),

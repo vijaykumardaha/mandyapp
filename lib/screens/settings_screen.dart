@@ -73,13 +73,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             _buildSettingsTile(
-              icon: Icons.inventory,
-              title: 'Stock',
-              onTap: () {
-                context.push('/stock');
-              },
-            ),
-            _buildSettingsTile(
               icon: Icons.print_outlined,
               title: 'Printer',
               onTap: () {

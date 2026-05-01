@@ -160,7 +160,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final quantityController = TextEditingController(text: variant != null ? variant.quantity.toString() : '');
     String selectedUnit = variant?.unit ?? 'Kg';
     String imagePath = variant?.imagePath ?? '';
-    bool manageStock = variant?.manageStock ?? false;
     final ImagePicker imagePicker = ImagePicker();
 
     showDialog(
@@ -291,20 +290,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ],
                 ),
-                MySpacing.height(12),
-                CheckboxListTile(
-                  value: manageStock,
-                  onChanged: (value) {
-                    if (value != null) {
-                      setDialogState(() => manageStock = value);
-                    }
-                  },
-                  title: MyText.bodyMedium('Manage stock for this variant'),
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.zero,
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                ),
               ],
             ),
           ),
@@ -354,8 +339,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   sellingPrice: sellingPrice,
                   quantity: quantity,
                   unit: selectedUnit,
-                  imagePath: imagePath,
-                  manageStock: manageStock,
+                  imagePath: imagePath
                 );
 
                 setState(() {

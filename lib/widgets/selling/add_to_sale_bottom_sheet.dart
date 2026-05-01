@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
-import 'package:mandyapp/dao/product_stock_dao.dart';
+import 'package:mandyapp/widgets/selling/sale_selection_bottom_sheet.dart';
 import 'package:mandyapp/widgets/selling/variant_item_card.dart';
 
 typedef AddToSaleSubmitCallback = Future<void> Function(
@@ -13,11 +14,27 @@ typedef AddToSaleSubmitCallback = Future<void> Function(
 
 class AddToSaleBottomSheet extends StatefulWidget {
   final List<ProductVariant> variants;
+  final Customer? buyerCustomer;
+  final ValueChanged<Customer?> onBuyerChanged;
+  final SaleSelectionFormatCustomer formatCustomer;
+  final SaleSelectionSellerLookup sellerNameForSale;
+  final SaleSelectionTitleLookup productTitleForSale;
+  final SaleSelectionDeleteCallback onDeleteSale;
+  final SaleSelectionCheckoutCallback onCheckout;
+  final SaleSelectionCloseCallback onClose;
   final AddToSaleSubmitCallback onSubmit;
 
   const AddToSaleBottomSheet({
     super.key,
     required this.variants,
+    required this.buyerCustomer,
+    required this.onBuyerChanged,
+    required this.formatCustomer,
+    required this.sellerNameForSale,
+    required this.productTitleForSale,
+    required this.onDeleteSale,
+    required this.onCheckout,
+    required this.onClose,
     required this.onSubmit,
   });
 
@@ -25,19 +42,14 @@ class AddToSaleBottomSheet extends StatefulWidget {
   State<AddToSaleBottomSheet> createState() => _AddToSaleBottomSheetState();
 }
 
-
 class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
   final Map<int, TextEditingController> _quantityControllers = {};
   final Map<int, TextEditingController> _rateControllers = {};
-  final Map<int, double> _currentStocks = {};
-  final ProductStockDAO _stockDAO = ProductStockDAO();
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize controllers
     for (var i = 0; i < widget.variants.length; i++) {
       final variant = widget.variants[i];
       final key = _keyForVariant(variant, i);
@@ -48,35 +60,7 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
         text: variant.sellingPrice?.toStringAsFixed(2) ?? '0',
       );
     }
-
-    // Load stock data
-    _loadStocks();
   }
-
-  Future<void> _loadStocks() async {
-    try {
-      for (final variant in widget.variants) {
-        if (variant.id != null && variant.manageStock) {
-          final stock = await _stockDAO.getStockForVariant(
-            productId: variant.productId,
-            variantId: variant.id!,
-          );
-          if (stock != null) {
-            _currentStocks[variant.id!] = stock.currentStock;
-          } else {
-            _currentStocks[variant.id!] = 0.0;
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint('Error loading stocks: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
 
   @override
   void dispose() {
@@ -122,9 +106,7 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
                   variant: variant,
                   qtyController: qtyController,
                   rateController: rateController,
-                  currentStocks: _currentStocks,
                   theme: theme,
-                  isLoading: _isLoading,
                   onAddPressed: () async {
                     final quantity = double.tryParse(qtyController.text.trim());
                     if (quantity == null || quantity <= 0) {
