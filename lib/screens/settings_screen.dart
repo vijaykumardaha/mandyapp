@@ -36,21 +36,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             MySpacing.height(40),
             
-            // Profile Section
-            _buildSectionHeader('Profile'),
+            // Business Section
+            _buildSectionHeader('Business'),
             _buildSettingsTile(
               icon: Icons.person_outline,
-              title: 'Edit Profile',
+              title: 'My Profile',
               onTap: () {
                 // Navigate to profile screen
                 context.push('/profile');
               },
             ),
-            
-            MySpacing.height(24),
-            
-            // Business Section
-            _buildSectionHeader('Business'),
             _buildSettingsTile(
               icon: Icons.inventory_2,
               title: 'Products',
@@ -77,32 +72,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: 'Printer',
               onTap: () {
                 context.push('/printer-settings');
-              },
-            ),
-            
-            MySpacing.height(24),
-            
-            // App Settings Section
-            _buildSectionHeader('App Settings'),
-            _buildSettingsTile(
-              icon: Icons.notifications_none,
-              title: 'Notifications',
-              onTap: () {
-                context.push('/notification-settings');
-              },
-            ),
-            _buildSettingsTile(
-              icon: Icons.language,
-              title: 'Language',
-              onTap: () {
-                context.push('/language-settings');
-              },
-            ),
-            _buildSettingsTile(
-              icon: Icons.palette,
-              title: 'Theme',
-              onTap: () {
-                context.push('/theme-settings');
               },
             ),
             

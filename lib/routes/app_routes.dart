@@ -11,9 +11,6 @@ import 'package:mandyapp/screens/product_list_screen.dart';
 import 'package:mandyapp/screens/privacy_policy_screen.dart';
 import 'package:mandyapp/screens/printer_settings_screen.dart';
 import 'package:mandyapp/screens/terms_conditions_screen.dart';
-import 'package:mandyapp/screens/theme_settings_screen.dart';
-import 'package:mandyapp/screens/language_settings_screen.dart';
-import 'package:mandyapp/screens/notification_settings_screen.dart';
 import 'package:mandyapp/screens/customer_management_screen.dart';
 import 'package:mandyapp/screens/bill_list_screen.dart';
 
@@ -69,24 +66,6 @@ class AppRoutes {
         path: '/terms-conditions',
         builder: (context, state) {
           return const TermsConditionsScreen();
-        },
-      ),
-      GoRoute(
-        path: '/theme-settings',
-        builder: (context, state) {
-          return const ThemeSettingsScreen();
-        },
-      ),
-      GoRoute(
-        path: '/language-settings',
-        builder: (context, state) {
-          return const LanguageSettingsScreen();
-        },
-      ),
-      GoRoute(
-        path: '/notification-settings',
-        builder: (context, state) {
-          return const NotificationSettingsScreen();
         },
       ),
       GoRoute(
