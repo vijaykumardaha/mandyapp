@@ -5,9 +5,11 @@ import 'package:mandyapp/blocs/item_sale/item_sale_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
+import 'package:mandyapp/models/item_sale_model.dart';
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/blocs/customer/customer_bloc.dart';
+import 'package:mandyapp/widgets/selling/add_to_sale_bottom_sheet.dart';
 import 'package:mandyapp/widgets/selling/product_card.dart';
 
 class SellingScreen extends StatefulWidget {
@@ -96,7 +98,8 @@ class SellingScreenState extends State<SellingScreen> {
                       final alphabet = String.fromCharCode(65 + index); // A-Z
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: _buildAlphabetTag(alphabet, _selectedAlphabet == alphabet),
+                        child: _buildAlphabetTag(
+                            alphabet, _selectedAlphabet == alphabet),
                       );
                     }),
                   ],
@@ -111,24 +114,29 @@ class SellingScreenState extends State<SellingScreen> {
     return GestureDetector(
       onTap: () {
         setState(() {
-          _selectedAlphabet = isSelected ? null : (alphabet == 'All' ? null : alphabet);
+          _selectedAlphabet =
+              isSelected ? null : (alphabet == 'All' ? null : alphabet);
         });
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surface,
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected 
-                ? theme.colorScheme.primary 
+            color: isSelected
+                ? theme.colorScheme.primary
                 : theme.colorScheme.outline.withOpacity(0.3),
           ),
         ),
         child: Text(
           alphabet,
           style: TextStyle(
-            color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
+            color: isSelected
+                ? theme.colorScheme.onPrimary
+                : theme.colorScheme.onSurface,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             fontSize: 14,
           ),
@@ -317,6 +325,52 @@ class SellingScreenState extends State<SellingScreen> {
     }
 
     FocusScope.of(context).unfocus();
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.zero, // removes top radius
+      ),
+      builder: (sheetContext) {
+        return AddToSaleBottomSheet(
+          variants: variants,
+          onSubmit: (variant, quantity, rate) async {
+            await _submitCartItem(
+              product,
+              variant,
+              quantity: quantity,
+              overrideSellingPrice: rate,
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _submitCartItem(
+    Product product,
+    ProductVariant variant, {
+    required double quantity,
+    double? overrideSellingPrice,
+  }) async {
+
+    final effectiveSellingPrice = overrideSellingPrice ?? variant.sellingPrice;
+    final sale = ItemSale(
+      sellerId: sellerCustomer!.id!,
+      buyerCartId: null,
+      buyerId: null,
+      productId: product.id ?? 0,
+      variantId: variant.id!,
+      buyingPrice: variant.buyingPrice,
+      sellingPrice: effectiveSellingPrice,
+      quantity: quantity,
+      unit: variant.unit,
+      createdAt: DateTime.now().toIso8601String(),
+      updatedAt: DateTime.now().toIso8601String(),
+    );
+
+    context.read<ItemSaleBloc>().add(AddItemSaleEvent(sale));
   }
 
   @override
@@ -335,7 +389,7 @@ class SellingScreenState extends State<SellingScreen> {
             );
           }
         },
-        child: sellerCustomer == null 
+        child: sellerCustomer == null
             ? _buildCustomerGrid()
             : BlocBuilder<ProductBloc, ProductState>(
                 builder: (context, productState) {
@@ -345,14 +399,15 @@ class SellingScreenState extends State<SellingScreen> {
 
                   if (productState is ProductLoaded) {
                     final products = productState.products;
-                    
+
                     if (products.isEmpty) {
                       return const Center(child: Text('No products found.'));
                     }
 
                     return GridView.builder(
                       padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
                         childAspectRatio: 1,
                         crossAxisSpacing: 5,
