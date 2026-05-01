@@ -60,8 +60,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   void initState() {
     super.initState();
     _applyInitialPayment();
-    // Load cart details using CheckoutBloc
-    context.read<CheckoutBloc>().add(LoadCheckoutCart(widget.cartId));
+    // Only load cart details if cartId is valid (not 0)
+    if (widget.cartId > 0) {
+      context.read<CheckoutBloc>().add(LoadCheckoutCart(widget.cartId));
+    }
     // Load charges for the charges section
     context.read<ChargesBloc>().add(LoadCharges());
   }
@@ -142,7 +144,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final Map<int, double> matched = {};
     for (final saved in initialCharges) {
       for (final charge in relevantCharges) {
-        if (charge.chargeName.toLowerCase() == saved.chargeName.toLowerCase()) {
+        if (cart.id.toString() == saved.cartId.toString()) {
           if (charge.id != null) {
             // Use calculated amount for percentage charges, fixed amount for fixed charges
             final calculatedAmount = charge.chargeType == 'percentage'
@@ -340,51 +342,53 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
         ),
       ),
-      body: BlocBuilder<CheckoutBloc, CheckoutState>(
-        builder: (context, state) {
-          if (state is CheckoutLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: widget.cartId == 0 
+          ? _buildEmptyCart()
+          : BlocBuilder<CheckoutBloc, CheckoutState>(
+              builder: (context, state) {
+                if (state is CheckoutLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          if (state is CheckoutCartLoaded) {
-            final cart = state.cart;
-            if (cart.items == null || cart.items!.isEmpty) {
-              return _buildEmptyCart();
-            }
+                if (state is CheckoutCartLoaded) {
+                  final cart = state.cart;
+                  if (cart.items == null || cart.items!.isEmpty) {
+                    return _buildEmptyCart();
+                  }
 
-            return _buildCheckoutContent(cart, {}, {});
-          }
+                  return _buildCheckoutContent(cart, {}, {});
+                }
 
-          if (state is CheckoutDataLoaded) {
-            return _buildCheckoutContent(state.cart, state.products, state.variants);
-          }
+                if (state is CheckoutDataLoaded) {
+                  return _buildCheckoutContent(state.cart, state.products, state.variants);
+                }
 
-          if (state is CheckoutError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 64, color: Theme.of(context).colorScheme.error),
-                  MySpacing.height(16),
-                  MyText.bodyLarge('Error loading cart', color: Theme.of(context).colorScheme.error),
-                  MySpacing.height(8),
-                  MyText.bodyMedium(state.message, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
-                  MySpacing.height(16),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Retry loading cart
-                      context.read<CheckoutBloc>().add(LoadCheckoutCart(widget.cartId));
-                    },
-                    child: MyText.bodyMedium('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
+                if (state is CheckoutError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline, size: 64, color: Theme.of(context).colorScheme.error),
+                        MySpacing.height(16),
+                        MyText.bodyLarge('Error loading cart', color: Theme.of(context).colorScheme.error),
+                        MySpacing.height(8),
+                        MyText.bodyMedium(state.message, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                        MySpacing.height(16),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Retry loading cart
+                            context.read<CheckoutBloc>().add(LoadCheckoutCart(widget.cartId));
+                          },
+                          child: MyText.bodyMedium('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
 
-          return _buildEmptyCart();
-        },
-      ),
+                return _buildEmptyCart();
+              },
+            ),
     );
   }
 

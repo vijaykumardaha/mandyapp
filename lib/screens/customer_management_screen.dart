@@ -5,6 +5,7 @@ import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
+import 'package:mandyapp/screens/customer_details_screen.dart';
 
 class CustomerManagementScreen extends StatefulWidget {
   const CustomerManagementScreen({super.key});
@@ -113,42 +114,55 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
 
     return Card(
       margin: MySpacing.bottom(12),
-      child: Padding(
-        padding: MySpacing.all(16),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  MyText.bodyLarge(
-                    title,
-                    fontWeight: 600,
-                  ),
-                  MySpacing.height(6),
-                  Row(
-                    children: [
-                      _buildAmountChip('Borrowed', customer.borrowAmount),
-                      MySpacing.width(8),
-                      _buildAmountChip('Advanced', customer.advancedAmount),
-                    ],
-                  ),
-                ],
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CustomerDetailsScreen(customer: customer),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: MySpacing.all(16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    MyText.bodyLarge(
+                      title,
+                      fontWeight: 600,
+                    ),
+                    MySpacing.height(6),
+                    Row(
+                      children: [
+                        _buildAmountChip('Borrowed', customer.borrowAmount),
+                        MySpacing.width(8),
+                        _buildAmountChip('Advanced', customer.advancedAmount),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.edit_outlined),
-              tooltip: 'Edit customer',
-              onPressed: () => _showAddCustomerSheet(customer: customer),
-            ),
-            IconButton(
-              icon: Icon(Icons.delete_outline, color: theme.colorScheme.error),
-              tooltip: 'Delete customer',
-              onPressed: () => _confirmDelete(customer),
-            ),
+              IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                tooltip: 'Edit customer',
+                onPressed: () {
+                  _showAddCustomerSheet(customer: customer);
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.delete_outline, color: theme.colorScheme.error),
+                tooltip: 'Delete customer',
+                onPressed: () => _confirmDelete(customer),
+              ),
           ],
         ),
       ),
+      )
     );
   }
 

@@ -25,6 +25,7 @@ class SaleSelectionBottomSheet extends StatefulWidget {
   final SaleSelectionDeleteCallback onDeleteSale;
   final SaleSelectionCheckoutCallback onCheckout;
   final SaleSelectionCloseCallback onClose;
+  final bool showCancelButton;
 
   const SaleSelectionBottomSheet({
     super.key,
@@ -37,6 +38,7 @@ class SaleSelectionBottomSheet extends StatefulWidget {
     required this.onDeleteSale,
     required this.onCheckout,
     required this.onClose,
+    this.showCancelButton = true,
   });
 
   @override
@@ -239,18 +241,20 @@ class _SaleSelectionBottomSheetState extends State<SaleSelectionBottomSheet> {
                 MySpacing.height(24),
                 Row(
                   children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => widget.onClose(context),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                          side: BorderSide(color: sheetTheme.colorScheme.outline.withOpacity(0.4)),
+                    if (widget.showCancelButton) ...[
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => widget.onClose(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                            side: BorderSide(color: sheetTheme.colorScheme.outline.withOpacity(0.4)),
+                          ),
+                          child: const Text('Cancel'),
                         ),
-                        child: const Text('Cancel'),
                       ),
-                    ),
-                    MySpacing.width(16),
+                      MySpacing.width(16),
+                    ],
                     Expanded(
                       child: ElevatedButton(
                         onPressed: _selectedIndices.isEmpty || _buyerCustomer == null

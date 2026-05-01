@@ -20,6 +20,9 @@ import 'package:mandyapp/blocs/reports/reports_bloc.dart';
 import 'package:mandyapp/blocs/stock/stock_bloc.dart';
 import 'package:mandyapp/blocs/user/user_bloc.dart';
 import 'package:mandyapp/blocs/cart_payment/cart_payment_bloc.dart';
+import 'package:mandyapp/dao/cart_charge_dao.dart';
+import 'package:mandyapp/dao/cart_payment_dao.dart';
+import 'package:mandyapp/dao/item_sale_dao.dart';
 import 'package:mandyapp/dao/report_dao.dart';
 import 'package:mandyapp/helpers/localizations/app_localization_delegate.dart';
 import 'package:mandyapp/utils/db_helper.dart';
@@ -37,10 +40,10 @@ import 'package:provider/provider.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppTheme.init();
-  
+
   // Initialize language
   await Language.init();
-  
+
   // Initialize database
   await DBHelper.instance.database;
 
@@ -83,7 +86,6 @@ class MyApp extends StatelessWidget {
           BlocProvider<LoginBloc>(
             create: (context) => LoginBloc(),
           ),
-          
           BlocProvider<UserBloc>(
             create: (context) => UserBloc(),
           ),
@@ -111,18 +113,21 @@ class MyApp extends StatelessWidget {
           BlocProvider<StockBloc>(
             create: (context) => StockBloc(),
           ),
-          BlocProvider<BillListBloc>(
-            create: (context) => BillListBloc(
-              cartBloc: context.read<CartBloc>(),
-              paymentBloc: context.read<CartPaymentBloc>(),
-              chargesBloc: context.read<ChargesBloc>(),
-            ),
-          ),
           BlocProvider<ItemSaleBloc>(
             create: (context) => ItemSaleBloc(),
           ),
           BlocProvider<ReportsBloc>(
             create: (context) => ReportsBloc(reportDAO: ReportDAO()),
+          ),
+          BlocProvider<BillListBloc>(
+            create: (context) => BillListBloc(
+              cartBloc: context.read<CartBloc>(),
+              paymentBloc: context.read<CartPaymentBloc>(),
+              chargesBloc: context.read<ChargesBloc>(),
+              cartChargeDAO: CartChargeDAO(),
+              cartPaymentDAO: CartPaymentDAO(),
+              itemSaleDAO: ItemSaleDAO(),
+            ),
           ),
         ],
         child: Consumer<AppNotifier>(
@@ -149,4 +154,3 @@ class MyApp extends StatelessWidget {
         }));
   }
 }
-

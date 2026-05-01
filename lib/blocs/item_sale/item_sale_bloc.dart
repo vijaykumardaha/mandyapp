@@ -41,15 +41,9 @@ class ItemSaleBloc extends Bloc<ItemSaleEvent, ItemSaleState> {
     emit(const ItemSaleLoading());
     try {
       // Load sales that are billable (not linked to any cart)
-      final sales = await _itemSaleDAO.getItemSales(
-        sellerId: event.sellerId,
-        excludeCartLinked: event.excludeCartLinked,
-      );
-      
-      // Filter out sales that are already linked to a cart
-      final billableSales = sales.where((sale) => sale.sellerCartId == null).toList();
-      
-      emit(ItemSalesLoaded(billableSales, message: 'Billable sales loaded'));
+      final sales = await _itemSaleDAO.getSellerSales(sellerId: event.sellerId);
+
+      emit(ItemSalesLoaded(sales, message: 'Billable sales loaded'));
     } catch (error) {
       emit(ItemSaleError('Failed to load billable sales: ${error.toString()}'));
     }

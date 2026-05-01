@@ -5,9 +5,12 @@ import 'package:mandyapp/blocs/cart_payment/cart_payment_bloc.dart';
 import 'package:mandyapp/blocs/charges/charges_bloc.dart';
 import 'package:mandyapp/blocs/charges/charges_event.dart';
 import 'package:mandyapp/blocs/charges/charges_state.dart';
+import 'package:mandyapp/dao/cart_charge_dao.dart';
+import 'package:mandyapp/dao/cart_payment_dao.dart';
+import 'package:mandyapp/dao/item_sale_dao.dart';
 import 'package:mandyapp/models/bill_summary_model.dart';
-import 'package:mandyapp/models/cart_payment_model.dart';
 import 'package:mandyapp/models/cart_model.dart';
+import 'package:mandyapp/models/cart_payment_model.dart';
 
 part 'bill_list_event.dart';
 part 'bill_list_state.dart';
@@ -17,10 +20,17 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
   final CartPaymentBloc paymentBloc;
   final ChargesBloc chargesBloc;
 
+  final CartChargeDAO cartChargeDAO;
+  final CartPaymentDAO cartPaymentDAO;
+  final ItemSaleDAO itemSaleDAO;
+
   BillListBloc({
     required this.cartBloc,
     required this.paymentBloc,
     required this.chargesBloc,
+    required this.cartChargeDAO,
+    required this.cartPaymentDAO,
+    required this.itemSaleDAO,
   }) : super(BillListInitial()) {
     on<LoadBillSummaries>(_onLoadBillSummaries);
     on<DeleteBillRequested>(_onDeleteBillRequested);
@@ -170,6 +180,10 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
   ) async {
     try {
       await cartBloc.cartDAO.deleteCart(event.bill.cartId);
+      
+      await cartChargeDAO.deleteCartCharges(event.bill.cartId);
+      await cartPaymentDAO.deleteCartPayments(event.bill.cartId);
+      await itemSaleDAO.deleteItemSales(event.bill.cartId);
 
       chargesBloc.add(LoadCharges());
       paymentBloc.add(const LoadCartPayments());

@@ -171,7 +171,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                     const SizedBox(width: 16),
                     Expanded(
                       child: _FinancialMetric(
-                        title: "Gross Profit Today",
+                        title: "Profit Today",
                         value: _currencyFormat.format(data.grossProfit),
                         icon: Icons.trending_up,
                         color: data.grossProfit >= 0 ? Colors.green : Colors.red,

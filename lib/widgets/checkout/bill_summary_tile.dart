@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/checkout/checkout_bloc.dart';
-import 'checkout_stepper_field.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/item_sale_model.dart';
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
+import 'package:mandyapp/widgets/checkout/checkout_stepper_field.dart';
 
-class BillSummaryTile extends StatelessWidget {
+class BillSummaryTile extends StatefulWidget {
   final ItemSale item;
   final Product product;
   final ProductVariant variant;
   final Function()? onPersistCheckout;
   final bool isEdit;
-
+  
   const BillSummaryTile({
     Key? key,
     required this.item,
@@ -23,19 +23,45 @@ class BillSummaryTile extends StatelessWidget {
     required this.isEdit,
     this.onPersistCheckout,
   }) : super(key: key);
+  
+  @override
+  State<BillSummaryTile> createState() => _BillSummaryTileState();
+}
+
+class _BillSummaryTileState extends State<BillSummaryTile> {
+  late final TextEditingController _quantityController;
+  late final TextEditingController _priceController;
+
+  @override
+  void initState() {
+    super.initState();
+    _quantityController = TextEditingController(
+      text: widget.item.quantity.toString(),
+    );
+    _priceController = TextEditingController(
+      text: widget.item.sellingPrice.toStringAsFixed(2),
+    );
+  }
+
+  @override
+  void dispose() {
+    _quantityController.dispose();
+    _priceController.dispose();
+    super.dispose();
+  }
 
   void _handleQuantityChange(double value, BuildContext context) {
-    if (value == item.quantity) return;
-    final updatedItem = item.copyWith(quantity: value);
+    if (value == widget.item.quantity) return;
+    final updatedItem = widget.item.copyWith(quantity: value);
     context.read<CheckoutBloc>().add(UpdateCheckoutItem(updatedItem));
-    onPersistCheckout?.call();
+    widget.onPersistCheckout?.call();
   }
 
   void _handlePriceChange(double value, BuildContext context) {
-    if (value == item.sellingPrice) return;
-    final updatedItem = item.copyWith(sellingPrice: value);
+    if (value == widget.item.sellingPrice) return;
+    final updatedItem = widget.item.copyWith(sellingPrice: value);
     context.read<CheckoutBloc>().add(UpdateCheckoutItem(updatedItem));
-    onPersistCheckout?.call();
+    widget.onPersistCheckout?.call();
   }
 
   @override
@@ -57,38 +83,40 @@ class BillSummaryTile extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(right: 20),
               child: MyText.bodyMedium(
-                variant.variantName,
+                widget.variant.variantName,
                 fontWeight: 600,
               ),
             ),
           ),
-          if (isEdit) ...[
+          if (widget.isEdit) ...[
             CheckoutStepperField(
-              key: ValueKey('qty-${item.id ?? item.variantId}-${item.buyerCartId}'),
-              label: 'Qty (${variant.unit})',
-              initialValue: item.quantity,
+              key: ValueKey('qty-${widget.item.id ?? widget.item.variantId}-${widget.item.buyerCartId}'),
+              label: 'Qty',
+              initialValue: widget.item.quantity,
               step: 1,
               minValue: 0.1,
+              unit: widget.variant.unit,
+              controller: _quantityController,
               onChanged: (value) => _handleQuantityChange(value, context),
             ),
             MySpacing.width(6),
             CheckoutStepperField(
-              key: ValueKey('rate-${item.id ?? item.variantId}-${item.buyerCartId}'),
+              key: ValueKey('rate-${widget.item.id ?? widget.item.variantId}-${widget.item.buyerCartId}'),
               label: 'Rate',
-              initialValue: item.sellingPrice,
+              initialValue: widget.item.sellingPrice,
               step: 0.5,
               minValue: 0.1,
-              prefixText: '₹',
+              controller: _priceController,
               onChanged: (value) => _handlePriceChange(value, context),
             ),
           ] else ...[
             MyText.bodyMedium(
-              '${item.quantity} ${variant.unit}',
+              '${widget.item.quantity} ${widget.variant.unit}',
               fontWeight: 500,
             ),
             MySpacing.width(12),
             MyText.bodyMedium(
-              '₹${item.sellingPrice.toStringAsFixed(2)}',
+              '₹${widget.item.sellingPrice.toStringAsFixed(2)}',
               fontWeight: 500,
             ),
           ],
@@ -97,7 +125,7 @@ class BillSummaryTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               MyText.bodyLarge(
-                '₹${item.totalPrice.toStringAsFixed(2)}',
+                '₹${widget.item.totalPrice.toStringAsFixed(2)}',
                 fontWeight: 700,
                 color: theme.colorScheme.primary,
               ),

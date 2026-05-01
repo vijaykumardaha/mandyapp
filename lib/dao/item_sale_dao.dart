@@ -47,6 +47,16 @@ class ItemSaleDAO {
     return ItemSale.fromJson(maps.first);
   }
 
+  // Delete all item sales for a cart
+  Future<int> deleteItemSales(int cartId) async {
+    final db = await dbHelper.database;
+    return await db.delete(
+      'item_sales',
+      where: 'buyer_cart_id = ? OR seller_cart_id = ?',
+      whereArgs: [cartId, cartId],
+    );
+  }
+
   Future<List<ItemSale>> getItemSales({int? sellerId, int? productId, int? variantId, bool excludeCartLinked = false}) async {
     final db = await dbHelper.database;
     final whereClauses = <String>[];
@@ -67,6 +77,26 @@ class ItemSaleDAO {
     if (excludeCartLinked) {
       whereClauses.add('buyer_cart_id IS NULL AND seller_cart_id IS NULL');
     }
+
+    final maps = await db.query(
+      'item_sales',
+      where: whereClauses.isNotEmpty ? whereClauses.join(' AND ') : null,
+      whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
+      orderBy: 'created_at DESC',
+    );
+
+    return maps.map(ItemSale.fromJson).toList();
+  }
+
+  Future<List<ItemSale>> getSellerSales({required int sellerId }) async {
+    final db = await dbHelper.database;
+    final whereClauses = <String>[];
+    final whereArgs = <Object?>[];
+
+    whereClauses.add('seller_id = ?');
+    whereArgs.add(sellerId);
+
+    whereClauses.add('seller_cart_id IS NULL');
 
     final maps = await db.query(
       'item_sales',

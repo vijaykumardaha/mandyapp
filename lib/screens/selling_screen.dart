@@ -2,24 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/blocs/item_sale/item_sale_bloc.dart';
-import 'package:mandyapp/blocs/cart/cart_bloc.dart';
-import 'package:mandyapp/helpers/extensions/string.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/helpers/widgets/my_spacing.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/dao/product_stock_dao.dart';
+import 'package:mandyapp/helpers/theme/app_theme.dart';
+import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/blocs/customer/customer_bloc.dart';
 import 'package:mandyapp/models/item_sale_model.dart';
 import 'package:mandyapp/models/product_stock_model.dart';
-import 'package:mandyapp/models/cart_model.dart';
-import 'package:mandyapp/screens/checkout_screen.dart';
-import 'package:mandyapp/utils/db_helper.dart';
 import 'package:mandyapp/widgets/selling/add_to_sale_bottom_sheet.dart';
 import 'package:mandyapp/widgets/selling/product_card.dart';
-import 'package:mandyapp/widgets/selling/sale_selection_bottom_sheet.dart';
 
 class SellingScreen extends StatefulWidget {
   const SellingScreen({super.key});
@@ -32,12 +25,14 @@ class SellingScreenState extends State<SellingScreen> {
   late ThemeData theme;
   Customer? sellerCustomer;
   Customer? buyerCustomer;
-  final ProductStockDAO _productStockDAO = ProductStockDAO();
+  late ProductStockDAO _productStockDAO;
+  String? _selectedAlphabet;
 
   @override
   void initState() {
     super.initState();
     theme = AppTheme.shoppingManagerTheme;
+    _productStockDAO = ProductStockDAO();
     context.read<ProductBloc>().add(LoadProducts());
     context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
     context.read<ItemSaleBloc>().add(const LoadItemSales());
@@ -141,145 +136,163 @@ class SellingScreenState extends State<SellingScreen> {
                 ),
               ),
             )
-          : _buildCustomerSearchField(),
+          : SizedBox(
+              height: 36,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    // "All" tag
+                    _buildAlphabetTag('All', _selectedAlphabet == null),
+                    const SizedBox(width: 8),
+                    // A-Z tags
+                    ...List.generate(26, (index) {
+                      final alphabet = String.fromCharCode(65 + index); // A-Z
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _buildAlphabetTag(alphabet, _selectedAlphabet == alphabet),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
       actions: const [],
     );
   }
 
-  Widget _buildCustomerSearchField() {
+  Widget _buildAlphabetTag(String alphabet, bool isSelected) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedAlphabet = isSelected ? null : (alphabet == 'All' ? null : alphabet);
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected 
+                ? theme.colorScheme.primary 
+                : theme.colorScheme.outline.withOpacity(0.3),
+          ),
+        ),
+        child: Text(
+          alphabet,
+          style: TextStyle(
+            color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomerGrid() {
     return BlocBuilder<CustomerBloc, CustomerState>(
       builder: (context, customerState) {
-        final customers = customerState is CustomerLoaded
+        final allCustomers = customerState is CustomerLoaded
             ? customerState.customers
             : <Customer>[];
         final isLoading = customerState is CustomerLoading;
 
-        return Container(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: theme.colorScheme.shadow.withOpacity(0.08),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Autocomplete<Customer>(
-                optionsBuilder: (textEditingValue) {
-                  final query = textEditingValue.text.trim().toLowerCase();
-                  if (query.isEmpty) {
-                    return customers.take(15);
-                  }
-                  return customers.where((customer) {
-                    final name = customer.name?.toLowerCase() ?? '';
-                    final phone = customer.phone ?? '';
-                    return name.contains(query) || phone.contains(query);
-                  }).take(15);
-                },
-                displayStringForOption: _formatCustomer,
-                fieldViewBuilder: (context, textEditingController, focusNode,
-                    onFieldSubmitted) {
-                  return TextField(
-                    controller: textEditingController,
-                    focusNode: focusNode,
-                    decoration: InputDecoration(
-                      hintText: 'Select seller name',
-                      prefixIcon: const Icon(Icons.search, size: 18),
-                      suffixIcon: textEditingController.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                textEditingController.clear();
-                                context
-                                    .read<CustomerBloc>()
-                                    .add(const FetchCustomer(query: ''));
-                                setState(() {
-                                  sellerCustomer = null;
-                                });
-                              },
-                            )
-                          : null,
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 12),
-                    ),
-                    onChanged: (value) {
-                      context
-                          .read<CustomerBloc>()
-                          .add(FetchCustomer(query: value));
-                    },
-                    onSubmitted: (_) => onFieldSubmitted(),
-                    onTapOutside: (_) => FocusScope.of(context).unfocus(),
-                  );
-                },
-                onSelected: (customer) {
+        // Filter customers by selected alphabet
+        List<Customer> customers = allCustomers;
+        if (_selectedAlphabet != null) {
+          customers = allCustomers.where((customer) {
+            final name = customer.name?.trim().toUpperCase() ?? '';
+            return name.startsWith(_selectedAlphabet!);
+          }).toList();
+        }
+
+        if (isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (customers.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.person_outline,
+                  size: 64,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(height: 16),
+                MyText.bodyMedium(
+                  'No customers found',
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(height: 8),
+                MyText.bodySmall(
+                  'Add customers to get started',
+                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              childAspectRatio: 1.6,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemCount: customers.length,
+            itemBuilder: (context, index) {
+              final customer = customers[index];
+              return GestureDetector(
+                onTap: () {
                   setState(() {
                     sellerCustomer = customer;
                   });
-                  FocusScope.of(context).unfocus();
                 },
-                optionsViewBuilder: (context, onSelected, options) {
-                  return Align(
-                    alignment: Alignment.topLeft,
-                    child: Material(
-                      elevation: 4,
-                      color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(12),
-                      child: ConstrainedBox(
-                        constraints:
-                            const BoxConstraints(maxHeight: 220, minWidth: 280),
-                        child: ListView.separated(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          shrinkWrap: true,
-                          itemCount: options.length,
-                          separatorBuilder: (context, index) => Divider(
-                            height: 1,
-                            color: theme.colorScheme.outline.withOpacity(0.1),
-                          ),
-                          itemBuilder: (context, index) {
-                            final customer = options.elementAt(index);
-                            return ListTile(
-                              dense: true,
-                              onTap: () => onSelected(customer),
-                              leading:
-                                  const Icon(Icons.person_outline, size: 20),
-                              title: MyText.bodySmall(
-                                customer.name ?? 'Unnamed',
-                                fontWeight: 600,
-                              ),
-                              subtitle: customer.phone != null
-                                  ? MyText.bodySmall(
-                                      customer.phone!,
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    )
-                                  : null,
-                            );
-                          },
-                        ),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: theme.colorScheme.outline.withOpacity(0.2),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.colorScheme.shadow.withOpacity(0.04),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
                       ),
-                    ),
-                  );
-                },
-              ),
-              if (isLoading)
-                Positioned(
-                  right: 12,
-                  top: 12,
-                  child: SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          theme.colorScheme.primary),
-                    ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      MyText.bodySmall(
+                        customer.name ?? 'Unnamed',
+                        fontWeight: 600,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (customer.phone != null)
+                        MyText.bodySmall(
+                          customer.phone!,
+                          color: theme.colorScheme.onSurfaceVariant,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
                   ),
                 ),
-            ],
+              );
+            },
           ),
         );
       },
@@ -359,17 +372,12 @@ class SellingScreenState extends State<SellingScreen> {
 
     FocusScope.of(context).unfocus();
 
-    final sellerLabel = sellerCustomer != null
-        ? 'Seller : ${_formatCustomer(sellerCustomer)}'
-        : null;
-
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) {
         return AddToSaleBottomSheet(
           variants: variants,
-          sellerLabel: sellerLabel,
           onSubmit: (variant, quantity, rate) async {
             await _submitCartItem(
               product,
@@ -484,129 +492,6 @@ class SellingScreenState extends State<SellingScreen> {
     return const [];
   }
 
-  List<ItemSale> _currentSales() {
-    final state = context.read<ItemSaleBloc>().state;
-    return _salesFromState(state);
-  }
-
-  Future<List<ItemSale>?> _showSaleSelectionSheet(List<ItemSale> sales) async {
-    final result = await showModalBottomSheet<List<ItemSale>>(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return SaleSelectionBottomSheet(
-          initialSales: sales,
-          buyerCustomer: buyerCustomer,
-          onBuyerChanged: (customer) {
-            setState(() {
-              buyerCustomer = customer;
-            });
-          },
-          formatCustomer: _formatCustomer,
-          sellerNameForSale: _sellerNameForSale,
-          productTitleForSale: _productTitleForSale,
-          onDeleteSale: (sale, index) async {
-            if (sale.id == null) {
-              return false;
-            }
-            context.read<ItemSaleBloc>().add(DeleteItemSaleEvent(sale.id!));
-            return true;
-          },
-          onCheckout: (sheetContext, selectedSales) async {
-            final cartId = await _createNewCart(selectedSales);
-            if (cartId == null || !mounted) {
-              return;
-            }
-            Navigator.of(sheetContext).pop(selectedSales);
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => CheckoutScreen(cartId: cartId),
-              ),
-            );
-          },
-          onClose: (sheetContext) {
-            Navigator.of(sheetContext).pop();
-          },
-        );
-      },
-    );
-
-    return result;
-  }
-
-  Future<void> _showItemList() async {
-    final selectedSales = await _pickSalesForCart();
-    if (selectedSales == null) {
-      return;
-    }
-  }
-
-  Future<List<ItemSale>?> _pickSalesForCart() async {
-    final sales = _currentSales();
-    if (sales.isEmpty) {
-      _showSnack('No sales to convert.');
-      return null;
-    }
-
-    final selectedSales = await _showSaleSelectionSheet(sales);
-    if (!mounted || selectedSales == null) {
-      return null;
-    }
-
-    if (selectedSales.isEmpty) {
-      _showSnack('Select at least one sale item.');
-      return null;
-    }
-
-    return selectedSales;
-  }
-
-  Future<int?> _createNewCart(List<ItemSale> selectedSales) async {
-    if (buyerCustomer == null) {
-      _showSnack('Please select a buyer name before checkout.');
-      return null;
-    }
-
-    if (selectedSales.isEmpty) {
-      _showSnack('Select at least one sale item.');
-      return null;
-    }
-
-    final cartBloc = context.read<CartBloc>();
-    final itemSaleBloc = context.read<ItemSaleBloc>();
-    final cartId = DBHelper.generateUuidInt();
-    final timestamp = DateTime.now().toIso8601String();
-
-    final cart = Cart(
-      id: cartId,
-      customerId: buyerCustomer!.id!,
-      createdAt: timestamp,
-      cartFor: 'buyer',
-      status: 'open',
-    );
-
-    cartBloc.add(CreateCart(cart));
-
-    for (final sale in selectedSales) {
-      final originalSaleId = sale.id;
-      final now = DateTime.now().toIso8601String();
-      final cartLinkedSale = sale.copyWith(
-        id: DBHelper.generateUuidInt(),
-        buyerCartId: cartId,
-        buyerId: buyerCustomer!.id!,
-        createdAt: now,
-        updatedAt: now,
-      );
-      cartBloc.add(AddItemToCart(cartLinkedSale));
-
-      if (originalSaleId != null) {
-        itemSaleBloc.add(DeleteItemSaleEvent(originalSaleId));
-      }
-    }
-
-    return cartId;
-  }
-
   void _showSnack(String message) {
     if (!mounted) {
       return;
@@ -651,66 +536,53 @@ class SellingScreenState extends State<SellingScreen> {
             );
           }
         },
-        child: BlocBuilder<ProductBloc, ProductState>(
-          builder: (context, productState) {
-            if (productState is ProductLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
+        child: sellerCustomer == null 
+            ? _buildCustomerGrid()
+            : BlocBuilder<ProductBloc, ProductState>(
+                builder: (context, productState) {
+                  if (productState is ProductLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-            if (productState is ProductLoaded) {
-              final products = productState.products;
-              if (products.isEmpty) {
-                return const Center(child: Text('No products found.'));
-              }
+                  if (productState is ProductLoaded) {
+                    final products = productState.products;
+                    
+                    if (products.isEmpty) {
+                      return const Center(child: Text('No products found.'));
+                    }
 
-              return GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 1,
-                  crossAxisSpacing: 5,
-                  mainAxisSpacing: 5,
-                ),
-                itemCount: products.length,
-                itemBuilder: (context, index) {
-                  final product = products[index];
-                  return ProductCard(
-                    product: product,
-                    theme: theme,
-                    onAddTapped: sellerCustomer == null
-                        ? null
-                        : () => _showAddToSaleBottomSheet(product),
-                  );
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        childAspectRatio: 1,
+                        crossAxisSpacing: 5,
+                        mainAxisSpacing: 5,
+                      ),
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        final product = products[index];
+                        return ProductCard(
+                          product: product,
+                          theme: theme,
+                          onAddTapped: () => _showAddToSaleBottomSheet(product),
+                        );
+                      },
+                    );
+                  }
+
+                  if (productState is ProductError) {
+                    return Center(
+                      child: Text(
+                        productState.message,
+                        style: TextStyle(color: theme.colorScheme.error),
+                      ),
+                    );
+                  }
+
+                  return const SizedBox.shrink();
                 },
-              );
-            }
-
-            if (productState is ProductError) {
-              return Center(
-                child: Text(
-                  productState.message,
-                  style: TextStyle(color: theme.colorScheme.error),
-                ),
-              );
-            }
-
-            return const SizedBox.shrink();
-          },
-        ),
-      ),
-
-      // Floating checkout button
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: BlocBuilder<ItemSaleBloc, ItemSaleState>(
-        builder: (context, saleState) {
-          final sales = _salesFromState(saleState);
-          if (sales.isEmpty) return const SizedBox.shrink();
-          return FloatingActionButton.extended(
-            onPressed: _showItemList,
-            icon: const Icon(Icons.shopping_cart_checkout),
-            label: Text('Sold Items (${sales.length})'),
-          );
-        },
+              ),
       ),
     );
   }

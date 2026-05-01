@@ -83,7 +83,7 @@ class _BillListScreenState extends State<BillListScreen> {
     }
 
     final itemSaleBloc = context.read<ItemSaleBloc>();
-    itemSaleBloc.add(LoadItemSales(sellerId: seller!.id, excludeCartLinked: true));
+    itemSaleBloc.add(LoadBillableSales(sellerId: seller!.id!));
 
     var confirmed = false;
     await showModalBottomSheet<void>(
@@ -496,7 +496,7 @@ class _BillListScreenState extends State<BillListScreen> {
                       final customerName = (customer?.name?.trim().isNotEmpty ?? false)
                           ? customer!.name!.trim()
                           : 'Customer ${bill.customerId}';
-                      final billLabel = '#${bill.billNumber ?? bill.cartId} | $customerName';
+                      final billLabel = '$customerName (${bill.billType})';
                       return Padding(
                         padding: EdgeInsets.fromLTRB(16, index == 0 ? 0 : 8, 16, 8),
                         child: BillCard(

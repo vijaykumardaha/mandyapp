@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/dao/product_stock_dao.dart';
 import 'package:mandyapp/widgets/selling/variant_item_card.dart';
@@ -14,14 +13,12 @@ typedef AddToSaleSubmitCallback = Future<void> Function(
 
 class AddToSaleBottomSheet extends StatefulWidget {
   final List<ProductVariant> variants;
-  final String? sellerLabel;
   final AddToSaleSubmitCallback onSubmit;
 
   const AddToSaleBottomSheet({
     super.key,
     required this.variants,
     required this.onSubmit,
-    this.sellerLabel,
   });
 
   @override
@@ -48,7 +45,7 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
         text: variant.quantity?.toStringAsFixed(2) ?? '0',
       );
       _rateControllers[key] = TextEditingController(
-        text: variant.sellingPrice.toStringAsFixed(2),
+        text: variant.sellingPrice?.toStringAsFixed(2) ?? '0',
       );
     }
 
@@ -108,14 +105,6 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.sellerLabel != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: MyText.bodySmall(
-                widget.sellerLabel!,
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
-              ),
-            ),
           ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 360),
             child: ListView.separated(

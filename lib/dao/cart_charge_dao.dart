@@ -77,7 +77,7 @@ class CartChargeDAO {
   }
 
   // Delete all charges for a specific cart
-  Future<int> deleteCartCharges(String cartId) async {
+  Future<int> deleteCartCharges(int cartId) async {
     final db = await dbHelper.database;
     return await db.delete(
       'cart_charges',

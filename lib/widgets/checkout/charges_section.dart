@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/charges/charges_bloc.dart';
 import 'package:mandyapp/blocs/charges/charges_state.dart';
-import 'package:mandyapp/blocs/checkout/checkout_bloc.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/cart_model.dart';

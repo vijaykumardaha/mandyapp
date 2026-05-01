@@ -10,12 +10,11 @@ import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/cart_charge_model.dart';
 import 'package:mandyapp/models/cart_model.dart';
 import 'package:mandyapp/models/cart_payment_model.dart';
-import 'package:mandyapp/models/item_sale_model.dart';
-import 'package:mandyapp/models/product_model.dart';
-import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/screens/checkout_screen.dart';
 import 'package:mandyapp/utils/printer/printer_service.dart' as printer_service;
+import 'package:mandyapp/widgets/billing/invoice_item.dart';
+import 'package:mandyapp/widgets/billing/bill_line_item.dart';
 
 class BillDetailsScreen extends StatefulWidget {
   final int cartId;
@@ -24,22 +23,6 @@ class BillDetailsScreen extends StatefulWidget {
 
   @override
   State<BillDetailsScreen> createState() => _BillDetailsScreenState();
-}
-
-class InvoiceItem {
-  final String productName;
-  final double quantity;
-  final String unit;
-  final double price;
-  final double total;
-
-  const InvoiceItem({
-    required this.productName,
-    required this.quantity,
-    required this.unit,
-    required this.price,
-    required this.total,
-  });
 }
 
 class _BillDetailsScreenState extends State<BillDetailsScreen> {
@@ -166,12 +149,12 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
         if (customer.id != null) customer.id!: customer,
     };
 
-    final List<_BillLineItem> lineItems = [];
+    final List<BillLineItem> lineItems = [];
     for (final item in items) {
       final product = await productDAO.getProductById(item.productId);
       final variant = await productVariantDAO.getVariantById(item.variantId);
       lineItems.add(
-        _BillLineItem(
+        BillLineItem(
           sale: item,
           product: product,
           variant: variant,
@@ -205,11 +188,44 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
           onPressed: () => Navigator.of(context).pop(),
           icon: const Icon(Icons.arrow_back),
         ),
-        title: MyText.titleMedium('Invoice #${widget.cartId}', fontWeight: 600),
+        title: const Text(''),
+        actions: [
+          Builder(
+            builder: (context) {
+              return FutureBuilder<_BillDetailsData>(
+                future: _billFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done || 
+                      snapshot.hasError || 
+                      !snapshot.hasData) {
+                    return const SizedBox.shrink();
+                  }
+                  
+                  final data = snapshot.data!;
+                  return Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined),
+                        onPressed: () => _handleEdit(data),
+                        tooltip: 'Edit',
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.print_outlined),
+                        onPressed: () => _handlePrint(data),
+                        tooltip: 'Print',
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: FutureBuilder<_BillDetailsData>(
         future: _billFuture,
         builder: (context, snapshot) {
+          // Return loading indicator or error if needed
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -231,7 +247,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
               ),
             );
           }
-
+          
           final data = snapshot.data!;
           final currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
           final dateFormat = DateFormat('dd MMM yyyy | hh:mm a');
@@ -269,14 +285,8 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            MyText.titleMedium('Invoice', fontWeight: 700),
-                            const SizedBox(height: 4),
                             Row(
                               children: [
-                                MyText.bodySmall('Invoice ID:', color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                                const SizedBox(width: 6),
-                                MyText.bodySmall('#${data.cart.id}', fontWeight: 600),
-                                const SizedBox(width: 20),
                                 MyText.bodySmall('Created:', color: theme.colorScheme.onSurface.withOpacity(0.6)),
                                 const SizedBox(width: 6),
                                 MyText.bodySmall(dateFormat.format(createdAt), fontWeight: 600),
@@ -297,7 +307,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                                   Expanded(
                                     flex: 4,
                                     child: _buildInfoMetric(
-                                      'Payment',
+                                      'Payment Method',
                                       data.paymentMethodLabel,
                                       theme,
                                     ),
@@ -346,39 +356,11 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                _buildActionButtons(theme, data),
               ],
             ),
           );
         },
       ),
-    );
-  }
-
-  Widget _buildActionButtons(ThemeData theme, _BillDetailsData data) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        SizedBox(
-          width: 140,
-          child: _ActionButton(
-            icon: Icons.edit,
-            label: 'Edit',
-            color: theme.colorScheme.primary,
-            onPressed: () => _handleEdit(data),
-          ),
-        ),
-        SizedBox(
-          width: 140,
-          child: _ActionButton(
-            icon: Icons.print,
-            label: 'Print',
-            color: Colors.orange,
-            onPressed: () => _handlePrint(data),
-          ),
-        ),
-      ],
     );
   }
 
@@ -390,6 +372,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       ),
       child: Column(
         children: [
+          // Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -398,77 +381,117 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
             ),
             child: Row(
               children: [
-                Expanded(flex: 3, child: MyText.bodySmall('Product', fontWeight: 600)),
                 Expanded(
-                  flex: 3,
+                  flex: 4,
+                  child: MyText.bodySmall('PRODUCT', fontWeight: 600, color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                ),
+                Expanded(
+                  flex: 2,
                   child: Align(
                     alignment: Alignment.centerRight,
-                    child: MyText.bodySmall('Qty', fontWeight: 600),
+                    child: MyText.bodySmall('QTY', fontWeight: 600, color: theme.colorScheme.onSurface.withOpacity(0.7)),
                   ),
                 ),
                 Expanded(
                   flex: 3,
                   child: Align(
                     alignment: Alignment.centerRight,
-                    child: MyText.bodySmall('Rate', fontWeight: 600),
+                    child: MyText.bodySmall('RATE', fontWeight: 600, color: theme.colorScheme.onSurface.withOpacity(0.7)),
                   ),
                 ),
                 Expanded(
                   flex: 3,
                   child: Align(
                     alignment: Alignment.centerRight,
-                    child: MyText.bodySmall('Total', fontWeight: 600),
+                    child: MyText.bodySmall('TOTAL', fontWeight: 600, color: theme.colorScheme.onSurface.withOpacity(0.7)),
                   ),
                 ),
               ],
             ),
           ),
-          for (final item in data.lineItems)...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        MyText.bodyMedium(item.productName, fontWeight: 600),
-                        const SizedBox(height: 2),
-                        MyText.bodySmall(
-                          item.sellerLabel,
-                          color: theme.colorScheme.onSurface.withOpacity(0.65),
+          // Items
+          ...data.lineItems.map((item) => Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Product Name Column
+                    Expanded(
+                      flex: 4,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.productName,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          if (item.seller?.name != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              'Seller: ${item.seller!.name}',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.hintColor,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    // Quantity Column
+                    Expanded(
+                      flex: 2,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          '${item.quantityLabel} ${item.variant?.unit ?? item.product?.defaultVariantModel?.unit ?? 'pc'}',
+                          style: theme.textTheme.bodyMedium,
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: MyText.bodyMedium('${item.quantityLabel} ${item.unitLabel}'),
+                    // Rate Column
+                    Expanded(
+                      flex: 3,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          currency.format(item.sale.sellingPrice),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: MyText.bodyMedium(currency.format(item.sellingPrice)),
+                    // Total Column
+                    Expanded(
+                      flex: 3,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          currency.format(item.sale.totalPrice),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: MyText.bodyMedium(currency.format(item.totalPrice)),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            if (item != data.lineItems.last)
-              Divider(height: 1, thickness: 0.5, color: theme.colorScheme.onSurface.withOpacity(0.05)),
-          ],
+              if (item != data.lineItems.last)
+                Divider(
+                  height: 1,
+                  thickness: 0.5,
+                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                  indent: 16,
+                  endIndent: 16,
+                ),
+            ],
+          )).toList(),
         ],
       ),
     );
@@ -551,15 +574,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     final rows = <MapEntry<String, String>>[
       MapEntry('Item Total', currency.format(data.itemTotal)),
       if (data.chargesTotal > 0) MapEntry('Charge Total', currency.format(data.chargesTotal)),
-      MapEntry('Grand Total', currency.format(data.grandTotal)),
-      MapEntry(
-        data.cart.cartFor == 'seller' ? 'Amount Received' : 'Received Amount',
-        currency.format(data.receivedAmount),
-      ),
-      MapEntry(
-        data.cart.cartFor == 'seller' ? 'Amount Pending' : 'Pending Amount',
-        currency.format(data.outstandingAmount.abs()),
-      ),
+      MapEntry('Grand Total', currency.format(data.grandTotal))
     ];
 
     return Container(
@@ -629,6 +644,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
 
   Widget _buildInfoMetric(String label, String value, ThemeData theme, {Color? valueColor}) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
@@ -637,17 +653,21 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          MyText.bodySmall(
+          Text(
             label,
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
+            ),
           ),
-          const Spacer(),
-          MyText.bodyMedium(
+          const SizedBox(height: 8),
+          Text(
             value,
-            fontWeight: 600,
-            color: valueColor ?? theme.colorScheme.onSurface,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: valueColor ?? theme.colorScheme.onSurface,
+            ),
           ),
         ],
       ),
@@ -655,39 +675,10 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
   }
 }
 
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onPressed;
-
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color.withOpacity(0.1),
-        foregroundColor: color,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      onPressed: onPressed,
-      icon: Icon(icon),
-      label: Text(label),
-    );
-  }
-}
-
 class _BillDetailsData {
   final Cart cart;
   final CartPayment? payment;
-  final List<_BillLineItem> lineItems;
+  final List<BillLineItem> lineItems;
   final List<CartCharge> charges;
   final Map<int, Customer> customerById;
 
@@ -774,71 +765,3 @@ class _BillDetailsData {
   }
 }
 
-class _BillLineItem {
-  final ItemSale sale;
-  final Product? product;
-  final ProductVariant? variant;
-  final Customer? seller;
-
-  const _BillLineItem({
-    required this.sale,
-    required this.product,
-    required this.variant,
-    required this.seller,
-  });
-
-  String get productName {
-    final variantName = variant?.variantName.trim();
-    if (variantName != null && variantName.isNotEmpty) {
-      return variantName;
-    }
-
-    final baseName = product?.defaultVariantModel?.variantName.trim();
-    if (baseName != null && baseName.isNotEmpty) {
-      return baseName;
-    }
-
-    return 'Unknown Item';
-  }
-
-  String? get variantLabel {
-    if (variant == null) return null;
-    final variantName = variant!.variantName.trim();
-    if (variantName.isNotEmpty && variantName != productName) {
-      return variantName;
-    }
-    return '${variant!.quantity.toStringAsFixed(0)} ${variant!.unit}';
-  }
-
-  String get quantityLabel {
-    final qty = sale.quantity;
-    if (qty % 1 == 0) {
-      return qty.toStringAsFixed(0);
-    }
-    return qty.toStringAsFixed(2);
-  }
-
-  double get sellingPrice => sale.sellingPrice;
-
-  double get totalPrice => sale.totalPrice;
-
-  String get unitLabel {
-    final saleUnit = sale.unit.trim();
-    if (saleUnit.isNotEmpty) {
-      return saleUnit;
-    }
-    final variantUnit = variant?.unit.trim();
-    if (variantUnit != null && variantUnit.isNotEmpty) {
-      return variantUnit;
-    }
-    return '';
-  }
-
-  String get sellerLabel {
-    final sellerName = seller?.name?.trim();
-    if (sellerName != null && sellerName.isNotEmpty) {
-      return sellerName;
-    }
-    return 'Seller #${sale.sellerId}';
-  }
-}

@@ -42,6 +42,16 @@ class CartPaymentDAO {
     }
     return null;
   }
+  
+  // Delete all payments for a cart
+  Future<int> deleteCartPayments(int cartId) async {
+    final db = await dbHelper.database;
+    return await db.delete(
+      'cart_payments',
+      where: 'cart_id = ?',
+      whereArgs: [cartId],
+    );
+  }
 
   // Get all cart payments
   Future<List<CartPayment>> getAllCartPayments() async {
