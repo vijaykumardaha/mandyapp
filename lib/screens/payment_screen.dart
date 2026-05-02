@@ -8,21 +8,19 @@ import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/order_item_model.dart';
-import 'package:mandyapp/screens/bill_details_screen.dart';
 import 'package:mandyapp/models/order_model.dart';
 import 'package:mandyapp/screens/checkout_screen.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 import 'package:mandyapp/widgets/billing/seller_sale_selection_sheet.dart';
-import 'package:mandyapp/widgets/billing/bill_card.dart';
 
-class BillListScreen extends StatefulWidget {
-  const BillListScreen({super.key});
+class PaymentScreen extends StatefulWidget {
+  const PaymentScreen({super.key});
 
   @override
-  State<BillListScreen> createState() => _BillListScreenState();
+  State<PaymentScreen> createState() => _PaymentScreenState();
 }
 
-class _BillListScreenState extends State<BillListScreen> {
+class _PaymentScreenState extends State<PaymentScreen> {
   late ThemeData theme;
   late TextEditingController _customerController;
   late FocusNode _customerFocusNode;
@@ -430,100 +428,11 @@ class _BillListScreenState extends State<BillListScreen> {
       backgroundColor: theme.colorScheme.surface,
       appBar: _buildAppBar(),
       body: SafeArea(
-        child: BlocBuilder<BillListBloc, BillListState>(
-          builder: (context, state) {
-            if (state is BillListLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (state is BillListError) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    MyText.titleMedium('Failed to load bills'),
-                    const SizedBox(height: 8),
-                    MyText.bodyMedium(state.message),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => _loadSummaries(forceRefresh: true),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            if (state is BillListEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.receipt_long, size: 80, color: theme.primaryColor.withOpacity(0.5)),
-                    const SizedBox(height: 16),
-                    MyText.titleMedium('No bills yet', fontWeight: 600),
-                    const SizedBox(height: 8),
-                    MyText.bodyMedium(
-                      'Completed bills will appear here',
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            if (state is! BillListLoaded) {
-              return const SizedBox.shrink();
-            }
-
-            final summary = state;
-            final customerState = context.watch<CustomerBloc>().state;
-            final Map<int, Customer> customersById =
-                customerState is CustomerLoaded
-                    ? {
-                        for (final customer in customerState.customers)
-                          if (customer.id != null) customer.id!: customer
-                      }
-                    : {};
-
-            return CustomScrollView(
-              slivers: [
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final bill = summary.bills[index];
-                      final customer = customersById[bill.customerId];
-                      final customerName = (customer?.name?.trim().isNotEmpty ?? false)
-                          ? customer!.name!.trim()
-                          : 'Customer ${bill.customerId}';
-                      final billLabel = '$customerName (${bill.billType})';
-                      return Padding(
-                        padding: EdgeInsets.fromLTRB(16, index == 0 ? 0 : 8, 16, 8),
-                        child: BillCard(
-                          key: ValueKey('bill_card_${bill.cartId}'),
-                          bill: bill,
-                          theme: theme,
-                          billLabel: billLabel,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => BillDetailsScreen(orderId: bill.cartId),
-                              ),
-                            );
-                          },
-                          onDelete: () {
-                            context.read<BillListBloc>().add(DeleteBillRequested(bill));
-                          },
-                        ),
-                      );
-                    },
-                    childCount: summary.bills.length,
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-              ],
-            );
-          },
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [],
+          ),
         ),
       ),
     );

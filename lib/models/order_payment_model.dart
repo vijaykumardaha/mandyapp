@@ -3,6 +3,7 @@ class OrderPayment {
   int orderId;
   double itemTotal;
   double chargeTotal;
+  double expenseTotal;
   double receiveAmount;
   double pendingAmount;
   double pendingPayment;
@@ -22,6 +23,7 @@ class OrderPayment {
     required this.orderId,
     required this.itemTotal,
     required this.chargeTotal,
+    required this.expenseTotal,
     required this.receiveAmount,
     required this.pendingAmount,
     required this.pendingPayment,
@@ -44,6 +46,7 @@ class OrderPayment {
       'order_id': orderId,
       'item_total': itemTotal,
       'charge_total': chargeTotal,
+      'expense_total': expenseTotal,
       'receive_amount': receiveAmount,
       'pending_amount': pendingAmount,
       'pending_payment': pendingPayment,
@@ -67,6 +70,7 @@ class OrderPayment {
       orderId: json['order_id'] as int,
       itemTotal: (json['item_total'] as num).toDouble(),
       chargeTotal: (json['charge_total'] as num).toDouble(),
+      expenseTotal: (json['expense_total'] as num?)?.toDouble() ?? 0.0,
       receiveAmount: (json['receive_amount'] as num).toDouble(),
       pendingAmount: (json['pending_amount'] as num).toDouble(),
       pendingPayment: (json['pending_payment'] as num?)?.toDouble() ?? 0.0,
@@ -89,6 +93,7 @@ class OrderPayment {
     int? orderId,
     double? itemTotal,
     double? chargeTotal,
+    double? expenseTotal,
     double? receiveAmount,
     double? pendingAmount,
     double? pendingPayment,
@@ -108,6 +113,7 @@ class OrderPayment {
       orderId: orderId ?? this.orderId,
       itemTotal: itemTotal ?? this.itemTotal,
       chargeTotal: chargeTotal ?? this.chargeTotal,
+      expenseTotal: expenseTotal ?? this.expenseTotal,
       receiveAmount: receiveAmount ?? this.receiveAmount,
       pendingAmount: pendingAmount ?? this.pendingAmount,
       pendingPayment: pendingPayment ?? this.pendingPayment,

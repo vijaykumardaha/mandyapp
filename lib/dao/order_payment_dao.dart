@@ -8,7 +8,10 @@ class OrderPaymentDAO {
   // Insert a new order payment
   Future<int> insertOrderPayment(OrderPayment payment) async {
     final db = await dbHelper.database;
-    return await db.insert('order_payments', payment.toJson());
+    final json = payment.toJson();
+    // Remove id from JSON for new records to let database auto-generate it
+    json.remove('id');
+    return await db.insert('order_payments', json);
   }
 
   // Update an existing order payment

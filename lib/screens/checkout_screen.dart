@@ -1,24 +1,27 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/order/order_bloc.dart';
 import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
+import 'package:mandyapp/blocs/order/order_bloc.dart';
+import 'package:mandyapp/blocs/order_expense/order_expense_bloc.dart';
+import 'package:mandyapp/dao/order_charge_dao.dart';
+import 'package:mandyapp/dao/order_payment_dao.dart';
+import 'package:mandyapp/dao/order_expense_dao.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/charge_type_model.dart';
+import 'package:mandyapp/models/order_charge_model.dart';
 import 'package:mandyapp/models/order_item_model.dart';
-import 'package:mandyapp/widgets/checkout/payment_method_selector.dart' as pms;
 import 'package:mandyapp/models/order_model.dart';
+import 'package:mandyapp/models/order_payment_model.dart';
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/widgets/checkout/bill_summary_tile.dart';
-import 'package:mandyapp/models/order_charge_model.dart';
-import 'package:mandyapp/models/order_payment_model.dart';
-import 'package:mandyapp/dao/order_charge_dao.dart';
-import 'package:mandyapp/dao/order_payment_dao.dart';
-import 'package:mandyapp/widgets/checkout/payment_method_dialog.dart';
 import 'package:mandyapp/widgets/checkout/charges_section.dart';
 import 'package:mandyapp/widgets/checkout/charge_selection_dialog.dart';
+import 'package:mandyapp/widgets/checkout/expense_section.dart';
+import 'package:mandyapp/widgets/checkout/payment_method_dialog.dart';
+import 'package:mandyapp/widgets/checkout/payment_method_selector.dart' as pms;
 
 class CheckoutScreen extends StatefulWidget {
   final int orderId;
@@ -40,7 +43,6 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final Map<int, TextEditingController> _chargeControllers = {};
-  bool _chargesExpanded = false;
   Set<int> _selectedChargeIds = {};
   Set<pms.PaymentMethod> _selectedPaymentMethods = {pms.PaymentMethod.cash};
   Map<pms.PaymentMethod, double> _paymentAmounts = {};
@@ -168,7 +170,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           _chargeControllers[entry.key] = TextEditingController(text: entry.value.toStringAsFixed(2));
         }
         _selectedChargeIds = matched.keys.toSet();
-        _chargesExpanded = true;
         _initialChargesApplied = true;
       });
       _schedulePersistCheckout();
@@ -285,11 +286,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         await _OrderPaymentDAO.getOrderPaymentByOrderId(order.id!);
 
     final nowIso = DateTime.now().toIso8601String();
+    // Calculate expenses total
+    double expensesTotal = 0.0;
+    try {
+      final orderExpenseDao = OrderExpenseDao();
+      final expenses = await orderExpenseDao.getByOrderId(order.id!);
+      expensesTotal = expenses.fold(0.0, (sum, expense) => sum + expense.expenseAmount);
+    } catch (e) {
+      // If there's an error loading expenses, default to 0
+      debugPrint('Error loading expenses for payment calculation: $e');
+    }
+
     final paymentPayload = OrderPayment(
-      id: existingPayment?.id ?? 0,
+      id: existingPayment?.id ?? 0, // Use 0 for new records, DAO will remove it
       orderId: order.id!,
       itemTotal: subtotal,
       chargeTotal: chargesTotal,
+      expenseTotal: expensesTotal,
       receiveAmount: receivedAmount,
       pendingAmount: pendingAmount,
       pendingPayment: pendingPayment,
@@ -316,50 +329,57 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: MyText.titleMedium('Checkout'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => OrderExpenseBloc(),
+        ),
+      ],
+      child: Scaffold(
+        appBar: AppBar(
+          title: MyText.titleMedium('Checkout'),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Colors.white,
+        ),
+        body: widget.orderId == 0 
+            ? _buildEmptyCart()
+            : BlocBuilder<OrderBloc, OrderState>(
+                builder: (context, state) {
+                  if (state is OrderLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (state is OrderWithItemsLoaded) {
+                    return _buildCheckoutContent(state.order, {}, {});
+                  }
+
+                  if (state is OrderError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.error_outline, size: 64, color: Theme.of(context).colorScheme.error),
+                          MySpacing.height(16),
+                          MyText.bodyLarge('Error loading cart', color: Theme.of(context).colorScheme.error),
+                          MySpacing.height(8),
+                          MyText.bodyMedium(state.message, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                          MySpacing.height(16),
+                          ElevatedButton(
+                            onPressed: () {
+                              // Retry loading cart
+                              context.read<OrderBloc>().add(LoadOrderById(widget.orderId));
+                            },
+                            child: MyText.bodyMedium('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return _buildEmptyCart();
+                },
+              ),
       ),
-      body: widget.orderId == 0 
-          ? _buildEmptyCart()
-          : BlocBuilder<OrderBloc, OrderState>(
-              builder: (context, state) {
-                if (state is OrderLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (state is OrderWithItemsLoaded) {
-                  return _buildCheckoutContent(state.order, {}, {});
-                }
-
-                if (state is OrderError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.error_outline, size: 64, color: Theme.of(context).colorScheme.error),
-                        MySpacing.height(16),
-                        MyText.bodyLarge('Error loading cart', color: Theme.of(context).colorScheme.error),
-                        MySpacing.height(8),
-                        MyText.bodyMedium(state.message, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
-                        MySpacing.height(16),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Retry loading cart
-                            context.read<OrderBloc>().add(LoadOrderById(widget.orderId));
-                          },
-                          child: MyText.bodyMedium('Retry'),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return _buildEmptyCart();
-              },
-            ),
     );
   }
 
@@ -400,13 +420,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         Expanded(
           child: ListView.builder(
             padding: MySpacing.all(16),
-            itemCount: cart.items!.length + 2, // +2 for charges and payment sections
+            itemCount: cart.items!.length + 3, // +3 for charges, expense and payment sections
             itemBuilder: (context, index) {
               if (index < cart.items!.length) {
                 final item = cart.items![index];
                 return _buildBillSummaryTile(context, item);
               } else if (index == cart.items!.length) {
                 return _buildChargesSection();
+              } else if (index == cart.items!.length + 1) {
+                return _buildExpenseSection();
               } else {
                 return _buildPaymentSection(cart);
               }
@@ -438,7 +460,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (selectedIds != null) {
       setState(() {
         _selectedChargeIds = selectedIds;
-        _chargesExpanded = true;
       });
       _schedulePersistCheckout();
     }
@@ -491,6 +512,53 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           },
           onSchedulePersistCheckout: _schedulePersistCheckout,
           onShowChargeSelectionDialog: _showChargeSelectionDialog,
+        );
+      },
+    );
+  }
+
+  Widget _buildExpenseSection() {
+    return BlocBuilder<OrderBloc, OrderState>(
+      builder: (context, orderState) {
+        if (orderState is! OrderWithItemsLoaded) {
+          return Container(
+            margin: MySpacing.bottom(12),
+            padding: MySpacing.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.receipt_long,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                MySpacing.width(8),
+                MyText.bodyMedium('Expenses', fontWeight: 600),
+                const Spacer(),
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ExpenseSection(
+          order: orderState.order,
+          onExpenseAdded: (expense) {
+            // Handle expense added if needed
+          },
+          onExpenseDeleted: (expenseId) {
+            // Delete expense from database
+            context.read<OrderExpenseBloc>().add(DeleteOrderExpense(expenseId));
+          },
+          onSchedulePersistCheckout: _schedulePersistCheckout,
         );
       },
     );

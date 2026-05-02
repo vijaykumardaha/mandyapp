@@ -20,6 +20,16 @@ class LoadOrderExpensesByOrderId extends OrderExpenseEvent {
   List<Object?> get props => [orderId];
 }
 
+// Load order expenses by order ID or null
+class LoadOrderExpensesByOrderIdOrNull extends OrderExpenseEvent {
+  final int orderId;
+
+  const LoadOrderExpensesByOrderIdOrNull(this.orderId);
+
+  @override
+  List<Object?> get props => [orderId];
+}
+
 // Create new order expense
 class CreateOrderExpense extends OrderExpenseEvent {
   final OrderExpense orderExpense;

@@ -4,6 +4,7 @@ class BillSummary {
   final DateTime createdAt;
   final double itemTotal;
   final double chargesTotal;
+  final double expensesTotal;
   final double receiveAmount;
   final double pendingAmount;
   final double pendingPayment;
@@ -18,6 +19,7 @@ class BillSummary {
     required this.createdAt,
     required this.itemTotal,
     required this.chargesTotal,
+    required this.expensesTotal,
     required this.receiveAmount,
     required this.pendingAmount,
     required this.pendingPayment,

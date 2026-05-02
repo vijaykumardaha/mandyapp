@@ -112,26 +112,27 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
       }
 
       final itemTotal = paymentMatch?.itemTotal ?? order.totalPrice;
-      final chargesTotal = paymentMatch?.chargeTotal ?? 0.0;
+      final chargeTotal = paymentMatch?.chargeTotal ?? 0.0;
+      final expenseTotal = paymentMatch?.expenseTotal ?? 0.0;
       final receiveAmount = paymentMatch?.receiveAmount ?? 0.0;
 
       // Calculate amounts based on order type
       double grandTotal, pendingAmount, pendingPayment;
       if (order.orderFor == 'seller') {
-        // For seller orders: grandTotal = subtotal - charges (seller gets less due to charges)
-        grandTotal = itemTotal - chargesTotal;
+        // For seller orders: grandTotal = subtotal - charges - expenses (seller gets less due to charges and expenses)
+        grandTotal = itemTotal - chargeTotal - expenseTotal;
         pendingAmount = grandTotal - receiveAmount;
         // For seller: pendingPayment is the amount still owed to seller
         pendingPayment = grandTotal - receiveAmount;
       } else {
-        // For buyer orders: grandTotal = subtotal + charges (buyer pays more due to charges)
-        grandTotal = itemTotal + chargesTotal;
+        // For buyer orders: grandTotal = subtotal + charges + expenses (buyer pays more due to charges and expenses)
+        grandTotal = itemTotal + chargeTotal + expenseTotal;
         pendingAmount = grandTotal - receiveAmount;
         // For buyer: pendingPayment is the same as pendingAmount
         pendingPayment = pendingAmount;
       }
 
-      final totalAmount = itemTotal + chargesTotal;
+      final totalAmount = itemTotal + chargeTotal + expenseTotal;
 
       totalSales += receiveAmount;
       totalPending += pendingAmount;
@@ -142,7 +143,8 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
           customerId: order.customerId,
           createdAt: DateTime.tryParse(order.createdAt) ?? DateTime.now(),
           itemTotal: itemTotal,
-          chargesTotal: chargesTotal,
+          chargesTotal: chargeTotal,
+          expensesTotal: expenseTotal,
           receiveAmount: receiveAmount,
           pendingAmount: pendingAmount,
           pendingPayment: pendingPayment,

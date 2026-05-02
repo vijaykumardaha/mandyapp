@@ -43,6 +43,17 @@ class OrderExpenseDao {
     return List.generate(maps.length, (i) => OrderExpense.fromMap(maps[i]));
   }
 
+  Future<List<OrderExpense>> getByOrderIdOrNull(int orderId) async {
+    final db = await dbHelper.database;
+    final maps = await db.query(
+      'order_expenses',
+      where: 'order_id = ? OR order_id IS NULL',
+      whereArgs: [orderId],
+      orderBy: 'created_at DESC',
+    );
+    return List.generate(maps.length, (i) => OrderExpense.fromMap(maps[i]));
+  }
+
   Future<int> update(OrderExpense orderExpense) async {
     final db = await dbHelper.database;
     return await db.update(

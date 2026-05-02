@@ -9,12 +9,10 @@ import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_bottom_navigation_bar.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/screens/order_item_screen.dart';
-import 'package:mandyapp/screens/expense_screen.dart';
 import 'package:mandyapp/screens/home_tab_screen.dart';
-import 'package:mandyapp/screens/reports_screen.dart';
 import 'package:mandyapp/screens/selling_screen.dart';
 import 'package:mandyapp/screens/settings_screen.dart';
-import 'package:mandyapp/screens/bill_list_screen.dart';
+import 'package:mandyapp/screens/payment_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final int activeTab;
@@ -48,11 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Widget> get _screens => [
         const HomeTabScreen(),
-        const ReportsScreen(),
         const OrderItemScreen(),
         const SellingScreen(),
-        const ExpenseScreen(),
-        const BillListScreen(),
+        const PaymentScreen(),
         const SettingsScreen(),
       ];
 
@@ -65,25 +61,17 @@ class _HomeScreenState extends State<HomeScreen> {
     const TabItem(
         icon: Icons.qr_code, activeIcon: Icons.qr_code_outlined, title: "Home"),
     const TabItem(
-        icon: Icons.bar_chart,
-        activeIcon: Icons.bar_chart_outlined,
-        title: "Reports"),
-    const TabItem(
         icon: Icons.shopping_basket,
         activeIcon: Icons.shopping_basket_outlined,
-        title: "Orders"),
+        title: "Order"),
     const TabItem(
         icon: Icons.point_of_sale,
         activeIcon: Icons.point_of_sale_outlined,
         title: "Selling"),
     const TabItem(
-        icon: Icons.money_rounded,
-        activeIcon: Icons.money_outlined,
-        title: "Expense"),
-    const TabItem(
         icon: Icons.receipt_long,
         activeIcon: Icons.receipt_outlined,
-        title: "Bills"),
+        title: "Payment"),
     const TabItem(
         icon: Icons.settings,
         activeIcon: Icons.settings_outlined,

@@ -16,6 +16,7 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
     on<DeleteOrderExpensesByOrderId>(_onDeleteOrderExpensesByOrderId);
     on<LoadOrderExpenses>(_onLoadOrderExpenses);
     on<LoadOrderExpensesByOrderId>(_onLoadOrderExpensesByOrderId);
+    on<LoadOrderExpensesByOrderIdOrNull>(_onLoadOrderExpensesByOrderIdOrNull);
     on<GetOrderExpenseById>(_onGetOrderExpenseById);
   }
 
@@ -26,6 +27,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
     try {
       emit(OrderExpenseLoading());
       await _orderExpenseDao.insert(event.orderExpense);
+      final orderExpenses = await _orderExpenseDao.getByOrderId(event.orderExpense.orderId!);
+      emit(OrderExpensesLoaded(orderExpenses));
       emit(OrderExpenseOperationSuccess('Order expense added successfully'));
     } catch (e) {
       emit(OrderExpenseError('Failed to add order expense: $e'));
@@ -39,6 +42,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
     try {
       emit(OrderExpenseLoading());
       await _orderExpenseDao.update(event.orderExpense);
+      final orderExpenses = await _orderExpenseDao.getByOrderId(event.orderExpense.orderId!);
+      emit(OrderExpensesLoaded(orderExpenses));
       emit(OrderExpenseOperationSuccess('Order expense updated successfully'));
     } catch (e) {
       emit(OrderExpenseError('Failed to update order expense: $e'));
@@ -52,6 +57,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
     try {
       emit(OrderExpenseLoading());
       await _orderExpenseDao.delete(event.expenseId);
+      // We need to get the order ID to reload the expenses, but we don't have it here
+      // For now, emit success and let the UI handle the reload
       emit(OrderExpenseOperationSuccess('Order expense deleted successfully'));
     } catch (e) {
       emit(OrderExpenseError('Failed to delete order expense: $e'));
@@ -91,6 +98,19 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
     try {
       emit(OrderExpenseLoading());
       final orderExpenses = await _orderExpenseDao.getByOrderId(event.orderId);
+      emit(OrderExpensesLoaded(orderExpenses));
+    } catch (e) {
+      emit(OrderExpenseError('Failed to load order expenses: $e'));
+    }
+  }
+
+  Future<void> _onLoadOrderExpensesByOrderIdOrNull(
+    LoadOrderExpensesByOrderIdOrNull event,
+    Emitter<OrderExpenseState> emit,
+  ) async {
+    try {
+      emit(OrderExpenseLoading());
+      final orderExpenses = await _orderExpenseDao.getByOrderIdOrNull(event.orderId);
       emit(OrderExpensesLoaded(orderExpenses));
     } catch (e) {
       emit(OrderExpenseError('Failed to load order expenses: $e'));

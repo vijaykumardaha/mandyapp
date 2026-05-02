@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:mandyapp/blocs/order_expense/order_expense_bloc.dart';
 import 'package:mandyapp/dao/order_charge_dao.dart';
 import 'package:mandyapp/dao/order_dao.dart';
 import 'package:mandyapp/dao/order_payment_dao.dart';
+import 'package:mandyapp/dao/order_expense_dao.dart';
 import 'package:mandyapp/dao/product_dao.dart';
 import 'package:mandyapp/dao/product_variant_dao.dart';
 import 'package:mandyapp/dao/customer_dao.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/order_charge_model.dart';
+import 'package:mandyapp/models/order_expense_model.dart';
 import 'package:mandyapp/models/order_model.dart';
 import 'package:mandyapp/models/order_payment_model.dart';
 import 'package:mandyapp/models/customer_model.dart';
@@ -15,6 +19,7 @@ import 'package:mandyapp/screens/checkout_screen.dart';
 import 'package:mandyapp/utils/printer/printer_service.dart' as printer_service;
 import 'package:mandyapp/widgets/billing/invoice_item.dart';
 import 'package:mandyapp/widgets/billing/bill_line_item.dart';
+import 'package:mandyapp/widgets/checkout/expense_section.dart';
 
 class BillDetailsScreen extends StatefulWidget {
   final int orderId;
@@ -127,8 +132,9 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
 
   Future<_BillDetailsData> _loadBillDetails() async {
     final orderDAO = OrderDAO();
-    final orderPaymentDAO = OrderPaymentDAO();
     final orderChargeDAO = OrderChargeDAO();
+    final orderPaymentDAO = OrderPaymentDAO();
+    final orderExpenseDAO = OrderExpenseDao();
     final productDAO = ProductDAO();
     final productVariantDAO = ProductVariantDAO();
     final customerDAO = CustomerDAO();
@@ -141,10 +147,11 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     final items = order.items ?? await orderDAO.getOrderItems(order.id!, orderFor: order.orderFor);
     final payment = await orderPaymentDAO.getOrderPaymentByOrderId(order.id!);
     final charges = await orderChargeDAO.getOrderCharges(order.id.toString());
+    final expenses = await orderExpenseDAO.getByOrderId(order.id!);
     final customers = await customerDAO.getCustomers();
     final Map<int, Customer> customerById = {
       for (final customer in customers)
-        if (customer.id != null) customer.id!: customer,
+        customer.id!: customer,
     };
 
     final List<BillLineItem> lineItems = [];
@@ -166,6 +173,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       payment: payment,
       lineItems: lineItems,
       charges: charges,
+      expenses: expenses,
       customerById: customerById,
     );
   }
@@ -339,6 +347,8 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                             _buildItemsSection(data, currency, theme),
                             const SizedBox(height: 24),
                             _buildBillChangesSection(data, currency, theme),
+                            const SizedBox(height: 24),
+                            _buildExpensesSection(data, currency, theme),
                             const SizedBox(height: 24),
                             _buildSummarySection(data, currency, theme),
                             const SizedBox(height: 24),
@@ -568,10 +578,101 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     );
   }
 
+  Widget _buildExpensesSection(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
+    final expenses = data.expenses;
+    final hasExpenses = expenses.isNotEmpty;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.08)),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.secondary.withOpacity(0.05),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.receipt_long,
+                  size: 20,
+                  color: theme.colorScheme.secondary,
+                ),
+                const SizedBox(width: 8),
+                MyText.bodySmall('EXPENSES', fontWeight: 600, color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                const Spacer(),
+                MyText.bodySmall(
+                  hasExpenses ? currency.format(data.expensesTotal) : 'No Expenses',
+                  fontWeight: 600,
+                  color: hasExpenses ? theme.colorScheme.secondary : theme.colorScheme.onSurface.withOpacity(0.5),
+                ),
+              ],
+            ),
+          ),
+          if (!hasExpenses)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: MyText.bodySmall(
+                'No expenses were recorded for this order.',
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
+              ),
+            )
+          else ...[
+            for (final expense in expenses)...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          MyText.bodyMedium(
+                            expense.expenseName,
+                            fontWeight: 500,
+                          ),
+                          if (expense.expenseNote != null && expense.expenseNote!.isNotEmpty)
+                            MyText.bodySmall(
+                              expense.expenseNote!,
+                              color: theme.colorScheme.onSurface.withOpacity(0.6),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: MyText.bodyMedium(
+                          currency.format(expense.expenseAmount),
+                          fontWeight: 600,
+                          color: theme.colorScheme.secondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (expense != expenses.last)
+                Divider(height: 1, thickness: 0.5, color: theme.colorScheme.onSurface.withOpacity(0.05)),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildSummarySection(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
     final rows = <MapEntry<String, String>>[
       MapEntry('Item Total', currency.format(data.itemTotal)),
       if (data.chargesTotal > 0) MapEntry('Charge Total', currency.format(data.chargesTotal)),
+      if (data.expensesTotal > 0) MapEntry('Expense Total', currency.format(data.expensesTotal)),
       MapEntry('Grand Total', currency.format(data.grandTotal))
     ];
 
@@ -678,6 +779,7 @@ class _BillDetailsData {
   final OrderPayment? payment;
   final List<BillLineItem> lineItems;
   final List<OrderCharge> charges;
+  final List<OrderExpense> expenses;
   final Map<int, Customer> customerById;
 
   const _BillDetailsData({
@@ -685,6 +787,7 @@ class _BillDetailsData {
     required this.payment,
     required this.lineItems,
     required this.charges,
+    required this.expenses,
     required this.customerById,
   });
 
@@ -703,6 +806,10 @@ class _BillDetailsData {
 
   double get chargesTotal {
     return charges.fold(0.0, (sum, charge) => sum + charge.chargeAmount);
+  }
+
+  double get expensesTotal {
+    return expenses.fold(0.0, (sum, expense) => sum + expense.expenseAmount);
   }
 
   double get grandTotal {

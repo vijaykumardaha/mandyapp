@@ -92,17 +92,22 @@ class DBHelper {
             order_id INTEGER NOT NULL,
             item_total REAL NOT NULL DEFAULT 0,
             charge_total REAL NOT NULL DEFAULT 0,
+            expense_total REAL NOT NULL DEFAULT 0,
+            
             receive_amount REAL NOT NULL DEFAULT 0,
             pending_amount REAL NOT NULL DEFAULT 0,
             pending_payment REAL NOT NULL DEFAULT 0,
             payment_amount REAL NOT NULL DEFAULT 0,
+
             cash_payment INTEGER NOT NULL DEFAULT 0,   -- 1 = yes, 0 = no
             upi_payment INTEGER NOT NULL DEFAULT 0,    -- 1 = yes, 0 = no
             card_payment INTEGER NOT NULL DEFAULT 0,   -- 1 = yes, 0 = no
             credit_payment INTEGER NOT NULL DEFAULT 0, -- 1 = yes, 0 = no
+
             cash_amount REAL NOT NULL DEFAULT 0,
             upi_amount REAL NOT NULL DEFAULT 0,
             card_amount REAL NOT NULL DEFAULT 0,
+
             created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
             updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
           );
