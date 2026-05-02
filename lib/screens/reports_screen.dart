@@ -12,11 +12,7 @@ enum ReportType {
   sellerPurchase,
   buyerSales,
   mandiProfit,
-  customerLedger,
   pendingPayment,
-  paymentMode,
-  topSellingProducts,
-  chargesPerformance,
 }
 
 class ReportsScreen extends StatefulWidget {
@@ -66,16 +62,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         return 'Buyer Sales';
       case ReportType.mandiProfit:
         return 'Mandi Profit';
-      case ReportType.customerLedger:
-        return 'Customer Ledger';
       case ReportType.pendingPayment:
         return 'Pending Payment';
-      case ReportType.paymentMode:
-        return 'Payment Mode';
-      case ReportType.topSellingProducts:
-        return 'Top Products';
-      case ReportType.chargesPerformance:
-        return 'Charges Performance';
     }
   }
 
@@ -89,16 +77,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         return Icons.point_of_sale;
       case ReportType.mandiProfit:
         return Icons.account_balance;
-      case ReportType.customerLedger:
-        return Icons.account_balance_wallet;
       case ReportType.pendingPayment:
         return Icons.pending_actions;
-      case ReportType.paymentMode:
-        return Icons.payment;
-      case ReportType.topSellingProducts:
-        return Icons.star;
-      case ReportType.chargesPerformance:
-        return Icons.assessment;
     }
   }
 
@@ -252,11 +232,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           PopupMenuItem(value: ReportType.sellerPurchase, child: Text('Seller Purchase Summary')),
           PopupMenuItem(value: ReportType.buyerSales, child: Text('Buyer Sales Summary')),
           PopupMenuItem(value: ReportType.mandiProfit, child: Text('Mandi Profit Report')),
-          PopupMenuItem(value: ReportType.customerLedger, child: Text('Customer Ledger Report')),
           PopupMenuItem(value: ReportType.pendingPayment, child: Text('Pending Payment Report')),
-          PopupMenuItem(value: ReportType.paymentMode, child: Text('Payment Mode Summary')),
-          PopupMenuItem(value: ReportType.topSellingProducts, child: Text('Top Selling Products')),
-          PopupMenuItem(value: ReportType.chargesPerformance, child: Text('Charges Performance Report')),
         ],
         child: Padding(
           padding: MySpacing.xy(16, 12),
@@ -590,29 +566,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
           return _buildMandiProfitReport(state, theme, currencyFormat);
         }
         break;
-      case ReportType.customerLedger:
-        if (state is CustomerLedgerReportLoaded) {
-          return _buildCustomerLedgerReport(state, theme, currencyFormat);
-        }
-        break;
       case ReportType.pendingPayment:
         if (state is PendingPaymentReportLoaded) {
           return _buildPendingPaymentReport(state, theme, currencyFormat);
-        }
-        break;
-      case ReportType.paymentMode:
-        if (state is PaymentModeReportLoaded) {
-          return _buildPaymentModeReport(state, theme, currencyFormat);
-        }
-        break;
-      case ReportType.topSellingProducts:
-        if (state is TopSellingProductsReportLoaded) {
-          return _buildTopSellingProductsReport(state, theme, currencyFormat);
-        }
-        break;
-      case ReportType.chargesPerformance:
-        if (state is ChargesPerformanceReportLoaded) {
-          return _buildChargesPerformanceReport(state, theme, currencyFormat);
         }
         break;
     }
@@ -1628,32 +1584,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
           toDate: _getEndDate(),
         ));
         break;
-      case ReportType.customerLedger:
-        reportsBloc.add(LoadCustomerLedgerReport(
-          fromDate: _getStartDate(),
-          toDate: _getEndDate(),
-        ));
-        break;
       case ReportType.pendingPayment:
         reportsBloc.add(LoadPendingPaymentReport(
-          fromDate: _getStartDate(),
-          toDate: _getEndDate(),
-        ));
-        break;
-      case ReportType.paymentMode:
-        reportsBloc.add(LoadPaymentModeReport(
-          fromDate: _getStartDate(),
-          toDate: _getEndDate(),
-        ));
-        break;
-      case ReportType.topSellingProducts:
-        reportsBloc.add(LoadTopSellingProductsReport(
-          fromDate: _getStartDate(),
-          toDate: _getEndDate(),
-        ));
-        break;
-      case ReportType.chargesPerformance:
-        reportsBloc.add(LoadChargesPerformanceReport(
           fromDate: _getStartDate(),
           toDate: _getEndDate(),
         ));
@@ -1708,19 +1640,368 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
+  // Filter dialog and summary methods
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              const Icon(Icons.filter_list_outlined),
+              const SizedBox(width: 8),
+              Text('Filter Reports'),
+            ],
+          ),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setDialogState) {
+              return SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Date Range Selection
+                    Text(
+                      'Date Range',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: ReportRangePreset.values.map((preset) {
+                        final isSelected = _selectedPreset == preset;
+                        return GestureDetector(
+                          onTap: () {
+                            setDialogState(() {
+                              _selectedPreset = preset;
+                            });
+                            setState(() {
+                              _selectedPreset = preset;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected 
+                                    ? Theme.of(context).colorScheme.primary 
+                                    : Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                              ),
+                            ),
+                            child: Text(
+                              preset.name.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected 
+                                    ? Theme.of(context).colorScheme.onPrimary 
+                                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    
+                    if (_selectedPreset == ReportRangePreset.custom)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            _showCustomDateRangePicker().then((_) {
+                              setDialogState(() {});
+                            });
+                          },
+                          icon: const Icon(Icons.date_range, size: 16),
+                          label: Text(_customDateRange != null 
+                              ? '${_formatDate(_customDateRange!.start)} - ${_formatDate(_customDateRange!.end)}'
+                              : 'Select Custom Range'),
+                        ),
+                      ),
+                    
+                    const SizedBox(height: 20),
+                    
+                    // Report Type Selection
+                    Text(
+                      'Report Type',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...ReportType.values.map((reportType) {
+                      final isSelected = _selectedReportType == reportType;
+                      final icon = _getReportIcon(reportType);
+                      final name = _reportTypeLabel(reportType);
+                      
+                      return GestureDetector(
+                        onTap: () {
+                          setDialogState(() {
+                            _selectedReportType = reportType;
+                          });
+                          setState(() {
+                            _selectedReportType = reportType;
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isSelected 
+                                ? Theme.of(context).colorScheme.primary.withOpacity(0.1) 
+                                : Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isSelected 
+                                  ? Theme.of(context).colorScheme.primary 
+                                  : Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                icon,
+                                size: 20,
+                                color: isSelected 
+                                    ? Theme.of(context).colorScheme.primary 
+                                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  name,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: isSelected 
+                                        ? Theme.of(context).colorScheme.primary 
+                                        : Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                ),
+                              ),
+                              if (isSelected)
+                                Icon(
+                                  Icons.check_circle,
+                                  size: 20,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ),
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _loadReportData();
+              },
+              child: const Text('Apply'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterSummary(ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.outline.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.filter_list_outlined,
+                size: 16,
+                color: colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Current Filters',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _FilterChip(
+                  icon: Icons.date_range,
+                  label: _selectedPreset.name.toUpperCase(),
+                  color: colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _FilterChip(
+                  icon: _getReportIcon(_selectedReportType),
+                  label: _reportTypeLabel(_selectedReportType),
+                  color: colorScheme.secondary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Filter chip widget
+  Widget _FilterChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: color,
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: MyText.titleMedium('Reports', fontWeight: 600),
+        title: Row(
+          children: [
+            // Date Range Chip
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.date_range,
+                    size: 14,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _selectedPreset.name.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Report Type Chip
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _getReportIcon(_selectedReportType),
+                    size: 14,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      _reportTypeLabel(_selectedReportType),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            onPressed: _showFilterDialog,
+            icon: const Icon(Icons.filter_list_outlined),
+            tooltip: 'Filter Reports',
+          ),
+        ],
       ),
       body: Padding(
         padding: MySpacing.xy(16, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildDatePickerCard(Theme.of(context)),
-            MySpacing.height(24),
             Expanded(
               child: BlocBuilder<ReportsBloc, ReportsState>(
                 builder: (context, state) {

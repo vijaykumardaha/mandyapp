@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:mandyapp/blocs/reports/reports_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/screens/reports_screen.dart';
 
 class HomeTabScreen extends StatefulWidget {
   const HomeTabScreen({super.key});
@@ -16,6 +17,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   late ThemeData theme;
   final DateFormat _dateFormat = DateFormat('dd MMM yyyy');
   final NumberFormat _currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
+  bool _hasLoadedData = false;
+  DashboardDataLoaded? _cachedData;
 
   @override
   void initState() {
@@ -28,7 +31,16 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   }
 
   void _loadDashboardData({bool forceRefresh = false}) {
-    context.read<ReportsBloc>().add(const LoadDashboardData());
+    print('_loadDashboardData called: forceRefresh=$forceRefresh, _hasLoadedData=$_hasLoadedData, _cachedData=${_cachedData != null}');
+    
+    // Only load if we explicitly force refresh OR we have no data at all
+    if (forceRefresh || (_cachedData == null && !_hasLoadedData)) {
+      print('Loading dashboard data...');
+      context.read<ReportsBloc>().add(const LoadDashboardData());
+      _hasLoadedData = true;
+    } else {
+      print('Skipping dashboard data load - using cached data');
+    }
   }
 
   @override
@@ -38,9 +50,24 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: BlocBuilder<ReportsBloc, ReportsState>(
+          child: BlocConsumer<ReportsBloc, ReportsState>(
+            listener: (context, state) {
+              if (state is DashboardDataLoaded) {
+                _cachedData = state;
+                _hasLoadedData = true;
+              }
+            },
             builder: (context, state) {
-              if (state is ReportsLoading) {
+              // Debug: Print current state to understand what's happening
+              print('Current state: ${state.runtimeType}, _hasLoadedData: $_hasLoadedData, _cachedData: ${_cachedData != null}');
+              
+              // Always show cached data if available, regardless of current state
+              if (_cachedData != null) {
+                return _buildDashboard(_cachedData!);
+              }
+
+              // Only show loading if we have never loaded data before
+              if (state is ReportsLoading && _cachedData == null) {
                 return const Center(child: CircularProgressIndicator());
               }
 
@@ -104,7 +131,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with refresh button
+          // Header with reports link
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -118,17 +145,41 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                   ),
                 ],
               ),
-              IconButton(
-                onPressed: () => _loadDashboardData(forceRefresh: true),
-                icon: Icon(
-                  Icons.refresh,
-                  color: theme.primaryColor,
-                  size: 28,
-                ),
-                tooltip: 'Refresh Dashboard',
-                style: IconButton.styleFrom(
-                  backgroundColor: theme.primaryColor.withOpacity(0.1),
-                  padding: const EdgeInsets.all(12),
+              GestureDetector(
+                onTap: () {
+                  // Navigate to reports UI
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ReportsScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: theme.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: theme.primaryColor.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.insert_chart_outlined,
+                        size: 18,
+                        color: theme.primaryColor,
+                      ),
+                      const SizedBox(width: 6),
+                      MyText.bodySmall(
+                        "See Reports",
+                        color: theme.primaryColor,
+                        fontWeight: 600,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -295,6 +346,71 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
           ),
           const SizedBox(height: 16),
         ],
+      ),
+    );
+  }
+}
+
+class _ReportCard extends StatelessWidget {
+  final String title;
+  final String description;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  final ThemeData theme;
+
+  const _ReportCard({
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: color.withOpacity(0.2),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                size: 20,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 12),
+            MyText.titleSmall(
+              title,
+              fontWeight: 600,
+              color: theme.colorScheme.onSurface,
+            ),
+            const SizedBox(height: 4),
+            MyText.bodySmall(
+              description,
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }
