@@ -16,7 +16,7 @@ import 'package:mandyapp/models/order_charge_model.dart';
 import 'package:mandyapp/models/order_payment_model.dart';
 import 'package:mandyapp/dao/order_charge_dao.dart';
 import 'package:mandyapp/dao/order_payment_dao.dart';
-import 'package:mandyapp/widgets/checkout/payment_section.dart';
+import 'package:mandyapp/widgets/checkout/payment_method_dialog.dart';
 import 'package:mandyapp/widgets/checkout/charges_section.dart';
 import 'package:mandyapp/widgets/checkout/charge_selection_dialog.dart';
 
@@ -88,13 +88,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (orderState is! OrderWithItemsLoaded) {
       return;
     }
-    final order = orderState.order;
+    final cart = orderState.order;
 
     final Map<pms.PaymentMethod, double> initialAmounts = {};
 
     void addMethod(pms.PaymentMethod method, int flag, double amount) {
       // Skip credit payment for seller carts
-      if (method == pms.PaymentMethod.credit && order.orderFor == 'seller') {
+      if (method == pms.PaymentMethod.credit && cart.orderFor == 'seller') {
         return;
       }
       if (flag == 1 || amount > 0) {
@@ -322,19 +322,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () => Navigator.of(context).maybePop(),
-              child: const Text('Done'),
-            ),
-          ),
-        ),
-      ),
       body: widget.orderId == 0 
           ? _buildEmptyCart()
           : BlocBuilder<OrderBloc, OrderState>(
@@ -510,19 +497,354 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Widget _buildPaymentSection(Order order) {
-    return PaymentSection(
-      order: order,
-      selectedChargeIds: _selectedChargeIds,
-      chargeControllers: _chargeControllers,
-      selectedPaymentMethods: _selectedPaymentMethods,
-      paymentAmounts: _paymentAmounts,
-      onPaymentMethodChanged: (selectedMethods, paymentAmounts) {
-        setState(() {
-          _selectedPaymentMethods = selectedMethods;
-          _paymentAmounts = paymentAmounts;
-        });
+    return BlocBuilder<ChargeTypesBloc, ChargeTypesState>(
+      builder: (context, chargesState) {
+        double subtotal = order.totalPrice;
+        double chargesTotal = 0.0;
+
+        if (chargesState is ChargeTypesLoaded) {
+          // Calculate total from edited charge amounts for selected charges only, filtered by order type
+          for (var charge in chargesState.chargeTypes) {
+            if (charge.isActive == 1 &&
+                charge.chargeFor == order.orderFor &&
+                _selectedChargeIds.contains(charge.id) &&
+                _chargeControllers.containsKey(charge.id)) {
+              final editedAmount = double.tryParse(_chargeControllers[charge.id!]!.text) ?? charge.chargeAmount;
+              chargesTotal += editedAmount;
+            }
+          }
+        }
+
+        double grandTotal = order.orderFor == 'seller'
+            ? subtotal - chargesTotal
+            : subtotal + chargesTotal;
+
+        // Calculate received amount from payment methods
+        double receivedAmount = _paymentAmounts.values.fold(0.0, (sum, amount) => sum + amount);
+        double pendingAmount = grandTotal - receivedAmount;
+
+        // Calculate paymentAmount and pendingPayment based on order type
+        double paymentAmount, pendingPayment;
+        if (order.orderFor == 'seller') {
+          paymentAmount = grandTotal;
+          pendingPayment = paymentAmount - receivedAmount;
+        } else {
+          paymentAmount = receivedAmount;
+          pendingPayment = pendingAmount;
+        }
+
+        return Column(
+          children: [
+            // Payment Summary
+            Container(
+              margin: MySpacing.bottom(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.1)),
+              ),
+              child: Column(
+                children: [
+                  // Header
+                  Container(
+                    padding: MySpacing.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.receipt_long,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        MySpacing.width(8),
+                        MyText.bodyLarge('Payment Summary', fontWeight: 600),
+                        const Spacer(),
+                        Container(
+                          padding: MySpacing.xy(8, 4),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: MyText.bodySmall(
+                            '${_selectedPaymentMethods.length} Payment${_selectedPaymentMethods.length != 1 ? 's' : ''}',
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: 600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Summary Content
+                  Padding(
+                    padding: MySpacing.all(16),
+                    child: Column(
+                      children: [
+                        // Item Total and Charges in Row
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _modernSummaryCard(
+                                'Item Total',
+                                subtotal,
+                                Icons.shopping_bag_outlined,
+                                context,
+                              ),
+                            ),
+                            MySpacing.width(12),
+                            Expanded(
+                              child: _modernSummaryCard(
+                                'Charges',
+                                chargesTotal,
+                                Icons.add_circle_outline,
+                                context,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        MySpacing.height(12),
+
+                        // Grand Total - Prominent
+                        Container(
+                          padding: MySpacing.all(16),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.account_balance_wallet,
+                                    size: 24,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                  MySpacing.width(12),
+                                  MyText.bodyLarge('Grand Total', fontWeight: 700),
+                                ],
+                              ),
+                              MyText.titleLarge(
+                                '₹${grandTotal.toStringAsFixed(2)}',
+                                fontWeight: 700,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        MySpacing.height(16),
+
+                        // Payment Details
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _paymentDetailCard(
+                                order.orderFor == 'seller' ? 'Amount Owed' : 'Payment Amount',
+                                paymentAmount,
+                                Icons.arrow_circle_down,
+                                Theme.of(context).colorScheme.primary,
+                                context,
+                              ),
+                            ),
+                            MySpacing.width(12),
+                            Expanded(
+                              child: _paymentDetailCard(
+                                order.orderFor == 'seller' ? 'Amount Received' : 'Received Amount',
+                                receivedAmount,
+                                Icons.check_circle_outline,
+                                Colors.green,
+                                context,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        MySpacing.height(12),
+
+                        // Pending Payment
+                        _paymentDetailCard(
+                          order.orderFor == 'seller'
+                              ? 'Amount Pending'
+                              : (pendingPayment >= 0 ? 'Pending Payment' : 'Payment Due'),
+                          pendingPayment.abs(),
+                          pendingPayment > 0 ? Icons.pending : Icons.done_all,
+                          pendingPayment > 0 ? Colors.orange : Colors.green,
+                          context,
+                          fullWidth: true,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Payment Method Button
+            Container(
+              padding: MySpacing.all(16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => PaymentMethodDialog(
+                        selectedPaymentMethods: _selectedPaymentMethods,
+                        paymentAmounts: _paymentAmounts,
+                        orderFor: order.orderFor,
+                        onSelectionChanged: (selectedMethods, paymentAmounts) {
+                          setState(() {
+                            _selectedPaymentMethods = selectedMethods;
+                            _paymentAmounts = paymentAmounts;
+                          });
+                        },
+                        onPayNow: _schedulePersistCheckout,
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: MyText.bodyLarge('Pay Now', fontWeight: 600),
+                ),
+              ),
+            ),
+          ],
+        );
       },
-      onSchedulePersistCheckout: _schedulePersistCheckout,
+    );
+  }
+
+  Widget _modernSummaryCard(String label, double amount, IconData icon, BuildContext context) {
+    return Container(
+      padding: MySpacing.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              ),
+              MySpacing.width(6),
+              MyText.bodySmall(
+                label,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ],
+          ),
+          MySpacing.height(4),
+          MyText.bodyLarge(
+            '₹${amount.toStringAsFixed(2)}',
+            fontWeight: 600,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _paymentDetailCard(String label, double amount, IconData icon, Color color, BuildContext context, {bool fullWidth = false}) {
+    return Container(
+      padding: MySpacing.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 20,
+            color: color,
+          ),
+          MySpacing.width(12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                MyText.bodySmall(
+                  label,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                ),
+                MySpacing.height(2),
+                MyText.bodyMedium(
+                  '₹${amount.toStringAsFixed(2)}',
+                  fontWeight: 600,
+                  color: color,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryItem(String label, double amount, BuildContext context) {
+    return Container(
+      padding: MySpacing.xy(8, 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MyText.bodySmall(label, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+          MySpacing.height(2),
+          MyText.bodyMedium(
+            '₹${amount.toStringAsFixed(2)}',
+            fontWeight: 600,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryRow(String label, double amount, BuildContext context, {bool emphasized = false, Color? valueColor}) {
+    return Padding(
+      padding: MySpacing.bottom(8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          MyText.bodyMedium(
+            label,
+            fontWeight: emphasized ? 600 : 500,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+          ),
+          MyText.bodyMedium(
+            '₹${amount.toStringAsFixed(2)}',
+            fontWeight: emphasized ? 600 : 500,
+            color: valueColor ?? Theme.of(context).colorScheme.onSurface,
+          ),
+        ],
+      ),
     );
   }
 }

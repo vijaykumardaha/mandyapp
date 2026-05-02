@@ -225,10 +225,9 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
           ),
         ],
       ),
-      body: BlocConsumer<ChargeTypesBloc, dynamic>(
+      body: BlocConsumer<ChargeTypesBloc, ChargeTypesState>(
         listener: (context, state) {
-          // Check if state has message property (error state)
-          if (state.toString().contains('ChargeTypesError') && state.message != null) {
+          if (state is ChargeTypesError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 behavior: SnackBarBehavior.floating,
@@ -236,166 +235,175 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                 content: Text(state.message),
               ),
             );
+          } else if (state is ChargeTypesOperationSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                content: Text(state.message),
+                backgroundColor: Colors.green,
+              ),
+            );
+            // Reload the charge types after successful operation
+            context.read<ChargeTypesBloc>().add(LoadChargeTypes());
           }
         },
         builder: (context, state) {
-          // Check if state has charges property (loaded state)
-          if (state.toString().contains('ChargeTypesLoaded')) {
-            try {
-              final charges = state.charges as List<ChargeType>?;
-              if (charges == null || charges.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.account_balance_wallet_outlined,
-                        size: 64,
-                        color: theme.colorScheme.outline,
-                      ),
-                      MySpacing.height(16),
-                      MyText.bodyLarge(
-                        'No charges found',
-                        color: theme.colorScheme.outline,
-                      ),
-                      MySpacing.height(8),
-                      MyText.bodyMedium(
-                        'Tap the + button to add your first charge',
-                        color: theme.colorScheme.outline,
-                      ),
-                    ],
-                  ),
-                );
-              }
+          if (state is ChargeTypesLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-              return ListView.builder(
-                padding: MySpacing.all(16),
-                itemCount: charges.length,
-                itemBuilder: (context, index) {
-                  final charge = charges[index];
-                  return Card(
-                    margin: MySpacing.bottom(8),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: charge.isActive == 1
-                            ? Colors.green
-                            : Colors.grey,
-                        child: Icon(
-                          Icons.account_balance_wallet,
-                          color: Colors.white,
+          if (state is ChargeTypesLoaded) {
+            final charges = state.chargeTypes;
+            if (charges.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.account_balance_wallet_outlined,
+                      size: 64,
+                      color: theme.colorScheme.outline,
+                    ),
+                    MySpacing.height(16),
+                    MyText.bodyLarge(
+                      'No charges found',
+                      color: theme.colorScheme.outline,
+                    ),
+                    MySpacing.height(8),
+                    MyText.bodyMedium(
+                      'Tap the + button to add your first charge',
+                      color: theme.colorScheme.outline,
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return ListView.builder(
+              padding: MySpacing.all(16),
+              itemCount: charges.length,
+              itemBuilder: (context, index) {
+                final charge = charges[index];
+                return Card(
+                  margin: MySpacing.bottom(8),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: charge.isActive == 1
+                          ? Colors.green
+                          : Colors.grey,
+                      child: Icon(
+                        Icons.account_balance_wallet,
+                        color: Colors.white,
+                      ),
+                    ),
+                    title: MyText.bodyLarge(
+                      charge.chargeName,
+                      fontWeight: 500,
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        MyText.bodyMedium(
+                          charge.chargeType == 'percentage'
+                              ? '${charge.chargeAmount.toStringAsFixed(2)}%'
+                              : '\$${charge.chargeAmount.toStringAsFixed(2)}',
+                          color: theme.colorScheme.primary,
                         ),
-                      ),
-                      title: MyText.bodyLarge(
-                        charge.chargeName,
-                        fontWeight: 500,
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          MyText.bodyMedium(
-                            charge.chargeType == 'percentage'
-                                ? '${charge.chargeAmount.toStringAsFixed(2)}%'
-                                : '\$${charge.chargeAmount.toStringAsFixed(2)}',
-                            color: theme.colorScheme.primary,
-                          ),
-                          MySpacing.height(4),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: [
-                              Container(
-                                padding: MySpacing.xy(4, 2),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.secondary.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: theme.colorScheme.secondary.withOpacity(0.3),
-                                  ),
-                                ),
-                                child: MyText.bodySmall(
-                                  charge.chargeType == 'percentage' ? 'Percentage' : 'Fixed',
-                                  color: theme.colorScheme.secondary,
-                                  fontWeight: 500,
-                                  fontSize: 10,
+                        MySpacing.height(4),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: [
+                            Container(
+                              padding: MySpacing.xy(4, 2),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.secondary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: theme.colorScheme.secondary.withOpacity(0.3),
                                 ),
                               ),
+                              child: MyText.bodySmall(
+                                charge.chargeType == 'percentage' ? 'Percentage' : 'Fixed',
+                                color: theme.colorScheme.secondary,
+                                fontWeight: 500,
+                                fontSize: 10,
+                              ),
+                            ),
+                            Container(
+                              padding: MySpacing.xy(6, 2),
+                              decoration: BoxDecoration(
+                                color: charge.chargeFor == 'buyer'
+                                    ? Colors.blue.withOpacity(0.1)
+                                    : Colors.orange.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: charge.chargeFor == 'buyer'
+                                      ? Colors.blue.withOpacity(0.3)
+                                      : Colors.orange.withOpacity(0.3),
+                                ),
+                              ),
+                              child: MyText.bodySmall(
+                                charge.chargeFor == 'buyer' ? 'For Buyers' : 'For Sellers',
+                                color: charge.chargeFor == 'buyer' ? Colors.blue : Colors.orange,
+                                fontWeight: 500,
+                                fontSize: 10,
+                              ),
+                            ),
+                            if (charge.isDefault == 1)
                               Container(
                                 padding: MySpacing.xy(6, 2),
                                 decoration: BoxDecoration(
-                                  color: charge.chargeFor == 'buyer'
-                                      ? Colors.blue.withOpacity(0.1)
-                                      : Colors.orange.withOpacity(0.1),
+                                  color: Colors.green.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: charge.chargeFor == 'buyer'
-                                        ? Colors.blue.withOpacity(0.3)
-                                        : Colors.orange.withOpacity(0.3),
+                                    color: Colors.green.withOpacity(0.3),
                                   ),
                                 ),
                                 child: MyText.bodySmall(
-                                  charge.chargeFor == 'buyer' ? 'For Buyers' : 'For Sellers',
-                                  color: charge.chargeFor == 'buyer' ? Colors.blue : Colors.orange,
+                                  'Default',
+                                  color: Colors.green,
                                   fontWeight: 500,
                                   fontSize: 10,
                                 ),
                               ),
-                              if (charge.isDefault == 1)
-                                Container(
-                                  padding: MySpacing.xy(6, 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: Colors.green.withOpacity(0.3),
-                                    ),
-                                  ),
-                                  child: MyText.bodySmall(
-                                    'Default',
-                                    color: Colors.green,
-                                    fontWeight: 500,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              charge.isActive == 1
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                            ),
-                            onPressed: () => _toggleChargeTypeStatus(charge),
-                            tooltip: charge.isActive == 1
-                                ? 'Deactivate'
-                                : 'Activate',
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _showChargeTypeDialog(charge),
-                            tooltip: 'Edit',
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => _deleteChargeType(charge),
-                            tooltip: 'Delete',
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ),
-                  );
-                },
-              );
-            } catch (e) {
-              return const Center(child: CircularProgressIndicator());
-            }
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            charge.isActive == 1
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () => _toggleChargeTypeStatus(charge),
+                          tooltip: charge.isActive == 1
+                              ? 'Deactivate'
+                              : 'Activate',
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => _showChargeTypeDialog(charge),
+                          tooltip: 'Edit',
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => _deleteChargeType(charge),
+                          tooltip: 'Delete',
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
           }
 
-          // Default loading state
           return const Center(child: CircularProgressIndicator());
         },
       ),

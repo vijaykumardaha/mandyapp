@@ -48,11 +48,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Widget> get _screens => [
         const HomeTabScreen(),
-        // const ReportsScreen(),
+        const ReportsScreen(),
         const OrderItemScreen(),
         const SellingScreen(),
         const ExpenseScreen(),
-        // const BillListScreen(),
+        const BillListScreen(),
         const SettingsScreen(),
       ];
 
@@ -64,14 +64,14 @@ class _HomeScreenState extends State<HomeScreen> {
   List<TabItem> tabItems = [
     const TabItem(
         icon: Icons.qr_code, activeIcon: Icons.qr_code_outlined, title: "Home"),
-    // const TabItem(
-    //     icon: Icons.bar_chart,
-    //     activeIcon: Icons.bar_chart_outlined,
-    //     title: "Reports"),
     const TabItem(
-        icon: Icons.shopping_cart_checkout,
-        activeIcon: Icons.shopping_cart_checkout_outlined,
-        title: "Cart Items"),
+        icon: Icons.bar_chart,
+        activeIcon: Icons.bar_chart_outlined,
+        title: "Reports"),
+    const TabItem(
+        icon: Icons.shopping_basket,
+        activeIcon: Icons.shopping_basket_outlined,
+        title: "Orders"),
     const TabItem(
         icon: Icons.point_of_sale,
         activeIcon: Icons.point_of_sale_outlined,
@@ -80,10 +80,10 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Icons.money_rounded,
         activeIcon: Icons.money_outlined,
         title: "Expense"),
-    // const TabItem(
-    //     icon: Icons.receipt_long,
-    //     activeIcon: Icons.receipt_outlined,
-    //     title: "Bills"),
+    const TabItem(
+        icon: Icons.receipt_long,
+        activeIcon: Icons.receipt_outlined,
+        title: "Bills"),
     const TabItem(
         icon: Icons.settings,
         activeIcon: Icons.settings_outlined,

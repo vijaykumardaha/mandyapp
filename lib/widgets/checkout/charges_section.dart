@@ -72,44 +72,10 @@ class _ChargesSectionState extends State<ChargesSection> {
       padding: MySpacing.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.1)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.account_balance_wallet,
-                size: 20,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              MySpacing.width(8),
-              MyText.bodyMedium('Charges', fontWeight: 600),
-            ],
-          ),
-          MySpacing.height(8),
-          MyText.bodySmall(
-            'No active charges for ${widget.order.orderFor == 'buyer' ? 'buyers' : 'sellers'}',
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChargesSection(ChargeTypesState state, List<ChargeType> activeCharges) {
-    return Container(
-      margin: MySpacing.bottom(12),
-      padding: MySpacing.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -121,18 +87,121 @@ class _ChargesSectionState extends State<ChargesSection> {
               MySpacing.width(8),
               MyText.bodyMedium('Charges', fontWeight: 600),
               const Spacer(),
-              TextButton(
-                onPressed: () => widget.onShowChargeSelectionDialog(
-                  (state as ChargeTypesLoaded).chargeTypes.where((charge) => charge.isActive == 1).toList(),
+              Container(
+                padding: MySpacing.xy(8, 4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: MyText.bodySmall(
-                  'Add Charges',
-                  color: Theme.of(context).colorScheme.primary,
+                  'No Charges',
+                  color: Theme.of(context).colorScheme.error,
                   fontWeight: 600,
                 ),
               ),
             ],
           ),
+          MySpacing.height(12),
+          Container(
+            padding: MySpacing.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                ),
+                MySpacing.width(8),
+                Expanded(
+                  child: MyText.bodySmall(
+                    'No active charges for ${widget.order.orderFor == 'buyer' ? 'buyers' : 'sellers'}',
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChargesSection(ChargeTypesState state, List<ChargeType> activeCharges) {
+    return Container(
+      margin: MySpacing.bottom(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: MySpacing.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.account_balance_wallet,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                MySpacing.width(8),
+                MyText.bodyLarge('Charges', fontWeight: 600),
+                const Spacer(),
+                Container(
+                  padding: MySpacing.xy(8, 4),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: MyText.bodySmall(
+                    '${widget.selectedChargeIds.length} Charge${widget.selectedChargeIds.length != 1 ? 's' : ''}',
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: 600,
+                  ),
+                ),
+                MySpacing.width(8),
+                InkWell(
+                  onTap: () => widget.onShowChargeSelectionDialog(
+                    (state as ChargeTypesLoaded).chargeTypes.where((charge) => charge.isActive == 1).toList(),
+                  ),
+                  child: Container(
+                    padding: MySpacing.xy(8, 4),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.add,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                        MySpacing.width(4),
+                        MyText.bodySmall(
+                          'Add',
+                          color: Colors.white,
+                          fontWeight: 600,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Charges Content
           if (_chargesExpanded) ..._buildChargeItems(activeCharges),
         ],
       ),
@@ -161,77 +230,122 @@ class _ChargesSectionState extends State<ChargesSection> {
   Widget _buildChargeItem(ChargeType charge) {
     return Padding(
       padding: MySpacing.bottom(12),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: MyText.bodySmall(
-              charge.chargeName,
-              fontWeight: 500,
-            ),
-          ),
-          MySpacing.width(8),
-          Expanded(
-            flex: 1,
-            child: SizedBox(
-              height: 32,
-              child: TextField(
-                controller: widget.chargeControllers[charge.id!],
-                decoration: InputDecoration(
-                  contentPadding: MySpacing.xy(8, 8),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+      child: Container(
+        padding: MySpacing.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.1)),
+        ),
+        child: Row(
+          children: [
+            // Charge Icon and Name
+            Expanded(
+              flex: 2,
+              child: Row(
+                children: [
+                  Container(
+                    padding: MySpacing.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                    borderSide: BorderSide(
+                    child: Icon(
+                      Icons.receipt_long,
+                      size: 16,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                  prefixText: '₹',
-                ),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                onChanged: (value) {
-                  widget.onSchedulePersistCheckout();
-                },
+                  MySpacing.width(12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        MyText.bodyMedium(
+                          charge.chargeName,
+                          fontWeight: 600,
+                        ),
+                        MySpacing.height(2),
+                        MyText.bodySmall(
+                          charge.chargeType == 'percentage'
+                              ? '${charge.chargeAmount.toStringAsFixed(1)}% of total'
+                              : 'Fixed amount',
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          MySpacing.width(8),
-          InkWell(
-            onTap: () {
-              final newSelectedIds = Set<int>.from(widget.selectedChargeIds);
-              final newControllers = Map<int, TextEditingController>.from(widget.chargeControllers);
-              
-              newSelectedIds.remove(charge.id!);
-              newControllers.remove(charge.id!);
-              
-              widget.onChargesChanged(newSelectedIds, newControllers);
-              widget.onSchedulePersistCheckout();
-            },
-            child: Container(
-              padding: MySpacing.all(6),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Icon(
-                Icons.delete_outline,
-                size: 16,
-                color: Colors.red,
+            MySpacing.width(12),
+
+            // Amount Input
+            Expanded(
+              flex: 1,
+              child: SizedBox(
+                height: 40,
+                child: TextField(
+                  controller: widget.chargeControllers[charge.id!],
+                  decoration: InputDecoration(
+                    contentPadding: MySpacing.xy(12, 8),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    prefixText: '₹',
+                    hintText: '0.00',
+                  ),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  onChanged: (value) {
+                    widget.onSchedulePersistCheckout();
+                  },
+                ),
               ),
             ),
-          ),
-        ],
+            MySpacing.width(8),
+
+            // Delete Button
+            InkWell(
+              onTap: () {
+                final newSelectedIds = Set<int>.from(widget.selectedChargeIds);
+                final newControllers = Map<int, TextEditingController>.from(widget.chargeControllers);
+                
+                newSelectedIds.remove(charge.id!);
+                newControllers.remove(charge.id!);
+                
+                widget.onChargesChanged(newSelectedIds, newControllers);
+                widget.onSchedulePersistCheckout();
+              },
+              child: Container(
+                padding: MySpacing.all(8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.delete_outline,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -239,26 +353,59 @@ class _ChargesSectionState extends State<ChargesSection> {
   Widget _buildLoadingSection() {
     return Container(
       margin: MySpacing.bottom(12),
-      padding: MySpacing.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.1)),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Icon(
-            Icons.account_balance_wallet,
-            size: 20,
-            color: Theme.of(context).colorScheme.primary,
+          // Header
+          Container(
+            padding: MySpacing.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.account_balance_wallet,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                MySpacing.width(8),
+                MyText.bodyLarge('Charges', fontWeight: 600),
+                const Spacer(),
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
           ),
-          MySpacing.width(8),
-          MyText.bodyMedium('Charges', fontWeight: 600),
-          const Spacer(),
-          const SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
+          // Loading Content
+          Padding(
+            padding: MySpacing.all(16),
+            child: Center(
+              child: Column(
+                children: [
+                  CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  MySpacing.height(12),
+                  MyText.bodyMedium(
+                    'Loading charges...',
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

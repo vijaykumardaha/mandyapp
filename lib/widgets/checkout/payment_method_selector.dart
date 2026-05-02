@@ -215,73 +215,50 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             MySpacing.height(16),
             Divider(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
             MySpacing.height(12),
-            ..._selectedPaymentMethods
-                .where((method) => _availablePaymentMethods.contains(method))
-                .map((method) => Padding(
-              padding: MySpacing.bottom(12),
-              child: Row(
-                children: [
-                  // Payment Method Icon and Name
-                  Expanded(
-                    flex: 2,
-                    child: Row(
-                      children: [
-                        Icon(
-                          _getPaymentMethodIcon(method),
-                          size: 20,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        MySpacing.width(8),
-                        MyText.bodyMedium(
-                          _getPaymentMethodLabel(method),
-                          fontWeight: 500,
-                        ),
-                      ],
-                    ),
+            Row(
+              children: _selectedPaymentMethods
+                  .where((method) => _availablePaymentMethods.contains(method))
+                  .map((method) => Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: method != _selectedPaymentMethods.last ? 8.0 : 0.0,
                   ),
-
-                  MySpacing.width(12),
-
-                  // Amount Input Field
-                  Expanded(
-                    flex: 1,
-                    child: SizedBox(
-                      height: 40,
-                      child: TextField(
-                        key: ValueKey(method), // Ensure unique key for each field
-                        controller: _controllers[method],
-                        focusNode: _focusNodes[method],
-                        decoration: InputDecoration(
-                          contentPadding: MySpacing.xy(12, 8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                            ),
+                  child: SizedBox(
+                    height: 40,
+                    child: TextField(
+                      key: ValueKey(method), // Ensure unique key for each field
+                      controller: _controllers[method],
+                      focusNode: _focusNodes[method],
+                      decoration: InputDecoration(
+                        contentPadding: MySpacing.xy(12, 8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
                           ),
-                          prefixText: '₹',
-                          hintText: '0.00',
                         ),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        keyboardType: TextInputType.numberWithOptions(decimal: true),
-                        textAlign: TextAlign.center,
-                        onChanged: (value) => _updatePaymentAmount(method, value),
+                        prefixText: '₹',
+                        hintText: '0.00',
                       ),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      textAlign: TextAlign.center,
+                      onChanged: (value) => _updatePaymentAmount(method, value),
                     ),
                   ),
-                ],
-              ),
-            )).toList(),
+                ),
+              )).toList(),
+            ),
           ],
         ],
       ),
