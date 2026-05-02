@@ -20,16 +20,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       }
     });
 
-    on<LoadProductsByCategory>((event, emit) async {
-      try {
-        emit(ProductLoading());
-        final products = await productDAO.getProductsByCategoryWithVariants(event.categoryId);
-        emit(ProductLoaded(products));
-      } catch (error) {
-        emit(ProductError('Failed to load products: ${error.toString()}'));
-      }
-    });
-
+    
     on<AddProduct>((event, emit) async {
       try {
         emit(ProductLoading());

@@ -1,38 +1,35 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/charges/charges_bloc.dart';
-import 'package:mandyapp/blocs/charges/charges_event.dart';
-import 'package:mandyapp/blocs/checkout/checkout_bloc.dart';
+import 'package:mandyapp/blocs/order/order_bloc.dart';
+import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/models/charge_type_model.dart';
+import 'package:mandyapp/models/order_item_model.dart';
 import 'package:mandyapp/widgets/checkout/payment_method_selector.dart' as pms;
-import 'package:mandyapp/models/charge_model.dart';
-import 'package:mandyapp/models/cart_model.dart';
-import 'package:mandyapp/models/item_sale_model.dart';
+import 'package:mandyapp/models/order_model.dart';
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/widgets/checkout/bill_summary_tile.dart';
-import 'package:mandyapp/models/cart_charge_model.dart';
-import 'package:mandyapp/models/cart_payment_model.dart';
-import 'package:mandyapp/dao/cart_charge_dao.dart';
-import 'package:mandyapp/dao/cart_payment_dao.dart';
-import 'package:mandyapp/utils/db_helper.dart';
-import 'package:mandyapp/blocs/item_sale/item_sale_bloc.dart';
+import 'package:mandyapp/models/order_charge_model.dart';
+import 'package:mandyapp/models/order_payment_model.dart';
+import 'package:mandyapp/dao/order_charge_dao.dart';
+import 'package:mandyapp/dao/order_payment_dao.dart';
 import 'package:mandyapp/widgets/checkout/payment_section.dart';
 import 'package:mandyapp/widgets/checkout/charges_section.dart';
 import 'package:mandyapp/widgets/checkout/charge_selection_dialog.dart';
 
 class CheckoutScreen extends StatefulWidget {
-  final int cartId;
-  final List<CartCharge>? initialCartCharges;
-  final CartPayment? initialPayment;
+  final int orderId;
+  final List<OrderCharge>? initialOrderCharges;
+  final OrderPayment? initialPayment;
   final bool isEdit;
 
   const CheckoutScreen({
     Key? key,
-    required this.cartId,
-    this.initialCartCharges,
+    required this.orderId,
+    this.initialOrderCharges,
     this.initialPayment,
     this.isEdit = false,
   }) : super(key: key);
@@ -48,10 +45,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Set<pms.PaymentMethod> _selectedPaymentMethods = {pms.PaymentMethod.cash};
   Map<pms.PaymentMethod, double> _paymentAmounts = {};
   bool _initialChargesApplied = false;
-  final CartChargeDAO _cartChargeDAO = CartChargeDAO();
-  final CartPaymentDAO _cartPaymentDAO = CartPaymentDAO();
-  final Map<int, Charge> _chargesById = {};
-  CartPayment? _currentPayment;
+  final OrderChargeDAO _OrderChargeDAO = OrderChargeDAO();
+  final OrderPaymentDAO _OrderPaymentDAO = OrderPaymentDAO();
+  final Map<int, ChargeType> _chargesById = {};
+  OrderPayment? _currentPayment;
   bool _isPersistingCheckout = false;
   bool _pendingPersist = false;
   DateTime? _lastPersistTrigger;
@@ -61,19 +58,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     super.initState();
     _applyInitialPayment();
     // Only load cart details if cartId is valid (not 0)
-    if (widget.cartId > 0) {
-      context.read<CheckoutBloc>().add(LoadCheckoutCart(widget.cartId));
+    if (widget.orderId > 0) {
+      context.read<OrderBloc>().add(LoadOrderById(widget.orderId));
     }
     // Load charges for the charges section
-    context.read<ChargesBloc>().add(LoadCharges());
+    context.read<ChargeTypesBloc>().add(LoadChargeTypes());
   }
 
   @override
   void deactivate() {
-    // Load item sales when checkout is being removed from the widget tree
-    if (mounted) {
-      context.read<ItemSaleBloc>().add(const LoadItemSales());
-    }
     super.deactivate();
   }
 
@@ -90,21 +83,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
-    // Get cart from CheckoutBloc to check cartFor
-    final checkoutState = context.read<CheckoutBloc>().state;
-    if (checkoutState is! CheckoutDataLoaded) {
+    // Get cart from OrderBloc to check cartFor
+    final orderState = context.read<OrderBloc>().state;
+    if (orderState is! OrderWithItemsLoaded) {
       return;
     }
-    final cart = checkoutState.cart;
+    final order = orderState.order;
 
     final Map<pms.PaymentMethod, double> initialAmounts = {};
 
-    void addMethod(pms.PaymentMethod method, bool flag, double amount) {
+    void addMethod(pms.PaymentMethod method, int flag, double amount) {
       // Skip credit payment for seller carts
-      if (method == pms.PaymentMethod.credit && cart.cartFor == 'seller') {
+      if (method == pms.PaymentMethod.credit && order.orderFor == 'seller') {
         return;
       }
-      if (flag || amount > 0) {
+      if (flag == 1 || amount > 0) {
         initialAmounts[method] = amount; // allow zero to show explicitly
       }
     }
@@ -122,33 +115,33 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _currentPayment = payment;
   }
 
-  void _applyInitialCharges(List<Charge> availableCharges) {
+  void _applyInitialCharges(List<ChargeType> availableCharges) {
     if (_initialChargesApplied) return;
-    final initialCharges = widget.initialCartCharges;
+    final initialCharges = widget.initialOrderCharges;
     if (initialCharges == null || initialCharges.isEmpty) {
       _initialChargesApplied = true;
       return;
     }
 
     // Get cart information to filter charges by type
-    final checkoutState = context.read<CheckoutBloc>().state;
-    if (checkoutState is! CheckoutDataLoaded) {
+    final orderState = context.read<OrderBloc>().state;
+    if (orderState is! OrderWithItemsLoaded) {
       _initialChargesApplied = true;
       return;
     }
-    final cart = checkoutState.cart;
+    final order = orderState.order;
 
     // Filter available charges by cart type
-    final relevantCharges = availableCharges.where((charge) => charge.chargeFor == cart.cartFor).toList();
+    final relevantCharges = availableCharges.where((charge) => charge.chargeFor == order.orderFor).toList();
 
     final Map<int, double> matched = {};
     for (final saved in initialCharges) {
       for (final charge in relevantCharges) {
-        if (cart.id.toString() == saved.cartId.toString()) {
+        if (order.id.toString() == saved.orderId.toString()) {
           if (charge.id != null) {
             // Use calculated amount for percentage charges, fixed amount for fixed charges
             final calculatedAmount = charge.chargeType == 'percentage'
-                ? cart.totalPrice * charge.chargeAmount / 100
+                ? order.totalPrice * charge.chargeAmount / 100
                 : charge.chargeAmount;
             matched[charge.id!] = calculatedAmount;
           }
@@ -203,8 +196,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (!mounted) return;
     _isPersistingCheckout = true;
     try {
-      await _persistCartCharges();
-      await _persistCartPayment();
+      await _persistOrderCharges();
+      await _persistOrderPayment();
     } catch (error, stack) {
       if (kDebugMode) {
         debugPrint('Failed to persist checkout: $error');
@@ -229,12 +222,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
-  Future<void> _persistCartCharges() async {
-    final checkoutState = context.read<CheckoutBloc>().state;
-    if (checkoutState is! CheckoutDataLoaded) return;
-    final cartId = checkoutState.cart.id.toString();
+  Future<void> _persistOrderCharges() async {
+    final orderState = context.read<OrderBloc>().state;
+    if (orderState is! OrderWithItemsLoaded) return;
+    final orderId = orderState.order.id.toString();
 
-    List<CartCharge> chargesToSave = [];
+    List<OrderCharge> chargesToSave = [];
     for (final entry in _chargeControllers.entries) {
       final chargeId = entry.key;
       final text = entry.value.text.trim();
@@ -242,24 +235,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       if (_selectedChargeIds.contains(chargeId)) {
         chargesToSave.add(
-          CartCharge(
-            cartId: cartId,
-            chargeName: _chargesById[chargeId]?.chargeName ?? 'Charge',
+          OrderCharge(
+            orderId: orderId,
+            chargeName: _chargesById[chargeId]?.chargeName ?? 'ChargeType',
             chargeAmount: amount,
           ),
         );
       }
     }
 
-    await _cartChargeDAO.bulkInsertForCart(cartId, chargesToSave);
+    await _OrderChargeDAO.bulkInsertForOrder(orderId, chargesToSave);
   }
 
-  Future<void> _persistCartPayment() async {
-    final checkoutState = context.read<CheckoutBloc>().state;
-    if (checkoutState is! CheckoutDataLoaded) return;
-    final cart = checkoutState.cart;
+  Future<void> _persistOrderPayment() async {
+    final orderState = context.read<OrderBloc>().state;
+    if (orderState is! OrderWithItemsLoaded) return;
+    final order = orderState.order;
 
-    final subtotal = cart.totalPrice;
+    final subtotal = order.totalPrice;
     double chargesTotal = 0.0;
     for (final entry in _chargeControllers.entries) {
       final amount = double.tryParse(entry.value.text) ?? 0.0;
@@ -269,14 +262,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
 
     double receivedAmount = _paymentAmounts.values.fold(0.0, (sum, amount) => sum + amount);
-    double grandTotal = cart.cartFor == 'seller'
+    double grandTotal = order.orderFor == 'seller'
         ? subtotal - chargesTotal
         : subtotal + chargesTotal;
     double pendingAmount = grandTotal - receivedAmount;
 
-    // Calculate paymentAmount and pendingPayment based on cart type
+    // Calculate paymentAmount and pendingPayment based on order type
     double paymentAmount, pendingPayment;
-    if (cart.cartFor == 'seller') {
+    if (order.orderFor == 'seller') {
       // For seller carts: paymentAmount is the amount to be paid to seller
       paymentAmount = grandTotal;
       // pendingPayment is the amount still owed to seller
@@ -288,23 +281,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       pendingPayment = pendingAmount;
     }
 
-    CartPayment? existingPayment = _currentPayment ??
-        await _cartPaymentDAO.getCartPaymentByCartId(cart.id);
+    OrderPayment? existingPayment = _currentPayment ??
+        await _OrderPaymentDAO.getOrderPaymentByOrderId(order.id!);
 
     final nowIso = DateTime.now().toIso8601String();
-    final paymentPayload = CartPayment(
-      id: existingPayment?.id ?? DBHelper.generateUuidInt(),
-      cartId: cart.id,
+    final paymentPayload = OrderPayment(
+      id: existingPayment?.id ?? 0,
+      orderId: order.id!,
       itemTotal: subtotal,
-      chargesTotal: chargesTotal,
+      chargeTotal: chargesTotal,
       receiveAmount: receivedAmount,
       pendingAmount: pendingAmount,
       pendingPayment: pendingPayment,
       paymentAmount: paymentAmount,
-      cashPayment: _paymentAmounts.containsKey(pms.PaymentMethod.cash) && (_paymentAmounts[pms.PaymentMethod.cash] ?? 0) > 0,
-      upiPayment: _paymentAmounts.containsKey(pms.PaymentMethod.upi) && (_paymentAmounts[pms.PaymentMethod.upi] ?? 0) > 0,
-      cardPayment: _paymentAmounts.containsKey(pms.PaymentMethod.card) && (_paymentAmounts[pms.PaymentMethod.card] ?? 0) > 0,
-      creditPayment: cart.cartFor != 'seller' && _paymentAmounts.containsKey(pms.PaymentMethod.credit) && (_paymentAmounts[pms.PaymentMethod.credit] ?? 0) > 0,
+      cashPayment: (_paymentAmounts.containsKey(pms.PaymentMethod.cash) && (_paymentAmounts[pms.PaymentMethod.cash] ?? 0) > 0) ? 1 : 0,
+      upiPayment: (_paymentAmounts.containsKey(pms.PaymentMethod.upi) && (_paymentAmounts[pms.PaymentMethod.upi] ?? 0) > 0) ? 1 : 0,
+      cardPayment: (_paymentAmounts.containsKey(pms.PaymentMethod.card) && (_paymentAmounts[pms.PaymentMethod.card] ?? 0) > 0) ? 1 : 0,
+      creditPayment: (order.orderFor != 'seller' && _paymentAmounts.containsKey(pms.PaymentMethod.credit) && (_paymentAmounts[pms.PaymentMethod.credit] ?? 0) > 0) ? 1 : 0,
       cashAmount: _paymentAmounts[pms.PaymentMethod.cash] ?? 0.0,
       upiAmount: _paymentAmounts[pms.PaymentMethod.upi] ?? 0.0,
       cardAmount: _paymentAmounts[pms.PaymentMethod.card] ?? 0.0,
@@ -313,9 +306,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
 
     if (existingPayment != null) {
-      await _cartPaymentDAO.updateCartPayment(paymentPayload);
+      await _OrderPaymentDAO.updateOrderPayment(paymentPayload);
     } else {
-      await _cartPaymentDAO.insertCartPayment(paymentPayload);
+      await _OrderPaymentDAO.insertOrderPayment(paymentPayload);
     }
 
     _currentPayment = paymentPayload;
@@ -342,28 +335,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
         ),
       ),
-      body: widget.cartId == 0 
+      body: widget.orderId == 0 
           ? _buildEmptyCart()
-          : BlocBuilder<CheckoutBloc, CheckoutState>(
+          : BlocBuilder<OrderBloc, OrderState>(
               builder: (context, state) {
-                if (state is CheckoutLoading) {
+                if (state is OrderLoading) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (state is CheckoutCartLoaded) {
-                  final cart = state.cart;
-                  if (cart.items == null || cart.items!.isEmpty) {
-                    return _buildEmptyCart();
-                  }
-
-                  return _buildCheckoutContent(cart, {}, {});
+                if (state is OrderWithItemsLoaded) {
+                  return _buildCheckoutContent(state.order, {}, {});
                 }
 
-                if (state is CheckoutDataLoaded) {
-                  return _buildCheckoutContent(state.cart, state.products, state.variants);
-                }
-
-                if (state is CheckoutError) {
+                if (state is OrderError) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -377,7 +361,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ElevatedButton(
                           onPressed: () {
                             // Retry loading cart
-                            context.read<CheckoutBloc>().add(LoadCheckoutCart(widget.cartId));
+                            context.read<OrderBloc>().add(LoadOrderById(widget.orderId));
                           },
                           child: MyText.bodyMedium('Retry'),
                         ),
@@ -399,16 +383,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           Icon(Icons.shopping_cart_outlined, size: 64, color: Theme.of(context).colorScheme.outline),
           MySpacing.height(16),
-          MyText.bodyLarge('Cart is empty', color: Theme.of(context).colorScheme.outline),
+          MyText.bodyLarge('Order is empty', color: Theme.of(context).colorScheme.outline),
         ],
       ),
     );
   }
 
-  Widget _buildCheckoutContent(Cart cart, Map<int, Product> products, Map<int, ProductVariant> variants) {
+  Widget _buildCheckoutContent(Order cart, Map<int, Product> products, Map<int, ProductVariant> variants) {
     return Column(
       children: [
-        // Cart Summary Header
+        // Order Summary Header
         Container(
           padding: MySpacing.all(16),
           color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.1),
@@ -433,14 +417,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             itemBuilder: (context, index) {
               if (index < cart.items!.length) {
                 final item = cart.items![index];
-                final product = products[item.productId];
-                final variant = variants[item.variantId];
-
-                if (product == null || variant == null) {
-                  return const SizedBox.shrink();
-                }
-
-                return _buildBillSummaryTile(context, item, product, variant);
+                return _buildBillSummaryTile(context, item);
               } else if (index == cart.items!.length) {
                 return _buildChargesSection();
               } else {
@@ -455,20 +432,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Widget _buildBillSummaryTile(
     BuildContext context,
-    ItemSale item,
-    Product product,
-    ProductVariant variant,
+    OrderItem item,
   ) {
     return BillSummaryTile(
       isEdit: widget.isEdit,
       item: item,
-      product: product,
-      variant: variant,
       onPersistCheckout: _schedulePersistCheckout,
     );
   }
 
-  Future<void> _showChargeSelectionDialog(List<Charge> availableCharges) async {
+  Future<void> _showChargeSelectionDialog(List<ChargeType> availableCharges) async {
     final selectedIds = await ChargeSelectionDialog.show(
       context,
       availableCharges: availableCharges,
@@ -485,9 +458,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Widget _buildChargesSection() {
-    return BlocBuilder<CheckoutBloc, CheckoutState>(
-      builder: (context, checkoutState) {
-        if (checkoutState is! CheckoutDataLoaded) {
+    return BlocBuilder<OrderBloc, OrderState>(
+      builder: (context, orderState) {
+        if (orderState is! OrderWithItemsLoaded) {
           return Container(
             margin: MySpacing.bottom(12),
             padding: MySpacing.all(16),
@@ -517,7 +490,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         }
 
         return ChargesSection(
-          cart: checkoutState.cart,
+          order: orderState.order,
           selectedChargeIds: _selectedChargeIds,
           chargeControllers: _chargeControllers,
           initialChargesApplied: _initialChargesApplied,
@@ -536,9 +509,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildPaymentSection(Cart cart) {
+  Widget _buildPaymentSection(Order order) {
     return PaymentSection(
-      cart: cart,
+      order: order,
       selectedChargeIds: _selectedChargeIds,
       chargeControllers: _chargeControllers,
       selectedPaymentMethods: _selectedPaymentMethods,

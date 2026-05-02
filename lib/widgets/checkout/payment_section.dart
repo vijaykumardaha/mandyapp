@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mandyapp/blocs/order/order_bloc.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/widgets/checkout/payment_method_selector.dart' as pms;
-import 'package:mandyapp/models/cart_model.dart';
-import 'package:mandyapp/blocs/charges/charges_bloc.dart';
-import 'package:mandyapp/blocs/checkout/checkout_bloc.dart';
-import 'package:mandyapp/blocs/charges/charges_state.dart';
+import 'package:mandyapp/models/order_model.dart';
+import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
 
 class PaymentSection extends StatefulWidget {
-  final Cart cart;
+  final Order order;
   final Set<int> selectedChargeIds;
   final Map<int, TextEditingController> chargeControllers;
   final Set<pms.PaymentMethod> selectedPaymentMethods;
@@ -19,7 +18,7 @@ class PaymentSection extends StatefulWidget {
 
   const PaymentSection({
     Key? key,
-    required this.cart,
+    required this.order,
     required this.selectedChargeIds,
     required this.chargeControllers,
     required this.selectedPaymentMethods,
@@ -35,21 +34,21 @@ class PaymentSection extends StatefulWidget {
 class _PaymentSectionState extends State<PaymentSection> {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ChargesBloc, ChargesState>(
+    return BlocBuilder<ChargeTypesBloc, ChargeTypesState>(
       builder: (context, chargesState) {
-        double subtotal = widget.cart.totalPrice;
+        double subtotal = widget.order.totalPrice;
         double chargesTotal = 0.0;
 
-        if (chargesState is ChargesLoaded) {
-          // Get cart information to filter charges by type
-          final checkoutState = context.read<CheckoutBloc>().state;
-          if (checkoutState is CheckoutDataLoaded) {
-            final cart = checkoutState.cart;
+        if (chargesState is ChargeTypesLoaded) {
+          // Get order information to filter charges by type
+          final orderState = context.read<OrderBloc>().state;
+          if (orderState is OrdersLoaded) {
+            final order = orderState.orders.first;
 
-            // Calculate total from edited charge amounts for selected charges only, filtered by cart type
-            for (var charge in chargesState.charges) {
+            // Calculate total from edited charge amounts for selected charges only, filtered by order type
+            for (var charge in chargesState.chargeTypes) {
               if (charge.isActive == 1 && 
-                  charge.chargeFor == cart.cartFor && 
+                  charge.chargeFor == order.orderFor && 
                   widget.selectedChargeIds.contains(charge.id) && 
                   widget.chargeControllers.containsKey(charge.id)) {
                 final editedAmount = double.tryParse(widget.chargeControllers[charge.id!]!.text) ?? charge.chargeAmount;
@@ -59,7 +58,7 @@ class _PaymentSectionState extends State<PaymentSection> {
           }
         }
 
-        double grandTotal = widget.cart.cartFor == 'seller'
+        double grandTotal = widget.order.orderFor == 'seller'
             ? subtotal - chargesTotal
             : subtotal + chargesTotal;
 
@@ -67,15 +66,15 @@ class _PaymentSectionState extends State<PaymentSection> {
         double receivedAmount = widget.paymentAmounts.values.fold(0.0, (sum, amount) => sum + amount);
         double pendingAmount = grandTotal - receivedAmount;
 
-        // Calculate paymentAmount and pendingPayment based on cart type
+        // Calculate paymentAmount and pendingPayment based on order type
         double paymentAmount, pendingPayment;
-        if (widget.cart.cartFor == 'seller') {
-          // For seller carts: paymentAmount is the amount to be paid to seller
+        if (widget.order.orderFor == 'seller') {
+          // For seller orders: paymentAmount is the amount to be paid to seller
           paymentAmount = grandTotal;
           // pendingPayment is the amount still owed to seller
           pendingPayment = paymentAmount - receivedAmount;
         } else {
-          // For buyer carts: paymentAmount is the amount received
+          // For buyer orders: paymentAmount is the amount received
           paymentAmount = receivedAmount;
           // pendingPayment is the remaining amount to be paid
           pendingPayment = pendingAmount;
@@ -116,19 +115,19 @@ class _PaymentSectionState extends State<PaymentSection> {
                     _summaryRow('Charge Total', chargesTotal, context),
                     _summaryRow('Grand Total', grandTotal, context, emphasized: true),
                     _summaryRow(
-                      widget.cart.cartFor == 'seller' ? 'Amount Owed' : 'Payment Amount',
+                      widget.order.orderFor == 'seller' ? 'Amount Owed' : 'Payment Amount',
                       paymentAmount,
                       context,
                       valueColor: Colors.blue,
                     ),
                     _summaryRow(
-                      widget.cart.cartFor == 'seller' ? 'Amount Received' : 'Received Amount',
+                      widget.order.orderFor == 'seller' ? 'Amount Received' : 'Received Amount',
                       receivedAmount,
                       context,
                       valueColor: Colors.green,
                     ),
                     _summaryRow(
-                      widget.cart.cartFor == 'seller' 
+                      widget.order.orderFor == 'seller' 
                           ? 'Amount Pending' 
                           : (pendingPayment >= 0 ? 'Pending Payment' : 'Payment Due'),
                       pendingPayment.abs(),
@@ -142,7 +141,7 @@ class _PaymentSectionState extends State<PaymentSection> {
               pms.PaymentMethodSelector(
                 selectedPaymentMethods: widget.selectedPaymentMethods,
                 paymentAmounts: widget.paymentAmounts,
-                cartFor: widget.cart.cartFor,
+                orderFor: widget.order.orderFor,
                 onSelectionChanged: (selectedMethods, paymentAmounts) {
                   widget.onPaymentMethodChanged(selectedMethods, paymentAmounts);
                   widget.onSchedulePersistCheckout();

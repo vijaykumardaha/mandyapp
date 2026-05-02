@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/bill_list/bill_list_bloc.dart';
-import 'package:mandyapp/blocs/cart/cart_bloc.dart';
+import 'package:mandyapp/blocs/order/order_bloc.dart';
 import 'package:mandyapp/blocs/customer/customer_bloc.dart';
-import 'package:mandyapp/blocs/item_sale/item_sale_bloc.dart';
+import 'package:mandyapp/blocs/order_item/order_item_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/models/item_sale_model.dart';
+import 'package:mandyapp/models/order_item_model.dart';
 import 'package:mandyapp/screens/bill_details_screen.dart';
-import 'package:mandyapp/models/cart_model.dart';
+import 'package:mandyapp/models/order_model.dart';
 import 'package:mandyapp/screens/checkout_screen.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 import 'package:mandyapp/widgets/billing/seller_sale_selection_sheet.dart';
@@ -82,20 +82,20 @@ class _BillListScreenState extends State<BillListScreen> {
       return;
     }
 
-    final itemSaleBloc = context.read<ItemSaleBloc>();
-    itemSaleBloc.add(LoadBillableSales(sellerId: seller!.id!));
+    final itemSaleBloc = context.read<OrderItemBloc>();
+    itemSaleBloc.add(LoadBillableOrderItems(sellerId: seller!.id!));
 
     var confirmed = false;
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (context) {
-        return BlocBuilder<ItemSaleBloc, ItemSaleState>(
+        return BlocBuilder<OrderItemBloc, OrderItemState>(
           builder: (context, saleState) {
             final sales = _salesFromState(saleState)
                 .where((sale) =>
                     sale.sellerId == seller.id &&
-                    sale.sellerCartId == null)
+                    sale.sellerOrderId == null)
                 .toList(growable: false);
             return SellerSaleSelectionSheet(
               key: const ValueKey('seller_sale_selection_sheet'),
@@ -104,7 +104,7 @@ class _BillListScreenState extends State<BillListScreen> {
               formatCustomer: (customer) => _formatCustomer(customer),
               onReload: () {
                 if (seller.id != null) {
-                  itemSaleBloc.add(LoadBillableSales(sellerId: seller.id!));
+                  itemSaleBloc.add(LoadBillableOrderItems(sellerId: seller.id!));
                 }
               },
               onDeleteSale: (sale, index) {
@@ -112,10 +112,10 @@ class _BillListScreenState extends State<BillListScreen> {
                   return;
                 }
                 if (sale.id != null) {
-                  final bloc = context.read<ItemSaleBloc>();
-                  bloc.add(DeleteItemSaleEvent(sale.id!));
+                  final bloc = context.read<OrderItemBloc>();
+                  bloc.add(DeleteOrderItemEvent(sale.id!));
                   if (seller.id != null) {
-                    bloc.add(LoadBillableSales(sellerId: seller.id!));
+                    bloc.add(LoadBillableOrderItems(sellerId: seller.id!));
                   }
                 }
               },
@@ -143,7 +143,7 @@ class _BillListScreenState extends State<BillListScreen> {
     }
   }
 
-  Future<void> _handleCreateSellerBill(List<ItemSale> selectedSales, Customer seller) async {
+  Future<void> _handleCreateSellerBill(List<OrderItem> selectedSales, Customer seller) async {
     if (_isCreatingBill) {
       return;
     }
@@ -160,38 +160,38 @@ class _BillListScreenState extends State<BillListScreen> {
     }
 
     _isCreatingBill = true;
-    final cartBloc = context.read<CartBloc>();
-    final itemSaleBloc = context.read<ItemSaleBloc>();
+    final cartBloc = context.read<OrderBloc>();
+    final itemSaleBloc = context.read<OrderItemBloc>();
     final billListBloc = context.read<BillListBloc>();
 
-    final cartId = DBHelper.generateUuidInt();
+    final orderId = DBHelper.generateUuidInt();
     final now = DateTime.now().toIso8601String();
 
-    final cart = Cart(
-      id: cartId,
+    final order = Order(
+      id: orderId,
       customerId: sellerId,
       createdAt: now,
-      cartFor: 'seller',
+      orderFor: 'seller',
       status: 'open',
     );
 
-    cartBloc.add(CreateCart(cart));
+    cartBloc.add(CreateOrder(order));
 
     for (final sale in selectedSales) {
       final originalSaleId = sale.id;
       final cartLinkedSale = sale.copyWith(
         id: DBHelper.generateUuidInt(),
-        sellerCartId: cartId,
+        sellerOrderId: orderId,
         sellerId: sellerId,
-        buyerCartId: null,
+        buyerOrderId: null,
         buyerId: null,
         createdAt: now,
         updatedAt: now,
       );
-      cartBloc.add(AddItemToCart(cartLinkedSale));
+      cartBloc.add(AddItemToOrder(cartLinkedSale));
 
       if (originalSaleId != null) {
-        itemSaleBloc.add(DeleteItemSaleEvent(originalSaleId));
+        itemSaleBloc.add(DeleteOrderItemEvent(originalSaleId));
       }
     }
 
@@ -202,7 +202,7 @@ class _BillListScreenState extends State<BillListScreen> {
 
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => CheckoutScreen(cartId: cartId),
+        builder: (_) => CheckoutScreen(orderId: orderId),
       ),
     );
 
@@ -403,9 +403,9 @@ class _BillListScreenState extends State<BillListScreen> {
     return 'Unnamed customer';
   }
 
-  List<ItemSale> _salesFromState(ItemSaleState state) {
-    if (state is ItemSalesLoaded) {
-      return state.sales;
+  List<OrderItem> _salesFromState(OrderItemState state) {
+    if (state is OrderItemsLoaded) {
+      return state.orderItems;
     }
     return const [];
   }
@@ -507,7 +507,7 @@ class _BillListScreenState extends State<BillListScreen> {
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => BillDetailsScreen(cartId: bill.cartId),
+                                builder: (_) => BillDetailsScreen(orderId: bill.cartId),
                               ),
                             );
                           },

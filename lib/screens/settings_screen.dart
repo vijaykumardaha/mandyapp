@@ -47,6 +47,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             _buildSettingsTile(
+              icon: Icons.help_center,
+              title: 'Staff',
+              onTap: () {
+                context.push('/staff');
+              },
+            ),
+            _buildSettingsTile(
               icon: Icons.inventory_2,
               title: 'Products',
               onTap: () {

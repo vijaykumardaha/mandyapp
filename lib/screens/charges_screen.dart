@@ -1,37 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/charges/charges_bloc.dart';
-import 'package:mandyapp/blocs/charges/charges_event.dart';
+import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
-import 'package:mandyapp/models/charge_model.dart';
+import 'package:mandyapp/models/charge_type_model.dart';
 
-class ChargesScreen extends StatefulWidget {
-  const ChargesScreen({super.key});
+class ChargeTypesScreen extends StatefulWidget {
+  const ChargeTypesScreen({super.key});
 
   @override
-  State<ChargesScreen> createState() => _ChargesScreenState();
+  State<ChargeTypesScreen> createState() => _ChargeTypesScreenState();
 }
 
-class _ChargesScreenState extends State<ChargesScreen> {
+class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
   late ThemeData theme;
 
   @override
   void initState() {
     super.initState();
     theme = AppTheme.shoppingManagerTheme;
-    context.read<ChargesBloc>().add(LoadCharges());
+    context.read<ChargeTypesBloc>().add(LoadChargeTypes());
   }
 
-  void _showChargeDialog([Charge? charge]) {
+  void _showChargeTypeDialog([ChargeType? charge]) {
     final isEditing = charge != null;
     final nameController = TextEditingController(text: charge?.chargeName ?? '');
     final amountController = TextEditingController(
       text: charge?.chargeAmount.toString() ?? '',
     );
     String selectedType = charge?.chargeType ?? 'fixed';
-    String selectedChargeFor = charge?.chargeFor ?? 'buyer';
+    String selectedChargeTypeFor = charge?.chargeFor ?? 'buyer';
     bool isDefault = charge?.isDefault == 1;
 
     showDialog(
@@ -39,7 +38,7 @@ class _ChargesScreenState extends State<ChargesScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           title: MyText.titleMedium(
-            isEditing ? 'Edit Charge' : 'Add Charge',
+            isEditing ? 'Edit ChargeType' : 'Add ChargeType',
             fontWeight: 600,
           ),
           content: Column(
@@ -48,7 +47,7 @@ class _ChargesScreenState extends State<ChargesScreen> {
               TextField(
                 controller: nameController,
                 decoration: const InputDecoration(
-                  labelText: 'Charge Name',
+                  labelText: 'ChargeType Name',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -68,7 +67,7 @@ class _ChargesScreenState extends State<ChargesScreen> {
               DropdownButtonFormField<String>(
                 value: selectedType,
                 decoration: const InputDecoration(
-                  labelText: 'Charge Type',
+                  labelText: 'ChargeType Type',
                   border: OutlineInputBorder(),
                   helperText: 'Choose how the charge amount is calculated',
                 ),
@@ -104,7 +103,7 @@ class _ChargesScreenState extends State<ChargesScreen> {
               ),
               MySpacing.height(16),
               DropdownButtonFormField<String>(
-                value: selectedChargeFor,
+                value: selectedChargeTypeFor,
                 decoration: const InputDecoration(
                   labelText: 'Apply to',
                   border: OutlineInputBorder(),
@@ -116,7 +115,7 @@ class _ChargesScreenState extends State<ChargesScreen> {
                 onChanged: (value) {
                   if (value != null) {
                     setState(() {
-                      selectedChargeFor = value;
+                      selectedChargeTypeFor = value;
                     });
                   }
                 },
@@ -156,20 +155,20 @@ class _ChargesScreenState extends State<ChargesScreen> {
                   return;
                 }
 
-                final newCharge = Charge(
+                final newChargeType = ChargeType(
                   id: charge?.id,
                   chargeName: nameController.text,
                   chargeType: selectedType,
                   chargeAmount: chargeAmount,
-                  chargeFor: selectedChargeFor,
+                  chargeFor: selectedChargeTypeFor,
                   isDefault: isDefault ? 1 : 0,
                   isActive: charge?.isActive ?? 1,
                 );
 
                 if (isEditing) {
-                  context.read<ChargesBloc>().add(UpdateCharge(newCharge));
+                  context.read<ChargeTypesBloc>().add(UpdateChargeType(newChargeType));
                 } else {
-                  context.read<ChargesBloc>().add(AddCharge(newCharge));
+                  context.read<ChargeTypesBloc>().add(CreateChargeType(newChargeType));
                 }
                 Navigator.pop(context);
               },
@@ -181,11 +180,11 @@ class _ChargesScreenState extends State<ChargesScreen> {
     );
   }
 
-  void _deleteCharge(Charge charge) {
+  void _deleteChargeType(ChargeType charge) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: MyText.titleMedium('Delete Charge', fontWeight: 600),
+        title: MyText.titleMedium('Delete ChargeType', fontWeight: 600),
         content: MyText.bodyMedium(
           'Are you sure you want to delete "${charge.chargeName}"?',
         ),
@@ -196,7 +195,7 @@ class _ChargesScreenState extends State<ChargesScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              context.read<ChargesBloc>().add(DeleteCharge(charge.id!));
+              context.read<ChargeTypesBloc>().add(DeleteChargeType(charge.id!));
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -207,26 +206,29 @@ class _ChargesScreenState extends State<ChargesScreen> {
     );
   }
 
-  void _toggleChargeStatus(Charge charge) {
-    context.read<ChargesBloc>().add(ToggleChargeStatus(charge));
+  void _toggleChargeTypeStatus(ChargeType charge) {
+    context.read<ChargeTypesBloc>().add(ToggleChargeTypeStatus(
+      chargeTypeId: charge.id!,
+      activate: charge.isActive == 0, // Activate if currently inactive
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: MyText.titleLarge('Charges Management'),
+        title: MyText.titleLarge('ChargeTypes Management'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => _showChargeDialog(),
+            onPressed: () => _showChargeTypeDialog(),
           ),
         ],
       ),
-      body: BlocConsumer<ChargesBloc, dynamic>(
+      body: BlocConsumer<ChargeTypesBloc, dynamic>(
         listener: (context, state) {
           // Check if state has message property (error state)
-          if (state.toString().contains('ChargesError') && state.message != null) {
+          if (state.toString().contains('ChargeTypesError') && state.message != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 behavior: SnackBarBehavior.floating,
@@ -238,9 +240,9 @@ class _ChargesScreenState extends State<ChargesScreen> {
         },
         builder: (context, state) {
           // Check if state has charges property (loaded state)
-          if (state.toString().contains('ChargesLoaded')) {
+          if (state.toString().contains('ChargeTypesLoaded')) {
             try {
-              final charges = state.charges as List<Charge>?;
+              final charges = state.charges as List<ChargeType>?;
               if (charges == null || charges.isEmpty) {
                 return Center(
                   child: Column(
@@ -367,19 +369,19 @@ class _ChargesScreenState extends State<ChargesScreen> {
                                   ? Icons.visibility
                                   : Icons.visibility_off,
                             ),
-                            onPressed: () => _toggleChargeStatus(charge),
+                            onPressed: () => _toggleChargeTypeStatus(charge),
                             tooltip: charge.isActive == 1
                                 ? 'Deactivate'
                                 : 'Activate',
                           ),
                           IconButton(
                             icon: const Icon(Icons.edit),
-                            onPressed: () => _showChargeDialog(charge),
+                            onPressed: () => _showChargeTypeDialog(charge),
                             tooltip: 'Edit',
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete),
-                            onPressed: () => _deleteCharge(charge),
+                            onPressed: () => _deleteChargeType(charge),
                             tooltip: 'Delete',
                           ),
                         ],

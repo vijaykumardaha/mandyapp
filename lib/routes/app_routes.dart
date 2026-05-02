@@ -6,6 +6,8 @@ import 'package:mandyapp/screens/login_screen.dart';
 import 'package:mandyapp/screens/profile_screen.dart';
 import 'package:mandyapp/screens/signup_screen.dart';
 import 'package:mandyapp/screens/charges_screen.dart';
+import 'package:mandyapp/screens/expense_screen.dart';
+import 'package:mandyapp/screens/staff_screen.dart';
 import 'package:mandyapp/screens/initial_screen.dart';
 import 'package:mandyapp/screens/product_list_screen.dart';
 import 'package:mandyapp/screens/privacy_policy_screen.dart';
@@ -77,7 +79,19 @@ class AppRoutes {
       GoRoute(
         path: '/charges',
         builder: (context, state) {
-          return const ChargesScreen();
+          return const ChargeTypesScreen();
+        },
+      ),
+      GoRoute(
+        path: '/expenses',
+        builder: (context, state) {
+          return const ExpenseScreen();
+        },
+      ),
+      GoRoute(
+        path: '/staff',
+        builder: (context, state) {
+          return const StaffScreen();
         },
       ),
       GoRoute(

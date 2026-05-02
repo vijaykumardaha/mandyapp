@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/models/item_sale_model.dart';
+import 'package:mandyapp/models/order_item_model.dart';
 
 class SellerSaleSelectionSheet extends StatefulWidget {
   final Customer seller;
-  final List<ItemSale> sales;
+  final List<OrderItem> sales;
   final String Function(Customer) formatCustomer;
   final VoidCallback onReload;
-  final void Function(ItemSale sale, int index) onDeleteSale;
-  final Future<void> Function(List<ItemSale> selected) onConfirm;
+  final void Function(OrderItem sale, int index) onDeleteSale;
+  final Future<void> Function(List<OrderItem> selected) onConfirm;
 
   const SellerSaleSelectionSheet({
     super.key,
@@ -28,7 +28,7 @@ class SellerSaleSelectionSheet extends StatefulWidget {
 
 class _SellerSaleSelectionSheetState extends State<SellerSaleSelectionSheet> {
   final Set<int> _selectedIndices = {};
-  late List<ItemSale> _sales;
+  late List<OrderItem> _sales;
 
   @override
   void initState() {
@@ -193,7 +193,7 @@ class _SellerSaleSelectionSheetState extends State<SellerSaleSelectionSheet> {
                                                 MyText.bodySmall(
                                                     'Rate: ₹${sale.sellingPrice.toStringAsFixed(2)}'),
                                                 MyText.bodySmall(
-                                                  'Total: ₹${sale.totalPrice.toStringAsFixed(2)}',
+                                                  'Total: ₹${(sale.quantity * sale.sellingPrice).toStringAsFixed(2)}',
                                                   fontWeight: 600,
                                                 ),
                                               ],

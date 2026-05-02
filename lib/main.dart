@@ -8,20 +8,19 @@ import 'package:another_telephony/telephony.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:mandyapp/blocs/bill_list/bill_list_bloc.dart';
-import 'package:mandyapp/blocs/cart/cart_bloc.dart';
-import 'package:mandyapp/blocs/category/category_bloc.dart';
-import 'package:mandyapp/blocs/charges/charges_bloc.dart';
-import 'package:mandyapp/blocs/checkout/checkout_bloc.dart';
+import 'package:mandyapp/blocs/order/order_bloc.dart';
+import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandyapp/blocs/customer/customer_bloc.dart';
-import 'package:mandyapp/blocs/item_sale/item_sale_bloc.dart';
+import 'package:mandyapp/blocs/order_item/order_item_bloc.dart';
 import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/blocs/reports/reports_bloc.dart';
 import 'package:mandyapp/blocs/user/user_bloc.dart';
-import 'package:mandyapp/blocs/cart_payment/cart_payment_bloc.dart';
-import 'package:mandyapp/dao/cart_charge_dao.dart';
-import 'package:mandyapp/dao/cart_payment_dao.dart';
-import 'package:mandyapp/dao/item_sale_dao.dart';
+import 'package:mandyapp/blocs/order_payment/order_payment_bloc.dart';
+import 'package:mandyapp/blocs/order_expense/order_expense_bloc.dart';
+import 'package:mandyapp/dao/order_charge_dao.dart';
+import 'package:mandyapp/dao/order_payment_dao.dart';
+import 'package:mandyapp/dao/order_item_dao.dart';
 import 'package:mandyapp/dao/report_dao.dart';
 import 'package:mandyapp/helpers/localizations/app_localization_delegate.dart';
 import 'package:mandyapp/utils/db_helper.dart';
@@ -90,38 +89,35 @@ class MyApp extends StatelessWidget {
           BlocProvider<ProductBloc>(
             create: (context) => ProductBloc(),
           ),
-          BlocProvider<CategoryBloc>(
-            create: (context) => CategoryBloc(),
+          BlocProvider<ChargeTypesBloc>(
+            create: (context) => ChargeTypesBloc(),
           ),
-          BlocProvider<ChargesBloc>(
-            create: (context) => ChargesBloc(),
+          BlocProvider<OrderBloc>(
+            create: (context) => OrderBloc(),
           ),
-          BlocProvider<CartBloc>(
-            create: (context) => CartBloc(),
-          ),
-          BlocProvider<CheckoutBloc>(
-            create: (context) => CheckoutBloc(),
-          ),
-          BlocProvider<CustomerBloc>(
+                    BlocProvider<CustomerBloc>(
             create: (context) => CustomerBloc(),
           ),
-          BlocProvider<CartPaymentBloc>(
-            create: (context) => CartPaymentBloc(),
+          BlocProvider<OrderPaymentBloc>(
+            create: (context) => OrderPaymentBloc(),
           ),
-          BlocProvider<ItemSaleBloc>(
-            create: (context) => ItemSaleBloc(),
+          BlocProvider<OrderExpenseBloc>(
+            create: (context) => OrderExpenseBloc(),
+          ),
+          BlocProvider<OrderItemBloc>(
+            create: (context) => OrderItemBloc(),
           ),
           BlocProvider<ReportsBloc>(
             create: (context) => ReportsBloc(reportDAO: ReportDAO()),
           ),
           BlocProvider<BillListBloc>(
             create: (context) => BillListBloc(
-              cartBloc: context.read<CartBloc>(),
-              paymentBloc: context.read<CartPaymentBloc>(),
-              chargesBloc: context.read<ChargesBloc>(),
-              cartChargeDAO: CartChargeDAO(),
-              cartPaymentDAO: CartPaymentDAO(),
-              itemSaleDAO: ItemSaleDAO(),
+              orderBloc: context.read<OrderBloc>(),
+              paymentBloc: context.read<OrderPaymentBloc>(),
+              chargeTypesBloc: context.read<ChargeTypesBloc>(),
+              orderChargeDAO: OrderChargeDAO(),
+              orderPaymentDAO: OrderPaymentDAO(),
+              orderItemDAO: OrderItemDAO(),
             ),
           ),
         ],

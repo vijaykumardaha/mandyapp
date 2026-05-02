@@ -65,4 +65,62 @@ class UserDAO {
     );
   }
 
+  Future<List<User>> getUsersByRole(String role) async {
+    final db = await dbHelper.database;
+    var result = await db.query("users",
+        where: 'role = ?',
+        whereArgs: [role]);
+
+    return result.isNotEmpty 
+        ? result.map((user) => User.fromJson(user)).toList() 
+        : [];
+  }
+
+  Future<User?> getAdminUser() async {
+    final db = await dbHelper.database;
+    var result = await db.query("users",
+        where: 'role = ?',
+        whereArgs: ['admin'],
+        limit: 1);
+
+    return result.isNotEmpty ? User.fromJson(result.first) : null;
+  }
+
+  Future<int> updateUserRole(int userId, String newRole) async {
+    final db = await dbHelper.database;
+    return await db.update(
+      'users',
+      {'role': newRole},
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  Future<List<User>> getUsersCreatedBy(int createdBy) async {
+    final db = await dbHelper.database;
+    var result = await db.query("users",
+        where: 'created_by = ?',
+        whereArgs: [createdBy]);
+
+    return result.isNotEmpty 
+        ? result.map((user) => User.fromJson(user)).toList() 
+        : [];
+  }
+
+  Future<User?> getCreatorInfo(int creatorId) async {
+    final db = await dbHelper.database;
+    var result = await db.query("users",
+        where: 'id = ?',
+        whereArgs: [creatorId]);
+
+    return result.isNotEmpty ? User.fromJson(result.first) : null;
+  }
+
+  Future<int> insertUserWithCreator(User user, int createdBy) async {
+    user.id = DBHelper.generateUuidInt();
+    user.createdBy = createdBy;
+    final db = await dbHelper.database;
+    return await db.insert('users', user.toJson());
+  }
+
 }

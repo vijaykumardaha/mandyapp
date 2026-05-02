@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/item_sale/item_sale_bloc.dart';
+import 'package:mandyapp/blocs/order_item/order_item_bloc.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/widgets/selling/variant_item_card.dart';
 
@@ -67,9 +67,9 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
     final theme = Theme.of(context);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    return BlocListener<ItemSaleBloc, ItemSaleState>(
+    return BlocListener<OrderItemBloc, OrderItemState>(
       listener: (context, state) {
-        if (state is ItemSalesLoaded) {
+        if (state is OrderItemsLoaded) {
 
           // Set success message
           setState(() {

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/checkout/checkout_bloc.dart';
+import 'package:mandyapp/blocs/order/order_bloc.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
-import 'package:mandyapp/models/cart_model.dart';
-import 'package:mandyapp/models/charge_model.dart';
+import 'package:mandyapp/models/order_model.dart';
+import 'package:mandyapp/models/charge_type_model.dart';
 
 class ChargeSelectionDialog extends StatefulWidget {
-  final List<Charge> availableCharges;
+  final List<ChargeType> availableCharges;
   final Set<int> selectedChargeIds;
   final Function(Set<int>) onApply;
 
@@ -23,18 +23,18 @@ class ChargeSelectionDialog extends StatefulWidget {
 
   static Future<Set<int>?> show(
     BuildContext context, {
-    required List<Charge> availableCharges,
+    required List<ChargeType> availableCharges,
     required Set<int> selectedChargeIds,
   }) async {
     Set<int> tempSelectedIds = Set.from(selectedChargeIds);
-    final checkoutState = context.read<CheckoutBloc>().state;
+    final checkoutState = context.read<OrderBloc>().state;
     
-    if (checkoutState is! CheckoutDataLoaded) {
+    if (checkoutState is! OrderWithItemsLoaded) {
       return null;
     }
 
-    final cart = checkoutState.cart;
-    final filteredCharges = availableCharges.where((charge) => charge.chargeFor == cart.cartFor).toList();
+    final order = checkoutState.order;
+    final filteredCharges = availableCharges.where((charge) => charge.chargeFor == order.orderFor).toList();
 
     final result = await showDialog<Set<int>>(
       context: context,
@@ -44,7 +44,7 @@ class ChargeSelectionDialog extends StatefulWidget {
           content: SizedBox(
             width: double.maxFinite,
             child: filteredCharges.isEmpty
-                ? _buildEmptyState(context, cart)
+                ? _buildEmptyState(context, order)
                 : ListView.builder(
                     shrinkWrap: true,
                     itemCount: filteredCharges.length,
@@ -53,7 +53,7 @@ class ChargeSelectionDialog extends StatefulWidget {
                       filteredCharges[index],
                       tempSelectedIds,
                       dialogSetState,
-                      cart,
+                      order,
                     ),
                   ),
           ),
@@ -75,7 +75,7 @@ class ChargeSelectionDialog extends StatefulWidget {
     return result;
   }
 
-  static Widget _buildEmptyState(BuildContext context, Cart cart) {
+  static Widget _buildEmptyState(BuildContext context, Order order) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -87,7 +87,7 @@ class ChargeSelectionDialog extends StatefulWidget {
           ),
           MySpacing.height(16),
           MyText.bodyMedium(
-            'No charges available for ${cart.cartFor == 'buyer' ? 'buyers' : 'sellers'}',
+            'No charges available for ${order.orderFor == 'buyer' ? 'buyers' : 'sellers'}',
             color: Theme.of(context).colorScheme.outline,
             textAlign: TextAlign.center,
           ),
@@ -98,10 +98,10 @@ class ChargeSelectionDialog extends StatefulWidget {
 
   static Widget _buildChargeItem(
     BuildContext context,
-    Charge charge,
+    ChargeType charge,
     Set<int> tempSelectedIds,
     StateSetter dialogSetState,
-    Cart cart,
+    Order order,
   ) {
     final isSelected = tempSelectedIds.contains(charge.id);
 
@@ -175,7 +175,7 @@ class ChargeSelectionDialog extends StatefulWidget {
           // Amount - Show calculated amount for both types
           MyText.bodyMedium(
             charge.chargeType == 'percentage'
-                ? '₹${(cart.totalPrice * charge.chargeAmount / 100).toStringAsFixed(2)}'
+                ? '₹${(order.totalPrice * charge.chargeAmount / 100).toStringAsFixed(2)}'
                 : '₹${charge.chargeAmount.toStringAsFixed(2)}',
             color: Theme.of(context).colorScheme.primary,
             fontWeight: 600,
@@ -201,7 +201,7 @@ class _ChargeSelectionDialogState extends State<ChargeSelectionDialog> {
     _selectedChargeIds = Set.from(widget.selectedChargeIds);
   }
 
-  Widget _buildEmptyState(BuildContext context, Cart cart) {
+  Widget _buildEmptyState(BuildContext context, Order order) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -213,7 +213,7 @@ class _ChargeSelectionDialogState extends State<ChargeSelectionDialog> {
           ),
           MySpacing.height(16),
           MyText.bodyMedium(
-            'No charges available for ${cart.cartFor == 'buyer' ? 'buyers' : 'sellers'}',
+            'No charges available for ${order.orderFor == 'buyer' ? 'buyers' : 'sellers'}',
             color: Theme.of(context).colorScheme.outline,
             textAlign: TextAlign.center,
           ),
@@ -224,10 +224,10 @@ class _ChargeSelectionDialogState extends State<ChargeSelectionDialog> {
 
   Widget _buildChargeItem(
     BuildContext context,
-    Charge charge,
+    ChargeType charge,
     Set<int> selectedIds,
     void Function(void Function()) setStateCallback,
-    Cart cart,
+    Order order,
   ) {
     final isSelected = selectedIds.contains(charge.id);
 
@@ -301,7 +301,7 @@ class _ChargeSelectionDialogState extends State<ChargeSelectionDialog> {
           // Amount - Show calculated amount for both types
           MyText.bodyMedium(
             charge.chargeType == 'percentage'
-                ? '₹${(cart.totalPrice * charge.chargeAmount / 100).toStringAsFixed(2)}'
+                ? '₹${(order.totalPrice * charge.chargeAmount / 100).toStringAsFixed(2)}'
                 : '₹${charge.chargeAmount.toStringAsFixed(2)}',
             color: Theme.of(context).colorScheme.primary,
             fontWeight: 600,
@@ -313,20 +313,20 @@ class _ChargeSelectionDialogState extends State<ChargeSelectionDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final checkoutState = context.read<CheckoutBloc>().state;
+    final checkoutState = context.read<OrderBloc>().state;
     
-    if (checkoutState is! CheckoutDataLoaded) {
+    if (checkoutState is! OrderWithItemsLoaded) {
       return const Center(child: CircularProgressIndicator());
     }
     
-    final cart = checkoutState.cart;
+    final order = checkoutState.order;
     
     return AlertDialog(
       title: MyText.titleMedium('Select Charges', fontWeight: 600),
       content: SizedBox(
         width: double.maxFinite,
         child: widget.availableCharges.isEmpty
-            ? _buildEmptyState(context, cart)
+            ? _buildEmptyState(context, order)
             : ListView.builder(
                 shrinkWrap: true,
                 itemCount: widget.availableCharges.length,
@@ -335,7 +335,7 @@ class _ChargeSelectionDialogState extends State<ChargeSelectionDialog> {
                   widget.availableCharges[index],
                   _selectedChargeIds,
                   setState,
-                  cart,
+                  order,
                 ),
               ),
       ),

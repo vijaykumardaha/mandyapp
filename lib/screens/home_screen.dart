@@ -8,7 +8,7 @@ import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_bottom_navigation_bar.dart';
 import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/screens/cart_item_screen.dart';
+import 'package:mandyapp/screens/order_item_screen.dart';
 import 'package:mandyapp/screens/expense_screen.dart';
 import 'package:mandyapp/screens/home_tab_screen.dart';
 import 'package:mandyapp/screens/reports_screen.dart';
@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Widget> get _screens => [
         const HomeTabScreen(),
         // const ReportsScreen(),
-        const CartItemScreen(),
+        const OrderItemScreen(),
         const SellingScreen(),
         const ExpenseScreen(),
         // const BillListScreen(),

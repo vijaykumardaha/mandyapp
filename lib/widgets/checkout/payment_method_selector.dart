@@ -9,14 +9,14 @@ class PaymentMethodSelector extends StatefulWidget {
   final Set<PaymentMethod> selectedPaymentMethods;
   final Map<PaymentMethod, double> paymentAmounts;
   final Function(Set<PaymentMethod>, Map<PaymentMethod, double>) onSelectionChanged;
-  final String? cartFor; // 'seller' or 'buyer' - if seller, hide credit option
+  final String? orderFor; // 'seller' or 'buyer' - if seller, hide credit option
 
   const PaymentMethodSelector({
     super.key,
     Set<PaymentMethod>? selectedPaymentMethods,
     Map<PaymentMethod, double>? paymentAmounts,
     required this.onSelectionChanged,
-    this.cartFor,
+    this.orderFor,
   }) : selectedPaymentMethods = selectedPaymentMethods ?? const {PaymentMethod.cash},
        paymentAmounts = paymentAmounts ?? const {};
 
@@ -32,7 +32,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   // Get available payment methods based on cart type
   List<PaymentMethod> get _availablePaymentMethods {
     final methods = [PaymentMethod.cash, PaymentMethod.upi, PaymentMethod.card];
-    if (widget.cartFor != 'seller') {
+    if (widget.orderFor != 'seller') {
       methods.add(PaymentMethod.credit);
     }
     return methods;
@@ -43,8 +43,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     super.initState();
     _selectedPaymentMethods = Set.from(widget.selectedPaymentMethods);
 
-    // If cartFor is seller, remove credit payment method if it was selected
-    if (widget.cartFor == 'seller' && _selectedPaymentMethods.contains(PaymentMethod.credit)) {
+    // If orderFor is seller, remove credit payment method if it was selected
+    if (widget.orderFor == 'seller' && _selectedPaymentMethods.contains(PaymentMethod.credit)) {
       _selectedPaymentMethods.remove(PaymentMethod.credit);
     }
 
@@ -58,9 +58,9 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   void didUpdateWidget(PaymentMethodSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // Handle cartFor changes
-    if (oldWidget.cartFor != widget.cartFor) {
-      if (widget.cartFor == 'seller' && _selectedPaymentMethods.contains(PaymentMethod.credit)) {
+    // Handle orderFor changes
+    if (oldWidget.orderFor != widget.orderFor) {
+      if (widget.orderFor == 'seller' && _selectedPaymentMethods.contains(PaymentMethod.credit)) {
         _selectedPaymentMethods.remove(PaymentMethod.credit);
         // Clear credit controller and focus node if they exist
         _controllers[PaymentMethod.credit]?.dispose();
@@ -121,7 +121,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
 
   void _togglePaymentMethod(PaymentMethod method) {
     // Prevent selecting credit for seller carts
-    if (widget.cartFor == 'seller' && method == PaymentMethod.credit) {
+    if (widget.orderFor == 'seller' && method == PaymentMethod.credit) {
       return;
     }
 

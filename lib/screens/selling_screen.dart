@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mandyapp/blocs/order_item/order_item_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
-import 'package:mandyapp/blocs/item_sale/item_sale_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/models/item_sale_model.dart';
+import 'package:mandyapp/models/order_item_model.dart';
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/blocs/customer/customer_bloc.dart';
@@ -31,7 +31,7 @@ class SellingScreenState extends State<SellingScreen> {
     theme = AppTheme.shoppingManagerTheme;
     context.read<ProductBloc>().add(LoadProducts());
     context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
-    context.read<ItemSaleBloc>().add(const LoadItemSales());
+    context.read<OrderItemBloc>().add(const LoadOrderItems());
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -356,9 +356,9 @@ class SellingScreenState extends State<SellingScreen> {
   }) async {
 
     final effectiveSellingPrice = overrideSellingPrice ?? variant.sellingPrice;
-    final sale = ItemSale(
+    final sale = OrderItem(
       sellerId: sellerCustomer!.id!,
-      buyerCartId: null,
+      buyerOrderId: null,
       buyerId: null,
       productId: product.id ?? 0,
       variantId: variant.id!,
@@ -370,17 +370,17 @@ class SellingScreenState extends State<SellingScreen> {
       updatedAt: DateTime.now().toIso8601String(),
     );
 
-    context.read<ItemSaleBloc>().add(AddItemSaleEvent(sale));
+    context.read<OrderItemBloc>().add(AddOrderItemEvent(sale));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(context),
-      body: BlocListener<ItemSaleBloc, ItemSaleState>(
-        listenWhen: (previous, current) => current is ItemSaleError,
+      body: BlocListener<OrderItemBloc, OrderItemState>(
+        listenWhen: (previous, current) => current is OrderItemError,
         listener: (context, saleState) {
-          if (saleState is ItemSaleError) {
+          if (saleState is OrderItemError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 behavior: SnackBarBehavior.floating,

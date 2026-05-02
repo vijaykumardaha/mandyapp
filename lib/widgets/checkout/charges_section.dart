@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/charges/charges_bloc.dart';
-import 'package:mandyapp/blocs/charges/charges_state.dart';
+import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
-import 'package:mandyapp/models/cart_model.dart';
-import 'package:mandyapp/models/charge_model.dart';
+import 'package:mandyapp/models/order_model.dart';
+import 'package:mandyapp/models/charge_type_model.dart';
 
 class ChargesSection extends StatefulWidget {
-  final Cart cart;
+  final Order order;
   final Set<int> selectedChargeIds;
   final Map<int, TextEditingController> chargeControllers;
   final Function(Set<int>, Map<int, TextEditingController>) onChargesChanged;
   final Function() onSchedulePersistCheckout;
-  final Function(List<Charge>) onShowChargeSelectionDialog;
+  final Function(List<ChargeType>) onShowChargeSelectionDialog;
   final bool initialChargesApplied;
-  final Function(List<Charge>) applyInitialCharges;
+  final Function(List<ChargeType>) applyInitialCharges;
 
   const ChargesSection({
     Key? key,
-    required this.cart,
+    required this.order,
     required this.selectedChargeIds,
     required this.chargeControllers,
     required this.onChargesChanged,
@@ -35,20 +34,20 @@ class ChargesSection extends StatefulWidget {
 
 class _ChargesSectionState extends State<ChargesSection> {
   bool _chargesExpanded = true;
-  final Map<int, Charge> _chargesById = {};
+  final Map<int, ChargeType> _chargesById = {};
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ChargesBloc, ChargesState>(
+    return BlocBuilder<ChargeTypesBloc, ChargeTypesState>(
       builder: (context, state) {
-        if (state is ChargesLoaded) {
+        if (state is ChargeTypesLoaded) {
           if (!widget.initialChargesApplied) {
-            widget.applyInitialCharges(state.charges);
+            widget.applyInitialCharges(state.chargeTypes);
           }
 
-          // Filter active charges by cart type
-          final activeCharges = state.charges
-              .where((charge) => charge.isActive == 1 && charge.chargeFor == widget.cart.cartFor)
+          // Filter active charges by order type
+          final activeCharges = state.chargeTypes
+              .where((charge) => charge.isActive == 1 && charge.chargeFor == widget.order.orderFor)
               .toList();
 
           _chargesById
@@ -92,7 +91,7 @@ class _ChargesSectionState extends State<ChargesSection> {
           ),
           MySpacing.height(8),
           MyText.bodySmall(
-            'No active charges for ${widget.cart.cartFor == 'buyer' ? 'buyers' : 'sellers'}',
+            'No active charges for ${widget.order.orderFor == 'buyer' ? 'buyers' : 'sellers'}',
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
           ),
         ],
@@ -100,7 +99,7 @@ class _ChargesSectionState extends State<ChargesSection> {
     );
   }
 
-  Widget _buildChargesSection(ChargesState state, List<Charge> activeCharges) {
+  Widget _buildChargesSection(ChargeTypesState state, List<ChargeType> activeCharges) {
     return Container(
       margin: MySpacing.bottom(12),
       padding: MySpacing.all(16),
@@ -124,7 +123,7 @@ class _ChargesSectionState extends State<ChargesSection> {
               const Spacer(),
               TextButton(
                 onPressed: () => widget.onShowChargeSelectionDialog(
-                  (state as ChargesLoaded).charges.where((charge) => charge.isActive == 1).toList(),
+                  (state as ChargeTypesLoaded).chargeTypes.where((charge) => charge.isActive == 1).toList(),
                 ),
                 child: MyText.bodySmall(
                   'Add Charges',
@@ -140,14 +139,14 @@ class _ChargesSectionState extends State<ChargesSection> {
     );
   }
 
-  List<Widget> _buildChargeItems(List<Charge> activeCharges) {
+  List<Widget> _buildChargeItems(List<ChargeType> activeCharges) {
     return [
       MySpacing.height(12),
       ...activeCharges.where((charge) => widget.selectedChargeIds.contains(charge.id)).map((charge) {
         // Create controller for this charge if it doesn't exist
         if (!widget.chargeControllers.containsKey(charge.id)) {
           final calculatedAmount = charge.chargeType == 'percentage'
-              ? widget.cart.totalPrice * charge.chargeAmount / 100
+              ? widget.order.totalPrice * charge.chargeAmount / 100
               : charge.chargeAmount;
           widget.chargeControllers[charge.id!] = TextEditingController(
             text: calculatedAmount.toStringAsFixed(2),
@@ -159,7 +158,7 @@ class _ChargesSectionState extends State<ChargesSection> {
     ];
   }
 
-  Widget _buildChargeItem(Charge charge) {
+  Widget _buildChargeItem(ChargeType charge) {
     return Padding(
       padding: MySpacing.bottom(12),
       child: Row(

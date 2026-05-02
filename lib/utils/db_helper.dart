@@ -41,21 +41,15 @@ class DBHelper {
               id INTEGER PRIMARY KEY,
               name TEXT NOT NULL,
               mobile TEXT NOT NULL,
-              password TEXT NOT NULL
-          )
-        ''');
-
-        await db.execute('''
-          CREATE TABLE categories (
-            id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL UNIQUE
+              password TEXT NOT NULL,
+              role TEXT NOT NULL DEFAULT 'admin' CHECK(role IN ('admin', 'staff')),
+              created_by INTEGER
           )
         ''');
 
         await db.execute('''
           CREATE TABLE products (
             id INTEGER PRIMARY KEY,
-            category_id INTEGER NOT NULL,
             default_variant INTEGER NOT NULL DEFAULT 0
           )
         ''');
@@ -74,37 +68,34 @@ class DBHelper {
         ''');
 
         await db.execute('''
-          CREATE TABLE carts (
+          CREATE TABLE orders (
             id INTEGER PRIMARY KEY,
             customer_id INTEGER NOT NULL,
             created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-            cart_for TEXT NOT NULL DEFAULT 'buyer' CHECK (cart_for IN ('seller','buyer')),
+            order_for TEXT NOT NULL DEFAULT 'buyer' CHECK (order_for IN ('seller','buyer')),
             status TEXT DEFAULT 'open' -- open, completed
           );
         ''');
 
         await db.execute('''
-          CREATE TABLE cart_charges (
+          CREATE TABLE order_charges (
             id INTEGER PRIMARY KEY,
-            cart_id TEXT NOT NULL,
+            order_id TEXT NOT NULL,
             charge_name TEXT NOT NULL,
             charge_amount REAL NOT NULL
           );
         ''');
 
         await db.execute('''
-          CREATE TABLE cart_payments (
+          CREATE TABLE order_payments (
             id INTEGER PRIMARY KEY,
-            cart_id INTEGER NOT NULL,
+            order_id INTEGER NOT NULL,
             item_total REAL NOT NULL DEFAULT 0,
-            charges_total REAL NOT NULL DEFAULT 0,
-
+            charge_total REAL NOT NULL DEFAULT 0,
             receive_amount REAL NOT NULL DEFAULT 0,
             pending_amount REAL NOT NULL DEFAULT 0,
-
             pending_payment REAL NOT NULL DEFAULT 0,
             payment_amount REAL NOT NULL DEFAULT 0,
-            
             cash_payment INTEGER NOT NULL DEFAULT 0,   -- 1 = yes, 0 = no
             upi_payment INTEGER NOT NULL DEFAULT 0,    -- 1 = yes, 0 = no
             card_payment INTEGER NOT NULL DEFAULT 0,   -- 1 = yes, 0 = no
@@ -118,14 +109,28 @@ class DBHelper {
         ''');
 
         await db.execute('''
-          CREATE TABLE charges (
+          CREATE TABLE charge_types (
             id INTEGER PRIMARY KEY,
             charge_name TEXT NOT NULL UNIQUE,
             charge_type TEXT NOT NULL DEFAULT 'fixed', -- fixed, percentage
             charge_amount REAL NOT NULL,
             charge_for TEXT NOT NULL,
             is_default INTEGER NOT NULL DEFAULT 0,
-            is_active INTEGER NOT NULL DEFAULT 1   -- 1 = active, 0 = disabled
+            is_active INTEGER NOT NULL DEFAULT 1,   -- 1 = active, 0 = disabled
+            created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+            updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE order_expenses (
+            id INTEGER PRIMARY KEY,
+            expense_name TEXT NOT NULL,
+            expense_amount REAL NOT NULL,
+            expense_note TEXT,
+            order_id INTEGER,
+            created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+            updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
           )
         ''');
 
@@ -142,11 +147,11 @@ class DBHelper {
         ''');
 
         await db.execute('''
-          CREATE TABLE item_sales (
+          CREATE TABLE order_items (
             id INTEGER PRIMARY KEY,
             seller_id INTEGER NOT NULL,
-            buyer_cart_id INTEGER,
-            seller_cart_id INTEGER,
+            buyer_order_id INTEGER,
+            seller_order_id INTEGER,
             buyer_id INTEGER,
             product_id INTEGER NOT NULL,
             variant_id INTEGER NOT NULL,

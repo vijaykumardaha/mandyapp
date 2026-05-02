@@ -1,10 +1,10 @@
 import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/models/item_sale_model.dart';
+import 'package:mandyapp/models/order_item_model.dart';
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 
 class BillLineItem {
-  final ItemSale sale;
+  final OrderItem sale;
   final Product? product;
   final ProductVariant? variant;
   final Customer? seller;
@@ -49,7 +49,7 @@ class BillLineItem {
 
   double get sellingPrice => sale.sellingPrice;
 
-  double get totalPrice => sale.totalPrice;
+  double get totalPrice => sale.quantity * sale.sellingPrice;
 
   String get unitLabel {
     final saleUnit = sale.unit.trim();

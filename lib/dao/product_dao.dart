@@ -17,16 +17,7 @@ class ProductDAO {
     return List.generate(maps.length, (i) => Product.fromJson(maps[i]));
   }
 
-  Future<List<Product>> getProductsByCategory(int categoryId) async {
-    final db = await dbHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'products',
-      where: 'category_id = ?',
-      whereArgs: [categoryId],
-    );
-    return List.generate(maps.length, (i) => Product.fromJson(maps[i]));
-  }
-
+  
   Future<Product?> getProductById(int id) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -101,39 +92,4 @@ class ProductDAO {
     return products;
   }
 
-  Future<List<Product>> getProductsByCategoryWithVariants(int categoryId) async {
-    final db = await dbHelper.database;
-    final List<Map<String, dynamic>> productMaps = await db.query(
-      'products',
-      where: 'category_id = ?',
-      whereArgs: [categoryId],
-    );
-
-    List<Product> products = [];
-    for (var productMap in productMaps) {
-      final productId = productMap['id'] as int?;
-      List<ProductVariant>? variants;
-      
-      if (productId != null) {
-        final List<Map<String, dynamic>> variantMaps = await db.query(
-          'product_variants',
-          where: 'product_id = ?',
-          whereArgs: [productId],
-        );
-        if (variantMaps.isNotEmpty) {
-          variants = variantMaps.map((map) => ProductVariant.fromJson(map)).toList();
-          variants.sort((a, b) => a.variantName.compareTo(b.variantName));
-        }
-      }
-
-      products.add(Product.fromJson(productMap, variants: variants));
-    }
-
-    products.sort((a, b) {
-      final aName = a.defaultVariantModel?.variantName.toLowerCase() ?? '';
-      final bName = b.defaultVariantModel?.variantName.toLowerCase() ?? '';
-      return aName.compareTo(bName);
-    });
-    return products;
   }
-}

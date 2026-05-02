@@ -2,13 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/category/category_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/helpers/extensions/string.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
-import 'package:mandyapp/models/category_model.dart';
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/dao/product_variant_dao.dart';
@@ -17,7 +15,7 @@ import 'package:image_picker/image_picker.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product? product;
-  
+
   const ProductDetailScreen({super.key, this.product});
 
   @override
@@ -27,7 +25,6 @@ class ProductDetailScreen extends StatefulWidget {
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late ThemeData theme;
 
-  int? _selectedCategoryId;
   List<ProductVariant> _variants = [];
   final ProductVariantDAO _variantDAO = ProductVariantDAO();
   final ProductDAO _productDAO = ProductDAO();
@@ -67,32 +64,35 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       errorBuilder: (context, error, stackTrace) => placeholder,
     );
   }
-  
+
   @override
   void initState() {
     super.initState();
     theme = AppTheme.shoppingManagerTheme;
-    context.read<CategoryBloc>().add(LoadCategories());
 
     if (widget.product != null) {
-      _selectedCategoryId = widget.product!.categoryId;
       _loadVariants();
     }
   }
 
   Future<void> _loadVariants() async {
     if (widget.product?.id != null) {
-      final variants = await _variantDAO.getVariantsByProductId(widget.product!.id!);
+      final variants =
+          await _variantDAO.getVariantsByProductId(widget.product!.id!);
       setState(() {
         _variants = variants;
-        _defaultVariantKey = widget.product != null ? 'id_${widget.product!.defaultVariant}' : null;
+        _defaultVariantKey = widget.product != null
+            ? 'id_${widget.product!.defaultVariant}'
+            : null;
         _ensureDefaultVariantKey();
       });
     }
   }
 
   String _variantKey(ProductVariant variant) {
-    return variant.id != null ? 'id_${variant.id}' : 'temp_${identityHashCode(variant)}';
+    return variant.id != null
+        ? 'id_${variant.id}'
+        : 'temp_${identityHashCode(variant)}';
   }
 
   void _ensureDefaultVariantKey() {
@@ -101,63 +101,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return;
     }
 
-    final hasMatch = _variants.any((variant) => _variantKey(variant) == _defaultVariantKey);
+    final hasMatch =
+        _variants.any((variant) => _variantKey(variant) == _defaultVariantKey);
     if (!hasMatch) {
       _defaultVariantKey = _variantKey(_variants.first);
     }
   }
 
-  void _showAddCategoryDialog() {
-    final nameController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: MyText.titleMedium('add_category'.tr(), fontWeight: 600),
-        content: TextField(
-          controller: nameController,
-          decoration: InputDecoration(
-            labelText: 'category_name'.tr(),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            contentPadding: MySpacing.xy(16, 14),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: MyText.bodyMedium('cancel'.tr()),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameController.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    behavior: SnackBarBehavior.floating,
-                    margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-                    content: Text('please_enter_category_name'.tr()),
-                  ),
-                );
-                return;
-              }
-
-              final category = Category(name: nameController.text);
-              context.read<CategoryBloc>().add(AddCategory(category));
-              Navigator.pop(context);
-            },
-            child: MyText.bodyMedium('add'.tr()),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showAddVariantDialog([ProductVariant? variant]) {
-    final nameController = TextEditingController(text: variant?.variantName ?? '');
-    final buyingPriceController = TextEditingController(text: variant != null ? variant.buyingPrice.toString() : '');
-    final sellingPriceController = TextEditingController(text: variant != null ? variant.sellingPrice.toString() : '');
-    final quantityController = TextEditingController(text: variant != null ? variant.quantity.toString() : '');
+    final nameController =
+        TextEditingController(text: variant?.variantName ?? '');
+    final buyingPriceController = TextEditingController(
+        text: variant != null ? variant.buyingPrice.toString() : '');
+    final sellingPriceController = TextEditingController(
+        text: variant != null ? variant.sellingPrice.toString() : '');
+    final quantityController = TextEditingController(
+        text: variant != null ? variant.quantity.toString() : '');
     String selectedUnit = variant?.unit ?? 'Kg';
     String imagePath = variant?.imagePath ?? '';
     final ImagePicker imagePicker = ImagePicker();
@@ -200,7 +159,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          final picked = await imagePicker.pickImage(source: ImageSource.camera);
+                          final picked = await imagePicker.pickImage(
+                              source: ImageSource.camera);
                           if (picked != null) {
                             setDialogState(() {
                               imagePath = picked.path;
@@ -215,7 +175,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          final picked = await imagePicker.pickImage(source: ImageSource.gallery);
+                          final picked = await imagePicker.pickImage(
+                              source: ImageSource.gallery);
                           if (picked != null) {
                             setDialogState(() {
                               imagePath = picked.path;
@@ -305,11 +266,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 final sellingPriceText = sellingPriceController.text.trim();
                 final quantityText = quantityController.text.trim();
 
-                if (name.isEmpty || imagePath.isEmpty || buyingPriceText.isEmpty || sellingPriceText.isEmpty || quantityText.isEmpty) {
+                if (name.isEmpty ||
+                    imagePath.isEmpty ||
+                    buyingPriceText.isEmpty ||
+                    sellingPriceText.isEmpty ||
+                    quantityText.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       behavior: SnackBarBehavior.floating,
-                      margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                      margin:
+                          const EdgeInsets.only(top: 16, left: 16, right: 16),
                       content: Text('please_fill_required_fields'.tr()),
                     ),
                   );
@@ -320,11 +286,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 final sellingPrice = double.tryParse(sellingPriceText);
                 final quantity = double.tryParse(quantityText);
 
-                if (buyingPrice == null || sellingPrice == null || quantity == null) {
+                if (buyingPrice == null ||
+                    sellingPrice == null ||
+                    quantity == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       behavior: SnackBarBehavior.floating,
-                      margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                      margin:
+                          const EdgeInsets.only(top: 16, left: 16, right: 16),
                       content: Text('please_enter_valid_numbers'.tr()),
                     ),
                   );
@@ -332,18 +301,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 }
 
                 final newVariant = ProductVariant(
-                  id: variant?.id,
-                  productId: widget.product?.id ?? 0,
-                  variantName: name,
-                  buyingPrice: buyingPrice,
-                  sellingPrice: sellingPrice,
-                  quantity: quantity,
-                  unit: selectedUnit,
-                  imagePath: imagePath
-                );
+                    id: variant?.id,
+                    productId: widget.product?.id ?? 0,
+                    variantName: name,
+                    buyingPrice: buyingPrice,
+                    sellingPrice: sellingPrice,
+                    quantity: quantity,
+                    unit: selectedUnit,
+                    imagePath: imagePath);
 
                 setState(() {
-                  final originalKey = variant != null ? _variantKey(variant) : null;
+                  final originalKey =
+                      variant != null ? _variantKey(variant) : null;
                   if (variant == null) {
                     _variants.add(newVariant);
                     _defaultVariantKey ??= _variantKey(newVariant);
@@ -362,7 +331,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                 Navigator.pop(context);
               },
-              child: MyText.bodyMedium(variant == null ? 'add'.tr() : 'update'.tr()),
+              child: MyText.bodyMedium(
+                  variant == null ? 'add'.tr() : 'update'.tr()),
             ),
           ],
         ),
@@ -382,16 +352,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Future<void> _saveProduct() async {
     _ensureDefaultVariantKey();
-    if (_selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-          content: Text('please_select_category'.tr()),
-        ),
-      );
-      return;
-    }
 
     if (_variants.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -422,7 +382,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     final product = Product(
       id: widget.product?.id,
-      categoryId: _selectedCategoryId!,
       defaultVariant: defaultVariant.id ?? widget.product?.defaultVariant ?? 0,
     );
 
@@ -432,14 +391,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       // Insert new product directly using DAO to get the ID
       await _productDAO.insertProduct(product);
       productId = product.id; // ID is set by insertProduct
-      
+
       // Trigger BLoC to reload products
       context.read<ProductBloc>().add(LoadProducts());
     } else {
       // Update existing product
       await _productDAO.updateProduct(product);
       productId = product.id;
-      
+
       // Trigger BLoC to reload products
       context.read<ProductBloc>().add(LoadProducts());
     }
@@ -475,237 +434,168 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: MyText.titleMedium(
-          widget.product == null ? 'add_product'.tr() : 'edit_product'.tr(),
-          fontWeight: 600,
+        appBar: AppBar(
+          title: MyText.titleMedium(
+            widget.product == null ? 'add_product'.tr() : 'edit_product'.tr(),
+            fontWeight: 600,
+          ),
         ),
-      ),
-      body: BlocBuilder<CategoryBloc, CategoryState>(
-        builder: (context, categoryState) {
-          if (categoryState is CategoryLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          
-          final categories = categoryState is CategoryLoaded ? categoryState.categories : <Category>[];
-          
-          // Set initial category if not set and categories are available
-          if (_selectedCategoryId == null && categories.isNotEmpty && widget.product == null) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              setState(() {
-                _selectedCategoryId = categories.first.id;
-              });
-            });
-          }
-          
-          return SingleChildScrollView(
-            child: Padding(
-              padding: MySpacing.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  RichText(
-                    text: TextSpan(
-                      text: 'product_category'.tr(),
-                      style: TextStyle(
-                        color: theme.colorScheme.onBackground,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      children: const [
-                        TextSpan(
-                          text: ' *',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ],
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: MySpacing.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    text: 'product_variants'.tr(),
+                    style: TextStyle(
+                      color: theme.colorScheme.onBackground,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                     ),
-                  ),
-                  MySpacing.height(8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<int>(
-                          value: _selectedCategoryId,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            contentPadding: MySpacing.xy(16, 14),
-                          ),
-                          items: categories.map((category) {
-                            return DropdownMenuItem(
-                              value: category.id,
-                              child: Text(category.name),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() => _selectedCategoryId = value);
-                          },
-                        ),
-                      ),
-                      MySpacing.width(12),
-                      ElevatedButton(
-                        onPressed: _showAddCategoryDialog,
-                        style: ElevatedButton.styleFrom(
-                          padding: MySpacing.xy(20, 14),
-                        ),
-                        child: MyText.bodyMedium(
-                          'new_category'.tr(),
-                          fontWeight: 600,
-                        ),
+                    children: const [
+                      TextSpan(
+                        text: ' *',
+                        style: TextStyle(color: Colors.red),
                       ),
                     ],
                   ),
-
-                  MySpacing.height(24),
-                  RichText(
-                    text: TextSpan(
-                      text: 'product_variants'.tr(),
-                      style: TextStyle(
-                        color: theme.colorScheme.onBackground,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      children: const [
-                        TextSpan(
-                          text: ' *',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ],
+                ),
+                MySpacing.height(4),
+                MyText.bodySmall(
+                  'Add detailed information for each variant.',
+                  color: theme.colorScheme.onBackground.withOpacity(0.6),
+                  fontSize: 11,
+                ),
+                MySpacing.height(12),
+                TextButton.icon(
+                  onPressed: _showAddVariantDialog,
+                  icon: const Icon(Icons.add),
+                  label: MyText.bodyMedium('add_variant'.tr()),
+                ),
+                MySpacing.height(12),
+                if (_variants.isEmpty)
+                  Container(
+                    padding: MySpacing.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          color: theme.colorScheme.outline.withOpacity(0.3)),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
-                  MySpacing.height(4),
-                  MyText.bodySmall(
-                    'Add detailed information for each variant.',
-                    color: theme.colorScheme.onBackground.withOpacity(0.6),
-                    fontSize: 11,
-                  ),
-                  MySpacing.height(12),
-                  TextButton.icon(
-                    onPressed: _showAddVariantDialog,
-                    icon: const Icon(Icons.add),
-                    label: MyText.bodyMedium('add_variant'.tr()),
-                  ),
-                  MySpacing.height(12),
-
-                  if (_variants.isEmpty)
-                    Container(
-                      padding: MySpacing.all(16),
+                    child: Center(
+                      child: MyText.bodyMedium(
+                        'no_variants_added'.tr(),
+                        color: theme.colorScheme.onBackground.withOpacity(0.6),
+                      ),
+                    ),
+                  )
+                else
+                  ...List.generate(_variants.length, (index) {
+                    final variant = _variants[index];
+                    return Container(
+                      margin: MySpacing.bottom(8),
+                      padding: MySpacing.all(12),
                       decoration: BoxDecoration(
-                        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.3)),
+                        border: Border.all(
+                            color: theme.colorScheme.outline.withOpacity(0.3)),
                         borderRadius: BorderRadius.circular(8),
+                        color: _variantKey(variant) == _defaultVariantKey
+                            ? theme.colorScheme.primary.withOpacity(0.05)
+                            : null,
                       ),
-                      child: Center(
-                        child: MyText.bodyMedium(
-                          'no_variants_added'.tr(),
-                          color: theme.colorScheme.onBackground.withOpacity(0.6),
-                        ),
-                      ),
-                    )
-                  else
-                    ...List.generate(_variants.length, (index) {
-                      final variant = _variants[index];
-                      return Container(
-                        margin: MySpacing.bottom(8),
-                        padding: MySpacing.all(12),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: theme.colorScheme.outline.withOpacity(0.3)),
-                          borderRadius: BorderRadius.circular(8),
-                          color: _variantKey(variant) == _defaultVariantKey
-                              ? theme.colorScheme.primary.withOpacity(0.05)
-                              : null,
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Radio<String>(
-                              value: _variantKey(variant),
-                              groupValue: _defaultVariantKey,
-                              onChanged: (value) {
-                                setState(() {
-                                  _defaultVariantKey = value;
-                                });
-                              },
-                            ),
-                            if (variant.imagePath.isNotEmpty)
-                              Container(
-                                margin: MySpacing.only(right: 12, top: 4),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(6),
-                                  child: _variantThumbnail(variant.imagePath),
-                                ),
-                              ),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      MyText.bodyMedium(
-                                        variant.variantName,
-                                        fontWeight: 600,
-                                      ),
-                                      if (_variantKey(variant) == _defaultVariantKey)
-                                        Container(
-                                          margin: MySpacing.only(left: 8),
-                                          padding: MySpacing.xy(8, 4),
-                                          decoration: BoxDecoration(
-                                            color: theme.colorScheme.primary.withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: MyText.bodySmall(
-                                            'Default',
-                                            color: theme.colorScheme.primary,
-                                            fontWeight: 600,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  MySpacing.height(4),
-                                  MyText.bodySmall(
-                                    '${'selling_price'.tr()}: ${variant.sellingPrice.toStringAsFixed(2)} | ${'quantity'.tr()}: ${variant.quantity.toStringAsFixed(2)} ${variant.unit}',
-                                    color: theme.colorScheme.onBackground.withOpacity(0.7),
-                                  ),
-                                ],
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Radio<String>(
+                            value: _variantKey(variant),
+                            groupValue: _defaultVariantKey,
+                            onChanged: (value) {
+                              setState(() {
+                                _defaultVariantKey = value;
+                              });
+                            },
+                          ),
+                          if (variant.imagePath.isNotEmpty)
+                            Container(
+                              margin: MySpacing.only(right: 12, top: 4),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: _variantThumbnail(variant.imagePath),
                               ),
                             ),
-                            Column(
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit, size: 20),
-                                  onPressed: () => _showAddVariantDialog(variant),
+                                Row(
+                                  children: [
+                                    MyText.bodyMedium(
+                                      variant.variantName,
+                                      fontWeight: 600,
+                                    ),
+                                    if (_variantKey(variant) ==
+                                        _defaultVariantKey)
+                                      Container(
+                                        margin: MySpacing.only(left: 8),
+                                        padding: MySpacing.xy(8, 4),
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.primary
+                                              .withOpacity(0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: MyText.bodySmall(
+                                          'Default',
+                                          color: theme.colorScheme.primary,
+                                          fontWeight: 600,
+                                        ),
+                                      ),
+                                  ],
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, size: 20, color: Colors.red),
-                                  onPressed: () => _deleteVariant(variant),
+                                MySpacing.height(4),
+                                MyText.bodySmall(
+                                  '${'selling_price'.tr()}: ${variant.sellingPrice.toStringAsFixed(2)} | ${'quantity'.tr()}: ${variant.quantity.toStringAsFixed(2)} ${variant.unit}',
+                                  color: theme.colorScheme.onBackground
+                                      .withOpacity(0.7),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      );
-                    }),
-
-                  MySpacing.height(24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _saveProduct,
-                      style: ElevatedButton.styleFrom(
-                        padding: MySpacing.y(16),
+                          ),
+                          Column(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, size: 20),
+                                onPressed: () => _showAddVariantDialog(variant),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete,
+                                    size: 20, color: Colors.red),
+                                onPressed: () => _deleteVariant(variant),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      child: MyText.bodyLarge(
-                        'save_product'.tr(),
-                        fontWeight: 600,
-                      ),
+                    );
+                  }),
+                MySpacing.height(24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _saveProduct,
+                    style: ElevatedButton.styleFrom(
+                      padding: MySpacing.y(16),
+                    ),
+                    child: MyText.bodyLarge(
+                      'save_product'.tr(),
+                      fontWeight: 600,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
-        },
-      ),
-    );
+          ),
+        ));
   }
 }

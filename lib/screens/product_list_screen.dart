@@ -2,13 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/category/category_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/helpers/extensions/string.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
-import 'package:mandyapp/models/category_model.dart';
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/screens/product_detail_screen.dart';
 
@@ -54,7 +52,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
     super.initState();
     theme = AppTheme.shoppingManagerTheme;
     context.read<ProductBloc>().add(LoadProducts());
-    context.read<CategoryBloc>().add(LoadCategories());
   }
 
   void _navigateToProductDetail([Product? product]) async {
@@ -68,49 +65,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
     if (result == true) {
       context.read<ProductBloc>().add(LoadProducts());
     }
-  }
-
-  void _showAddCategoryDialog() {
-    final nameController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: MyText.titleMedium('add_category'.tr(), fontWeight: 600),
-        content: TextField(
-          controller: nameController,
-          decoration: InputDecoration(
-            labelText: 'category_name'.tr(),
-            border: const OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: MyText.bodyMedium('cancel'.tr()),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameController.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    behavior: SnackBarBehavior.floating,
-                    margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-                    content: Text('please_enter_category_name'.tr()),
-                  ),
-                );
-                return;
-              }
-
-              final category = Category(name: nameController.text);
-              context.read<CategoryBloc>().add(AddCategory(category));
-              Navigator.pop(context);
-            },
-            child: MyText.bodyMedium('add'.tr()),
-          ),
-        ],
-      ),
-    );
   }
 
   void _deleteProduct(Product product) {
@@ -143,11 +97,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       appBar: AppBar(
         title: MyText.titleMedium('products'.tr(), fontWeight: 600),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.category),
-            onPressed: _showAddCategoryDialog,
-            tooltip: 'add_category'.tr(),
-          ),
+          
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => _navigateToProductDetail(),
@@ -157,26 +107,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
       ),
       body: Column(
         children: [
-          // Category Filter
-          BlocBuilder<CategoryBloc, CategoryState>(
-            builder: (context, categoryState) {
-              if (categoryState is CategoryLoaded && categoryState.categories.isNotEmpty) {
-                return Container(
-                  height: 50,
-                  padding: MySpacing.x(16),
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      _buildCategoryChip('all'.tr(), null, categoryState.categories),
-                      ...categoryState.categories.map((category) =>
-                          _buildCategoryChip(category.name, category.id, categoryState.categories)),
-                    ],
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
           
           // Product List
           Expanded(
@@ -205,24 +135,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     );
                   }
                   
-                  return BlocBuilder<CategoryBloc, CategoryState>(
-                    builder: (context, categoryState) {
-                      final categoryMap = <int, String>{};
-                      if (categoryState is CategoryLoaded) {
-                        for (var category in categoryState.categories) {
-                          if (category.id != null) {
-                            categoryMap[category.id!] = category.name;
-                          }
-                        }
-                      }
-                      return ListView.builder(
-                        padding: MySpacing.all(16),
-                        itemCount: productState.products.length,
-                        itemBuilder: (context, index) {
-                          final product = productState.products[index];
-                          return _buildProductCard(product, categoryMap);
-                        },
-                      );
+                  return ListView.builder(
+                    padding: MySpacing.all(16),
+                    itemCount: productState.products.length,
+                    itemBuilder: (context, index) {
+                      final product = productState.products[index];
+                      return _buildProductCard(product, {});
                     },
                   );
                 } else if (productState is ProductError) {
@@ -239,31 +157,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  Widget _buildCategoryChip(String label, int? categoryId, List<Category> categories) {
-    final isSelected = _selectedCategoryId == categoryId;
-    return Padding(
-      padding: MySpacing.right(8),
-      child: FilterChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (selected) {
-          setState(() {
-            _selectedCategoryId = selected ? categoryId : null;
-          });
-          if (_selectedCategoryId == null) {
-            context.read<ProductBloc>().add(LoadProducts());
-          } else {
-            context.read<ProductBloc>().add(LoadProductsByCategory(_selectedCategoryId!));
-          }
-        },
-        selectedColor: theme.colorScheme.primary.withOpacity(0.2),
-        checkmarkColor: theme.colorScheme.primary,
-      ),
-    );
-  }
-
   Widget _buildProductCard(Product product, Map<int, String> categoryMap) {
-    final categoryName = categoryMap[product.categoryId] ?? 'unknown'.tr();
     final variantCount = product.variantCount;
     final defaultVariant = product.defaultVariantModel;
     final variants = product.variants ?? [];
@@ -308,20 +202,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     // Category and Name in one row
                     Row(
                       children: [
-                        Container(
-                          padding: MySpacing.xy(8, 4),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.secondaryContainer,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: MyText.bodySmall(
-                            categoryName,
-                            fontSize: 10,
-                            color: theme.colorScheme.onSecondaryContainer,
-                            fontWeight: 600,
-                          ),
-                        ),
-                        MySpacing.width(8),
                         Expanded(
                           child: MyText.bodyLarge(
                             defaultVariant?.variantName ?? 'Product #${product.id ?? ''}',

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mandyapp/dao/cart_charge_dao.dart';
-import 'package:mandyapp/dao/cart_dao.dart';
-import 'package:mandyapp/dao/cart_payment_dao.dart';
+import 'package:mandyapp/dao/order_charge_dao.dart';
+import 'package:mandyapp/dao/order_dao.dart';
+import 'package:mandyapp/dao/order_payment_dao.dart';
 import 'package:mandyapp/dao/product_dao.dart';
 import 'package:mandyapp/dao/product_variant_dao.dart';
 import 'package:mandyapp/dao/customer_dao.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
-import 'package:mandyapp/models/cart_charge_model.dart';
-import 'package:mandyapp/models/cart_model.dart';
-import 'package:mandyapp/models/cart_payment_model.dart';
+import 'package:mandyapp/models/order_charge_model.dart';
+import 'package:mandyapp/models/order_model.dart';
+import 'package:mandyapp/models/order_payment_model.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/screens/checkout_screen.dart';
 import 'package:mandyapp/utils/printer/printer_service.dart' as printer_service;
@@ -17,9 +17,9 @@ import 'package:mandyapp/widgets/billing/invoice_item.dart';
 import 'package:mandyapp/widgets/billing/bill_line_item.dart';
 
 class BillDetailsScreen extends StatefulWidget {
-  final int cartId;
+  final int orderId;
 
-  const BillDetailsScreen({super.key, required this.cartId});
+  const BillDetailsScreen({super.key, required this.orderId});
 
   @override
   State<BillDetailsScreen> createState() => _BillDetailsScreenState();
@@ -38,9 +38,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CheckoutScreen(
-          cartId: data.cart.id,
-          initialCartCharges: data.charges,
-          initialPayment: data.payment,
+          orderId: data.order.id!,
           isEdit: true,
         ),
       ),
@@ -104,9 +102,9 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
 
     // Print the invoice
     final success = await printerService.printInvoice(
-      cartId: data.cart.id,
+      cartId: data.order.id!,
       customerName: data.customerName,
-      cartType: data.cart.cartFor,
+      cartType: data.order.orderFor,
       items: invoiceItems,
       itemTotal: data.itemTotal,
       chargesTotal: data.chargesTotal,
@@ -128,21 +126,21 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
   }
 
   Future<_BillDetailsData> _loadBillDetails() async {
-    final cartDAO = CartDAO();
-    final cartPaymentDAO = CartPaymentDAO();
-    final cartChargeDAO = CartChargeDAO();
+    final orderDAO = OrderDAO();
+    final orderPaymentDAO = OrderPaymentDAO();
+    final orderChargeDAO = OrderChargeDAO();
     final productDAO = ProductDAO();
     final productVariantDAO = ProductVariantDAO();
     final customerDAO = CustomerDAO();
 
-    final cart = await cartDAO.getCartWithItems(widget.cartId);
-    if (cart == null) {
-      throw StateError('Cart not found');
+    final order = await orderDAO.getOrderWithItems(widget.orderId);
+    if (order == null) {
+      throw StateError('Order not found');
     }
 
-    final items = cart.items ?? await cartDAO.getCartItems(cart.id, cartFor: cart.cartFor);
-    final payment = await cartPaymentDAO.getCartPaymentByCartId(cart.id);
-    final charges = await cartChargeDAO.getCartCharges(cart.id.toString());
+    final items = order.items ?? await orderDAO.getOrderItems(order.id!, orderFor: order.orderFor);
+    final payment = await orderPaymentDAO.getOrderPaymentByOrderId(order.id!);
+    final charges = await orderChargeDAO.getOrderCharges(order.id.toString());
     final customers = await customerDAO.getCustomers();
     final Map<int, Customer> customerById = {
       for (final customer in customers)
@@ -164,7 +162,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     }
 
     return _BillDetailsData(
-      cart: cart,
+      order: order,
       payment: payment,
       lineItems: lineItems,
       charges: charges,
@@ -251,7 +249,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
           final data = snapshot.data!;
           final currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
           final dateFormat = DateFormat('dd MMM yyyy | hh:mm a');
-          final createdAt = DateTime.tryParse(data.cart.createdAt) ?? DateTime.now();
+          final createdAt = DateTime.tryParse(data.order.createdAt) ?? DateTime.now();
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -316,7 +314,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                                   Expanded(
                                     flex: 3,
                                     child: _buildInfoMetric(
-                                      data.cart.cartFor == 'seller' ? 'Amount Received' : 'Received Amount',
+                                      data.order.orderFor == 'seller' ? 'Amount Received' : 'Received Amount',
                                       currency.format(data.receivedAmount),
                                       theme,
                                       valueColor: theme.colorScheme.primary,
@@ -326,7 +324,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                                   Expanded(
                                     flex: 3,
                                     child: _buildInfoMetric(
-                                      data.cart.cartFor == 'seller' ? 'Amount Pending' : 'Pending Amount',
+                                      data.order.orderFor == 'seller' ? 'Amount Pending' : 'Pending Amount',
                                       currency.format(data.outstandingAmount.abs()),
                                       theme,
                                       valueColor: data.outstandingAmount > 0
@@ -472,7 +470,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Text(
-                          currency.format(item.sale.totalPrice),
+                          currency.format(item.sale.sellingPrice * item.sale.quantity),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -676,14 +674,14 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
 }
 
 class _BillDetailsData {
-  final Cart cart;
-  final CartPayment? payment;
+  final Order order;
+  final OrderPayment? payment;
   final List<BillLineItem> lineItems;
-  final List<CartCharge> charges;
+  final List<OrderCharge> charges;
   final Map<int, Customer> customerById;
 
   const _BillDetailsData({
-    required this.cart,
+    required this.order,
     required this.payment,
     required this.lineItems,
     required this.charges,
@@ -691,13 +689,13 @@ class _BillDetailsData {
   });
 
   String get customerName {
-    final customer = customerById[cart.customerId];
+    final customer = customerById[order.customerId];
     return customer?.name?.trim().isNotEmpty ?? false
         ? customer!.name!.trim()
-        : 'Customer ${cart.customerId}';
+        : 'Customer ${order.customerId}';
   }
 
-  String get invoiceLabel => 'Invoice #${cart.id}';
+  String get invoiceLabel => 'Invoice #${order.id}';
 
   double get itemTotal {
     return lineItems.fold(0.0, (sum, item) => sum + item.totalPrice);
@@ -708,10 +706,10 @@ class _BillDetailsData {
   }
 
   double get grandTotal {
-    if (cart.cartFor == 'seller') {
+    if (order.orderFor == 'seller') {
       return itemTotal - chargesTotal;
     } else {
-      // For buyer carts, use current implementation (subtotal + chargesTotal)
+      // For buyer orders, use current implementation (subtotal + chargesTotal)
       return itemTotal + chargesTotal;
     }
   }
@@ -720,23 +718,23 @@ class _BillDetailsData {
 
   double get outstandingAmount => grandTotal - receivedAmount;
 
-  // Calculate paymentAmount and pendingPayment based on cart type
+  // Calculate paymentAmount and pendingPayment based on order type
   double get paymentAmount {
-    if (cart.cartFor == 'seller') {
-      // For seller carts, paymentAmount is the amount to be paid to seller (after deducting charges)
+    if (order.orderFor == 'seller') {
+      // For seller orders, paymentAmount is the amount to be paid to seller (after deducting charges)
       return grandTotal;
     } else {
-      // For buyer carts, paymentAmount is the total amount received
+      // For buyer orders, paymentAmount is the total amount received
       return receivedAmount;
     }
   }
 
   double get pendingPayment {
-    if (cart.cartFor == 'seller') {
-      // For seller carts, pendingPayment is the amount still owed to seller
+    if (order.orderFor == 'seller') {
+      // For seller orders, pendingPayment is the amount still owed to seller
       return paymentAmount - receivedAmount;
     } else {
-      // For buyer carts, pendingPayment is the remaining amount to be paid
+      // For buyer orders, pendingPayment is the remaining amount to be paid
       return outstandingAmount;
     }
   }
@@ -746,16 +744,16 @@ class _BillDetailsData {
       return 'Not recorded';
     }
     final methods = <String>[];
-    if (payment!.cashPayment) {
+    if (payment!.cashPayment == 1) {
       methods.add('Cash');
     }
-    if (payment!.upiPayment) {
+    if (payment!.upiPayment == 1) {
       methods.add('UPI');
     }
-    if (payment!.cardPayment) {
+    if (payment!.cardPayment == 1) {
       methods.add('Card');
     }
-    if (payment!.creditPayment) {
+    if (payment!.creditPayment == 1) {
       methods.add('Credit');
     }
     if (methods.isEmpty) {
