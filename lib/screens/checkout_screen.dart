@@ -874,45 +874,4 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _summaryItem(String label, double amount, BuildContext context) {
-    return Container(
-      padding: MySpacing.xy(8, 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          MyText.bodySmall(label, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
-          MySpacing.height(2),
-          MyText.bodyMedium(
-            '₹${amount.toStringAsFixed(2)}',
-            fontWeight: 600,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _summaryRow(String label, double amount, BuildContext context, {bool emphasized = false, Color? valueColor}) {
-    return Padding(
-      padding: MySpacing.bottom(8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          MyText.bodyMedium(
-            label,
-            fontWeight: emphasized ? 600 : 500,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
-          ),
-          MyText.bodyMedium(
-            '₹${amount.toStringAsFixed(2)}',
-            fontWeight: emphasized ? 600 : 500,
-            color: valueColor ?? Theme.of(context).colorScheme.onSurface,
-          ),
-        ],
-      ),
-    );
-  }
 }

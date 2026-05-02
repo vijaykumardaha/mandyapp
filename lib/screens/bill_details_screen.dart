@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:mandyapp/blocs/order_expense/order_expense_bloc.dart';
 import 'package:mandyapp/dao/order_charge_dao.dart';
 import 'package:mandyapp/dao/order_dao.dart';
 import 'package:mandyapp/dao/order_payment_dao.dart';
@@ -19,7 +17,6 @@ import 'package:mandyapp/screens/checkout_screen.dart';
 import 'package:mandyapp/utils/printer/printer_service.dart' as printer_service;
 import 'package:mandyapp/widgets/billing/invoice_item.dart';
 import 'package:mandyapp/widgets/billing/bill_line_item.dart';
-import 'package:mandyapp/widgets/checkout/expense_section.dart';
 
 class BillDetailsScreen extends StatefulWidget {
   final int orderId;

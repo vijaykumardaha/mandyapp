@@ -4,7 +4,7 @@ import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/order_item_model.dart';
 
-class SellerSaleSelectionSheet extends StatefulWidget {
+class PaymentItemList extends StatefulWidget {
   final Customer seller;
   final List<OrderItem> sales;
   final String Function(Customer) formatCustomer;
@@ -12,7 +12,7 @@ class SellerSaleSelectionSheet extends StatefulWidget {
   final void Function(OrderItem sale, int index) onDeleteSale;
   final Future<void> Function(List<OrderItem> selected) onConfirm;
 
-  const SellerSaleSelectionSheet({
+  const PaymentItemList({
     super.key,
     required this.seller,
     required this.sales,
@@ -23,10 +23,10 @@ class SellerSaleSelectionSheet extends StatefulWidget {
   });
 
   @override
-  State<SellerSaleSelectionSheet> createState() => _SellerSaleSelectionSheetState();
+  State<PaymentItemList> createState() => _PaymentItemListState();
 }
 
-class _SellerSaleSelectionSheetState extends State<SellerSaleSelectionSheet> {
+class _PaymentItemListState extends State<PaymentItemList> {
   final Set<int> _selectedIndices = {};
   late List<OrderItem> _sales;
 
@@ -37,7 +37,7 @@ class _SellerSaleSelectionSheetState extends State<SellerSaleSelectionSheet> {
   }
 
   @override
-  void didUpdateWidget(covariant SellerSaleSelectionSheet oldWidget) {
+  void didUpdateWidget(covariant PaymentItemList oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.sales != widget.sales) {
       setState(() {

@@ -8,7 +8,7 @@ import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/order_item_model.dart';
 import 'package:mandyapp/models/order_model.dart';
 import 'package:mandyapp/screens/checkout_screen.dart';
-import 'package:mandyapp/widgets/selling/sale_selection_bottom_sheet.dart';
+import 'package:mandyapp/widgets/selling/cart_item_list.dart';
 
 class OrderItemScreen extends StatefulWidget {
   final List<OrderItem>? initialSales;
@@ -195,7 +195,7 @@ class _OrderItemScreenState extends State<OrderItemScreen> {
       );
     }
 
-    return SaleSelectionBottomSheet(
+    return CartItemList(
       initialSales: sales,
       buyerCustomer: _buyerCustomer,
       onBuyerChanged: (customer) {
