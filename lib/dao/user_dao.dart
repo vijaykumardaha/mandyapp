@@ -6,6 +6,9 @@ class UserDAO {
 
   Future<int> insertUser(User user) async {
     user.id = DBHelper.generateUuidInt();
+    user.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    user.isDeleted = 0;
+    user.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.insert('users', user.toJson());
   }
@@ -13,8 +16,8 @@ class UserDAO {
   Future<User?> userLogin(String mobile, String password) async {
     final db = await dbHelper.database;
     var result = await db.query("users",
-        where: 'mobile = ? AND password = ?',
-        whereArgs: [mobile, password]);
+        where: 'mobile = ? AND password = ? AND is_deleted = ?',
+        whereArgs: [mobile, password, 0]);
 
     return result.isNotEmpty ? User.fromJson(result.first) : null;
   }
@@ -22,15 +25,15 @@ class UserDAO {
   Future<User?> getUserByMobile(String mobile) async {
     final db = await dbHelper.database;
     var result = await db.query("users",
-        where: 'mobile = ?',
-        whereArgs: [mobile]);
+        where: 'mobile = ? AND is_deleted = ?',
+        whereArgs: [mobile, 0]);
 
     return result.isNotEmpty ? User.fromJson(result.first) : null;
   }
 
   Future<List<User>> getAllUsers() async {
     final db = await dbHelper.database;
-    var result = await db.query("users");
+    var result = await db.query("users", where: 'is_deleted = ?', whereArgs: [0]);
 
     return result.isNotEmpty 
         ? result.map((user) => User.fromJson(user)).toList() 
@@ -40,13 +43,15 @@ class UserDAO {
   Future<User?> getUserById(int id) async {
     final db = await dbHelper.database;
     var result = await db.query("users",
-        where: 'id = ?',
-        whereArgs: [id]);
+        where: 'id = ? AND is_deleted = ?',
+        whereArgs: [id, 0]);
 
     return result.isNotEmpty ? User.fromJson(result.first) : null;
   }
 
   Future<int> updateUser(User user) async {
+    user.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    user.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
       'users',
@@ -56,10 +61,27 @@ class UserDAO {
     );
   }
 
+  Future<int> restoreUser(int id) async {
+    final db = await dbHelper.database;
+    return await db.update(
+      'users',
+      {
+        'is_deleted': 0,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   Future<int> deleteUser(int id) async {
     final db = await dbHelper.database;
-    return await db.delete(
+    return await db.update(
       'users',
+      {
+        'is_deleted': 1,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -68,8 +90,8 @@ class UserDAO {
   Future<List<User>> getUsersByRole(String role) async {
     final db = await dbHelper.database;
     var result = await db.query("users",
-        where: 'role = ?',
-        whereArgs: [role]);
+        where: 'role = ? AND is_deleted = ?',
+        whereArgs: [role, 0]);
 
     return result.isNotEmpty 
         ? result.map((user) => User.fromJson(user)).toList() 
@@ -79,48 +101,12 @@ class UserDAO {
   Future<User?> getAdminUser() async {
     final db = await dbHelper.database;
     var result = await db.query("users",
-        where: 'role = ?',
-        whereArgs: ['admin'],
+        where: 'role = ? AND is_deleted = ?',
+        whereArgs: ['admin', 0],
         limit: 1);
 
     return result.isNotEmpty ? User.fromJson(result.first) : null;
   }
 
-  Future<int> updateUserRole(int userId, String newRole) async {
-    final db = await dbHelper.database;
-    return await db.update(
-      'users',
-      {'role': newRole},
-      where: 'id = ?',
-      whereArgs: [userId],
-    );
-  }
-
-  Future<List<User>> getUsersCreatedBy(int createdBy) async {
-    final db = await dbHelper.database;
-    var result = await db.query("users",
-        where: 'created_by = ?',
-        whereArgs: [createdBy]);
-
-    return result.isNotEmpty 
-        ? result.map((user) => User.fromJson(user)).toList() 
-        : [];
-  }
-
-  Future<User?> getCreatorInfo(int creatorId) async {
-    final db = await dbHelper.database;
-    var result = await db.query("users",
-        where: 'id = ?',
-        whereArgs: [creatorId]);
-
-    return result.isNotEmpty ? User.fromJson(result.first) : null;
-  }
-
-  Future<int> insertUserWithCreator(User user, int createdBy) async {
-    user.id = DBHelper.generateUuidInt();
-    user.createdBy = createdBy;
-    final db = await dbHelper.database;
-    return await db.insert('users', user.toJson());
-  }
-
+  
 }

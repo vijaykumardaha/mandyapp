@@ -1,5 +1,6 @@
 class OrderItem {
   int? id;
+  int? mandyId;
   int sellerId;
   int? buyerOrderId;
   int? sellerOrderId;
@@ -10,14 +11,16 @@ class OrderItem {
   double sellingPrice;
   double quantity;
   String unit;
-  String createdAt;
-  String updatedAt;
+  int? updatedAt;
+  int? isDeleted;
+  int? syncStatus;
   // Variant details from product_variants table
   String? variantName;
   String? imagePath;
 
   OrderItem({
     this.id,
+    this.mandyId,
     required this.sellerId,
     this.buyerOrderId,
     this.sellerOrderId,
@@ -28,8 +31,9 @@ class OrderItem {
     required this.sellingPrice,
     required this.quantity,
     this.unit = 'Kg',
-    required this.createdAt,
-    required this.updatedAt,
+    this.updatedAt,
+    this.isDeleted = 0,
+    this.syncStatus = 0,
     this.variantName,
     this.imagePath,
   });
@@ -37,6 +41,7 @@ class OrderItem {
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     return OrderItem(
       id: json['id'] as int?,
+      mandyId: json['mandy_id'] as int?,
       sellerId: json['seller_id'] as int,
       buyerOrderId: json['buyer_order_id'] as int?,
       sellerOrderId: json['seller_order_id'] as int?,
@@ -47,8 +52,9 @@ class OrderItem {
       sellingPrice: (json['selling_price'] as num).toDouble(),
       quantity: (json['quantity'] as num).toDouble(),
       unit: json['unit'] as String? ?? 'Kg',
-      createdAt: json['created_at'] as String,
-      updatedAt: json['updated_at'] as String,
+      updatedAt: json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+      isDeleted: json['is_deleted'] as int? ?? 0,
+      syncStatus: json['sync_status'] as int? ?? 0,
       variantName: json['variant_name'] as String?,
       imagePath: json['image_path'] as String?,
     );
@@ -57,6 +63,7 @@ class OrderItem {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'mandy_id': mandyId,
       'seller_id': sellerId,
       'buyer_order_id': buyerOrderId,
       'seller_order_id': sellerOrderId,
@@ -67,8 +74,9 @@ class OrderItem {
       'selling_price': sellingPrice,
       'quantity': quantity,
       'unit': unit,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
+      'updated_at': updatedAt ?? DateTime.now().millisecondsSinceEpoch,
+      'is_deleted': isDeleted ?? 0,
+      'sync_status': syncStatus ?? 0,
       // Note: variantName and imagePath are read-only fields from product_variants table
       // They are not stored in the order_items table
     };
@@ -76,6 +84,7 @@ class OrderItem {
 
   OrderItem copyWith({
     int? id,
+    int? mandyId,
     int? sellerId,
     int? buyerOrderId,
     int? sellerOrderId,
@@ -86,13 +95,15 @@ class OrderItem {
     double? sellingPrice,
     double? quantity,
     String? unit,
-    String? createdAt,
-    String? updatedAt,
+    int? updatedAt,
+    int? isDeleted,
+    int? syncStatus,
     String? variantName,
     String? imagePath,
   }) {
     return OrderItem(
       id: id ?? this.id,
+      mandyId: mandyId ?? this.mandyId,
       sellerId: sellerId ?? this.sellerId,
       buyerOrderId: buyerOrderId ?? this.buyerOrderId,
       sellerOrderId: sellerOrderId ?? this.sellerOrderId,
@@ -103,8 +114,9 @@ class OrderItem {
       sellingPrice: sellingPrice ?? this.sellingPrice,
       quantity: quantity ?? this.quantity,
       unit: unit ?? this.unit,
-      createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      isDeleted: isDeleted ?? this.isDeleted,
+      syncStatus: syncStatus ?? this.syncStatus,
       variantName: variantName ?? this.variantName,
       imagePath: imagePath ?? this.imagePath,
     );
@@ -112,7 +124,7 @@ class OrderItem {
 
   @override
   String toString() {
-    return 'OrderItem(id: $id, sellerId: $sellerId, buyerOrderId: $buyerOrderId, sellerOrderId: $sellerOrderId, buyerId: $buyerId, productId: $productId, variantId: $variantId, buyingPrice: $buyingPrice, sellingPrice: $sellingPrice, quantity: $quantity, unit: $unit, createdAt: $createdAt, updatedAt: $updatedAt, variantName: $variantName, imagePath: $imagePath)';
+    return 'OrderItem(id: $id, mandyId: $mandyId, sellerId: $sellerId, buyerOrderId: $buyerOrderId, sellerOrderId: $sellerOrderId, buyerId: $buyerId, productId: $productId, variantId: $variantId, buyingPrice: $buyingPrice, sellingPrice: $sellingPrice, quantity: $quantity, unit: $unit, updatedAt: $updatedAt, isDeleted: $isDeleted, syncStatus: $syncStatus, variantName: $variantName, imagePath: $imagePath)';
   }
 
   @override
@@ -121,6 +133,7 @@ class OrderItem {
 
     return other is OrderItem &&
       other.id == id &&
+      other.mandyId == mandyId &&
       other.sellerId == sellerId &&
       other.buyerOrderId == buyerOrderId &&
       other.sellerOrderId == sellerOrderId &&
@@ -131,8 +144,9 @@ class OrderItem {
       other.sellingPrice == sellingPrice &&
       other.quantity == quantity &&
       other.unit == unit &&
-      other.createdAt == createdAt &&
       other.updatedAt == updatedAt &&
+      other.isDeleted == isDeleted &&
+      other.syncStatus == syncStatus &&
       other.variantName == variantName &&
       other.imagePath == imagePath;
   }
@@ -140,6 +154,7 @@ class OrderItem {
   @override
   int get hashCode {
     return id.hashCode ^
+      mandyId.hashCode ^
       sellerId.hashCode ^
       buyerOrderId.hashCode ^
       sellerOrderId.hashCode ^
@@ -150,8 +165,9 @@ class OrderItem {
       sellingPrice.hashCode ^
       quantity.hashCode ^
       unit.hashCode ^
-      createdAt.hashCode ^
       updatedAt.hashCode ^
+      isDeleted.hashCode ^
+      syncStatus.hashCode ^
       variantName.hashCode ^
       imagePath.hashCode;
   }

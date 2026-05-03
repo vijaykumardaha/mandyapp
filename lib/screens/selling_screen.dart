@@ -365,9 +365,7 @@ class SellingScreenState extends State<SellingScreen> {
       buyingPrice: variant.buyingPrice,
       sellingPrice: effectiveSellingPrice,
       quantity: quantity,
-      unit: variant.unit,
-      createdAt: DateTime.now().toIso8601String(),
-      updatedAt: DateTime.now().toIso8601String(),
+      unit: variant.unit
     );
 
     context.read<OrderItemBloc>().add(AddOrderItemEvent(sale));

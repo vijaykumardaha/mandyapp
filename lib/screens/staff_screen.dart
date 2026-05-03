@@ -202,7 +202,7 @@ class _StaffScreenState extends State<StaffScreen> {
                 content: Text(state.errorMsg),
               ),
             );
-          } else if (state is UserUpdated || state is UserRoleUpdated) {
+          } else if (state is UserUpdated) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 behavior: SnackBarBehavior.floating,

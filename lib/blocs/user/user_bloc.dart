@@ -161,32 +161,6 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       }
     });
 
-    // Update user role
-    on<UpdateUserRole>((event, emit) async {
-      try {
-        emit(UserLoading());
-        
-        await userDAO.updateUserRole(event.userId, event.newRole);
-        
-        // If updating current user, update SharedPreferences
-        final userData = await AppHelper.getPreferences('user');
-        if (userData != null) {
-          final currentUser = User.fromJson(userData);
-          if (currentUser.id == event.userId) {
-            currentUser.role = event.newRole;
-            await AppHelper.savePreferences('user', currentUser.toJson());
-            emit(UserUpdated(user: currentUser));
-          } else {
-            emit(UserRoleUpdated(userId: event.userId, newRole: event.newRole));
-          }
-        } else {
-          emit(UserRoleUpdated(userId: event.userId, newRole: event.newRole));
-        }
-      } catch (error) {
-        emit(UserError(errorMsg: 'Failed to update user role: ${error.toString()}'));
-      }
-    });
-
     // Load admin user
     on<LoadAdminUser>((event, emit) async {
       try {
@@ -201,57 +175,6 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         }
       } catch (error) {
         emit(UserError(errorMsg: 'Failed to load admin user: ${error.toString()}'));
-      }
-    });
-
-    // Load users created by a specific user
-    on<LoadUsersCreatedBy>((event, emit) async {
-      try {
-        emit(UserLoading());
-        
-        final users = await userDAO.getUsersCreatedBy(event.createdBy);
-        
-        emit(UsersCreatedByLoaded(users: users, createdBy: event.createdBy));
-      } catch (error) {
-        emit(UserError(errorMsg: 'Failed to load users by creator: ${error.toString()}'));
-      }
-    });
-
-    // Save user with creator
-    on<SaveUserWithCreator>((event, emit) async {
-      try {
-        emit(UserLoading());
-        
-        final newUser = User(
-          name: event.name,
-          mobile: event.mobile,
-          password: event.password,
-          role: event.role,
-        );
-        
-        int userId = await userDAO.insertUserWithCreator(newUser, event.createdBy);
-        newUser.id = userId;
-        
-        emit(UserLoaded(user: newUser));
-      } catch (error) {
-        emit(UserError(errorMsg: 'Failed to save user with creator: ${error.toString()}'));
-      }
-    });
-
-    // Get creator info
-    on<GetCreatorInfo>((event, emit) async {
-      try {
-        emit(UserLoading());
-        
-        final creator = await userDAO.getCreatorInfo(event.creatorId);
-        
-        if (creator != null) {
-          emit(CreatorInfoLoaded(creator: creator));
-        } else {
-          emit(const UserError(errorMsg: 'Creator not found'));
-        }
-      } catch (error) {
-        emit(UserError(errorMsg: 'Failed to load creator info: ${error.toString()}'));
       }
     });
   }

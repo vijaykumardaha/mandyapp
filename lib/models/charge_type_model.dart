@@ -1,31 +1,43 @@
 class ChargeType {
   int? id;
+  int? mandyId;
   String chargeName;
   String chargeType;
   double chargeAmount;
   String chargeFor;
   int isDefault;
   int isActive;
+  int? updatedAt;
+  int? isDeleted;
+  int? syncStatus;
 
   ChargeType({
     this.id,
+    this.mandyId,
     required this.chargeName,
     this.chargeType = 'fixed',
     required this.chargeAmount,
     required this.chargeFor,
     this.isDefault = 0,
     this.isActive = 1,
+    this.updatedAt,
+    this.isDeleted = 0,
+    this.syncStatus = 0,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'mandy_id': mandyId,
       'charge_name': chargeName,
       'charge_type': chargeType,
       'charge_amount': chargeAmount,
       'charge_for': chargeFor,
       'is_default': isDefault,
       'is_active': isActive,
+      'updated_at': updatedAt ?? DateTime.now().millisecondsSinceEpoch,
+      'is_deleted': isDeleted ?? 0,
+      'sync_status': syncStatus ?? 0,
     };
   }
 

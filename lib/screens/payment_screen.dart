@@ -97,9 +97,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         sellerOrderId: orderId,
         sellerId: sellerId,
         buyerOrderId: null,
-        buyerId: null,
-        createdAt: now,
-        updatedAt: now,
+        buyerId: null
       );
       cartBloc.add(AddItemToOrder(cartLinkedSale));
 

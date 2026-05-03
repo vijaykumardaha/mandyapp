@@ -3,18 +3,26 @@ import 'package:mandyapp/models/order_item_model.dart';
 
 class Order {
   int? id;
+  int? mandyId;
   int customerId;
   String createdAt;
   String status; // 'open', 'completed'
   String orderFor; // 'seller' or 'buyer'
+  int? updatedAt;
+  int? isDeleted;
+  int? syncStatus;
   List<OrderItem>? items;
 
   Order({
     this.id,
+    this.mandyId,
     required this.customerId,
     required this.createdAt,
     this.orderFor = 'buyer',
     this.status = 'open',
+    this.updatedAt,
+    this.isDeleted = 0,
+    this.syncStatus = 0,
     this.items,
   });
 
@@ -22,21 +30,29 @@ class Order {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'mandy_id': mandyId,
       'customer_id': customerId,
       'created_at': createdAt,
       'order_for': orderFor,
       'status': status,
+      'updated_at': updatedAt ?? DateTime.now().millisecondsSinceEpoch,
+      'is_deleted': isDeleted ?? 0,
+      'sync_status': syncStatus ?? 0,
     };
   }
 
   // Create Order from Map (database query result)
   factory Order.fromJson(Map<String, dynamic> json, {List<OrderItem>? items}) {
     return Order(
-      id: json['id'] as int,
+      id: json['id'] as int?,
+      mandyId: json['mandy_id'] as int?,
       customerId: json['customer_id'] as int,
       createdAt: json['created_at'] as String,
       orderFor: (json['order_for'] as String?)?.trim().toLowerCase() == 'seller' ? 'seller' : 'buyer',
       status: json['status'] as String? ?? 'open',
+      updatedAt: json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+      isDeleted: json['is_deleted'] as int? ?? 0,
+      syncStatus: json['sync_status'] as int? ?? 0,
       items: items,
     );
   }

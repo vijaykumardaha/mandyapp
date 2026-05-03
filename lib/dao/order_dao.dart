@@ -9,11 +9,16 @@ class OrderDAO {
   // Insert a new order
   Future<int> insertOrder(Order order) async {
     final db = await dbHelper.database;
+    order.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    order.isDeleted = 0;
+    order.syncStatus = 0;
     return await db.insert('orders', order.toJson());
   }
 
   // Update an existing order
   Future<int> updateOrder(Order order) async {
+    order.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    order.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
       'orders',
@@ -23,14 +28,47 @@ class OrderDAO {
     );
   }
 
+  Future<int> restoreOrder(int id) async {
+    final db = await dbHelper.database;
+    return await db.update(
+      'orders',
+      {
+        'is_deleted': 0,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   // Delete an order
   Future<int> deleteOrder(int id) async {
+    // Soft delete order and its items
     final db = await dbHelper.database;
     final order = await getOrderById(id);
-    // Delete all order-linked order items first
-    await db.delete('order_items', where: '${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ?', whereArgs: [id]);
-    // Then delete the order
-    return await db.delete('orders', where: 'id = ?', whereArgs: [id]);
+    if (order != null) {
+      // Soft delete all order-linked order items first
+      await db.update(
+        'order_items',
+        {
+          'is_deleted': 1,
+          'updated_at': DateTime.now().millisecondsSinceEpoch,
+        },
+        where: '${order.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ?',
+        whereArgs: [id],
+      );
+      // Then soft delete the order
+      return await db.update(
+        'orders',
+        {
+          'is_deleted': 1,
+          'updated_at': DateTime.now().millisecondsSinceEpoch,
+        },
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    }
+    return 0;
   }
 
   // Get order by ID
@@ -38,8 +76,8 @@ class OrderDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'orders',
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'id = ? AND is_deleted = ?',
+      whereArgs: [id, 0],
     );
 
     if (maps.isNotEmpty) {
@@ -134,11 +172,11 @@ class OrderDAO {
   // Insert an order item sale
   Future<int> insertOrderItem(OrderItem item) async {
     final db = await dbHelper.database;
-    final now = DateTime.now().toIso8601String();
     final prepared = item.copyWith(
       id: item.id ?? DBHelper.generateUuidInt(),
-      createdAt: item.createdAt.isEmpty ? now : item.createdAt,
-      updatedAt: now,
+      updatedAt: DateTime.now().millisecondsSinceEpoch,
+      isDeleted: 0,
+      syncStatus: 0,
     );
     return await db.insert('order_items', prepared.toJson());
   }
@@ -146,7 +184,10 @@ class OrderDAO {
   // Update an order item sale
   Future<int> updateOrderItem(OrderItem item) async {
     final db = await dbHelper.database;
-    final updated = item.copyWith(updatedAt: DateTime.now().toIso8601String());
+    final updated = item.copyWith(
+      updatedAt: DateTime.now().millisecondsSinceEpoch,
+      syncStatus: 0,
+    );
     return await db.update(
       'order_items',
       updated.toJson(),
@@ -155,10 +196,31 @@ class OrderDAO {
     );
   }
 
+  Future<int> restoreOrderItem(int id) async {
+    final db = await dbHelper.database;
+    return await db.update(
+      'order_items',
+      {
+        'is_deleted': 0,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   // Delete an order item sale
   Future<int> deleteOrderItem(int id) async {
     final db = await dbHelper.database;
-    return await db.delete('order_items', where: 'id = ?', whereArgs: [id]);
+    return await db.update(
+      'order_items',
+      {
+        'is_deleted': 1,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   // Get order item sale by ID
@@ -166,8 +228,8 @@ class OrderDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'order_items',
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'id = ? AND is_deleted = ?',
+      whereArgs: [id, 0],
     );
 
     if (maps.isNotEmpty) {
@@ -185,6 +247,7 @@ class OrderDAO {
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT
         oi.id,
+        oi.mandy_id,
         oi.seller_id,
         oi.buyer_order_id,
         oi.seller_order_id,
@@ -195,15 +258,16 @@ class OrderDAO {
         oi.selling_price,
         oi.quantity,
         oi.unit,
-        oi.created_at,
         oi.updated_at,
+        oi.is_deleted,
+        oi.sync_status,
         pv.variant_name,
         pv.image_path
       FROM order_items oi
       LEFT JOIN product_variants pv ON oi.variant_id = pv.id
-      WHERE ${orderFor == 'seller' ? 'oi.seller_order_id' : 'oi.buyer_order_id'} = ?
-      ORDER BY oi.created_at ASC
-    ''', [orderId]);
+      WHERE (${orderFor == 'seller' ? 'oi.seller_order_id' : 'oi.buyer_order_id'} = ? AND oi.is_deleted = ?)
+      ORDER BY oi.updated_at ASC
+    ''', [orderId, 0]);
 
     return maps.map(OrderItem.fromJson).toList();
   }
@@ -212,8 +276,12 @@ class OrderDAO {
   Future<int> clearOrder(int orderId) async {
     final db = await dbHelper.database;
     final order = await getOrderById(orderId);
-    return await db.delete(
+    return await db.update(
       'order_items',
+      {
+        'is_deleted': 1,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
       where: '${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ?',
       whereArgs: [orderId],
     );
@@ -225,8 +293,8 @@ class OrderDAO {
     final order = await getOrderById(orderId);
     final List<Map<String, dynamic>> maps = await db.query(
       'order_items',
-      where: '${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ? AND product_id = ? AND variant_id IS NULL',
-      whereArgs: [orderId, productId],
+      where: '${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ? AND product_id = ? AND variant_id IS NULL AND is_deleted = ?',
+      whereArgs: [orderId, productId, 0],
     );
 
     if (maps.isNotEmpty) {
@@ -241,8 +309,8 @@ class OrderDAO {
     final order = await getOrderById(orderId);
     final List<Map<String, dynamic>> maps = await db.query(
       'order_items',
-      where: '${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ? AND variant_id = ?',
-      whereArgs: [orderId, variantId],
+      where: '${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ? AND variant_id = ? AND is_deleted = ?',
+      whereArgs: [orderId, variantId, 0],
     );
 
     if (maps.isNotEmpty) {
@@ -256,8 +324,8 @@ class OrderDAO {
     final db = await dbHelper.database;
     final order = await getOrderById(orderId);
     final result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM order_items WHERE ${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ?',
-      [orderId],
+      'SELECT COUNT(*) as count FROM order_items WHERE ${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ? AND is_deleted = ?',
+      [orderId, 0],
     );
     return Sqflite.firstIntValue(result) ?? 0;
   }

@@ -49,31 +49,3 @@ final class UsersByRoleLoaded extends UserState {
   List<Object> get props => [users, role];
 }
 
-final class UserRoleUpdated extends UserState {
-  final int userId;
-  final String newRole;
-
-  const UserRoleUpdated({required this.userId, required this.newRole});
-
-  @override
-  List<Object> get props => [userId, newRole];
-}
-
-final class UsersCreatedByLoaded extends UserState {
-  final List<User> users;
-  final int createdBy;
-
-  const UsersCreatedByLoaded({required this.users, required this.createdBy});
-
-  @override
-  List<Object> get props => [users, createdBy];
-}
-
-final class CreatorInfoLoaded extends UserState {
-  final User creator;
-
-  const CreatorInfoLoaded({required this.creator});
-
-  @override
-  List<Object> get props => [creator];
-}

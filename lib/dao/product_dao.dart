@@ -7,23 +7,25 @@ class ProductDAO {
 
   Future<int> insertProduct(Product product) async {
     product.id = DBHelper.generateUuidInt();
+    product.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    product.isDeleted = 0;
+    product.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.insert('products', product.toJson());
   }
 
   Future<List<Product>> getAllProducts() async {
     final db = await dbHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query('products');
+    final List<Map<String, dynamic>> maps = await db.query('products', where: 'is_deleted = ?', whereArgs: [0]);
     return List.generate(maps.length, (i) => Product.fromJson(maps[i]));
   }
 
-  
   Future<Product?> getProductById(int id) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'products',
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'id = ? AND is_deleted = ?',
+      whereArgs: [id, 0],
     );
     if (maps.isNotEmpty) {
       return Product.fromJson(maps.first);
@@ -32,6 +34,8 @@ class ProductDAO {
   }
 
   Future<int> updateProduct(Product product) async {
+    product.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    product.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
       'products',
@@ -51,10 +55,27 @@ class ProductDAO {
     );
   }
 
+  Future<int> restoreProduct(int id) async {
+    final db = await dbHelper.database;
+    return await db.update(
+      'products',
+      {
+        'is_deleted': 0,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   Future<int> deleteProduct(int id) async {
     final db = await dbHelper.database;
-    return await db.delete(
+    return await db.update(
       'products',
+      {
+        'is_deleted': 1,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -62,7 +83,7 @@ class ProductDAO {
 
   Future<List<Product>> getAllProductsWithVariants() async {
     final db = await dbHelper.database;
-    final List<Map<String, dynamic>> productMaps = await db.query('products');
+    final List<Map<String, dynamic>> productMaps = await db.query('products', where: 'is_deleted = ?', whereArgs: [0]);
 
     List<Product> products = [];
     for (var productMap in productMaps) {
@@ -72,8 +93,8 @@ class ProductDAO {
       if (productId != null) {
         final List<Map<String, dynamic>> variantMaps = await db.query(
           'product_variants',
-          where: 'product_id = ?',
-          whereArgs: [productId],
+          where: 'product_id = ? AND is_deleted = ?',
+          whereArgs: [productId, 0],
         );
         if (variantMaps.isNotEmpty) {
           variants = variantMaps.map((map) => ProductVariant.fromJson(map)).toList();

@@ -15,12 +15,11 @@ class OrderChargeDAO {
 
       // Insert new charges
       for (var charge in charges) {
-        await txn.insert('order_charges', {
-          'id': DBHelper.generateUuidInt(),
-          'order_id': charge.orderId,
-          'charge_name': charge.chargeName,
-          'charge_amount': charge.chargeAmount,
-        });
+        charge.id = DBHelper.generateUuidInt();
+        charge.updatedAt = DateTime.now().millisecondsSinceEpoch;
+        charge.isDeleted = 0;
+        charge.syncStatus = 0;
+        await txn.insert('order_charges', charge.toMap());
       }
     });
   }
@@ -42,25 +41,22 @@ class OrderChargeDAO {
 
   // Insert a single order charge
   Future<int> insertOrderCharge(OrderCharge charge) async {
+    charge.id = DBHelper.generateUuidInt();
+    charge.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    charge.isDeleted = 0;
+    charge.syncStatus = 0;
     final db = await dbHelper.database;
-    return await db.insert('order_charges', {
-      'id': DBHelper.generateUuidInt(),
-      'order_id': charge.orderId,
-      'charge_name': charge.chargeName,
-      'charge_amount': charge.chargeAmount,
-    });
+    return await db.insert('order_charges', charge.toMap());
   }
 
   // Update an existing order charge
   Future<int> updateOrderCharge(OrderCharge charge) async {
+    charge.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    charge.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
       'order_charges',
-      {
-        'order_id': charge.orderId,
-        'charge_name': charge.chargeName,
-        'charge_amount': charge.chargeAmount,
-      },
+      charge.toMap(),
       where: 'id = ?',
       whereArgs: [charge.id],
     );
