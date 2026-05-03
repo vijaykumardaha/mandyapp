@@ -10,6 +10,9 @@ class PaymentMethodSelector extends StatefulWidget {
   final Map<PaymentMethod, double> paymentAmounts;
   final Function(Set<PaymentMethod>, Map<PaymentMethod, double>) onSelectionChanged;
   final String? orderFor; // 'seller' or 'buyer' - if seller, hide credit option
+  final double subtotal;
+  final double chargesTotal;
+  final double grandTotal;
 
   const PaymentMethodSelector({
     super.key,
@@ -17,6 +20,9 @@ class PaymentMethodSelector extends StatefulWidget {
     Map<PaymentMethod, double>? paymentAmounts,
     required this.onSelectionChanged,
     this.orderFor,
+    required this.subtotal,
+    required this.chargesTotal,
+    required this.grandTotal,
   }) : selectedPaymentMethods = selectedPaymentMethods ?? const {PaymentMethod.cash},
        paymentAmounts = paymentAmounts ?? const {};
 
@@ -128,21 +134,23 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     final updatedSelected = Set<PaymentMethod>.from(_selectedPaymentMethods);
     final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
 
-    if (updatedSelected.contains(method)) {
-      updatedSelected.remove(method);
-      _focusNodes[method]?.unfocus();
-      updatedAmounts.remove(method);
-      _controllers[method]?.clear();
-    } else {
-      updatedSelected.add(method);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _focusNodes[method]?.requestFocus();
-      });
-      final currentText = _controllers[method]?.text ?? '';
-      final amount = double.tryParse(currentText);
-      if (amount != null && amount > 0) {
-        updatedAmounts[method] = amount;
-      }
+    // Clear all existing selections and amounts
+    for (final existingMethod in updatedSelected) {
+      _focusNodes[existingMethod]?.unfocus();
+      updatedAmounts.remove(existingMethod);
+      _controllers[existingMethod]?.clear();
+    }
+    updatedSelected.clear();
+
+    // Add the new selection
+    updatedSelected.add(method);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNodes[method]?.requestFocus();
+    });
+    final currentText = _controllers[method]?.text ?? '';
+    final amount = double.tryParse(currentText);
+    if (amount != null && amount > 0) {
+      updatedAmounts[method] = amount;
     }
 
     setState(() {
@@ -171,97 +179,222 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: MySpacing.bottom(12),
-      padding: MySpacing.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title
-          Row(
-            children: [
-              Icon(
-                Icons.payment,
-                size: 20,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              MySpacing.width(8),
-              MyText.bodyMedium('Payment Method', fontWeight: 600),
-            ],
+    // Calculate payment amounts
+    double receivedAmount = totalAmount;
+    double pendingAmount = widget.grandTotal - receivedAmount;
+    
+    // Calculate paymentAmount and pendingPayment based on order type
+    double paymentAmount, pendingPayment;
+    if (widget.orderFor == 'seller') {
+      paymentAmount = widget.grandTotal;
+      pendingPayment = paymentAmount - receivedAmount;
+    } else {
+      paymentAmount = receivedAmount;
+      pendingPayment = pendingAmount;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Payment Summary Section
+        Container(
+          margin: MySpacing.bottom(12),
+          padding: MySpacing.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+                color: Theme.of(context)
+                    .colorScheme
+                    .outline
+                    .withOpacity(0.2)),
           ),
-
-          MySpacing.height(16),
-
-          // Payment Method Selection Row
-          Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ..._availablePaymentMethods.map((method) {
-                final label = _getPaymentMethodLabel(method);
-                return [
-                  _buildPaymentMethodOption(method, label),
-                  if (method != _availablePaymentMethods.last) MySpacing.width(8),
-                ];
-              }).expand((element) => element),
-            ],
-          ),
-
-          // Amount Input Fields for Selected Methods
-          if (_selectedPaymentMethods.isNotEmpty) ...[
-            MySpacing.height(16),
-            Divider(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-            MySpacing.height(12),
-            Row(
-              children: _selectedPaymentMethods
-                  .where((method) => _availablePaymentMethods.contains(method))
-                  .map((method) => Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: method != _selectedPaymentMethods.last ? 8.0 : 0.0,
+              Row(
+                children: [
+                  Icon(
+                    Icons.receipt_long,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
-                  child: SizedBox(
-                    height: 40,
-                    child: TextField(
-                      key: ValueKey(method), // Ensure unique key for each field
-                      controller: _controllers[method],
-                      focusNode: _focusNodes[method],
-                      decoration: InputDecoration(
-                        contentPadding: MySpacing.xy(12, 8),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                          ),
+                  MySpacing.width(8),
+                  MyText.bodyMedium('Payment Summary', fontWeight: 600),
+                  Spacer(),
+                  MyText.bodySmall(
+                    '${_selectedPaymentMethods.length} Payment${_selectedPaymentMethods.length != 1 ? 's' : ''}',
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.6),
+                  ),
+                ],
+              ),
+              MySpacing.height(12),
+              Column(
+                children: [
+                  // Item Total, Charges, and Grand Total in Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _modernSummaryCard(
+                          'Item Total',
+                          widget.subtotal,
+                          Icons.shopping_bag_outlined,
+                          context,
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                        prefixText: '₹',
-                        hintText: '0.00',
                       ),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                      MySpacing.width(12),
+                      Expanded(
+                        child: _modernSummaryCard(
+                          'Charges',
+                          widget.chargesTotal,
+                          Icons.add_circle_outline,
+                          context,
+                        ),
+                      ),
+                      MySpacing.width(12),
+                      Expanded(
+                        child: _modernSummaryCard(
+                          'Grand Total',
+                          widget.grandTotal,
+                          Icons.account_balance_wallet,
+                          context,
+                        ),
+                      ),
+                    ],
+                  ),
+      
+                  MySpacing.height(16),
+      
+                  // Payment Details
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _modernSummaryCard(
+                          widget.orderFor == 'seller'
+                              ? 'Amount Owed'
+                              : 'Amount to Pay',
+                          paymentAmount,
+                          Icons.arrow_circle_down,
+                          context,
+                        ),
+                      ),
+                      MySpacing.width(12),
+                      Expanded(
+                        child: _modernSummaryCard(
+                          widget.orderFor == 'seller'
+                              ? 'Amount Pending'
+                              : (pendingPayment >= 0
+                                  ? 'Pending Payment'
+                                  : 'Payment Due'),
+                          pendingPayment.abs(),
+                          pendingPayment > 0
+                              ? Icons.pending
+                              : Icons.done_all,
+                          context,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        
+        // Payment Method Section
+        Container(
+          margin: MySpacing.bottom(12),
+          padding: MySpacing.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title
+              Row(
+                children: [
+                  Icon(
+                    Icons.payment,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  MySpacing.width(8),
+                  MyText.bodyMedium('Payment Method', fontWeight: 600),
+                ],
+              ),
+
+              MySpacing.height(16),
+
+              // Payment Method Selection Row
+              Row(
+                children: [
+                  ..._availablePaymentMethods.map((method) {
+                    final label = _getPaymentMethodLabel(method);
+                    return [
+                      _buildPaymentMethodOption(method, label),
+                      if (method != _availablePaymentMethods.last) MySpacing.width(8),
+                    ];
+                  }).expand((element) => element),
+                ],
+              ),
+
+              // Amount Input Field - Always show exactly one
+              MySpacing.height(16),
+              Divider(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
+              MySpacing.height(12),
+              SizedBox(
+                height: 40,
+                child: TextField(
+                  key: ValueKey('payment_amount'), // Single key for the field
+                  controller: TextEditingController(
+                    text: _selectedPaymentMethods.isNotEmpty 
+                        ? (_controllers[_selectedPaymentMethods.first]?.text ?? '')
+                        : '',
+                  ),
+                  focusNode: _selectedPaymentMethods.isNotEmpty 
+                      ? _focusNodes[_selectedPaymentMethods.first]
+                      : FocusNode(),
+                  decoration: InputDecoration(
+                    contentPadding: MySpacing.xy(12, 8),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
                         color: Theme.of(context).colorScheme.primary,
                       ),
-                      keyboardType: TextInputType.numberWithOptions(decimal: true),
-                      textAlign: TextAlign.center,
-                      onChanged: (value) => _updatePaymentAmount(method, value),
                     ),
+                    prefixText: '₹',
+                    hintText: '0.00',
                   ),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  textAlign: TextAlign.center,
+                  onChanged: (value) {
+                    if (_selectedPaymentMethods.isNotEmpty) {
+                      _updatePaymentAmount(_selectedPaymentMethods.first, value);
+                    }
+                  },
                 ),
-              )).toList(),
-            ),
-          ],
-        ],
-      ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -333,5 +466,43 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
       case PaymentMethod.credit:
         return Icons.credit_score;
     }
+  }
+
+  Widget _modernSummaryCard(
+      String label, double amount, IconData icon, BuildContext context) {
+    return Container(
+      padding: MySpacing.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              MySpacing.width(8),
+              MyText.bodySmall(
+                label,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ],
+          ),
+          MySpacing.height(8),
+          MyText.bodyMedium(
+            '₹${amount.toStringAsFixed(2)}',
+            fontWeight: 600,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ],
+      ),
+    );
   }
 }

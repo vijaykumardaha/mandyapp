@@ -38,14 +38,14 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
   ) async {
     try {
       emit(OrderPaymentLoading());
-      final orderPayment = await _orderPaymentDAO.getOrderPaymentByOrderId(event.orderId);
-      if (orderPayment != null) {
-        emit(OrderPaymentLoaded(orderPayment));
+      final orderPayments = await _orderPaymentDAO.getOrderPaymentsByOrderId(event.orderId);
+      if (orderPayments.isNotEmpty) {
+        emit(OrderPaymentsLoaded(orderPayments));
       } else {
         emit(OrderPaymentEmpty());
       }
     } catch (e) {
-      emit(OrderPaymentError('Failed to load order payment: $e'));
+      emit(OrderPaymentError('Failed to load order payments: $e'));
     }
   }
 

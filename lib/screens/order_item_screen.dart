@@ -95,42 +95,26 @@ class _OrderItemScreenState extends State<OrderItemScreen> {
     return 'Product #${sale.productId}';
   }
 
-  Future<int?> _createNewCart(List<OrderItem> selectedSales) async {
+  Future<void> _createNewCart(List<OrderItem> selectedSales) async {
     if (_buyerCustomer == null || _buyerCustomer!.id == null) {
       _showSnack('Please select a buyer name before checkout.');
-      return null;
+      return;
     }
 
     try {
-      // Create a new order for the buyer
-      // Use 0 as temporary ID, database will assign actual ID
-      final newOrder = Order(
-        customerId: _buyerCustomer!.id!,
-        createdAt: DateTime.now().toIso8601String(),
-        status: 'open',
-        orderFor: 'buyer',
+      // Navigate directly to checkout screen with cart items
+      // Order will be created in checkout screen when payment is recorded
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => CheckoutScreen(
+            cartItems: selectedSales,
+            customerId: _buyerCustomer!.id,
+            orderFor: 'buyer',
+          ),
+        ),
       );
-
-      // Insert the order and get the order ID
-      final orderId = await _orderDAO.insertOrder(newOrder);
-
-      // Link the selected order items to this order
-      for (final sale in selectedSales) {
-        final updatedSale = sale.copyWith(
-          buyerOrderId: orderId,
-          buyerId: _buyerCustomer!.id!,
-          updatedAt: DateTime.now().toIso8601String(),
-        );
-        await _orderDAO.updateOrderItem(updatedSale);
-      }
-
-      // Reload order items to update the list
-      context.read<OrderItemBloc>().add(const LoadOrderItems());
-
-      return orderId;
     } catch (e) {
-      _showSnack('Failed to create cart: ${e.toString()}');
-      return null;
+      _showSnack('Failed to navigate to checkout: ${e.toString()}');
     }
   }
 
@@ -215,15 +199,7 @@ class _OrderItemScreenState extends State<OrderItemScreen> {
         return true;
       },
       onCheckout: ( selectedSales) async {
-        final cartId = await _createNewCart(selectedSales);
-        if (cartId == null || !mounted) {
-          return;
-        }
-        await Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => CheckoutScreen(orderId: cartId),
-          ),
-        );
+        await _createNewCart(selectedSales);
       },
       showCancelButton: false,
     );

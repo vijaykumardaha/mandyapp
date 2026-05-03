@@ -6,6 +6,7 @@ import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandyapp/dao/order_charge_dao.dart';
 import 'package:mandyapp/dao/order_payment_dao.dart';
 import 'package:mandyapp/dao/order_item_dao.dart';
+import 'package:mandyapp/dao/order_expense_dao.dart';
 import 'package:mandyapp/models/bill_summary_model.dart';
 import 'package:mandyapp/models/order_model.dart';
 import 'package:mandyapp/models/order_payment_model.dart';
@@ -103,18 +104,16 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
     double totalPending = 0.0;
 
     for (final order in filteredOrders) {
-      OrderPayment? paymentMatch;
-      for (final payment in payments) {
-        if (payment.orderId == order.id) {
-          paymentMatch = payment;
-          break;
-        }
-      }
-
-      final itemTotal = paymentMatch?.itemTotal ?? order.totalPrice;
-      final chargeTotal = paymentMatch?.chargeTotal ?? 0.0;
-      final expenseTotal = paymentMatch?.expenseTotal ?? 0.0;
-      final receiveAmount = paymentMatch?.receiveAmount ?? 0.0;
+      // Find all payments for this order
+      final orderPayments = payments.where((payment) => payment.orderId == order.id).toList();
+      
+      // Calculate totals from payments
+      final receiveAmount = orderPayments.fold(0.0, (sum, payment) => sum + payment.amount);
+      
+      // Calculate charges and expenses at runtime
+      final chargeTotal = await _calculateChargeTotal(order.id!);
+      final expenseTotal = await _calculateExpenseTotal(order.id!);
+      final itemTotal = order.totalPrice;
 
       // Calculate amounts based on order type
       double grandTotal, pendingAmount, pendingPayment;
@@ -187,6 +186,35 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
       add(const LoadBillSummaries(forceRefresh: true));
     } catch (error) {
       emit(BillListError('Failed to delete bill: ${error.toString()}'));
+    }
+  }
+
+  // Helper method to calculate charge total for an order
+  Future<double> _calculateChargeTotal(int orderId) async {
+    try {
+      final charges = await orderChargeDAO.getOrderCharges(orderId.toString());
+      double total = 0.0;
+      for (final charge in charges) {
+        total += charge.chargeAmount;
+      }
+      return total;
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
+  // Helper method to calculate expense total for an order
+  Future<double> _calculateExpenseTotal(int orderId) async {
+    try {
+      final expenseDao = OrderExpenseDao();
+      final expenses = await expenseDao.getByOrderId(orderId);
+      double total = 0.0;
+      for (final expense in expenses) {
+        total += expense.expenseAmount;
+      }
+      return total;
+    } catch (e) {
+      return 0.0;
     }
   }
 }

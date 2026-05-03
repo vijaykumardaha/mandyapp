@@ -37,20 +37,24 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
   }
 
   Future<void> _handleEdit(_BillDetailsData data) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => CheckoutScreen(
-          orderId: data.order.id!,
-          isEdit: true,
-        ),
-      ),
-    );
+    // await Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //     builder: (_) => CheckoutScreen(
+    //       cartItems: data.order.items,
+    //       customerId: data.order.customerId,
+    //       orderFor: data.order.orderFor,
+    //       initialOrderCharges: data.charges,
+    //       initialPayment: data.payments?.isNotEmpty == true ? data.payments!.first : null,
+    //       isEdit: true,
+    //     ),
+    //   ),
+    // );
 
-    if (!mounted) return;
+    // if (!mounted) return;
 
-    setState(() {
-      _billFuture = _loadBillDetails();
-    });
+    // setState(() {
+    //   _billFuture = _loadBillDetails();
+    // });
   }
 
   Future<void> _handlePrint(_BillDetailsData data) async {
@@ -142,7 +146,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     }
 
     final items = order.items ?? await orderDAO.getOrderItems(order.id!, orderFor: order.orderFor);
-    final payment = await orderPaymentDAO.getOrderPaymentByOrderId(order.id!);
+    final payments = await orderPaymentDAO.getOrderPaymentsByOrderId(order.id!);
     final charges = await orderChargeDAO.getOrderCharges(order.id.toString());
     final expenses = await orderExpenseDAO.getByOrderId(order.id!);
     final customers = await customerDAO.getCustomers();
@@ -167,7 +171,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
 
     return _BillDetailsData(
       order: order,
-      payment: payment,
+      payments: payments,
       lineItems: lineItems,
       charges: charges,
       expenses: expenses,
@@ -773,7 +777,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
 
 class _BillDetailsData {
   final Order order;
-  final OrderPayment? payment;
+  final List<OrderPayment>? payments;
   final List<BillLineItem> lineItems;
   final List<OrderCharge> charges;
   final List<OrderExpense> expenses;
@@ -781,7 +785,7 @@ class _BillDetailsData {
 
   const _BillDetailsData({
     required this.order,
-    required this.payment,
+    this.payments,
     required this.lineItems,
     required this.charges,
     required this.expenses,
@@ -818,7 +822,12 @@ class _BillDetailsData {
     }
   }
 
-  double get receivedAmount => payment?.receiveAmount ?? 0.0;
+  double get receivedAmount {
+    if (payments == null || payments!.isEmpty) {
+      return 0.0;
+    }
+    return payments!.fold(0.0, (sum, payment) => sum + payment.amount);
+  }
 
   double get outstandingAmount => grandTotal - receivedAmount;
 
@@ -844,21 +853,25 @@ class _BillDetailsData {
   }
 
   String get paymentMethodLabel {
-    if (payment == null) {
+    if (payments == null || payments!.isEmpty) {
       return 'Not recorded';
     }
     final methods = <String>[];
-    if (payment!.cashPayment == 1) {
-      methods.add('Cash');
-    }
-    if (payment!.upiPayment == 1) {
-      methods.add('UPI');
-    }
-    if (payment!.cardPayment == 1) {
-      methods.add('Card');
-    }
-    if (payment!.creditPayment == 1) {
-      methods.add('Credit');
+    for (final payment in payments!) {
+      switch (payment.source) {
+        case 'cash':
+          methods.add('Cash');
+          break;
+        case 'upi':
+          methods.add('UPI');
+          break;
+        case 'card':
+          methods.add('Card');
+          break;
+        case 'credit':
+          methods.add('Credit');
+          break;
+      }
     }
     if (methods.isEmpty) {
       return 'Not recorded';

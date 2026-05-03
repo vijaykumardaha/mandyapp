@@ -115,7 +115,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => CheckoutScreen(orderId: orderId),
+        builder: (_) => CheckoutScreen(
+          cartItems: cartBloc.state is OrderWithItemsLoaded 
+              ? (cartBloc.state as OrderWithItemsLoaded).order.items ?? []
+              : [],
+          customerId: cartBloc.state is OrderWithItemsLoaded 
+              ? (cartBloc.state as OrderWithItemsLoaded).order.customerId
+              : null,
+          orderFor: 'seller',
+        ),
       ),
     );
 

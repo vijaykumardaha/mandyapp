@@ -69,26 +69,26 @@ class OrderPaymentDAO {
     });
   }
 
-  // Get all payments for an order
-  Future<List<OrderPayment>> getOrderPaymentsByOrderId(int orderId) async {
+  // Get order payment by order ID (summary)
+  Future<OrderPayment?> getOrderPaymentByOrderId(int orderId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'order_payments',
       where: 'order_id = ?',
       whereArgs: [orderId],
-      orderBy: 'created_at DESC',
     );
 
-    return List.generate(maps.length, (i) {
-      return OrderPayment.fromJson(maps[i]);
-    });
+    if (maps.isNotEmpty) {
+      return OrderPayment.fromJson(maps.first);
+    }
+    return null;
   }
 
-  // Get total payment amount for an order (sum of all payment amounts)
+  // Get total payment amount for an order
   Future<double> getTotalPaymentAmount(int orderId) async {
     final db = await dbHelper.database;
     final result = await db.rawQuery(
-      'SELECT SUM(amount) as total FROM order_payments WHERE order_id = ?',
+      'SELECT SUM(cash_amount + upi_amount + card_amount) as total FROM order_payments WHERE order_id = ?',
       [orderId],
     );
     return (result.first['total'] as num?)?.toDouble() ?? 0.0;
@@ -133,43 +133,17 @@ class OrderPaymentDAO {
     });
   }
 
-  // Get payments by source type
-  Future<List<OrderPayment>> getPaymentsBySource(String source) async {
+  // Get payments with pending amounts
+  Future<List<OrderPayment>> getPaymentsWithPending() async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'order_payments',
-      where: 'source = ?',
-      whereArgs: [source],
+      where: 'pending_amount > 0 OR pending_payment > 0',
       orderBy: 'created_at DESC',
     );
 
     return List.generate(maps.length, (i) {
       return OrderPayment.fromJson(maps[i]);
     });
-  }
-
-  // Get total amount by source type for an order
-  Future<double> getTotalAmountBySource(int orderId, String source) async {
-    final db = await dbHelper.database;
-    final result = await db.rawQuery(
-      'SELECT SUM(amount) as total FROM order_payments WHERE order_id = ? AND source = ?',
-      [orderId, source],
-    );
-    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
-  }
-
-  // Get payment summary by source for an order
-  Future<Map<String, double>> getPaymentSummaryBySource(int orderId) async {
-    final db = await dbHelper.database;
-    final result = await db.rawQuery(
-      'SELECT source, SUM(amount) as total FROM order_payments WHERE order_id = ? GROUP BY source',
-      [orderId],
-    );
-
-    Map<String, double> summary = {};
-    for (var row in result) {
-      summary[row['source'] as String] = (row['total'] as num?)?.toDouble() ?? 0.0;
-    }
-    return summary;
   }
 }
