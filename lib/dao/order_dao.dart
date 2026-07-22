@@ -1,5 +1,6 @@
 import 'package:mandyapp/models/order_item_model.dart';
 import 'package:mandyapp/models/order_model.dart';
+import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -9,6 +10,7 @@ class OrderDAO {
   // Insert a new order
   Future<int> insertOrder(Order order) async {
     final db = await dbHelper.database;
+    order.mandyId = await AppHelper.getCurrentMandyId();
     order.updatedAt = DateTime.now().millisecondsSinceEpoch;
     order.isDeleted = 0;
     order.syncStatus = 0;
@@ -172,8 +174,10 @@ class OrderDAO {
   // Insert an order item sale
   Future<int> insertOrderItem(OrderItem item) async {
     final db = await dbHelper.database;
+    final mandyId = await AppHelper.getCurrentMandyId();
     final prepared = item.copyWith(
       id: item.id ?? DBHelper.generateUuidInt(),
+      mandyId: mandyId,
       updatedAt: DateTime.now().millisecondsSinceEpoch,
       isDeleted: 0,
       syncStatus: 0,
@@ -328,6 +332,46 @@ class OrderDAO {
       [orderId, 0],
     );
     return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  // Bulk upsert orders
+  Future<void> bulkUpsertOrders(List<Order> orders) async {
+    final db = await dbHelper.database;
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+
+      for (final order in orders) {
+        batch.rawInsert('''
+          INSERT INTO orders (
+            mandy_id, customer_id, created_at, status, order_for,
+            updated_at, is_deleted, sync_status
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+
+          ON CONFLICT(mandy_id) DO UPDATE SET
+            customer_id = excluded.customer_id,
+            created_at = excluded.created_at,
+            status = excluded.status,
+            order_for = excluded.order_for,
+            updated_at = excluded.updated_at,
+            is_deleted = excluded.is_deleted,
+            sync_status = excluded.sync_status
+
+          WHERE excluded.updated_at > orders.updated_at;
+        ''', [
+          order.mandyId,
+          order.customerId,
+          order.createdAt,
+          order.status,
+          order.orderFor,
+          order.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
+          order.isDeleted ?? 0,
+          order.syncStatus ?? 1,
+        ]);
+      }
+
+      await batch.commit(noResult: true);
+    });
   }
 
 }

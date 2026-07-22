@@ -1,5 +1,6 @@
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
+import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 
 class ProductDAO {
@@ -7,6 +8,7 @@ class ProductDAO {
 
   Future<int> insertProduct(Product product) async {
     product.id = DBHelper.generateUuidInt();
+    product.mandyId = await AppHelper.getCurrentMandyId();
     product.updatedAt = DateTime.now().millisecondsSinceEpoch;
     product.isDeleted = 0;
     product.syncStatus = 0;
@@ -79,6 +81,39 @@ class ProductDAO {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  // Bulk upsert products
+  Future<void> bulkUpsertProducts(List<Product> products) async {
+    final db = await dbHelper.database;
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+
+      for (final product in products) {
+        batch.rawInsert('''
+          INSERT INTO products (
+            mandy_id, default_variant, updated_at, is_deleted, sync_status
+          )
+          VALUES (?, ?, ?, ?, ?)
+
+          ON CONFLICT(mandy_id) DO UPDATE SET
+            default_variant = excluded.default_variant,
+            updated_at = excluded.updated_at,
+            is_deleted = excluded.is_deleted,
+            sync_status = excluded.sync_status
+
+          WHERE excluded.updated_at > products.updated_at;
+        ''', [
+          product.mandyId,
+          product.defaultVariant,
+          product.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
+          product.isDeleted ?? 0,
+          product.syncStatus ?? 1,
+        ]);
+      }
+
+      await batch.commit(noResult: true);
+    });
   }
 
   Future<List<Product>> getAllProductsWithVariants() async {

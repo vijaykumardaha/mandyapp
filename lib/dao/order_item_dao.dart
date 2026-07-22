@@ -169,4 +169,57 @@ class OrderItemDAO {
 
     return db.rawQuery(query, whereArgs);
   }
+
+  // Bulk upsert order items
+  Future<void> bulkUpsertOrderItems(List<OrderItem> orderItems) async {
+    final db = await dbHelper.database;
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+
+      for (final orderItem in orderItems) {
+        batch.rawInsert('''
+          INSERT INTO order_items (
+            mandy_id, seller_id, buyer_order_id, seller_order_id, buyer_id,
+            product_id, variant_id, buying_price, selling_price, quantity,
+            unit, updated_at, is_deleted, sync_status
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+          ON CONFLICT(mandy_id) DO UPDATE SET
+            seller_id = excluded.seller_id,
+            buyer_order_id = excluded.buyer_order_id,
+            seller_order_id = excluded.seller_order_id,
+            buyer_id = excluded.buyer_id,
+            product_id = excluded.product_id,
+            variant_id = excluded.variant_id,
+            buying_price = excluded.buying_price,
+            selling_price = excluded.selling_price,
+            quantity = excluded.quantity,
+            unit = excluded.unit,
+            updated_at = excluded.updated_at,
+            is_deleted = excluded.is_deleted,
+            sync_status = excluded.sync_status
+
+          WHERE excluded.updated_at > order_items.updated_at;
+        ''', [
+          orderItem.mandyId,
+          orderItem.sellerId,
+          orderItem.buyerOrderId,
+          orderItem.sellerOrderId,
+          orderItem.buyerId,
+          orderItem.productId,
+          orderItem.variantId,
+          orderItem.buyingPrice,
+          orderItem.sellingPrice,
+          orderItem.quantity,
+          orderItem.unit,
+          orderItem.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
+          orderItem.isDeleted ?? 0,
+          orderItem.syncStatus ?? 1,
+        ]);
+      }
+
+      await batch.commit(noResult: true);
+    });
+  }
 }

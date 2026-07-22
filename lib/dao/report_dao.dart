@@ -11,7 +11,7 @@ class ReportDAO {
     final db = await dbHelper.database;
     const sql = '''
       SELECT
-        date(order_items.created_at) as date,
+        date(order_items.updated_at / 1000, 'unixepoch', 'localtime') as date,
         order_items.product_id,
         order_items.variant_id,
         pv.variant_name,
@@ -22,9 +22,9 @@ class ReportDAO {
         AVG(order_items.selling_price) as avg_price
       FROM order_items
       LEFT JOIN product_variants pv ON order_items.variant_id = pv.id
-      WHERE date(order_items.created_at) >= date(?)
-        AND date(order_items.created_at) <= date(?)
-      GROUP BY date(order_items.created_at), order_items.product_id, order_items.variant_id, pv.variant_name, pv.unit
+      WHERE date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
+      GROUP BY date(order_items.updated_at / 1000, 'unixepoch', 'localtime'), order_items.product_id, order_items.variant_id, pv.variant_name, pv.unit
       ORDER BY date DESC, total_revenue DESC
     ''';
 
@@ -47,8 +47,8 @@ class ReportDAO {
         AVG(order_items.buying_price) as avg_buying_price
       FROM order_items
       LEFT JOIN customers c ON order_items.seller_id = c.id
-      WHERE date(order_items.created_at) >= date(?)
-        AND date(order_items.created_at) <= date(?)
+      WHERE date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
         AND order_items.seller_order_id IS NULL
         AND order_items.buyer_order_id IS NULL
       GROUP BY order_items.seller_id, c.name, c.phone
@@ -74,8 +74,8 @@ class ReportDAO {
         AVG(order_items.selling_price) as avg_selling_price
       FROM order_items
       LEFT JOIN customers c ON order_items.buyer_id = c.id
-      WHERE date(order_items.created_at) >= date(?)
-        AND date(order_items.created_at) <= date(?)
+      WHERE date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
         AND order_items.buyer_order_id IS NOT NULL
       GROUP BY order_items.buyer_id, c.name, c.phone
       ORDER BY total_revenue DESC
@@ -92,16 +92,16 @@ class ReportDAO {
     final db = await dbHelper.database;
     const sql = '''
       SELECT
-        date(order_items.created_at) as date,
+        date(order_items.updated_at / 1000, 'unixepoch', 'localtime') as date,
         SUM((order_items.selling_price - order_items.buying_price) * order_items.quantity) as daily_profit,
         SUM(order_items.quantity * order_items.selling_price) as daily_revenue,
         SUM(order_items.quantity * order_items.buying_price) as daily_cost,
         COUNT(*) as transactions,
         AVG((order_items.selling_price - order_items.buying_price) * order_items.quantity) as avg_transaction_profit
       FROM order_items
-      WHERE date(order_items.created_at) >= date(?)
-        AND date(order_items.created_at) <= date(?)
-      GROUP BY date(order_items.created_at)
+      WHERE date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
+      GROUP BY date(order_items.updated_at / 1000, 'unixepoch', 'localtime')
       ORDER BY date DESC
     ''';
 
@@ -126,8 +126,8 @@ class ReportDAO {
          SUM(CASE WHEN order_items.seller_order_id IS NOT NULL THEN order_items.quantity * order_items.buying_price ELSE 0 END)) as net_balance
       FROM order_items
       LEFT JOIN customers c ON (order_items.buyer_id = c.id OR order_items.seller_id = c.id)
-      WHERE date(order_items.created_at) >= date(?)
-        AND date(order_items.created_at) <= date(?)
+      WHERE date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
       GROUP BY c.id, c.name, c.phone
       HAVING total_transactions > 0
       ORDER BY net_balance DESC
@@ -149,16 +149,16 @@ class ReportDAO {
         c.id as customer_id,
         COUNT(*) as total_bills,
         SUM(CASE WHEN order_items.buyer_order_id IS NOT NULL THEN order_items.quantity * order_items.selling_price ELSE 0 END) as total_amount,
-        COALESCE(SUM(cp.receive_amount), 0) as paid_amount,
+        COALESCE(SUM(cp.amount), 0) as paid_amount,
         (SUM(CASE WHEN order_items.buyer_order_id IS NOT NULL THEN order_items.quantity * order_items.selling_price ELSE 0 END) -
-         COALESCE(SUM(cp.receive_amount), 0)) as pending_amount,
-        MIN(date(order_items.created_at)) as oldest_bill_date,
-        MAX(date(order_items.created_at)) as latest_bill_date
+         COALESCE(SUM(cp.amount), 0)) as pending_amount,
+        MIN(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as oldest_bill_date,
+        MAX(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as latest_bill_date
       FROM order_items
       LEFT JOIN customers c ON order_items.buyer_id = c.id
       LEFT JOIN order_payments cp ON order_items.buyer_order_id = cp.order_id
-      WHERE date(order_items.created_at) >= date(?)
-        AND date(order_items.created_at) <= date(?)
+      WHERE date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
         AND order_items.buyer_order_id IS NOT NULL
       GROUP BY c.id, c.name, c.phone
       HAVING pending_amount > 0
@@ -176,17 +176,17 @@ class ReportDAO {
     final db = await dbHelper.database;
     const sql = '''
       SELECT
-        cp.payment_method,
+        cp.source as payment_method,
         COUNT(*) as transaction_count,
-        SUM(cp.receive_amount) as total_amount,
-        AVG(cp.receive_amount) as avg_transaction,
-        MIN(date(cp.created_at)) as first_payment_date,
-        MAX(date(cp.created_at)) as last_payment_date
+        SUM(cp.amount) as total_amount,
+        AVG(cp.amount) as avg_transaction,
+        MIN(date(cp.updated_at / 1000, 'unixepoch', 'localtime')) as first_payment_date,
+        MAX(date(cp.updated_at / 1000, 'unixepoch', 'localtime')) as last_payment_date
       FROM order_payments cp
-      WHERE date(cp.created_at) >= date(?)
-        AND date(cp.created_at) <= date(?)
-        AND cp.receive_amount > 0
-      GROUP BY cp.payment_method
+      WHERE date(cp.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(cp.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
+        AND cp.amount > 0
+      GROUP BY cp.source
       ORDER BY total_amount DESC
     ''';
 
@@ -209,13 +209,13 @@ class ReportDAO {
         SUM(order_items.quantity * order_items.selling_price) as total_revenue,
         COUNT(*) as transaction_count,
         AVG(order_items.selling_price) as avg_selling_price,
-        MAX(date(order_items.created_at)) as last_sold_date,
+        MAX(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as last_sold_date,
         RANK() OVER (ORDER BY SUM(order_items.quantity * order_items.selling_price) DESC) as revenue_rank,
         RANK() OVER (ORDER BY SUM(order_items.quantity) DESC) as quantity_rank
       FROM order_items
       LEFT JOIN product_variants pv ON order_items.variant_id = pv.id
-      WHERE date(order_items.created_at) >= date(?)
-        AND date(order_items.created_at) <= date(?)
+      WHERE date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
         AND order_items.buyer_order_id IS NOT NULL
       GROUP BY order_items.product_id, order_items.variant_id, pv.variant_name, pv.unit
       ORDER BY total_revenue DESC
@@ -237,11 +237,11 @@ class ReportDAO {
         COUNT(*) as times_applied,
         SUM(cc.charge_amount) as total_charge_amount,
         AVG(cc.charge_amount) as avg_charge_amount,
-        COUNT(DISTINCT cc.cart_id) as unique_carts,
-        (SUM(cc.charge_amount) / COUNT(DISTINCT cc.cart_id)) as avg_charge_per_cart
+        COUNT(DISTINCT cc.order_id) as unique_carts,
+        (SUM(cc.charge_amount) / COUNT(DISTINCT cc.order_id)) as avg_charge_per_cart
       FROM order_charges cc
-      WHERE date(cc.created_at) >= date(?)
-        AND date(cc.created_at) <= date(?)
+      WHERE date(cc.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(cc.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
       GROUP BY cc.charge_name
       ORDER BY total_charge_amount DESC
     ''';
@@ -257,7 +257,7 @@ class ReportDAO {
     final db = await dbHelper.database;
     const sql = '''
       SELECT
-        COUNT(DISTINCT date(order_items.created_at)) as total_days,
+        COUNT(DISTINCT date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as total_days,
         COUNT(*) as total_transactions,
         SUM(order_items.quantity * order_items.selling_price) as total_revenue,
         SUM(order_items.quantity * order_items.buying_price) as total_cost,
@@ -267,8 +267,8 @@ class ReportDAO {
         COUNT(DISTINCT CASE WHEN order_items.seller_order_id IS NOT NULL THEN order_items.seller_id END) as unique_sellers,
         AVG(order_items.quantity * order_items.selling_price) as avg_transaction_value
       FROM order_items
-      WHERE date(order_items.created_at) >= date(?)
-        AND date(order_items.created_at) <= date(?)
+      WHERE date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
     ''';
 
     final result = await db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
@@ -281,9 +281,9 @@ class ReportDAO {
 
     // Get total received amount from buyers
     const receivedAmountSql = '''
-      SELECT COALESCE(SUM(receive_amount), 0) as total_received
+      SELECT COALESCE(SUM(amount), 0) as total_received
       FROM order_payments
-      WHERE receive_amount > 0
+      WHERE amount > 0
     ''';
 
     // Get pending payments from buyers
@@ -292,7 +292,7 @@ class ReportDAO {
       FROM (
         SELECT
           SUM(CASE WHEN order_items.buyer_order_id IS NOT NULL THEN order_items.quantity * order_items.selling_price ELSE 0 END) -
-           COALESCE(SUM(cp.receive_amount), 0) as pending_amount
+           COALESCE(SUM(cp.amount), 0) as pending_amount
         FROM order_items
         LEFT JOIN order_payments cp ON order_items.buyer_order_id = cp.order_id
         WHERE order_items.buyer_order_id IS NOT NULL
@@ -337,7 +337,7 @@ class ReportDAO {
     const sql = '''
       SELECT COUNT(DISTINCT buyer_order_id) as orders_count
       FROM order_items
-      WHERE date(created_at) = date(?)
+      WHERE date(updated_at / 1000, 'unixepoch', 'localtime') = date(?)
         AND buyer_order_id IS NOT NULL
     ''';
 
@@ -351,9 +351,9 @@ class ReportDAO {
 
     // Get cash in hand + UPI (received payments)
     const receivedSql = '''
-      SELECT COALESCE(SUM(receive_amount), 0) as total_received
+      SELECT COALESCE(SUM(amount), 0) as total_received
       FROM order_payments
-      WHERE receive_amount > 0
+      WHERE amount > 0
     ''';
 
     // Get total payables (pending payments to sellers)

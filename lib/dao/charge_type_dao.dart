@@ -1,4 +1,5 @@
 import 'package:mandyapp/models/charge_type_model.dart';
+import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 
 class ChargeTypeDAO {
@@ -6,6 +7,7 @@ class ChargeTypeDAO {
 
   Future<int> insertChargeType(ChargeType chargeType) async {
     chargeType.id = DBHelper.generateUuidInt();
+    chargeType.mandyId = await AppHelper.getCurrentMandyId();
     chargeType.updatedAt = DateTime.now().millisecondsSinceEpoch;
     chargeType.isDeleted = 0;
     chargeType.syncStatus = 0;
@@ -168,5 +170,48 @@ class ChargeTypeDAO {
       whereArgs: [chargeName, chargeFor, 0],
     );
     return result.isNotEmpty;
+  }
+
+  Future<void> bulkUpsertChargeTypes(List<ChargeType> chargeTypes) async {
+    final db = await dbHelper.database;
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+
+      for (final chargeType in chargeTypes) {
+        batch.rawInsert('''
+          INSERT INTO charge_types (
+            mandy_id, charge_name, charge_type, charge_amount, charge_for,
+            is_default, is_active, updated_at, is_deleted, sync_status
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+          ON CONFLICT(mandy_id) DO UPDATE SET
+            charge_name = excluded.charge_name,
+            charge_type = excluded.charge_type,
+            charge_amount = excluded.charge_amount,
+            charge_for = excluded.charge_for,
+            is_default = excluded.is_default,
+            is_active = excluded.is_active,
+            updated_at = excluded.updated_at,
+            is_deleted = excluded.is_deleted,
+            sync_status = excluded.sync_status
+
+          WHERE excluded.updated_at > charge_types.updated_at;
+        ''', [
+          chargeType.mandyId,
+          chargeType.chargeName,
+          chargeType.chargeType,
+          chargeType.chargeAmount,
+          chargeType.chargeFor,
+          chargeType.isDefault ?? 0,
+          chargeType.isActive ?? 1,
+          chargeType.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
+          chargeType.isDeleted ?? 0,
+          chargeType.syncStatus ?? 1,
+        ]);
+      }
+
+      await batch.commit(noResult: true);
+    });
   }
 }

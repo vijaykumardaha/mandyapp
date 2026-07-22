@@ -22,6 +22,11 @@ class AppHelper {
     sharedPreferences.remove(key);
   }
 
+  static Future<int?> getCurrentMandyId() async {
+    final userData = await getPreferences('user');
+    if (userData == null) return null;
+    return userData['mandy_id'] as int?;
+  }
 
   static Future<bool> isOnline() async {
     var connectivityResult = await Connectivity().checkConnectivity();

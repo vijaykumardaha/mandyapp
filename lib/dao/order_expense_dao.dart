@@ -1,4 +1,5 @@
 import 'package:mandyapp/models/order_expense_model.dart';
+import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -9,7 +10,10 @@ class OrderExpenseDao {
 
   Future<int> insert(OrderExpense orderExpense) async {
     final db = await dbHelper.database;
-    return await db.insert('order_expenses', orderExpense.toMap());
+    final mandyId = await AppHelper.getCurrentMandyId();
+    final data = orderExpense.toMap();
+    data['mandy_id'] = mandyId;
+    return await db.insert('order_expenses', data);
   }
 
   Future<OrderExpense?> getById(int id) async {
@@ -108,5 +112,42 @@ class OrderExpenseDao {
       [orderId],
     );
     return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  // Bulk upsert order expenses
+  Future<void> bulkUpsertOrderExpenses(List<OrderExpense> orderExpenses) async {
+    final db = await dbHelper.database;
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+
+      for (final orderExpense in orderExpenses) {
+        batch.rawInsert('''
+          INSERT INTO order_expenses (
+            order_id, expense_name, expense_amount, expense_note,
+            created_at, updated_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?)
+
+          ON CONFLICT(id) DO UPDATE SET
+            order_id = excluded.order_id,
+            expense_name = excluded.expense_name,
+            expense_amount = excluded.expense_amount,
+            expense_note = excluded.expense_note,
+            created_at = excluded.created_at,
+            updated_at = excluded.updated_at
+
+          WHERE excluded.updated_at > order_expenses.updated_at;
+        ''', [
+          orderExpense.orderId,
+          orderExpense.expenseName,
+          orderExpense.expenseAmount,
+          orderExpense.expenseNote,
+          orderExpense.createdAt,
+          orderExpense.updatedAt,
+        ]);
+      }
+
+      await batch.commit(noResult: true);
+    });
   }
 }

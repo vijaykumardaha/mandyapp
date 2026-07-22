@@ -3,7 +3,10 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:mandyapp/dao/user_dao.dart';
 import 'package:mandyapp/models/user_model.dart';
+import 'package:mandyapp/sync/phoenix_socket_service.dart';
+import 'package:mandyapp/sync/sync_service.dart';
 import 'package:mandyapp/utils/app_helper.dart';
+import 'package:mandyapp/utils/db_helper.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';
@@ -66,6 +69,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           mobile: event.mobile,
           password: event.password,
           name: event.name,
+          mandyId: DBHelper.generateUuidInt()
         );
         
         int userId = await userDAO.insertUser(newUser);
@@ -81,6 +85,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
     on<LogoutSubmit>((event, emit) async {
       try {
+        SyncService.instance.stopListening();
+        PhoenixSocketService.instance.disconnect();
         await AppHelper.removePreferences('user');
         emit(LogoutSuccess());
       } catch (error) {

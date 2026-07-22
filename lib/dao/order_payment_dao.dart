@@ -1,4 +1,5 @@
 import 'package:mandyapp/models/order_payment_model.dart';
+import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -8,9 +9,10 @@ class OrderPaymentDAO {
   // Insert a new order payment
   Future<int> insertOrderPayment(OrderPayment payment) async {
     final db = await dbHelper.database;
+    final mandyId = await AppHelper.getCurrentMandyId();
     final json = payment.toJson();
-    // Remove id from JSON for new records to let database auto-generate it
     json.remove('id');
+    json['mandy_id'] = mandyId;
     return await db.insert('order_payments', json);
   }
 
@@ -171,5 +173,37 @@ class OrderPaymentDAO {
       summary[row['source'] as String] = (row['total'] as num?)?.toDouble() ?? 0.0;
     }
     return summary;
+  }
+
+  // Bulk upsert order payments
+  Future<void> bulkUpsertOrderPayments(List<OrderPayment> orderPayments) async {
+    final db = await dbHelper.database;
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+
+      for (final orderPayment in orderPayments) {
+        batch.rawInsert('''
+          INSERT INTO order_payments (
+            order_id, source, amount, created_at
+          )
+          VALUES (?, ?, ?, ?)
+
+          ON CONFLICT(id) DO UPDATE SET
+            order_id = excluded.order_id,
+            source = excluded.source,
+            amount = excluded.amount,
+            created_at = excluded.created_at
+
+          WHERE excluded.created_at > order_payments.created_at;
+        ''', [
+          orderPayment.orderId,
+          orderPayment.source,
+          orderPayment.amount,
+          orderPayment.createdAt,
+        ]);
+      }
+
+      await batch.commit(noResult: true);
+    });
   }
 }

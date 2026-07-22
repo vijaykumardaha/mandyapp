@@ -5,6 +5,7 @@ import 'package:mandyapp/blocs/reports/reports_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/screens/reports_screen.dart';
+import 'package:mandyapp/sync/sync_service.dart';
 
 class HomeTabScreen extends StatefulWidget {
   const HomeTabScreen({super.key});
@@ -18,6 +19,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   final DateFormat _dateFormat = DateFormat('dd MMM yyyy');
   final NumberFormat _currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
   bool _hasLoadedData = false;
+  bool _isSyncing = false;
   DashboardDataLoaded? _cachedData;
 
   @override
@@ -40,6 +42,46 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       _hasLoadedData = true;
     } else {
       print('Skipping dashboard data load - using cached data');
+    }
+  }
+
+  Future<void> _syncData() async {
+    if (_isSyncing) return;
+    setState(() => _isSyncing = true);
+
+    try {
+      final response = await SyncService.instance.bulkSync();
+      if (!mounted) return;
+
+      if (response != null) {
+        _loadDashboardData(forceRefresh: true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sync completed'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sync failed. Please try again.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Sync error: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSyncing = false);
     }
   }
 
@@ -145,42 +187,73 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                   ),
                 ],
               ),
-              GestureDetector(
-                onTap: () {
-                  // Navigate to reports UI
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ReportsScreen(),
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: theme.primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: theme.primaryColor.withOpacity(0.2),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: _isSyncing ? null : _syncData,
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: theme.primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: theme.primaryColor.withOpacity(0.2),
+                        ),
+                      ),
+                      child: _isSyncing
+                          ? SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: theme.primaryColor,
+                              ),
+                            )
+                          : Icon(
+                              Icons.sync,
+                              size: 18,
+                              color: theme.primaryColor,
+                            ),
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.insert_chart_outlined,
-                        size: 18,
-                        color: theme.primaryColor,
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ReportsScreen(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: theme.primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: theme.primaryColor.withOpacity(0.2),
+                        ),
                       ),
-                      const SizedBox(width: 6),
-                      MyText.bodySmall(
-                        "See Reports",
-                        color: theme.primaryColor,
-                        fontWeight: 600,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.insert_chart_outlined,
+                            size: 18,
+                            color: theme.primaryColor,
+                          ),
+                          const SizedBox(width: 6),
+                          MyText.bodySmall(
+                            "See Reports",
+                            color: theme.primaryColor,
+                            fontWeight: 600,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),

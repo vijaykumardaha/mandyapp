@@ -1,6 +1,7 @@
 
 
 import 'package:mandyapp/models/customer_model.dart';
+import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 
 class CustomerDAO {
@@ -34,6 +35,7 @@ class CustomerDAO {
   Future<Customer> insertCustomer(Customer customer) async {
     final db = await dbHelper.database;
     customer.id = DBHelper.generateUuidInt();
+    customer.mandyId = await AppHelper.getCurrentMandyId();
     customer.updatedAt = DateTime.now().millisecondsSinceEpoch;
     customer.isDeleted = 0;
     customer.syncStatus = 0;
@@ -86,9 +88,50 @@ class CustomerDAO {
 
   Future<int> getCustomerCount() async {
     final db = await dbHelper.database;
-    final result = await db.rawQuery('SELECT COUNT(*) as count FROM customers WHERE is_deleted = ?', [0]);
-    final countValue = result.isNotEmpty ? result.first['count'] as int? : null;
-    return countValue ?? 0;
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM customers WHERE is_deleted = ?',
+      [0],
+    );
+    return result.first['count'] as int? ?? 0;
   }
 
+  // Bulk upsert customers
+  Future<void> bulkUpsertCustomers(List<Customer> customers) async {
+    final db = await dbHelper.database;
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+
+      for (final customer in customers) {
+        batch.rawInsert('''
+          INSERT INTO customers (
+            mandy_id, name, phone, borrow_amount, advanced_amount,
+            updated_at, is_deleted, sync_status
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+
+          ON CONFLICT(mandy_id) DO UPDATE SET
+            name = excluded.name,
+            phone = excluded.phone,
+            borrow_amount = excluded.borrow_amount,
+            advanced_amount = excluded.advanced_amount,
+            updated_at = excluded.updated_at,
+            is_deleted = excluded.is_deleted,
+            sync_status = excluded.sync_status
+
+          WHERE excluded.updated_at > customers.updated_at;
+        ''', [
+          customer.mandyId,
+          customer.name,
+          customer.phone,
+          customer.borrowAmount,
+          customer.advancedAmount,
+          customer.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
+          customer.isDeleted ?? 0,
+          customer.syncStatus ?? 1,
+        ]);
+      }
+
+      await batch.commit(noResult: true);
+    });
+  }
 }
