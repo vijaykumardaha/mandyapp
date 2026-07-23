@@ -11,6 +11,7 @@ import 'package:mandyapp/blocs/bill_list/bill_list_bloc.dart';
 import 'package:mandyapp/blocs/order/order_bloc.dart';
 import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandyapp/blocs/customer/customer_bloc.dart';
+import 'package:mandyapp/blocs/customer_payment/customer_payment_bloc.dart';
 import 'package:mandyapp/blocs/order_item/order_item_bloc.dart';
 import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
@@ -97,6 +98,9 @@ class MyApp extends StatelessWidget {
           ),
                     BlocProvider<CustomerBloc>(
             create: (context) => CustomerBloc(),
+          ),
+          BlocProvider<CustomerPaymentBloc>(
+            create: (context) => CustomerPaymentBloc(),
           ),
           BlocProvider<OrderPaymentBloc>(
             create: (context) => OrderPaymentBloc(),

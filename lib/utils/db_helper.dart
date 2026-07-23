@@ -154,9 +154,7 @@ class DBHelper {
             mandy_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             phone TEXT NOT NULL,
-            initial_credit REAL NOT NULL DEFAULT 0,
-            borrow_amount REAL NOT NULL DEFAULT 0,
-            advanced_amount REAL NOT NULL DEFAULT 0,
+
             updated_at INTEGER NOT NULL,
             is_deleted INTEGER DEFAULT 0,
             sync_status INTEGER DEFAULT 0
@@ -182,7 +180,22 @@ class DBHelper {
             sync_status INTEGER DEFAULT 0
           )
         ''');
-        
+        await db.execute('''
+          CREATE TABLE customer_payments (
+            id INTEGER PRIMARY KEY,
+            mandy_id INTEGER NOT NULL,
+            customer_id INTEGER NOT NULL,
+            amount REAL NOT NULL,
+            type TEXT NOT NULL CHECK(type IN ('paid', 'received')),
+            source TEXT NOT NULL DEFAULT 'cash',
+            note TEXT,
+            payment_date INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL,
+            is_deleted INTEGER DEFAULT 0,
+            sync_status INTEGER DEFAULT 0
+          )
+        ''');
+
       }
     );
   }

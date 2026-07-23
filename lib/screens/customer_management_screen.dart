@@ -5,7 +5,7 @@ import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/screens/customer_details_screen.dart';
+import 'package:mandyapp/screens/payment_histories_screen.dart';
 
 class CustomerManagementScreen extends StatefulWidget {
   const CustomerManagementScreen({super.key});
@@ -44,63 +44,69 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: MyText.titleMedium('Customers', fontWeight: 600),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person_add_alt_1),
-            tooltip: 'Add customer',
-            onPressed: _showAddCustomerSheet,
+        automaticallyImplyLeading: false,
+        title: TextField(
+          controller: _searchController,
+          onChanged: _onSearchChanged,
+          style: theme.textTheme.bodyMedium,
+          decoration: InputDecoration(
+            hintText: 'Search customers...',
+            filled: true,
+            fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: theme.colorScheme.primary),
+            ),
+            prefixIcon: Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
+            prefixIconConstraints: const BoxConstraints(minWidth: 36),
+            suffixIcon: IconButton(
+              icon: Icon(Icons.person_add_outlined, size: 20, color: theme.colorScheme.onSurfaceVariant),
+              tooltip: 'Add customer',
+              onPressed: _showAddCustomerSheet,
+            ),
+            suffixIconConstraints: const BoxConstraints(minWidth: 40),
           ),
-        ],
+        ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: MySpacing.xy(16, 12),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                hintText: 'Search customers',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      body: BlocBuilder<CustomerBloc, CustomerState>(
+        builder: (context, state) {
+          if (state is CustomerLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is SyncCustomerError) {
+            return _buildErrorState(state.errorMsg);
+          }
+
+          if (state is CustomerLoaded) {
+            if (state.customers.isEmpty) {
+              return _buildEmptyState();
+            }
+
+            return RefreshIndicator(
+              onRefresh: _onRefresh,
+              child: ListView.builder(
+                padding: MySpacing.xy(16, 8),
+                itemCount: state.customers.length,
+                itemBuilder: (context, index) {
+                  final customer = state.customers[index];
+                  return _buildCustomerTile(customer);
+                },
               ),
-            ),
-          ),
-          Expanded(
-            child: BlocBuilder<CustomerBloc, CustomerState>(
-              builder: (context, state) {
-                if (state is CustomerLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+            );
+          }
 
-                if (state is SyncCustomerError) {
-                  return _buildErrorState(state.errorMsg);
-                }
-
-                if (state is CustomerLoaded) {
-                  if (state.customers.isEmpty) {
-                    return _buildEmptyState();
-                  }
-
-                  return RefreshIndicator(
-                    onRefresh: _onRefresh,
-                    child: ListView.builder(
-                      padding: MySpacing.xy(16, 8),
-                      itemCount: state.customers.length,
-                      itemBuilder: (context, index) {
-                        final customer = state.customers[index];
-                        return _buildCustomerTile(customer);
-                      },
-                    ),
-                  );
-                }
-
-                return _buildEmptyState();
-              },
-            ),
-          ),
-        ],
+          return _buildEmptyState();
+        },
       ),
     );
   }
@@ -112,6 +118,11 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
     final displayPhone = hasPhone ? customer.phone!.trim() : null;
     final title = displayPhone != null ? '$displayName (${displayPhone})' : displayName;
 
+    final nameParts = displayName.split(RegExp(r'\s+'));
+    final initials = nameParts.length >= 2
+        ? '${nameParts.first[0]}${nameParts.last[0]}'
+        : nameParts.first[0];
+
     return Card(
       margin: MySpacing.bottom(12),
       child: InkWell(
@@ -119,15 +130,27 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CustomerDetailsScreen(customer: customer),
+              builder: (context) => PaymentHistoriesScreen(customer: customer),
             ),
           );
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: MySpacing.all(16),
+          padding: MySpacing.xy(12, 10),
           child: Row(
             children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                child: Text(
+                  initials.toUpperCase(),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,28 +159,26 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
                       title,
                       fontWeight: 600,
                     ),
-                    MySpacing.height(6),
-                    Row(
-                      children: [
-                        _buildAmountChip('Borrowed', customer.borrowAmount),
-                        MySpacing.width(8),
-                        _buildAmountChip('Advanced', customer.advancedAmount),
-                      ],
-                    ),
                   ],
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                tooltip: 'Edit customer',
-                onPressed: () {
-                  _showAddCustomerSheet(customer: customer);
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    _showAddCustomerSheet(customer: customer);
+                  } else if (value == 'payments') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PaymentHistoriesScreen(customer: customer),
+                      ),
+                    );
+                  }
                 },
-              ),
-              IconButton(
-                icon: Icon(Icons.delete_outline, color: theme.colorScheme.error),
-                tooltip: 'Delete customer',
-                onPressed: () => _confirmDelete(customer),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                  const PopupMenuItem(value: 'payments', child: Text('Payments')),
+                ],
               ),
           ],
         ),
@@ -222,8 +243,6 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
     final isEditing = customer != null;
     final nameController = TextEditingController(text: customer?.name ?? '');
     final phoneController = TextEditingController(text: customer?.phone ?? '');
-    final borrowController = TextEditingController(text: (customer?.borrowAmount ?? 0).toString());
-    final advanceController = TextEditingController(text: (customer?.advancedAmount ?? 0).toString());
 
     showModalBottomSheet(
       context: context,
@@ -259,23 +278,6 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
                 ),
               ),
               MySpacing.height(12),
-              TextField(
-                controller: borrowController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Borrow amount',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              MySpacing.height(12),
-              TextField(
-                controller: advanceController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Advanced amount',
-                  border: OutlineInputBorder(),
-                ),
-              ),
               MySpacing.height(20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -289,8 +291,6 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
                     onPressed: () {
                       final name = nameController.text.trim();
                       final phone = phoneController.text.trim();
-                      final borrow = double.tryParse(borrowController.text.trim()) ?? 0.0;
-                      final advance = double.tryParse(advanceController.text.trim()) ?? 0.0;
                       if (name.isEmpty || phone.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Please enter both name and phone.')),
@@ -301,8 +301,6 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
                         final updatedCustomer = customer.copyWith(
                           name: name,
                           phone: phone,
-                          borrowAmount: borrow,
-                          advancedAmount: advance,
                         );
                         _customerBloc.add(UpdateCustomer(customer: updatedCustomer, query: _searchController.text.trim()));
                       } else {
@@ -310,8 +308,6 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
                           name: name,
                           phone: phone,
                           query: _searchController.text.trim(),
-                          borrowAmount: borrow,
-                          advancedAmount: advance,
                         ));
                       }
                       Navigator.pop(context);
@@ -327,46 +323,4 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
     );
   }
 
-  void _confirmDelete(Customer customer) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Delete customer'),
-          content: Text('Are you sure you want to delete ${customer.name ?? 'this customer'}?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                if (customer.id != null) {
-                  _customerBloc.add(DeleteCustomer(customerId: customer.id!, query: _searchController.text.trim()));
-                }
-              },
-              style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildAmountChip(String label, double amount) {
-    return Container(
-      padding: MySpacing.xy(10, 6),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: MyText.bodySmall(
-        '$label: ₹${amount.toStringAsFixed(2)}',
-        fontWeight: 600,
-        color: theme.colorScheme.primary,
-      ),
-    );
-  }
 }

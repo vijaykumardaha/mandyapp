@@ -38,8 +38,6 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
           Customer(
             name: event.name.trim(),
             phone: event.phone.trim(),
-            borrowAmount: event.borrowAmount,
-            advancedAmount: event.advancedAmount,
           ),
         );
         final contacts = await contactDAO.getCustomers();

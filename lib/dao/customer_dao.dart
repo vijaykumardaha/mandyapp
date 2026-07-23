@@ -9,6 +9,7 @@ class CustomerDAO {
 
   Future<void> bulkInsert(List<Customer> customers) async {
     final db = await dbHelper.database;
+    final mandyId = await AppHelper.getCurrentMandyId();
     await db.update('customers', {
       'is_deleted': 1,
       'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -16,6 +17,7 @@ class CustomerDAO {
     await db.transaction((txn) async {
       for (var customer in customers) {
         customer.id = DBHelper.generateUuidInt();
+        customer.mandyId = mandyId;
         customer.updatedAt = DateTime.now().millisecondsSinceEpoch;
         customer.isDeleted = 0;
         customer.syncStatus = 0;
@@ -102,18 +104,16 @@ class CustomerDAO {
       final batch = txn.batch();
 
       for (final customer in customers) {
-        batch.rawInsert('''
+          batch.rawInsert('''
           INSERT INTO customers (
-            mandy_id, name, phone, borrow_amount, advanced_amount,
+            mandy_id, name, phone,
             updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(mandy_id) DO UPDATE SET
             name = excluded.name,
             phone = excluded.phone,
-            borrow_amount = excluded.borrow_amount,
-            advanced_amount = excluded.advanced_amount,
             updated_at = excluded.updated_at,
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
@@ -123,8 +123,6 @@ class CustomerDAO {
           customer.mandyId,
           customer.name,
           customer.phone,
-          customer.borrowAmount,
-          customer.advancedAmount,
           customer.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           customer.isDeleted ?? 0,
           customer.syncStatus ?? 1,

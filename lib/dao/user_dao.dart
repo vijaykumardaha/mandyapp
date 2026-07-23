@@ -1,5 +1,4 @@
 import 'package:mandyapp/models/user_model.dart';
-import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 
 class UserDAO {
@@ -7,7 +6,6 @@ class UserDAO {
 
   Future<int> insertUser(User user) async {
     user.id = DBHelper.generateUuidInt();
-    user.mandyId = await AppHelper.getCurrentMandyId();
     user.updatedAt = DateTime.now().millisecondsSinceEpoch;
     user.isDeleted = 0;
     user.syncStatus = 0;
