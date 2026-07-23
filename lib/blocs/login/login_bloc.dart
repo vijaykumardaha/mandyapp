@@ -66,15 +66,15 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         
         // Create new user
         final newUser = User(
+          id: DBHelper.generateUuidInt(),
+          mandyId: DBHelper.generateUuidInt(),
           mobile: event.mobile,
           password: event.password,
           name: event.name,
-          mandyId: DBHelper.generateUuidInt()
         );
         
-        int userId = await userDAO.insertUser(newUser);
-        newUser.id = userId;
-        
+       await userDAO.registerUser(newUser);
+
         // Auto-login after registration
         await AppHelper.savePreferences('user', newUser.toJson());
         emit(LoginSuccess(user: newUser));

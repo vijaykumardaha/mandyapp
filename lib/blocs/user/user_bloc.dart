@@ -54,11 +54,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       try {
         emit(UserLoading());
         
-        // Update in database
         await userDAO.updateUser(event.user);
-        
-        // Update in SharedPreferences
-        await AppHelper.savePreferences('user', event.user.toJson());
         
         emit(UserUpdated(user: event.user));
       } catch (error) {
@@ -139,10 +135,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         int userId = await userDAO.insertUser(newUser);
         newUser.id = userId;
         
-        // Save to SharedPreferences
-        await AppHelper.savePreferences('user', newUser.toJson());
-        
-        emit(UserLoaded(user: newUser));
+        emit(UserUpdated(user: newUser));
       } catch (error) {
         emit(UserError(errorMsg: 'Failed to save user: ${error.toString()}'));
       }

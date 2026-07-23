@@ -8,6 +8,7 @@ import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_bottom_navigation_bar.dart';
 import 'package:mandyapp/models/customer_model.dart';
+import 'package:mandyapp/blocs/vegetable/vegetable_bloc.dart';
 import 'package:mandyapp/screens/order_item_screen.dart';
 import 'package:mandyapp/screens/home_tab_screen.dart';
 import 'package:mandyapp/screens/selling_screen.dart';
@@ -142,5 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
         .toList();
 
     context.read<CustomerBloc>().add(SyncCustomer(customers: converted));
+
+    context.read<VegetableBloc>().add(const SyncVegetables());
   }
 }

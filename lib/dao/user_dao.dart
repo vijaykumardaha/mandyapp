@@ -1,11 +1,21 @@
 import 'package:mandyapp/models/user_model.dart';
+import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 
 class UserDAO {
   final dbHelper = DBHelper.instance;
 
+  Future<int> registerUser(User user) async {
+    user.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    user.isDeleted = 0;
+    user.syncStatus = 0;
+    final db = await dbHelper.database;
+    return await db.insert('users', user.toJson());
+  }
+
   Future<int> insertUser(User user) async {
     user.id = DBHelper.generateUuidInt();
+    user.mandyId = await AppHelper.getCurrentMandyId();
     user.updatedAt = DateTime.now().millisecondsSinceEpoch;
     user.isDeleted = 0;
     user.syncStatus = 0;
@@ -50,6 +60,7 @@ class UserDAO {
   }
 
   Future<int> updateUser(User user) async {
+    user.mandyId = await AppHelper.getCurrentMandyId();
     user.updatedAt = DateTime.now().millisecondsSinceEpoch;
     user.syncStatus = 0;
     final db = await dbHelper.database;

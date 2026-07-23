@@ -67,7 +67,6 @@ class DBHelper {
             mandy_id INTEGER NOT NULL,
             product_id INTEGER NOT NULL,
             variant_name TEXT NOT NULL,
-            buying_price REAL NOT NULL,
             selling_price REAL NOT NULL,
             quantity REAL NOT NULL,
             unit TEXT NOT NULL,
@@ -193,6 +192,20 @@ class DBHelper {
             updated_at INTEGER NOT NULL,
             is_deleted INTEGER DEFAULT 0,
             sync_status INTEGER DEFAULT 0
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE vegetables (
+            id INTEGER PRIMARY KEY,
+            mandy_id INTEGER NOT NULL,
+            key TEXT NOT NULL,
+            name TEXT NOT NULL,
+            path TEXT NOT NULL,
+            updated_at INTEGER NOT NULL,
+            is_deleted INTEGER DEFAULT 0,
+            sync_status INTEGER DEFAULT 0,
+            UNIQUE(mandy_id, key)
           )
         ''');
 

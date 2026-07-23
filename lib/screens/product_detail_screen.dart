@@ -11,7 +11,7 @@ import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/dao/product_variant_dao.dart';
 import 'package:mandyapp/dao/product_dao.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:mandyapp/blocs/vegetable/vegetable_bloc.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product? product;
@@ -111,83 +111,120 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void _showAddVariantDialog([ProductVariant? variant]) {
     final nameController =
         TextEditingController(text: variant?.variantName ?? '');
-    final buyingPriceController = TextEditingController(
-        text: variant != null ? variant.buyingPrice.toString() : '');
     final sellingPriceController = TextEditingController(
         text: variant != null ? variant.sellingPrice.toString() : '');
     final quantityController = TextEditingController(
         text: variant != null ? variant.quantity.toString() : '');
     String selectedUnit = variant?.unit ?? 'Kg';
     String imagePath = variant?.imagePath ?? '';
-    final ImagePicker imagePicker = ImagePicker();
 
-    showDialog(
+    context.read<VegetableBloc>().add(const FetchVegetables());
+
+    showModalBottomSheet(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: MyText.titleMedium(
-            variant == null ? 'add_variant'.tr() : 'edit_variant'.tr(),
-            fontWeight: 600,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
           ),
-          content: SingleChildScrollView(
+          child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(
-                  width: 100,
-                  height: 100,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: imagePath.isNotEmpty
-                        ? Image.file(
-                            File(imagePath),
-                            fit: BoxFit.cover,
-                          )
-                        : Container(
-                            color: theme.colorScheme.surfaceVariant,
-                            child: Icon(
-                              Icons.image,
-                              size: 36,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                  ),
+                MyText.titleMedium(
+                  variant == null ? 'add_variant'.tr() : 'edit_variant'.tr(),
+                  fontWeight: 600,
                 ),
+                MySpacing.height(16),
+                if (imagePath.isNotEmpty)
+                  Center(
+                    child: SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: imagePath.startsWith('assets/')
+                            ? Image.asset(imagePath, fit: BoxFit.cover)
+                            : Image.file(File(imagePath), fit: BoxFit.cover),
+                      ),
+                    ),
+                  ),
                 MySpacing.height(12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          final picked = await imagePicker.pickImage(
-                              source: ImageSource.camera);
-                          if (picked != null) {
-                            setDialogState(() {
-                              imagePath = picked.path;
-                            });
-                          }
-                        },
-                        icon: const Icon(Icons.camera_alt),
-                        label: const Text('Camera'),
-                      ),
-                    ),
-                    MySpacing.width(12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          final picked = await imagePicker.pickImage(
-                              source: ImageSource.gallery);
-                          if (picked != null) {
-                            setDialogState(() {
-                              imagePath = picked.path;
-                            });
-                          }
-                        },
-                        icon: const Icon(Icons.photo_library),
-                        label: const Text('Gallery'),
-                      ),
-                    ),
-                  ],
+                BlocBuilder<VegetableBloc, VegetableState>(
+                  builder: (context, vegState) {
+                    if (vegState is VegetableLoaded) {
+                      return SizedBox(
+                        height: 80,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: vegState.vegetables.length,
+                          separatorBuilder: (_, __) => MySpacing.width(8),
+                          itemBuilder: (context, index) {
+                            final veg = vegState.vegetables[index];
+                            final isSelected = imagePath == veg.path;
+                            return GestureDetector(
+                              onTap: () {
+                                setSheetState(() {
+                                  imagePath = veg.path;
+                                  nameController.text = veg.name;
+                                });
+                              },
+                              child: Column(
+                                children: [
+                                  Container(
+                                    width: 56,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? theme.colorScheme.primary
+                                            : theme.colorScheme.outline
+                                                .withOpacity(0.3),
+                                        width: isSelected ? 2 : 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(7),
+                                      child: Image.asset(
+                                        veg.path,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  MySpacing.height(2),
+                                  SizedBox(
+                                    width: 56,
+                                    child: Text(
+                                      veg.name,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        color: isSelected
+                                            ? theme.colorScheme.primary
+                                            : theme
+                                                .colorScheme.onBackground,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
                 ),
                 MySpacing.height(12),
                 TextField(
@@ -195,15 +232,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   decoration: InputDecoration(
                     labelText: 'variant_name'.tr(),
                     hintText: 'e.g., 500g, 1Kg, Small, Medium',
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-                MySpacing.height(12),
-                TextField(
-                  controller: buyingPriceController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'buying_price'.tr(),
                     border: const OutlineInputBorder(),
                   ),
                 ),
@@ -245,96 +273,104 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 ))
                             .toList(),
                         onChanged: (value) {
-                          setDialogState(() => selectedUnit = value!);
+                          setSheetState(() => selectedUnit = value!);
                         },
                       ),
                     ),
                   ],
                 ),
+                MySpacing.height(20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(sheetContext),
+                        child: MyText.bodyMedium('cancel'.tr()),
+                      ),
+                    ),
+                    MySpacing.width(12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final name = nameController.text.trim();
+                          final sellingPriceText =
+                              sellingPriceController.text.trim();
+                          final quantityText = quantityController.text.trim();
+
+                          if (name.isEmpty ||
+                              imagePath.isEmpty ||
+                              sellingPriceText.isEmpty ||
+                              quantityText.isEmpty) {
+                            ScaffoldMessenger.of(sheetContext).showSnackBar(
+                              SnackBar(
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.only(
+                                    top: 16, left: 16, right: 16),
+                                content:
+                                    Text('please_fill_required_fields'.tr()),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final sellingPrice =
+                              double.tryParse(sellingPriceText);
+                          final quantity = double.tryParse(quantityText);
+
+                          if (sellingPrice == null || quantity == null) {
+                            ScaffoldMessenger.of(sheetContext).showSnackBar(
+                              SnackBar(
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.only(
+                                    top: 16, left: 16, right: 16),
+                                content:
+                                    Text('please_enter_valid_numbers'.tr()),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final newVariant = ProductVariant(
+                              id: variant?.id,
+                              productId: widget.product?.id ?? 0,
+                              variantName: name,
+                              sellingPrice: sellingPrice,
+                              quantity: quantity,
+                              unit: selectedUnit,
+                              imagePath: imagePath);
+
+                          setState(() {
+                            final originalKey =
+                                variant != null ? _variantKey(variant) : null;
+                            if (variant == null) {
+                              _variants.add(newVariant);
+                              _defaultVariantKey ??= _variantKey(newVariant);
+                            } else {
+                              final index = _variants.indexOf(variant);
+                              if (index != -1) {
+                                _variants[index] = newVariant;
+                                if (_defaultVariantKey == originalKey) {
+                                  _defaultVariantKey =
+                                      _variantKey(newVariant);
+                                }
+                              }
+                            }
+
+                            _ensureDefaultVariantKey();
+                          });
+
+                          Navigator.pop(sheetContext);
+                        },
+                        child: MyText.bodyMedium(
+                            variant == null ? 'add'.tr() : 'update'.tr()),
+                      ),
+                    ),
+                  ],
+                ),
+                MySpacing.height(16),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: MyText.bodyMedium('cancel'.tr()),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final name = nameController.text.trim();
-                final buyingPriceText = buyingPriceController.text.trim();
-                final sellingPriceText = sellingPriceController.text.trim();
-                final quantityText = quantityController.text.trim();
-
-                if (name.isEmpty ||
-                    imagePath.isEmpty ||
-                    buyingPriceText.isEmpty ||
-                    sellingPriceText.isEmpty ||
-                    quantityText.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      behavior: SnackBarBehavior.floating,
-                      margin:
-                          const EdgeInsets.only(top: 16, left: 16, right: 16),
-                      content: Text('please_fill_required_fields'.tr()),
-                    ),
-                  );
-                  return;
-                }
-
-                final buyingPrice = double.tryParse(buyingPriceText);
-                final sellingPrice = double.tryParse(sellingPriceText);
-                final quantity = double.tryParse(quantityText);
-
-                if (buyingPrice == null ||
-                    sellingPrice == null ||
-                    quantity == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      behavior: SnackBarBehavior.floating,
-                      margin:
-                          const EdgeInsets.only(top: 16, left: 16, right: 16),
-                      content: Text('please_enter_valid_numbers'.tr()),
-                    ),
-                  );
-                  return;
-                }
-
-                final newVariant = ProductVariant(
-                    id: variant?.id,
-                    productId: widget.product?.id ?? 0,
-                    variantName: name,
-                    buyingPrice: buyingPrice,
-                    sellingPrice: sellingPrice,
-                    quantity: quantity,
-                    unit: selectedUnit,
-                    imagePath: imagePath);
-
-                setState(() {
-                  final originalKey =
-                      variant != null ? _variantKey(variant) : null;
-                  if (variant == null) {
-                    _variants.add(newVariant);
-                    _defaultVariantKey ??= _variantKey(newVariant);
-                  } else {
-                    final index = _variants.indexOf(variant);
-                    if (index != -1) {
-                      _variants[index] = newVariant;
-                      if (_defaultVariantKey == originalKey) {
-                        _defaultVariantKey = _variantKey(newVariant);
-                      }
-                    }
-                  }
-
-                  _ensureDefaultVariantKey();
-                });
-
-                Navigator.pop(context);
-              },
-              child: MyText.bodyMedium(
-                  variant == null ? 'add'.tr() : 'update'.tr()),
-            ),
-          ],
         ),
       ),
     );
@@ -446,34 +482,34 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                RichText(
-                  text: TextSpan(
-                    text: 'product_variants'.tr(),
-                    style: TextStyle(
-                      color: theme.colorScheme.onBackground,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    children: const [
-                      TextSpan(
-                        text: ' *',
-                        style: TextStyle(color: Colors.red),
+                Row(
+                  children: [
+                    Expanded(
+                      child: RichText(
+                        text: TextSpan(
+                          text: 'product_variants'.tr(),
+                          style: TextStyle(
+                            color: theme.colorScheme.onBackground,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          children: const [
+                            TextSpan(
+                              text: ' *',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-                MySpacing.height(4),
-                MyText.bodySmall(
-                  'Add detailed information for each variant.',
-                  color: theme.colorScheme.onBackground.withOpacity(0.6),
-                  fontSize: 11,
+                    ),
+                    TextButton.icon(
+                      onPressed: _showAddVariantDialog,
+                      icon: const Icon(Icons.add),
+                      label: MyText.bodyMedium('add_variant'.tr()),
+                    ),
+                  ],
                 ),
                 MySpacing.height(12),
-                TextButton.icon(
-                  onPressed: _showAddVariantDialog,
-                  icon: const Icon(Icons.add),
-                  label: MyText.bodyMedium('add_variant'.tr()),
-                ),
                 MySpacing.height(12),
                 if (_variants.isEmpty)
                   Container(
@@ -562,16 +598,36 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               ],
                             ),
                           ),
-                          Column(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, size: 20),
-                                onPressed: () => _showAddVariantDialog(variant),
+                          PopupMenuButton<String>(
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(Icons.more_vert, size: 20),
+                            onSelected: (value) {
+                              if (value == 'edit') {
+                                _showAddVariantDialog(variant);
+                              } else if (value == 'delete') {
+                                _deleteVariant(variant);
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 'edit',
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.edit, size: 20),
+                                    MySpacing.width(8),
+                                    MyText.bodyMedium('edit'.tr()),
+                                  ],
+                                ),
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.delete,
-                                    size: 20, color: Colors.red),
-                                onPressed: () => _deleteVariant(variant),
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.delete, size: 20, color: Colors.red),
+                                    MySpacing.width(8),
+                                    MyText.bodyMedium('delete'.tr(), color: Colors.red),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
@@ -583,7 +639,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _saveProduct,
+                    onPressed: _variants.isEmpty ? null : _saveProduct,
                     style: ElevatedButton.styleFrom(
                       padding: MySpacing.y(16),
                     ),

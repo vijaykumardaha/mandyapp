@@ -3,7 +3,6 @@ class ProductVariant {
   int? mandyId;
   int productId;
   String variantName;
-  double buyingPrice;
   double sellingPrice;
   double quantity;
   String unit;
@@ -17,7 +16,6 @@ class ProductVariant {
     this.mandyId,
     required this.productId,
     required this.variantName,
-    required this.buyingPrice,
     required this.sellingPrice,
     required this.quantity,
     required this.unit,
@@ -33,7 +31,6 @@ class ProductVariant {
       'mandy_id': mandyId,
       'product_id': productId,
       'variant_name': variantName,
-      'buying_price': buyingPrice,
       'selling_price': sellingPrice,
       'quantity': quantity,
       'unit': unit,
@@ -50,7 +47,6 @@ class ProductVariant {
       mandyId: json['mandy_id'] as int?,
       productId: json['product_id'] as int,
       variantName: json['variant_name'] as String,
-      buyingPrice: (json['buying_price'] as num).toDouble(),
       sellingPrice: (json['selling_price'] as num).toDouble(),
       quantity: (json['quantity'] as num).toDouble(),
       unit: json['unit'] as String,
@@ -60,7 +56,4 @@ class ProductVariant {
       syncStatus: json['sync_status'] as int? ?? 0,
     );
   }
-
-  double get profit => sellingPrice - buyingPrice;
-  double get profitMargin => buyingPrice > 0 ? ((profit / buyingPrice) * 100) : 0;
 }

@@ -362,7 +362,6 @@ class SellingScreenState extends State<SellingScreen> {
       buyerId: null,
       productId: product.id ?? 0,
       variantId: variant.id!,
-      buyingPrice: variant.buyingPrice,
       sellingPrice: effectiveSellingPrice,
       quantity: quantity,
       unit: variant.unit
