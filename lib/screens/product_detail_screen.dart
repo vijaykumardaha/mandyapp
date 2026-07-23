@@ -262,6 +262,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         value: selectedUnit,
+                        dropdownColor: Theme.of(context).colorScheme.surface,
                         decoration: InputDecoration(
                           labelText: 'unit'.tr(),
                           border: const OutlineInputBorder(),

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,6 +20,22 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   late ThemeData theme;
+  final _searchController = TextEditingController();
+  Timer? _debounce;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      context.read<ProductBloc>().add(SearchProducts(query.trim()));
+    });
+  }
 
   Widget _buildVariantImage(String imagePath) {
     final placeholder = Icon(
@@ -94,14 +111,38 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: MyText.titleMedium('products'.tr(), fontWeight: 600),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _navigateToProductDetail(),
-            tooltip: 'add_product'.tr(),
+        automaticallyImplyLeading: false,
+        title: TextField(
+          controller: _searchController,
+          onChanged: _onSearchChanged,
+          style: theme.textTheme.bodyMedium,
+          decoration: InputDecoration(
+            hintText: 'Search products...',
+            filled: true,
+            fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: theme.colorScheme.primary),
+            ),
+            prefixIcon: Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
+            prefixIconConstraints: const BoxConstraints(minWidth: 36),
+            suffixIcon: IconButton(
+              icon: Icon(Icons.add_box_outlined, size: 20, color: theme.colorScheme.onSurfaceVariant),
+              tooltip: 'add_product'.tr(),
+              onPressed: () => _navigateToProductDetail(),
+            ),
+            suffixIconConstraints: const BoxConstraints(minWidth: 40),
           ),
-        ],
+        ),
       ),
       body: Column(
         children: [

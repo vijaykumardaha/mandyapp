@@ -153,6 +153,7 @@ class DBHelper {
             mandy_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             phone TEXT NOT NULL,
+            product_ids TEXT DEFAULT '',
 
             updated_at INTEGER NOT NULL,
             is_deleted INTEGER DEFAULT 0,

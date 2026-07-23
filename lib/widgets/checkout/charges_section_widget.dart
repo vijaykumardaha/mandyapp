@@ -22,14 +22,7 @@ class ChargesSectionWidget extends StatefulWidget {
 }
 
 class _ChargesSectionWidgetState extends State<ChargesSectionWidget> {
-  final Map<int, TextEditingController> _chargeControllers = {};
   Set<int> _selectedChargeIds = {};
-
-  @override
-  void dispose() {
-    _chargeControllers.values.forEach((controller) => controller.dispose());
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +40,13 @@ class _ChargesSectionWidgetState extends State<ChargesSectionWidget> {
 
           if (activeCharges.isEmpty) {
             return _buildNoChargesSection();
+          }
+
+          // Auto-select default charges
+          for (final charge in activeCharges) {
+            if (charge.isDefault == 1 && charge.id != null) {
+              _selectedChargeIds.add(charge.id!);
+            }
           }
 
           return _buildChargesSection(chargeState, activeCharges);
@@ -130,11 +130,6 @@ class _ChargesSectionWidgetState extends State<ChargesSectionWidget> {
                 ),
                 MySpacing.width(8),
                 MyText.bodyMedium('Charges', fontWeight: 600),
-                Spacer(),
-                MyText.bodySmall(
-                  '${_selectedChargeIds.length} Selected',
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                ),
               ],
             ),
           ),
@@ -143,12 +138,11 @@ class _ChargesSectionWidgetState extends State<ChargesSectionWidget> {
           ...activeCharges.map((charge) {
             if (charge.id == null) return const SizedBox.shrink();
 
-            _chargeControllers.putIfAbsent(
-                charge.id!, () => TextEditingController(text: charge.chargeAmount.toStringAsFixed(2)));
-
             final isSelected = _selectedChargeIds.contains(charge.id);
 
-            return CheckboxListTile(
+            return Padding(
+              padding: MySpacing.horizontal(16),
+              child: CheckboxListTile(
               value: isSelected,
               onChanged: (value) {
                 setState(() {
@@ -159,43 +153,23 @@ class _ChargesSectionWidgetState extends State<ChargesSectionWidget> {
                   }
                 });
               },
-              title: MyText.bodyMedium(charge.chargeName),
-              subtitle: MyText.bodySmall(
-                '₹${charge.chargeAmount.toStringAsFixed(2)}',
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  MyText.bodyMedium(charge.chargeName),
+                  MyText.bodySmall(
+                    '₹${charge.chargeAmount.toStringAsFixed(2)}',
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                ],
               ),
               controlAffinity: ListTileControlAffinity.leading,
-              secondary: isSelected
-                  ? SizedBox(
-                      width: 80,
-                      child: TextField(
-                        controller: _chargeControllers[charge.id],
-                        keyboardType: TextInputType.numberWithOptions(decimal: true),
-                        textAlign: TextAlign.center,
-                        decoration: InputDecoration(
-                          contentPadding: MySpacing.xy(8, 4),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ),
-                    )
-                  : null,
+              contentPadding: EdgeInsets.zero,
+              visualDensity: VisualDensity.compact,
+              dense: true,
+            ),
             );
           }),
-
-          // Add Charge Button
-          Padding(
-            padding: MySpacing.horizontal(16),
-            child: SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => _showChargeSelectionDialog(activeCharges),
-                icon: const Icon(Icons.add),
-                label: MyText.bodyMedium('Add Charge'),
-              ),
-            ),
-          ),
           MySpacing.height(16),
         ],
       ),

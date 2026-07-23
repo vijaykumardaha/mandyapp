@@ -26,16 +26,18 @@ class FetchCustomer extends CustomerEvent {
 class AddCustomer extends CustomerEvent {
   final String name;
   final String phone;
+  final String? productIds;
   final String query;
 
   const AddCustomer({
     required this.name,
     required this.phone,
+    this.productIds,
     required this.query,
   });
 
   @override
-  List<Object> get props => [name, phone, query];
+  List<Object> get props => [name, phone, productIds ?? '', query];
 }
 
 class DeleteCustomer extends CustomerEvent {

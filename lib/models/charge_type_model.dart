@@ -44,12 +44,16 @@ class ChargeType {
   factory ChargeType.fromJson(Map<String, dynamic> json) {
     return ChargeType(
       id: json['id'] as int?,
+      mandyId: json['mandy_id'] as int?,
       chargeName: json['charge_name'] as String,
       chargeType: (json['charge_type'] as String?) ?? 'fixed',
       chargeAmount: (json['charge_amount'] as num).toDouble(),
       chargeFor: json['charge_for'] as String,
       isDefault: json['is_default'] as int? ?? 0,
       isActive: json['is_active'] as int? ?? 1,
+      updatedAt: json['updated_at'] as int?,
+      isDeleted: json['is_deleted'] as int? ?? 0,
+      syncStatus: json['sync_status'] as int? ?? 0,
     );
   }
 

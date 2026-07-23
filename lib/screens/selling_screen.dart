@@ -395,7 +395,13 @@ class SellingScreenState extends State<SellingScreen> {
                   }
 
                   if (productState is ProductLoaded) {
-                    final products = productState.products;
+                    var products = productState.products;
+                    final customerProductIds = sellerCustomer!.selectedProductIds;
+                    if (customerProductIds.isNotEmpty) {
+                      products = products
+                          .where((p) => customerProductIds.contains(p.id))
+                          .toList();
+                    }
 
                     if (products.isEmpty) {
                       return const Center(child: Text('No products found.'));

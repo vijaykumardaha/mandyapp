@@ -46,23 +46,29 @@ class _ExpenseSectionWidgetState extends State<ExpenseSectionWidget> {
                 ),
                 MySpacing.width(8),
                 MyText.bodyMedium('Expenses', fontWeight: 600),
-                Spacer(),
-                MyText.bodySmall(
-                  '${_expenses.length} Added',
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                ),
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _expensesExpanded = !_expensesExpanded;
-                    });
-                  },
-                  icon: Icon(
-                    _expensesExpanded ? Icons.expand_less : Icons.expand_more,
-                    size: 20,
+                const Spacer(),
+                InkWell(
+                  onTap: () => _showAddExpenseDialog(),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add, size: 16, color: Theme.of(context).colorScheme.primary),
+                        MySpacing.width(4),
+                        MyText.bodySmall('Add', color: Theme.of(context).colorScheme.primary, fontWeight: 600),
+                      ],
+                    ),
                   ),
-                  visualDensity: VisualDensity.compact,
                 ),
+                MySpacing.width(4),
               ],
             ),
           ),
@@ -83,65 +89,46 @@ class _ExpenseSectionWidgetState extends State<ExpenseSectionWidget> {
                 final expense = entry.value;
                 return Padding(
                   padding: MySpacing.horizontal(16),
-                  child: Container(
-                    margin: MySpacing.bottom(8),
-                    padding: MySpacing.all(12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                          color: Theme.of(context).colorScheme.outline.withOpacity(0.1)),
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.check_circle,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
-                    child: Row(
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              MyText.bodyMedium(
-                                expense['description'] ?? 'Expense',
-                                fontWeight: 500,
-                              ),
-                              MySpacing.height(4),
-                              MyText.bodySmall(
-                                '₹${(expense['amount'] as double).toStringAsFixed(2)}',
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                              ),
-                            ],
-                          ),
+                        MyText.bodyMedium(
+                          expense['description'] ?? 'Expense',
+                          fontWeight: 500,
                         ),
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _expenses.removeAt(index);
-                            });
-                          },
-                          icon: Icon(
-                            Icons.delete_outline,
-                            size: 18,
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                          visualDensity: VisualDensity.compact,
+                        MyText.bodySmall(
+                          '₹${(expense['amount'] as double).toStringAsFixed(2)}',
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                         ),
                       ],
                     ),
+                    trailing: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _expenses.removeAt(index);
+                        });
+                      },
+                      icon: Icon(
+                        Icons.delete_outline,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    contentPadding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                    dense: true,
                   ),
                 );
               }),
             ],
-
-            // Add Expense Button
-            Padding(
-              padding: MySpacing.all(16),
-              child: SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _showAddExpenseDialog(),
-                  icon: const Icon(Icons.add),
-                  label: MyText.bodyMedium('Add Expense'),
-                ),
-              ),
-            ),
+            MySpacing.height(8),
           ],
         ],
       ),
@@ -149,53 +136,76 @@ class _ExpenseSectionWidgetState extends State<ExpenseSectionWidget> {
   }
 
   Future<void> _showAddExpenseDialog() async {
-    String description = '';
-    String amountText = '';
+    final descriptionController = TextEditingController();
+    final amountController = TextEditingController();
 
-    final result = await showDialog<Map<String, dynamic>>(
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: MyText.titleMedium('Add Expense', fontWeight: 600),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              onChanged: (value) => description = value,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            MySpacing.height(16),
-            TextField(
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
-              onChanged: (value) => amountText = value,
-              decoration: const InputDecoration(
-                labelText: 'Amount',
-                prefixText: '₹',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+          left: 16,
+          right: 16,
+          top: 16,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(null),
-            child: const Text('Cancel'),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              MyText.titleMedium('Add Expense', fontWeight: 600),
+              MySpacing.height(16),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              MySpacing.height(12),
+              TextField(
+                controller: amountController,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Amount',
+                  prefixText: '₹',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              MySpacing.height(16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(sheetContext),
+                      child: MyText.bodyMedium('Cancel'),
+                    ),
+                  ),
+                  MySpacing.width(12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final amount = double.tryParse(amountController.text);
+                        if (descriptionController.text.trim().isNotEmpty && amount != null && amount > 0) {
+                          Navigator.pop(sheetContext, {
+                            'description': descriptionController.text.trim(),
+                            'amount': amount,
+                          });
+                        }
+                      },
+                      child: MyText.bodyMedium('Add', color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+              MySpacing.height(16),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () {
-              final amount = double.tryParse(amountText);
-              if (description.trim().isNotEmpty && amount != null && amount > 0) {
-                Navigator.of(context).pop({
-                  'description': description.trim(),
-                  'amount': amount,
-                });
-              }
-            },
-            child: const Text('Add'),
-          ),
-        ],
+        ),
       ),
     );
 

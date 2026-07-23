@@ -50,6 +50,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: MyText.bodyLarge(
+                widget.orderFor == 'seller' ? 'Confirm Payment' : 'Place Order',
+                fontWeight: 600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
       body: MultiBlocProvider(
         providers: [
           BlocProvider(

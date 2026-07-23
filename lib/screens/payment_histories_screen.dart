@@ -286,6 +286,7 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                     const SizedBox(height: 14),
                     DropdownButtonFormField<String>(
                       value: selectedSource,
+                      dropdownColor: Theme.of(context).colorScheme.surface,
                       decoration: InputDecoration(
                         labelText: 'Source',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

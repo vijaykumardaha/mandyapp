@@ -57,6 +57,10 @@ class ProductCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: theme.colorScheme.outline.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),

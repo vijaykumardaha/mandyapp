@@ -1,4 +1,5 @@
 import 'package:mandyapp/models/order_item_model.dart';
+import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 
 class OrderItemDAO {
@@ -7,6 +8,7 @@ class OrderItemDAO {
   Future<int> insertOrderItem(OrderItem orderItem) async {
     final db = await dbHelper.database;
     orderItem.id = DBHelper.generateUuidInt();
+    orderItem.mandyId = await AppHelper.getCurrentMandyId();
     orderItem.updatedAt = DateTime.now().millisecondsSinceEpoch;
     orderItem.isDeleted = 0;
     orderItem.syncStatus = 0;
