@@ -8,6 +8,7 @@ import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
+import 'package:mandyapp/screens/customer_bills_screen.dart';
 import 'package:mandyapp/screens/payment_histories_screen.dart';
 
 class CustomerManagementScreen extends StatefulWidget {
@@ -166,11 +167,19 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
                         builder: (context) => PaymentHistoriesScreen(customer: customer),
                       ),
                     );
+                  } else if (value == 'bills') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CustomerBillsScreen(customer: customer),
+                      ),
+                    );
                   }
                 },
                 itemBuilder: (context) => [
                   const PopupMenuItem(value: 'edit', child: Text('Edit')),
                   const PopupMenuItem(value: 'payments', child: Text('Payments')),
+                  const PopupMenuItem(value: 'bills', child: Text('Bills')),
                 ],
               ),
           ],

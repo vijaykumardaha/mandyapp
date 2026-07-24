@@ -11,6 +11,16 @@ abstract class OrderEvent extends Equatable {
 // Load all orders
 class LoadOrders extends OrderEvent {}
 
+// Load orders by customer ID
+class LoadOrdersByCustomer extends OrderEvent {
+  final int customerId;
+
+  const LoadOrdersByCustomer(this.customerId);
+
+  @override
+  List<Object?> get props => [customerId];
+}
+
 // Load order with items
 class LoadOrderWithItems extends OrderEvent {
   final int orderId;

@@ -94,6 +94,8 @@ class OrderDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'orders',
+      where: 'is_deleted = ?',
+      whereArgs: [0],
       orderBy: 'created_at DESC',
     );
 
@@ -107,9 +109,9 @@ class OrderDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'orders',
-      where: 'customer_id = ?',
-      whereArgs: [customerId],
-      orderBy: 'created_at ASC',
+      where: 'customer_id = ? AND is_deleted = ?',
+      whereArgs: [customerId, 0],
+      orderBy: 'created_at DESC',
     );
 
     // Load items for each order

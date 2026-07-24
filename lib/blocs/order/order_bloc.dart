@@ -26,6 +26,21 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
       }
     });
 
+    // Load orders by customer ID
+    on<LoadOrdersByCustomer>((event, emit) async {
+      try {
+        emit(OrderLoading());
+        final orders = await orderDAO.getOrdersByCustomer(event.customerId);
+        if (orders.isEmpty) {
+          emit(OrderEmpty());
+        } else {
+          emit(OrdersLoaded(orders));
+        }
+      } catch (error) {
+        emit(OrderError('Failed to load orders: ${error.toString()}'));
+      }
+    });
+
     // Load order with items
     on<LoadOrderWithItems>((event, emit) async {
       try {
