@@ -7,13 +7,11 @@ import 'package:mandyapp/dao/order_expense_dao.dart';
 import 'package:mandyapp/dao/product_dao.dart';
 import 'package:mandyapp/dao/product_variant_dao.dart';
 import 'package:mandyapp/dao/customer_dao.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/order_charge_model.dart';
 import 'package:mandyapp/models/order_expense_model.dart';
 import 'package:mandyapp/models/order_model.dart';
 import 'package:mandyapp/models/order_payment_model.dart';
 import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/screens/checkout_screen.dart';
 import 'package:mandyapp/utils/printer/printer_service.dart' as printer_service;
 import 'package:mandyapp/widgets/billing/invoice_item.dart';
 import 'package:mandyapp/widgets/billing/bill_line_item.dart';
@@ -36,31 +34,9 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     _billFuture = _loadBillDetails();
   }
 
-  Future<void> _handleEdit(_BillDetailsData data) async {
-    // await Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //     builder: (_) => CheckoutScreen(
-    //       cartItems: data.order.items,
-    //       customerId: data.order.customerId,
-    //       orderFor: data.order.orderFor,
-    //       initialOrderCharges: data.charges,
-    //       initialPayment: data.payments?.isNotEmpty == true ? data.payments!.first : null,
-    //       isEdit: true,
-    //     ),
-    //   ),
-    // );
-
-    // if (!mounted) return;
-
-    // setState(() {
-    //   _billFuture = _loadBillDetails();
-    // });
-  }
-
   Future<void> _handlePrint(_BillDetailsData data) async {
     final printerService = printer_service.PrinterService.instance;
 
-    // Check if printer is connected
     if (!printerService.connectionStatus.value) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -73,7 +49,6 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       return;
     }
 
-    // Check if Bluetooth is enabled
     if (!printerService.bluetoothEnabled.value) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -86,7 +61,6 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       return;
     }
 
-    // Show loading indicator
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -97,7 +71,6 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       );
     }
 
-    // Convert line items to invoice items
     final invoiceItems = data.lineItems.map((item) => InvoiceItem(
       productName: item.productName,
       quantity: item.sale.quantity,
@@ -106,7 +79,6 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       total: item.totalPrice,
     )).toList();
 
-    // Print the invoice
     final success = await printerService.printInvoice(
       cartId: data.order.id!,
       customerName: data.customerName,
@@ -114,6 +86,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       items: invoiceItems,
       itemTotal: data.itemTotal,
       chargesTotal: data.chargesTotal,
+      expensesTotal: data.expensesTotal,
       grandTotal: data.grandTotal,
       receivedAmount: data.receivedAmount,
       pendingAmount: data.pendingPayment,
@@ -190,40 +163,46 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        titleSpacing: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.arrow_back),
+        title: FutureBuilder<_BillDetailsData>(
+          future: _billFuture,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final data = snapshot.data!;
+              final orderForLabel = data.order.orderFor == 'seller' ? 'Seller' : 'Buyer';
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Bill #${data.order.id ?? '-'}',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '$orderForLabel • ${data.customerName}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              );
+            }
+            return const Text('Bill Details');
+          },
         ),
-        title: const Text(''),
         actions: [
-          Builder(
-            builder: (context) {
-              return FutureBuilder<_BillDetailsData>(
-                future: _billFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done || 
-                      snapshot.hasError || 
-                      !snapshot.hasData) {
-                    return const SizedBox.shrink();
-                  }
-                  
-                  final data = snapshot.data!;
-                  return Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit_outlined),
-                        onPressed: () => _handleEdit(data),
-                        tooltip: 'Edit',
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.print_outlined),
-                        onPressed: () => _handlePrint(data),
-                        tooltip: 'Print',
-                      ),
-                    ],
-                  );
-                },
+          FutureBuilder<_BillDetailsData>(
+            future: _billFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done ||
+                  snapshot.hasError ||
+                  !snapshot.hasData) {
+                return const SizedBox.shrink();
+              }
+              return IconButton(
+                icon: const Icon(Icons.print_outlined),
+                onPressed: () => _handlePrint(snapshot.data!),
+                tooltip: 'Print',
               );
             },
           ),
@@ -232,140 +211,115 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       body: FutureBuilder<_BillDetailsData>(
         future: _billFuture,
         builder: (context, snapshot) {
-          // Return loading indicator or error if needed
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
           }
 
           if (snapshot.hasError || !snapshot.hasData) {
             return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  MyText.titleMedium('Failed to load invoice', fontWeight: 600),
-                  const SizedBox(height: 12),
-                  MyText.bodyMedium('Please try again later.'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _retry,
-                    child: const Text('Retry'),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.error.withOpacity(0.06),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.receipt_long_outlined,
+                        size: 48,
+                        color: theme.colorScheme.error.withOpacity(0.5),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Failed to load invoice',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Please try again later',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton.icon(
+                      onPressed: _retry,
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text('Retry'),
+                    ),
+                  ],
+                ),
               ),
             );
           }
-          
+
           final data = snapshot.data!;
           final currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
-          final dateFormat = DateFormat('dd MMM yyyy | hh:mm a');
           final createdAt = DateTime.tryParse(data.order.createdAt) ?? DateTime.now();
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: theme.colorScheme.outline.withOpacity(0.1)),
-                    color: theme.colorScheme.surface,
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.colorScheme.shadow.withOpacity(0.05),
-                        blurRadius: 16,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+          return Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 360),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: theme.colorScheme.outline.withOpacity(0.2),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.shadowColor.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                        decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                          color: theme.colorScheme.primary.withOpacity(0.04),
-                          border: Border(bottom: BorderSide(color: theme.colorScheme.outline.withOpacity(0.08))),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                MyText.bodySmall('Created:', color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                                const SizedBox(width: 6),
-                                MyText.bodySmall(dateFormat.format(createdAt), fontWeight: 600),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Expanded(
-                                    flex: 4,
-                                    child: _buildInfoMetric(
-                                      'Payment Method',
-                                      data.paymentMethodLabel,
-                                      theme,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    flex: 3,
-                                    child: _buildInfoMetric(
-                                      data.order.orderFor == 'seller' ? 'Amount Received' : 'Received Amount',
-                                      currency.format(data.receivedAmount),
-                                      theme,
-                                      valueColor: theme.colorScheme.primary,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    flex: 3,
-                                    child: _buildInfoMetric(
-                                      data.order.orderFor == 'seller' ? 'Amount Pending' : 'Pending Amount',
-                                      currency.format(data.outstandingAmount.abs()),
-                                      theme,
-                                      valueColor: data.outstandingAmount > 0
-                                          ? Colors.orange
-                                          : (data.outstandingAmount < 0 ? Colors.green : null),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            _buildItemsSection(data, currency, theme),
-                            const SizedBox(height: 24),
-                            _buildBillChangesSection(data, currency, theme),
-                            const SizedBox(height: 24),
-                            _buildExpensesSection(data, currency, theme),
-                            const SizedBox(height: 24),
-                            _buildSummarySection(data, currency, theme),
-                            const SizedBox(height: 24),
-                            Center(
-                              child: MyText.bodySmall(
-                                'Thank you for shopping with us!',
-                                fontWeight: 500,
-                              ),
-                            ),
-                          ],
+                      _buildReceiptHeader(data, theme),
+                      const SizedBox(height: 16),
+                      const Divider(thickness: 1),
+                      _buildReceiptInfo(data, createdAt, theme),
+                      const SizedBox(height: 12),
+                      const Divider(thickness: 1),
+                      _buildReceiptItems(data, currency, theme),
+                      const Divider(thickness: 1),
+                      _buildReceiptSummary(data, currency, theme),
+                      if (data.charges.isNotEmpty) ...[
+                        _buildReceiptCharges(data, currency, theme),
+                      ],
+                      if (data.expenses.isNotEmpty) ...[
+                        _buildReceiptExpenses(data, currency, theme),
+                      ],
+                      const Divider(thickness: 1),
+                      _buildReceiptPayment(data, currency, theme),
+                      const SizedBox(height: 16),
+                      const Divider(thickness: 1),
+                      Center(
+                        child: Text(
+                          'Thank you!',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
           );
         },
@@ -373,402 +327,275 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     );
   }
 
-  Widget _buildItemsSection(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.08)),
-      ),
+  Widget _buildReceiptHeader(_BillDetailsData data, ThemeData theme) {
+    final orderForLabel = data.order.orderFor == 'seller' ? 'Seller' : 'Buyer';
+    return Column(
+      children: [
+        Text(
+          'INVOICE',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '#${data.order.id ?? '-'}',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '$orderForLabel • ${data.customerName}',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReceiptInfo(_BillDetailsData data, DateTime createdAt, ThemeData theme) {
+    final dateFormat = DateFormat('dd/MM/yyyy hh:mm a');
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.05),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 4,
-                  child: MyText.bodySmall('PRODUCT', fontWeight: 600, color: theme.colorScheme.onSurface.withOpacity(0.7)),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: MyText.bodySmall('QTY', fontWeight: 600, color: theme.colorScheme.onSurface.withOpacity(0.7)),
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: MyText.bodySmall('RATE', fontWeight: 600, color: theme.colorScheme.onSurface.withOpacity(0.7)),
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: MyText.bodySmall('TOTAL', fontWeight: 600, color: theme.colorScheme.onSurface.withOpacity(0.7)),
-                  ),
-                ),
-              ],
-            ),
+          _buildInfoRow('Date', dateFormat.format(createdAt), theme),
+          const SizedBox(height: 4),
+          _buildInfoRow('Type', data.order.orderFor.toUpperCase(), theme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, ThemeData theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
           ),
-          // Items
-          ...data.lineItems.map((item) => Column(
+        ),
+        Text(
+          value,
+          style: theme.textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReceiptItems(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Product Name Column
-                    Expanded(
-                      flex: 4,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.productName,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          if (item.seller?.name != null) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              'Seller: ${item.seller!.name}',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.hintColor,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    // Quantity Column
-                    Expanded(
-                      flex: 2,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          '${item.quantityLabel} ${item.variant?.unit ?? item.product?.defaultVariantModel?.unit ?? 'pc'}',
-                          style: theme.textTheme.bodyMedium,
-                        ),
-                      ),
-                    ),
-                    // Rate Column
-                    Expanded(
-                      flex: 3,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          currency.format(item.sale.sellingPrice),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Total Column
-                    Expanded(
-                      flex: 3,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          currency.format(item.sale.sellingPrice * item.sale.quantity),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              Expanded(
+                child: Text(
+                  'Product',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
-              if (item != data.lineItems.last)
-                Divider(
-                  height: 1,
-                  thickness: 0.5,
-                  color: theme.colorScheme.onSurface.withOpacity(0.1),
-                  indent: 16,
-                  endIndent: 16,
+              Text(
+                'Amount',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
+              ),
             ],
-          )).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBillChangesSection(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
-    final charges = data.charges;
-    final hasCharges = charges.isNotEmpty;
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.08)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.secondary.withOpacity(0.05),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            ),
+          ),
+        ),
+        ...data.lineItems.map((item) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
             child: Row(
               children: [
                 Expanded(
-                  flex: 3,
-                  child: MyText.bodySmall('Charge Name', fontWeight: 600),
+                  child: Text(
+                    item.productName,
+                    style: theme.textTheme.bodyMedium,
+                  ),
                 ),
-                Expanded(
-                  flex: 1,
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: MyText.bodySmall('Total', fontWeight: 600),
+                Text(
+                  '${item.quantityLabel} × ${currency.format(item.sellingPrice)} = ${currency.format(item.totalPrice)}',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
-          ),
-          if (!hasCharges)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: MyText.bodySmall(
-                'No additional charges were applied to this invoice.',
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
-              ),
-            )
-          else ...[
-            for (final charge in charges)...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: MyText.bodyMedium(
-                        charge.chargeName,
-                        fontWeight: 600,
-                      ),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: MyText.bodyMedium(currency.format(charge.chargeAmount)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (charge != charges.last)
-                Divider(height: 1, thickness: 0.5, color: theme.colorScheme.onSurface.withOpacity(0.05)),
-            ],
-          ],
-        ],
-      ),
+          );
+        }),
+      ],
     );
   }
 
-  Widget _buildExpensesSection(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
-    final expenses = data.expenses;
-    final hasExpenses = expenses.isNotEmpty;
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.08)),
-      ),
+  Widget _buildReceiptSummary(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.secondary.withOpacity(0.05),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.receipt_long,
-                  size: 20,
-                  color: theme.colorScheme.secondary,
-                ),
-                const SizedBox(width: 8),
-                MyText.bodySmall('EXPENSES', fontWeight: 600, color: theme.colorScheme.onSurface.withOpacity(0.7)),
-                const Spacer(),
-                MyText.bodySmall(
-                  hasExpenses ? currency.format(data.expensesTotal) : 'No Expenses',
-                  fontWeight: 600,
-                  color: hasExpenses ? theme.colorScheme.secondary : theme.colorScheme.onSurface.withOpacity(0.5),
-                ),
-              ],
-            ),
+          _buildSummaryRow('Item Total', currency.format(data.itemTotal), theme),
+          const SizedBox(height: 4),
+          _buildSummaryRow('Total Charges', currency.format(data.chargesTotal), theme),
+          const SizedBox(height: 4),
+          _buildSummaryRow('Total Expenses', currency.format(data.expensesTotal), theme),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Divider(thickness: 1),
           ),
-          if (!hasExpenses)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: MyText.bodySmall(
-                'No expenses were recorded for this order.',
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
-              ),
-            )
-          else ...[
-            for (final expense in expenses)...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          MyText.bodyMedium(
-                            expense.expenseName,
-                            fontWeight: 500,
-                          ),
-                          if (expense.expenseNote != null && expense.expenseNote!.isNotEmpty)
-                            MyText.bodySmall(
-                              expense.expenseNote!,
-                              color: theme.colorScheme.onSurface.withOpacity(0.6),
-                            ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: MyText.bodyMedium(
-                          currency.format(expense.expenseAmount),
-                          fontWeight: 600,
-                          color: theme.colorScheme.secondary,
-                        ),
-                      ),
-                    ),
-                  ],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'GRAND TOTAL',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              if (expense != expenses.last)
-                Divider(height: 1, thickness: 0.5, color: theme.colorScheme.onSurface.withOpacity(0.05)),
+              Text(
+                currency.format(data.grandTotal),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
             ],
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummarySection(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
-    final rows = <MapEntry<String, String>>[
-      MapEntry('Item Total', currency.format(data.itemTotal)),
-      if (data.chargesTotal > 0) MapEntry('Charge Total', currency.format(data.chargesTotal)),
-      if (data.expensesTotal > 0) MapEntry('Expense Total', currency.format(data.expensesTotal)),
-      MapEntry('Grand Total', currency.format(data.grandTotal))
-    ];
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.08)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.05),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: MyText.bodySmall('Summary', fontWeight: 600),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: MyText.bodySmall('Amount', fontWeight: 600),
-                  ),
-                ),
-              ],
-            ),
           ),
-          for (final entry in rows)...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: MyText.bodyMedium(
-                      entry.key,
-                      fontWeight: entry.key == 'Grand Total' ? 700 : 600,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: MyText.bodyMedium(
-                        entry.value,
-                        fontWeight: entry.key == 'Grand Total' ? 700 : 600,
-                        color: (entry.key.contains('Pending') || entry.key.contains('Amount Pending'))
-                            ? Colors.orange
-                            : (entry.key.contains('Amount Received') || entry.key.contains('Received') ? theme.colorScheme.primary : null),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (entry != rows.last)
-              Divider(height: 1, thickness: 0.5, color: theme.colorScheme.onSurface.withOpacity(0.05)),
-          ],
         ],
       ),
     );
   }
 
-  Widget _buildInfoMetric(String label, String value, ThemeData theme, {Color? valueColor}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.1)),
-        color: theme.colorScheme.surface,
-      ),
+  Widget _buildSummaryRow(String label, String value, ThemeData theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        Text(
+          value,
+          style: theme.textTheme.bodyMedium,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReceiptCharges(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            label,
+            'Charges',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 4),
+          ...data.charges.map((charge) => Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  charge.chargeName,
+                  style: theme.textTheme.bodySmall,
+                ),
+                Text(
+                  currency.format(charge.chargeAmount),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReceiptExpenses(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Expenses',
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 4),
+          ...data.expenses.map((expense) => Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    expense.expenseName,
+                    style: theme.textTheme.bodySmall,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  currency.format(expense.expenseAmount),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReceiptPayment(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Payment Info',
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            value,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: valueColor ?? theme.colorScheme.onSurface,
-            ),
-          ),
+          _buildInfoRow('Amount Paid', currency.format(data.receivedAmount), theme),
+          const SizedBox(height: 4),
+          _buildInfoRow('Amount Due', currency.format(data.pendingPayment.abs()), theme),
+          if (data.paymentMethodLabel.isNotEmpty && data.paymentMethodLabel != 'Not recorded') ...[
+            const SizedBox(height: 4),
+            _buildInfoRow('Payment Method', data.paymentMethodLabel, theme),
+          ],
         ],
       ),
     );
@@ -799,8 +626,6 @@ class _BillDetailsData {
         : 'Customer ${order.customerId}';
   }
 
-  String get invoiceLabel => 'Invoice #${order.id}';
-
   double get itemTotal {
     return lineItems.fold(0.0, (sum, item) => sum + item.totalPrice);
   }
@@ -817,7 +642,6 @@ class _BillDetailsData {
     if (order.orderFor == 'seller') {
       return itemTotal - chargesTotal;
     } else {
-      // For buyer orders, use current implementation (subtotal + chargesTotal)
       return itemTotal + chargesTotal;
     }
   }
@@ -831,23 +655,18 @@ class _BillDetailsData {
 
   double get outstandingAmount => grandTotal - receivedAmount;
 
-  // Calculate paymentAmount and pendingPayment based on order type
   double get paymentAmount {
     if (order.orderFor == 'seller') {
-      // For seller orders, paymentAmount is the amount to be paid to seller (after deducting charges)
       return grandTotal;
     } else {
-      // For buyer orders, paymentAmount is the total amount received
       return receivedAmount;
     }
   }
 
   double get pendingPayment {
     if (order.orderFor == 'seller') {
-      // For seller orders, pendingPayment is the amount still owed to seller
       return paymentAmount - receivedAmount;
     } else {
-      // For buyer orders, pendingPayment is the remaining amount to be paid
       return outstandingAmount;
     }
   }
@@ -879,4 +698,3 @@ class _BillDetailsData {
     return methods.join(', ');
   }
 }
-
