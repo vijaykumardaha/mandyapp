@@ -1,32 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/order_item/order_item_bloc.dart';
-import 'package:mandyapp/dao/order_dao.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/order_item_model.dart';
-import 'package:mandyapp/models/order_model.dart';
 import 'package:mandyapp/screens/checkout_screen.dart';
 import 'package:mandyapp/widgets/selling/cart_item_list.dart';
 
 class OrderItemScreen extends StatefulWidget {
-  final List<OrderItem>? initialSales;
-  final Customer? buyerCustomer;
-  final String Function(Customer?)? formatCustomer;
-  final String? Function(OrderItem)? sellerNameForSale;
-  final String Function(OrderItem)? productTitleForSale;
-  final ValueChanged<Customer?>? onBuyerChanged;
-
-  const OrderItemScreen({
-    super.key,
-    this.initialSales,
-    this.buyerCustomer,
-    this.formatCustomer,
-    this.sellerNameForSale,
-    this.productTitleForSale,
-    this.onBuyerChanged,
-  });
+  const OrderItemScreen({super.key});
 
   @override
   State<OrderItemScreen> createState() => _OrderItemScreenState();
@@ -34,96 +17,41 @@ class OrderItemScreen extends StatefulWidget {
 
 class _OrderItemScreenState extends State<OrderItemScreen> {
   Customer? _buyerCustomer;
-  final OrderDAO _orderDAO = OrderDAO();
 
   @override
   void initState() {
     super.initState();
-    _buyerCustomer = widget.buyerCustomer;
-    // Load current sales if no initial sales provided
-    if (widget.initialSales == null) {
-      context.read<OrderItemBloc>().add(const LoadOrderItems());
-    }
-  }
-
-  List<OrderItem> _getCurrentSales() {
-    if (widget.initialSales != null) {
-      return widget.initialSales!;
-    }
-    final state = context.read<OrderItemBloc>().state;
-    if (state is OrderItemsLoaded) {
-      return state.orderItems;
-    }
-    return const [];
+    context.read<OrderItemBloc>().add(const LoadOrderItems());
   }
 
   String _formatCustomer(Customer? customer) {
-    if (widget.formatCustomer != null) {
-      return widget.formatCustomer!(customer);
-    }
-    if (customer == null) {
-      return '';
-    }
+    if (customer == null) return '';
     final name = customer.name?.trim() ?? '';
     final phone = customer.phone?.trim() ?? '';
-    if (name.isNotEmpty && phone.isNotEmpty) {
-      return '$name ($phone)';
-    }
-    if (name.isNotEmpty) {
-      return name;
-    }
+    if (name.isNotEmpty && phone.isNotEmpty) return '$name ($phone)';
+    if (name.isNotEmpty) return name;
     return phone;
-  }
-
-  String? _sellerNameForSale(OrderItem sale) {
-    if (widget.sellerNameForSale != null) {
-      return widget.sellerNameForSale!(sale);
-    }
-    // Default implementation
-    final customerBlocState = context.read<OrderItemBloc>().state;
-    if (customerBlocState is! OrderItemsLoaded) {
-      return null;
-    }
-    return 'Seller #${sale.sellerId}';
-  }
-
-  String _productTitleForSale(OrderItem sale) {
-    if (widget.productTitleForSale != null) {
-      return widget.productTitleForSale!(sale);
-    }
-    // Default implementation
-    return 'Product #${sale.productId}';
   }
 
   Future<void> _createNewCart(List<OrderItem> selectedSales) async {
     if (_buyerCustomer == null || _buyerCustomer!.id == null) {
-      _showSnack('Please select a buyer name before checkout.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
+          content: const Text('Please select a buyer name before checkout.'),
+        ),
+      );
       return;
     }
 
-    try {
-      // Navigate directly to checkout screen with cart items
-      // Order will be created in checkout screen when payment is recorded
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => CheckoutScreen(
-            cartItems: selectedSales,
-            customerId: _buyerCustomer!.id,
-            orderFor: 'buyer',
-          ),
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CheckoutScreen(
+          cartItems: selectedSales,
+          customerId: _buyerCustomer!.id,
+          orderFor: 'buyer',
         ),
-      );
-    } catch (e) {
-      _showSnack('Failed to navigate to checkout: ${e.toString()}');
-    }
-  }
-
-  void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-        content: Text(message),
       ),
     );
   }
@@ -132,20 +60,18 @@ class _OrderItemScreenState extends State<OrderItemScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: AppBar(title: Text('Cart Items')),
+        title: const Text('Order Items'),
       ),
-      body: widget.initialSales != null 
-          ? _buildCartContent(widget.initialSales!)
-          : BlocBuilder<OrderItemBloc, OrderItemState>(
-              builder: (context, state) {
-                if (state is OrderItemLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                
-                final sales = _getCurrentSales();
-                return _buildCartContent(sales);
-              },
-            ),
+      body: BlocBuilder<OrderItemBloc, OrderItemState>(
+        builder: (context, state) {
+          if (state is OrderItemLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final sales = state is OrderItemsLoaded ? state.orderItems : <OrderItem>[];
+          return _buildCartContent(sales);
+        },
+      ),
     );
   }
 
@@ -186,19 +112,16 @@ class _OrderItemScreenState extends State<OrderItemScreen> {
         setState(() {
           _buyerCustomer = customer;
         });
-        widget.onBuyerChanged?.call(customer);
       },
       formatCustomer: _formatCustomer,
-      sellerNameForSale: _sellerNameForSale,
-      productTitleForSale: _productTitleForSale,
+      sellerNameForSale: (sale) => sale.sellerName,
+      productTitleForSale: (sale) => sale.productName ?? 'Product #${sale.productId}',
       onDeleteSale: (sale, index) async {
-        if (sale.id == null) {
-          return false;
-        }
+        if (sale.id == null) return false;
         context.read<OrderItemBloc>().add(DeleteOrderItemEvent(sale.id!));
         return true;
       },
-      onCheckout: ( selectedSales) async {
+      onCheckout: (selectedSales) async {
         await _createNewCart(selectedSales);
       },
       showCancelButton: false,

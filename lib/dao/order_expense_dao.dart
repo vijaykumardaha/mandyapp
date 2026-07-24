@@ -124,16 +124,15 @@ class OrderExpenseDao {
         batch.rawInsert('''
           INSERT INTO order_expenses (
             order_id, expense_name, expense_amount, expense_note,
-            created_at, updated_at
+            updated_at
           )
-          VALUES (?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?)
 
           ON CONFLICT(id) DO UPDATE SET
             order_id = excluded.order_id,
             expense_name = excluded.expense_name,
             expense_amount = excluded.expense_amount,
             expense_note = excluded.expense_note,
-            created_at = excluded.created_at,
             updated_at = excluded.updated_at
 
           WHERE excluded.updated_at > order_expenses.updated_at;
@@ -142,7 +141,6 @@ class OrderExpenseDao {
           orderExpense.expenseName,
           orderExpense.expenseAmount,
           orderExpense.expenseNote,
-          orderExpense.createdAt,
           orderExpense.updatedAt,
         ]);
       }

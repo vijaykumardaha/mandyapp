@@ -1,25 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
-import 'package:mandyapp/models/order_model.dart';
 
-class ExpenseSectionWidget extends StatefulWidget {
-  final Order order;
+class ExpenseSectionWidget extends StatelessWidget {
   final String orderFor;
+  final List<Map<String, dynamic>> expenses;
+  final Function(List<Map<String, dynamic>>) onExpensesChanged;
 
   const ExpenseSectionWidget({
     super.key,
-    required this.order,
     required this.orderFor,
+    required this.expenses,
+    required this.onExpensesChanged,
   });
-
-  @override
-  State<ExpenseSectionWidget> createState() => _ExpenseSectionWidgetState();
-}
-
-class _ExpenseSectionWidgetState extends State<ExpenseSectionWidget> {
-  List<Map<String, dynamic>> _expenses = [];
-  bool _expensesExpanded = true;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +27,6 @@ class _ExpenseSectionWidgetState extends State<ExpenseSectionWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Padding(
             padding: MySpacing.all(16),
             child: Row(
@@ -48,7 +40,7 @@ class _ExpenseSectionWidgetState extends State<ExpenseSectionWidget> {
                 MyText.bodyMedium('Expenses', fontWeight: 600),
                 const Spacer(),
                 InkWell(
-                  onTap: () => _showAddExpenseDialog(),
+                  onTap: () => _showAddExpenseDialog(context),
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -72,70 +64,65 @@ class _ExpenseSectionWidgetState extends State<ExpenseSectionWidget> {
               ],
             ),
           ),
-
-          // Expenses List (when expanded)
-          if (_expensesExpanded) ...[
-            if (_expenses.isEmpty) ...[
-              Padding(
-                padding: MySpacing.horizontal(16),
-                child: MyText.bodySmall(
-                  'No expenses added',
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                ),
+          if (expenses.isEmpty)
+            Padding(
+              padding: MySpacing.horizontal(16),
+              child: MyText.bodySmall(
+                'No expenses added',
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
-            ] else ...[
-              ..._expenses.asMap().entries.map((entry) {
-                final index = entry.key;
-                final expense = entry.value;
-                return Padding(
-                  padding: MySpacing.horizontal(16),
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.check_circle,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        MyText.bodyMedium(
-                          expense['description'] ?? 'Expense',
-                          fontWeight: 500,
-                        ),
-                        MyText.bodySmall(
-                          '₹${(expense['amount'] as double).toStringAsFixed(2)}',
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                        ),
-                      ],
-                    ),
-                    trailing: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _expenses.removeAt(index);
-                        });
-                      },
-                      icon: Icon(
-                        Icons.delete_outline,
-                        size: 18,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    contentPadding: EdgeInsets.zero,
-                    visualDensity: VisualDensity.compact,
-                    dense: true,
+            )
+          else
+            ...expenses.asMap().entries.map((entry) {
+              final index = entry.key;
+              final expense = entry.value;
+              return Padding(
+                padding: MySpacing.horizontal(16),
+                child: ListTile(
+                  leading: Icon(
+                    Icons.check_circle,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
-                );
-              }),
-            ],
-            MySpacing.height(8),
-          ],
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      MyText.bodyMedium(
+                        expense['description'] ?? 'Expense',
+                        fontWeight: 500,
+                      ),
+                      MyText.bodySmall(
+                        '₹${(expense['amount'] as double).toStringAsFixed(2)}',
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                      ),
+                    ],
+                  ),
+                  trailing: IconButton(
+                    onPressed: () {
+                      final updated = List<Map<String, dynamic>>.from(expenses);
+                      updated.removeAt(index);
+                      onExpensesChanged(updated);
+                    },
+                    icon: Icon(
+                      Icons.delete_outline,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                  dense: true,
+                ),
+              );
+            }),
+          MySpacing.height(8),
         ],
       ),
     );
   }
 
-  Future<void> _showAddExpenseDialog() async {
+  Future<void> _showAddExpenseDialog(BuildContext context) async {
     final descriptionController = TextEditingController();
     final amountController = TextEditingController();
 
@@ -209,10 +196,8 @@ class _ExpenseSectionWidgetState extends State<ExpenseSectionWidget> {
       ),
     );
 
-    if (result != null && mounted) {
-      setState(() {
-        _expenses.add(result);
-      });
+    if (result != null) {
+      onExpensesChanged([...expenses, result]);
     }
   }
 }

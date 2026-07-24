@@ -183,9 +183,9 @@ class OrderItemDAO {
           INSERT INTO order_items (
             mandy_id, seller_id, buyer_order_id, seller_order_id, buyer_id,
             product_id, variant_id, buying_price, selling_price, quantity,
-            unit, updated_at, is_deleted, sync_status
+            unit, product_name, image_path, seller_name, buyer_name, updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(mandy_id) DO UPDATE SET
             seller_id = excluded.seller_id,
@@ -198,6 +198,10 @@ class OrderItemDAO {
             selling_price = excluded.selling_price,
             quantity = excluded.quantity,
             unit = excluded.unit,
+            product_name = excluded.product_name,
+            image_path = excluded.image_path,
+            seller_name = excluded.seller_name,
+            buyer_name = excluded.buyer_name,
             updated_at = excluded.updated_at,
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
@@ -215,6 +219,10 @@ class OrderItemDAO {
           orderItem.sellingPrice,
           orderItem.quantity,
           orderItem.unit,
+          orderItem.productName,
+          orderItem.imagePath,
+          orderItem.sellerName,
+          orderItem.buyerName,
           orderItem.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           orderItem.isDeleted ?? 0,
           orderItem.syncStatus ?? 1,

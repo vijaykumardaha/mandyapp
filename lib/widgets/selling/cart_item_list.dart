@@ -436,7 +436,7 @@ class _CartItemListState extends State<CartItemList> {
                               '${sale.quantity.toStringAsFixed(sale.quantity % 1 == 0 ? 0 : 2)} ${sale.unit}';
                           final productTitle = widget.productTitleForSale(sale);
                           final titleText = sellerName != null
-                              ? '$productTitle (${sellerName})'
+                              ? '$productTitle [${sellerName}]'
                               : productTitle;
 
                           void toggleSelection(bool value) {

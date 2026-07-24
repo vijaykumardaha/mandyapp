@@ -34,7 +34,7 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS users (
@@ -175,6 +175,10 @@ class DBHelper {
             selling_price REAL NOT NULL,
             quantity REAL NOT NULL,
             unit TEXT DEFAULT 'Kg',
+            product_name TEXT,
+            image_path TEXT,
+            seller_name TEXT,
+            buyer_name TEXT,
             updated_at INTEGER NOT NULL,
             is_deleted INTEGER DEFAULT 0,
             sync_status INTEGER DEFAULT 0
@@ -210,7 +214,18 @@ class DBHelper {
           )
         ''');
 
-      }
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('ALTER TABLE order_items ADD COLUMN variant_name TEXT');
+          await db.execute('ALTER TABLE order_items ADD COLUMN image_path TEXT');
+        }
+        if (oldVersion < 3) {
+          await db.execute("ALTER TABLE order_items RENAME COLUMN variant_name TO product_name");
+          await db.execute('ALTER TABLE order_items ADD COLUMN seller_name TEXT');
+          await db.execute('ALTER TABLE order_items ADD COLUMN buyer_name TEXT');
+        }
+      },
     );
   }
 }

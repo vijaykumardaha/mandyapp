@@ -14,9 +14,10 @@ class OrderItem {
   int? updatedAt;
   int? isDeleted;
   int? syncStatus;
-  // Variant details from product_variants table
-  String? variantName;
+  String? productName;
   String? imagePath;
+  String? sellerName;
+  String? buyerName;
 
   OrderItem({
     this.id,
@@ -34,8 +35,10 @@ class OrderItem {
     this.updatedAt,
     this.isDeleted = 0,
     this.syncStatus = 0,
-    this.variantName,
+    this.productName,
     this.imagePath,
+    this.sellerName,
+    this.buyerName,
   });
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
@@ -55,8 +58,10 @@ class OrderItem {
       updatedAt: json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
       isDeleted: json['is_deleted'] as int? ?? 0,
       syncStatus: json['sync_status'] as int? ?? 0,
-      variantName: json['variant_name'] as String?,
+      productName: json['product_name'] as String?,
       imagePath: json['image_path'] as String?,
+      sellerName: json['seller_name'] as String?,
+      buyerName: json['buyer_name'] as String?,
     );
   }
 
@@ -77,8 +82,10 @@ class OrderItem {
       'updated_at': updatedAt ?? DateTime.now().millisecondsSinceEpoch,
       'is_deleted': isDeleted ?? 0,
       'sync_status': syncStatus ?? 0,
-      // Note: variantName and imagePath are read-only fields from product_variants table
-      // They are not stored in the order_items table
+      'product_name': productName,
+      'image_path': imagePath,
+      'seller_name': sellerName,
+      'buyer_name': buyerName,
     };
   }
 
@@ -98,8 +105,10 @@ class OrderItem {
     int? updatedAt,
     int? isDeleted,
     int? syncStatus,
-    String? variantName,
+    String? productName,
     String? imagePath,
+    String? sellerName,
+    String? buyerName,
   }) {
     return OrderItem(
       id: id ?? this.id,
@@ -117,14 +126,16 @@ class OrderItem {
       updatedAt: updatedAt ?? this.updatedAt,
       isDeleted: isDeleted ?? this.isDeleted,
       syncStatus: syncStatus ?? this.syncStatus,
-      variantName: variantName ?? this.variantName,
+      productName: productName ?? this.productName,
       imagePath: imagePath ?? this.imagePath,
+      sellerName: sellerName ?? this.sellerName,
+      buyerName: buyerName ?? this.buyerName,
     );
   }
 
   @override
   String toString() {
-    return 'OrderItem(id: $id, mandyId: $mandyId, sellerId: $sellerId, buyerOrderId: $buyerOrderId, sellerOrderId: $sellerOrderId, buyerId: $buyerId, productId: $productId, variantId: $variantId, buyingPrice: $buyingPrice, sellingPrice: $sellingPrice, quantity: $quantity, unit: $unit, updatedAt: $updatedAt, isDeleted: $isDeleted, syncStatus: $syncStatus, variantName: $variantName, imagePath: $imagePath)';
+    return 'OrderItem(id: $id, mandyId: $mandyId, sellerId: $sellerId, buyerOrderId: $buyerOrderId, sellerOrderId: $sellerOrderId, buyerId: $buyerId, productId: $productId, variantId: $variantId, buyingPrice: $buyingPrice, sellingPrice: $sellingPrice, quantity: $quantity, unit: $unit, updatedAt: $updatedAt, isDeleted: $isDeleted, syncStatus: $syncStatus, productName: $productName, imagePath: $imagePath, sellerName: $sellerName, buyerName: $buyerName)';
   }
 
   @override
@@ -147,28 +158,34 @@ class OrderItem {
       other.updatedAt == updatedAt &&
       other.isDeleted == isDeleted &&
       other.syncStatus == syncStatus &&
-      other.variantName == variantName &&
-      other.imagePath == imagePath;
+      other.productName == productName &&
+      other.imagePath == imagePath &&
+      other.sellerName == sellerName &&
+      other.buyerName == buyerName;
   }
 
   @override
   int get hashCode {
-    return id.hashCode ^
-      mandyId.hashCode ^
-      sellerId.hashCode ^
-      buyerOrderId.hashCode ^
-      sellerOrderId.hashCode ^
-      buyerId.hashCode ^
-      productId.hashCode ^
-      variantId.hashCode ^
-      buyingPrice.hashCode ^
-      sellingPrice.hashCode ^
-      quantity.hashCode ^
-      unit.hashCode ^
-      updatedAt.hashCode ^
-      isDeleted.hashCode ^
-      syncStatus.hashCode ^
-      variantName.hashCode ^
-      imagePath.hashCode;
+    return Object.hash(
+      id,
+      mandyId,
+      sellerId,
+      buyerOrderId,
+      sellerOrderId,
+      buyerId,
+      productId,
+      variantId,
+      buyingPrice,
+      sellingPrice,
+      quantity,
+      unit,
+      updatedAt,
+      isDeleted,
+      syncStatus,
+      productName,
+      imagePath,
+      sellerName,
+      buyerName,
+    );
   }
 }

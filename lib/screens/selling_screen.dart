@@ -358,13 +358,16 @@ class SellingScreenState extends State<SellingScreen> {
     final effectiveSellingPrice = overrideSellingPrice ?? variant.sellingPrice;
     final sale = OrderItem(
       sellerId: sellerCustomer!.id!,
+      sellerName: sellerCustomer!.name,
       buyerOrderId: null,
       buyerId: null,
       productId: product.id ?? 0,
       variantId: variant.id!,
       sellingPrice: effectiveSellingPrice,
       quantity: quantity,
-      unit: variant.unit
+      unit: variant.unit,
+      productName: variant.variantName,
+      imagePath: variant.imagePath,
     );
 
     context.read<OrderItemBloc>().add(AddOrderItemEvent(sale));

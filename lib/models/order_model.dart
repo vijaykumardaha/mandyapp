@@ -100,7 +100,7 @@ class Order {
   // Get total price of all items
   double get totalPrice {
     if (items == null || items!.isEmpty) return 0.0;
-    return items!.fold(0.0, (sum, item) => sum + item.buyingPrice * item.quantity);
+    return items!.fold(0.0, (sum, item) => sum + item.sellingPrice * item.quantity);
   }
 
   // Check if order is empty

@@ -265,7 +265,7 @@ class OrderDAO {
         oi.updated_at,
         oi.is_deleted,
         oi.sync_status,
-        pv.variant_name,
+        pv.variant_name AS product_name,
         pv.image_path
       FROM order_items oi
       LEFT JOIN product_variants pv ON oi.variant_id = pv.id

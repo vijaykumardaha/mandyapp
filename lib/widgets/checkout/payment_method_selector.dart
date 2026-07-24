@@ -9,9 +9,10 @@ class PaymentMethodSelector extends StatefulWidget {
   final Set<PaymentMethod> selectedPaymentMethods;
   final Map<PaymentMethod, double> paymentAmounts;
   final Function(Set<PaymentMethod>, Map<PaymentMethod, double>) onSelectionChanged;
-  final String? orderFor; // 'seller' or 'buyer' - if seller, hide credit option
+  final String? orderFor;
   final double subtotal;
   final double chargesTotal;
+  final double expensesTotal;
   final double grandTotal;
 
   const PaymentMethodSelector({
@@ -22,6 +23,7 @@ class PaymentMethodSelector extends StatefulWidget {
     this.orderFor,
     required this.subtotal,
     required this.chargesTotal,
+    required this.expensesTotal,
     required this.grandTotal,
   }) : selectedPaymentMethods = selectedPaymentMethods ?? const {PaymentMethod.cash},
        paymentAmounts = paymentAmounts ?? const {};
@@ -34,8 +36,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   late Set<PaymentMethod> _selectedPaymentMethods;
   late final Map<PaymentMethod, TextEditingController> _controllers;
   late final Map<PaymentMethod, FocusNode> _focusNodes;
+  bool _initialized = false;
 
-  // Get available payment methods based on cart type
   List<PaymentMethod> get _availablePaymentMethods {
     final methods = [PaymentMethod.cash, PaymentMethod.upi, PaymentMethod.card];
     if (widget.orderFor != 'seller') {
@@ -49,7 +51,6 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     super.initState();
     _selectedPaymentMethods = Set.from(widget.selectedPaymentMethods);
 
-    // If orderFor is seller, remove credit payment method if it was selected
     if (widget.orderFor == 'seller' && _selectedPaymentMethods.contains(PaymentMethod.credit)) {
       _selectedPaymentMethods.remove(PaymentMethod.credit);
     }
@@ -57,15 +58,28 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     _controllers = {};
     _focusNodes = {};
     _createControllers();
-    _syncControllersFromWidget();
+  }
 
-    // Pre-fill with grand total
-    if (_selectedPaymentMethods.isNotEmpty) {
-      final controller = _controllers[_selectedPaymentMethods.first];
-      if (controller != null && controller.text.isEmpty) {
-        controller.text = widget.grandTotal.toStringAsFixed(2);
-        _updatePaymentAmount(_selectedPaymentMethods.first, controller.text);
-      }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _selectedPaymentMethods.isNotEmpty) {
+          final method = _selectedPaymentMethods.first;
+          final controller = _controllers[method];
+          if (controller != null && controller.text.isEmpty) {
+            controller.text = widget.grandTotal.toStringAsFixed(2);
+            final amount = double.tryParse(controller.text) ?? 0.0;
+            final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
+            if (amount > 0) {
+              updatedAmounts[method] = amount;
+            }
+            widget.onSelectionChanged(_selectedPaymentMethods, updatedAmounts);
+          }
+        }
+      });
     }
   }
 
@@ -73,28 +87,27 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   void didUpdateWidget(PaymentMethodSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // Handle orderFor changes
     if (oldWidget.orderFor != widget.orderFor) {
       if (widget.orderFor == 'seller' && _selectedPaymentMethods.contains(PaymentMethod.credit)) {
         _selectedPaymentMethods.remove(PaymentMethod.credit);
-        // Clear credit controller and focus node if they exist
         _controllers[PaymentMethod.credit]?.dispose();
         _focusNodes[PaymentMethod.credit]?.dispose();
         _controllers.remove(PaymentMethod.credit);
         _focusNodes.remove(PaymentMethod.credit);
-        // Remove credit from payment amounts
         final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
         updatedAmounts.remove(PaymentMethod.credit);
-        widget.onSelectionChanged(_selectedPaymentMethods, updatedAmounts);
+        final selected = Set<PaymentMethod>.from(_selectedPaymentMethods);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          widget.onSelectionChanged(selected, updatedAmounts);
+        });
       }
     }
 
     if (oldWidget.selectedPaymentMethods != widget.selectedPaymentMethods) {
       _selectedPaymentMethods = Set.from(widget.selectedPaymentMethods);
     }
-    if (oldWidget.paymentAmounts != widget.paymentAmounts) {
-      _syncControllersFromWidget();
-    }
+
+    _syncControllersFromWidget();
   }
 
   void _createControllers() {
@@ -135,7 +148,6 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   }
 
   void _togglePaymentMethod(PaymentMethod method) {
-    // Prevent selecting credit for seller carts
     if (widget.orderFor == 'seller' && method == PaymentMethod.credit) {
       return;
     }
@@ -143,7 +155,6 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     final updatedSelected = Set<PaymentMethod>.from(_selectedPaymentMethods);
     final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
 
-    // Clear all existing selections and amounts
     for (final existingMethod in updatedSelected) {
       _focusNodes[existingMethod]?.unfocus();
       updatedAmounts.remove(existingMethod);
@@ -151,13 +162,11 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     }
     updatedSelected.clear();
 
-    // Add the new selection
     updatedSelected.add(method);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNodes[method]?.requestFocus();
-    });
-    final currentText = _controllers[method]?.text ?? '';
-    final amount = double.tryParse(currentText);
+
+    final grandTotalText = widget.grandTotal.toStringAsFixed(2);
+    _controllers[method]?.text = grandTotalText;
+    final amount = double.tryParse(grandTotalText);
     if (amount != null && amount > 0) {
       updatedAmounts[method] = amount;
     }
@@ -188,18 +197,13 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate payment amounts
     double receivedAmount = totalAmount;
-    double pendingAmount = widget.grandTotal - receivedAmount;
-    
-    // Calculate paymentAmount and pendingPayment based on order type
-    double paymentAmount, pendingPayment;
+    double pendingPayment;
+
     if (widget.orderFor == 'seller') {
-      paymentAmount = widget.grandTotal;
-      pendingPayment = paymentAmount - receivedAmount;
+      pendingPayment = widget.grandTotal - receivedAmount;
     } else {
-      paymentAmount = receivedAmount;
-      pendingPayment = pendingAmount;
+      pendingPayment = widget.grandTotal - receivedAmount;
     }
 
     return Column(
@@ -217,7 +221,6 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title
               Row(
                 children: [
                   Icon(
@@ -229,10 +232,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                   MyText.bodyMedium('Payment Method', fontWeight: 600),
                 ],
               ),
-
               MySpacing.height(16),
-
-              // Payment Method Selection Row
               Row(
                 children: [
                   ..._availablePaymentMethods.map((method) {
@@ -256,10 +256,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-                color: Theme.of(context)
-                    .colorScheme
-                    .outline
-                    .withOpacity(0.2)),
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,7 +275,6 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
               MySpacing.height(12),
               Column(
                 children: [
-                  // Item Total, Charges, and Grand Total in Row
                   Row(
                     children: [
                       Expanded(
@@ -289,7 +285,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                           context,
                         ),
                       ),
-                      MySpacing.width(12),
+                      MySpacing.width(8),
                       Expanded(
                         child: _modernSummaryCard(
                           'Charges',
@@ -298,7 +294,20 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                           context,
                         ),
                       ),
-                      MySpacing.width(12),
+                      MySpacing.width(8),
+                      Expanded(
+                        child: _modernSummaryCard(
+                          'Expenses',
+                          widget.expensesTotal,
+                          Icons.money_off,
+                          context,
+                        ),
+                      ),
+                    ],
+                  ),
+                  MySpacing.height(8),
+                  Row(
+                    children: [
                       Expanded(
                         child: _modernSummaryCard(
                           'Grand Total',
@@ -309,7 +318,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                       ),
                     ],
                   ),
-      
+
                   MySpacing.height(8),
 
                   // Payment Details

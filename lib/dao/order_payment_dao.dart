@@ -6,7 +6,6 @@ import 'package:sqflite/sqflite.dart';
 class OrderPaymentDAO {
   final dbHelper = DBHelper.instance;
 
-  // Insert a new order payment
   Future<int> insertOrderPayment(OrderPayment payment) async {
     final db = await dbHelper.database;
     final mandyId = await AppHelper.getCurrentMandyId();
@@ -16,7 +15,6 @@ class OrderPaymentDAO {
     return await db.insert('order_payments', json);
   }
 
-  // Update an existing order payment
   Future<int> updateOrderPayment(OrderPayment payment) async {
     final db = await dbHelper.database;
     return await db.update(
@@ -27,13 +25,11 @@ class OrderPaymentDAO {
     );
   }
 
-  // Delete an order payment
   Future<int> deleteOrderPayment(int id) async {
     final db = await dbHelper.database;
     return await db.delete('order_payments', where: 'id = ?', whereArgs: [id]);
   }
 
-  // Get order payment by ID
   Future<OrderPayment?> getOrderPaymentById(int id) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -48,7 +44,6 @@ class OrderPaymentDAO {
     return null;
   }
 
-  // Delete all payments for an order
   Future<int> deleteOrderPayments(int orderId) async {
     final db = await dbHelper.database;
     return await db.delete(
@@ -58,12 +53,11 @@ class OrderPaymentDAO {
     );
   }
 
-  // Get all order payments
   Future<List<OrderPayment>> getAllOrderPayments() async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'order_payments',
-      orderBy: 'created_at DESC',
+      orderBy: 'updated_at DESC',
     );
 
     return List.generate(maps.length, (i) {
@@ -71,14 +65,13 @@ class OrderPaymentDAO {
     });
   }
 
-  // Get all payments for an order
   Future<List<OrderPayment>> getOrderPaymentsByOrderId(int orderId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'order_payments',
       where: 'order_id = ?',
       whereArgs: [orderId],
-      orderBy: 'created_at DESC',
+      orderBy: 'updated_at DESC',
     );
 
     return List.generate(maps.length, (i) {
@@ -86,7 +79,6 @@ class OrderPaymentDAO {
     });
   }
 
-  // Get total payment amount for an order (sum of all payment amounts)
   Future<double> getTotalPaymentAmount(int orderId) async {
     final db = await dbHelper.database;
     final result = await db.rawQuery(
@@ -96,7 +88,6 @@ class OrderPaymentDAO {
     return (result.first['total'] as num?)?.toDouble() ?? 0.0;
   }
 
-  // Get payment count for an order
   Future<int> getPaymentCount(int orderId) async {
     final db = await dbHelper.database;
     final result = await db.rawQuery(
@@ -106,14 +97,13 @@ class OrderPaymentDAO {
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
-  // Get payments within date range
   Future<List<OrderPayment>> getPaymentsByDateRange(String startDate, String endDate) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'order_payments',
-      where: 'created_at BETWEEN ? AND ?',
+      where: 'updated_at BETWEEN ? AND ?',
       whereArgs: [startDate, endDate],
-      orderBy: 'created_at DESC',
+      orderBy: 'updated_at DESC',
     );
 
     return List.generate(maps.length, (i) {
@@ -121,12 +111,11 @@ class OrderPaymentDAO {
     });
   }
 
-  // Get recent payments (last N payments)
   Future<List<OrderPayment>> getRecentPayments({int limit = 10}) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'order_payments',
-      orderBy: 'created_at DESC',
+      orderBy: 'updated_at DESC',
       limit: limit,
     );
 
@@ -135,14 +124,13 @@ class OrderPaymentDAO {
     });
   }
 
-  // Get payments by source type
   Future<List<OrderPayment>> getPaymentsBySource(String source) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'order_payments',
       where: 'source = ?',
       whereArgs: [source],
-      orderBy: 'created_at DESC',
+      orderBy: 'updated_at DESC',
     );
 
     return List.generate(maps.length, (i) {
@@ -150,7 +138,6 @@ class OrderPaymentDAO {
     });
   }
 
-  // Get total amount by source type for an order
   Future<double> getTotalAmountBySource(int orderId, String source) async {
     final db = await dbHelper.database;
     final result = await db.rawQuery(
@@ -160,7 +147,6 @@ class OrderPaymentDAO {
     return (result.first['total'] as num?)?.toDouble() ?? 0.0;
   }
 
-  // Get payment summary by source for an order
   Future<Map<String, double>> getPaymentSummaryBySource(int orderId) async {
     final db = await dbHelper.database;
     final result = await db.rawQuery(
@@ -175,7 +161,6 @@ class OrderPaymentDAO {
     return summary;
   }
 
-  // Bulk upsert order payments
   Future<void> bulkUpsertOrderPayments(List<OrderPayment> orderPayments) async {
     final db = await dbHelper.database;
     await db.transaction((txn) async {
@@ -184,7 +169,7 @@ class OrderPaymentDAO {
       for (final orderPayment in orderPayments) {
         batch.rawInsert('''
           INSERT INTO order_payments (
-            order_id, source, amount, created_at
+            order_id, source, amount, updated_at
           )
           VALUES (?, ?, ?, ?)
 
@@ -192,14 +177,14 @@ class OrderPaymentDAO {
             order_id = excluded.order_id,
             source = excluded.source,
             amount = excluded.amount,
-            created_at = excluded.created_at
+            updated_at = excluded.updated_at
 
-          WHERE excluded.created_at > order_payments.created_at;
+          WHERE excluded.updated_at > order_payments.updated_at;
         ''', [
           orderPayment.orderId,
           orderPayment.source,
           orderPayment.amount,
-          orderPayment.createdAt,
+          orderPayment.updatedAt,
         ]);
       }
 

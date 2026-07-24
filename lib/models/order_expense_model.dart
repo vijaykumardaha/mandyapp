@@ -4,7 +4,6 @@ class OrderExpense {
   double expenseAmount;
   String? expenseNote;
   int? orderId;
-  String createdAt;
   String updatedAt;
 
   OrderExpense({
@@ -13,7 +12,6 @@ class OrderExpense {
     required this.expenseAmount,
     this.expenseNote,
     this.orderId,
-    required this.createdAt,
     required this.updatedAt,
   });
 
@@ -24,7 +22,6 @@ class OrderExpense {
       expenseAmount: (map['expense_amount'] ?? 0.0).toDouble(),
       expenseNote: map['expense_note'],
       orderId: map['order_id']?.toInt(),
-      createdAt: map['created_at'] ?? '',
       updatedAt: map['updated_at'] ?? '',
     );
   }
@@ -36,7 +33,6 @@ class OrderExpense {
       'expense_amount': expenseAmount,
       'expense_note': expenseNote,
       'order_id': orderId,
-      'created_at': createdAt,
       'updated_at': updatedAt,
     };
   }
@@ -47,7 +43,6 @@ class OrderExpense {
     double? expenseAmount,
     String? expenseNote,
     int? orderId,
-    String? createdAt,
     String? updatedAt,
   }) {
     return OrderExpense(
@@ -56,27 +51,25 @@ class OrderExpense {
       expenseAmount: expenseAmount ?? this.expenseAmount,
       expenseNote: expenseNote ?? this.expenseNote,
       orderId: orderId ?? this.orderId,
-      createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
   @override
   String toString() {
-    return 'OrderExpense(id: $id, expenseName: $expenseName, expenseAmount: $expenseAmount, expenseNote: $expenseNote, orderId: $orderId, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'OrderExpense(id: $id, expenseName: $expenseName, expenseAmount: $expenseAmount, expenseNote: $expenseNote, orderId: $orderId, updatedAt: $updatedAt)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    
+
     return other is OrderExpense &&
       other.id == id &&
       other.expenseName == expenseName &&
       other.expenseAmount == expenseAmount &&
       other.expenseNote == expenseNote &&
       other.orderId == orderId &&
-      other.createdAt == createdAt &&
       other.updatedAt == updatedAt;
   }
 
@@ -87,7 +80,6 @@ class OrderExpense {
       expenseAmount.hashCode ^
       expenseNote.hashCode ^
       orderId.hashCode ^
-      createdAt.hashCode ^
       updatedAt.hashCode;
   }
 }

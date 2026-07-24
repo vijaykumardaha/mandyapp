@@ -3,58 +3,55 @@ class OrderPayment {
   int orderId;
   String source; // 'cash', 'upi', 'card', 'credit'
   double amount;
-  String createdAt;
+  String updatedAt;
 
   OrderPayment({
     required this.id,
     required this.orderId,
     required this.source,
     required this.amount,
-    required this.createdAt,
+    required this.updatedAt,
   });
 
-  // Convert OrderPayment to Map for database insertion
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'order_id': orderId,
       'source': source,
       'amount': amount,
-      'created_at': createdAt,
+      'updated_at': updatedAt,
     };
   }
 
-  // Create OrderPayment from Map (database query result)
   factory OrderPayment.fromJson(Map<String, dynamic> json) {
     return OrderPayment(
       id: json['id'] as int,
       orderId: json['order_id'] as int,
       source: json['source'] as String,
       amount: (json['amount'] as num).toDouble(),
-      createdAt: json['created_at'] as String,
+      updatedAt: json['updated_at'] as String,
     );
   }
 
-  // Create a copy of OrderPayment with updated fields
   OrderPayment copyWith({
     int? id,
     int? orderId,
     String? source,
     double? amount,
-    String? createdAt,
+    String? updatedAt,
   }) {
     return OrderPayment(
       id: id ?? this.id,
       orderId: orderId ?? this.orderId,
       source: source ?? this.source,
       amount: amount ?? this.amount,
-      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
   @override
   String toString() {
-    return 'OrderPayment{id: $id, orderId: $orderId, source: $source, amount: $amount, createdAt: $createdAt}';
+    return 'OrderPayment{id: $id, orderId: $orderId, source: $source, amount: $amount, updatedAt: $updatedAt}';
   }
 
   @override
@@ -65,7 +62,7 @@ class OrderPayment {
         other.orderId == orderId &&
         other.source == source &&
         other.amount == amount &&
-        other.createdAt == createdAt;
+        other.updatedAt == updatedAt;
   }
 
   @override
@@ -74,6 +71,6 @@ class OrderPayment {
         orderId.hashCode ^
         source.hashCode ^
         amount.hashCode ^
-        createdAt.hashCode;
+        updatedAt.hashCode;
   }
 }

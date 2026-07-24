@@ -120,6 +120,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           customerId: cartBloc.state is OrderWithItemsLoaded 
               ? (cartBloc.state as OrderWithItemsLoaded).order.customerId
               : null,
+          orderId: orderId,
           orderFor: 'seller',
         ),
       ),
