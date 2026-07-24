@@ -18,57 +18,59 @@ class ExpenseSectionWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: MySpacing.bottom(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: MySpacing.all(16),
-            child: Row(
+          Container(
+            width: double.infinity,
+            padding: MySpacing.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.receipt_long,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                MySpacing.width(8),
-                MyText.bodyMedium('Expenses', fontWeight: 600),
-                const Spacer(),
-                InkWell(
-                  onTap: () => _showAddExpenseDialog(context),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                Row(
+                  children: [
+                    MyText.bodyMedium('Other Expenses', fontWeight: 600),
+                    const Spacer(),
+                    InkWell(
+                      onTap: () => _showAddExpenseDialog(context),
                       borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.add, size: 16, color: Theme.of(context).colorScheme.primary),
+                            MySpacing.width(4),
+                            MyText.bodySmall('Add', color: Theme.of(context).colorScheme.primary, fontWeight: 600),
+                          ],
+                        ),
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.add, size: 16, color: Theme.of(context).colorScheme.primary),
-                        MySpacing.width(4),
-                        MyText.bodySmall('Add', color: Theme.of(context).colorScheme.primary, fontWeight: 600),
-                      ],
-                    ),
-                  ),
+                    MySpacing.width(4),
+                  ],
                 ),
-                MySpacing.width(4),
+                MyText.bodySmall(
+                  'Packaging, gift wrapping, or other costs',
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                ),
               ],
             ),
           ),
           if (expenses.isEmpty)
             Padding(
-              padding: MySpacing.horizontal(16),
+              padding: MySpacing.only(left: 12),
               child: MyText.bodySmall(
-                'No expenses added',
+                'No extra costs added yet',
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
             )
@@ -77,43 +79,43 @@ class ExpenseSectionWidget extends StatelessWidget {
               final index = entry.key;
               final expense = entry.value;
               return Padding(
-                padding: MySpacing.horizontal(16),
+                padding: MySpacing.only(left: 12),
                 child: ListTile(
-                  leading: Icon(
-                    Icons.check_circle,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      MyText.bodyMedium(
-                        expense['description'] ?? 'Expense',
-                        fontWeight: 500,
-                      ),
-                      MyText.bodySmall(
-                        '₹${(expense['amount'] as double).toStringAsFixed(2)}',
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                      ),
-                    ],
-                  ),
-                  trailing: IconButton(
-                    onPressed: () {
-                      final updated = List<Map<String, dynamic>>.from(expenses);
-                      updated.removeAt(index);
-                      onExpensesChanged(updated);
-                    },
-                    icon: Icon(
-                      Icons.delete_outline,
-                      size: 18,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                  contentPadding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                  dense: true,
+                leading: Icon(
+                  Icons.check_circle,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    MyText.bodyMedium(
+                      expense['description'] ?? 'Expense',
+                      fontWeight: 500,
+                    ),
+                    MyText.bodySmall(
+                      '₹${(expense['amount'] as double).toStringAsFixed(2)}',
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                  ],
+                ),
+                trailing: IconButton(
+                  onPressed: () {
+                    final updated = List<Map<String, dynamic>>.from(expenses);
+                    updated.removeAt(index);
+                    onExpensesChanged(updated);
+                  },
+                  icon: Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                ),
+                contentPadding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+                dense: true,
+              ),
               );
             }),
           MySpacing.height(8),
@@ -144,7 +146,7 @@ class ExpenseSectionWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              MyText.titleMedium('Add Expense', fontWeight: 600),
+              MyText.titleMedium('Add Extra Cost', fontWeight: 600),
               MySpacing.height(16),
               TextField(
                 controller: descriptionController,

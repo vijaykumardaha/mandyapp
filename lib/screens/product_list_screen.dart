@@ -238,57 +238,57 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           fontWeight: 600,
                         ),
                       ),
-                    ],
-                  ),
-                  MySpacing.height(8),
-                  Row(
-                    children: [
                       Container(
                         padding: MySpacing.xy(8, 4),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.tertiaryContainer,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        child: MyText.bodySmall(
+                          '$variantCount ${'variants'.tr()}',
+                          fontSize: 11,
+                          color: theme.colorScheme.onTertiaryContainer,
+                          fontWeight: 600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  MySpacing.height(8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Wrap(
+                          spacing: 4,
+                          runSpacing: 4,
                           children: [
-                            Icon(
-                              Icons.inventory,
-                              size: 14,
-                              color: theme.colorScheme.onTertiaryContainer,
-                            ),
-                            MySpacing.width(4),
-                            MyText.bodySmall(
-                              '$variantCount ${'variants'.tr()}',
-                              fontSize: 11,
-                              color: theme.colorScheme.onTertiaryContainer,
-                              fontWeight: 600,
-                            ),
+                            ...variants.take(2).map((variant) => Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: MyText.bodySmall(
+                                '₹${variant.sellingPrice.toStringAsFixed(0)} \\ ${variant.quantity} ${variant.unit}',
+                                color: theme.colorScheme.primary,
+                                fontSize: 10,
+                              ),
+                            )),
+                            if (variants.length > 2)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.onSurface.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: MyText.bodySmall(
+                                  '+${variants.length - 2}',
+                                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                  fontSize: 10,
+                                ),
+                              ),
                           ],
                         ),
                       ),
-                      if (variantCount > 0 && variants.isNotEmpty) ...[
-                        MySpacing.width(12),
-                        Expanded(
-                          child: MyText.bodySmall(
-                            variants.take(2).map((variant) =>
-                              '₹${variant.sellingPrice.toStringAsFixed(0)} (${variant.quantity}${variant.unit})'
-                            ).join(', ') + (variants.length > 2 ? '...' : ''),
-                            color: theme.colorScheme.onBackground.withOpacity(0.6),
-                            fontSize: 11,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                      if (defaultVariant != null) ...[
-                        MySpacing.height(8),
-                        MyText.bodyMedium(
-                          '₹${defaultVariant.sellingPrice.toStringAsFixed(0)}',
-                          fontWeight: 600,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ],
                     ],
                   ),
                 ],

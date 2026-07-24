@@ -86,7 +86,20 @@ class ProductCard extends StatelessWidget {
                     : ProductCard.buildImagePlaceholder(theme),
               ),
             ),
-            const SizedBox.shrink(),
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Text(
+                productTitle(product),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 11,
+                ),
+              ),
+            ),
           ],
         ),
       ),

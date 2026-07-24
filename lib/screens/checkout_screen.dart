@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
+import 'package:mandyapp/dao/customer_dao.dart';
 import 'package:mandyapp/dao/order_charge_dao.dart';
 import 'package:mandyapp/dao/order_dao.dart';
 import 'package:mandyapp/dao/order_expense_dao.dart';
@@ -40,6 +41,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Map<PaymentMethod, double> _paymentAmounts = {};
   bool _defaultChargesInitialized = false;
   bool _isPlacingOrder = false;
+  String? _customerName;
 
   final _orderChargeDAO = OrderChargeDAO();
   final _orderExpenseDAO = OrderExpenseDao();
@@ -48,11 +50,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   void initState() {
     super.initState();
+    _loadCustomerName();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<ChargeTypesBloc>().add(LoadChargeTypes());
       }
     });
+  }
+
+  Future<void> _loadCustomerName() async {
+    if (widget.customerId == null) return;
+    final customer = await CustomerDAO().getCustomerById(widget.customerId!);
+    if (mounted) {
+      setState(() {
+        _customerName = customer?.name;
+      });
+    }
   }
 
   void _initDefaultCharges(List<ChargeType> charges) {
@@ -123,11 +136,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
         for (final item in widget.cartItems ?? []) {
           final linkedItem = item.copyWith(
-            id: DBHelper.generateUuidInt(),
             buyerOrderId: widget.orderFor == 'buyer' ? orderId : null,
             sellerOrderId: widget.orderFor == 'seller' ? orderId : null,
           );
-          await OrderDAO().insertOrderItem(linkedItem);
+          await OrderDAO().updateOrderItem(linkedItem);
         }
       }
 
@@ -235,9 +247,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: MyText.titleMedium('Checkout'),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Colors.white,
+            title: MyText.titleMedium(
+              '${widget.orderFor == 'seller' ? 'Seller' : 'Buyer'} billing for ${_customerName ?? ''}',
+            ),
+            foregroundColor: Theme.of(context).colorScheme.onSurface,
           ),
           bottomNavigationBar: SafeArea(
             child: Padding(

@@ -212,37 +212,42 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         // Payment Method Section
         Container(
           margin: MySpacing.bottom(12),
-          padding: MySpacing.all(16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.payment,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  MySpacing.width(8),
-                  MyText.bodyMedium('Payment Method', fontWeight: 600),
-                ],
+              Container(
+                width: double.infinity,
+                padding: MySpacing.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    MyText.bodyMedium('How Would You Like to Pay?', fontWeight: 600),
+                    MySpacing.height(2),
+                    MyText.bodySmall(
+                      'Choose your payment option',
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ],
+                ),
               ),
               MySpacing.height(16),
-              Row(
-                children: [
-                  ..._availablePaymentMethods.map((method) {
-                    final label = _getPaymentMethodLabel(method);
-                    return [
-                      _buildPaymentMethodOption(method, label),
-                      if (method != _availablePaymentMethods.last) MySpacing.width(8),
-                    ];
-                  }).expand((element) => element),
-                ],
+              Padding(
+                padding: MySpacing.only(left: 12),
+                child: Row(
+                  children: [
+                    ..._availablePaymentMethods.map((method) {
+                      final label = _getPaymentMethodLabel(method);
+                      return [
+                        _buildPaymentMethodOption(method, label),
+                        if (method != _availablePaymentMethods.last) MySpacing.width(8),
+                      ];
+                    }).expand((element) => element),
+                  ],
+                ),
               ),
             ],
           ),
@@ -251,173 +256,143 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         // Payment Summary Section
         Container(
           margin: MySpacing.bottom(12),
-          padding: MySpacing.all(16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.receipt_long,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  MySpacing.width(8),
-                  MyText.bodyMedium('Payment Summary', fontWeight: 600),
-                ],
+              Container(
+                width: double.infinity,
+                padding: MySpacing.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    MyText.bodyMedium('Bill Summary', fontWeight: 600),
+                    MySpacing.height(2),
+                    MyText.bodySmall(
+                      'Breakdown of your total amount',
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ],
+                ),
               ),
               MySpacing.height(12),
-              Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _modernSummaryCard(
-                          'Item Total',
-                          widget.subtotal,
-                          Icons.shopping_bag_outlined,
-                          context,
+              Padding(
+                padding: MySpacing.only(left: 12),
+                child: Column(
+                  children: [
+                    // Line items
+                    _buildSummaryRow('Products', widget.subtotal, context),
+                    _buildSummaryRow('Additional Charges', widget.chargesTotal, context),
+                    _buildSummaryRow('Other Expenses', widget.expensesTotal, context),
+                    MySpacing.height(8),
+                    // Divider
+                    Container(
+                      height: 1,
+                      color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                    ),
+                    MySpacing.height(8),
+                    // Total
+                    _buildSummaryRow('Total to Pay', widget.grandTotal, context, isBold: true),
+                    MySpacing.height(12),
+                    // Payment input
+                    Container(
+                      padding: MySpacing.all(12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
                         ),
                       ),
-                      MySpacing.width(8),
-                      Expanded(
-                        child: _modernSummaryCard(
-                          'Charges',
-                          widget.chargesTotal,
-                          Icons.add_circle_outline,
-                          context,
-                        ),
-                      ),
-                      MySpacing.width(8),
-                      Expanded(
-                        child: _modernSummaryCard(
-                          'Expenses',
-                          widget.expensesTotal,
-                          Icons.money_off,
-                          context,
-                        ),
-                      ),
-                    ],
-                  ),
-                  MySpacing.height(8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _modernSummaryCard(
-                          'Grand Total',
-                          widget.grandTotal,
-                          Icons.account_balance_wallet,
-                          context,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  MySpacing.height(8),
-
-                  // Payment Details
-                  IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(
-                          child: Container(
-                            padding: MySpacing.all(12),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.arrow_circle_down,
-                                      size: 16,
-                                      color: Theme.of(context).colorScheme.primary,
-                                    ),
-                                    MySpacing.width(8),
-                                    MyText.bodySmall(
-                                      widget.orderFor == 'seller'
-                                          ? 'Amount Owed'
-                                          : 'Amount to Pay',
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                                    ),
-                                  ],
-                                ),
-                                MySpacing.height(8),
-                                SizedBox(
-                                  height: 36,
-                                  child: TextField(
-                                    key: const ValueKey('payment_amount'),
-                                    controller: _selectedPaymentMethods.isNotEmpty
-                                        ? _controllers[_selectedPaymentMethods.first]
-                                        : null,
-                                    focusNode: _selectedPaymentMethods.isNotEmpty
-                                        ? _focusNodes[_selectedPaymentMethods.first]
-                                        : null,
-                                    decoration: InputDecoration(
-                                      contentPadding: MySpacing.xy(12, 8),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.primary,
-                                        ),
-                                      ),
-                                      prefixText: '₹',
-                                      hintText: widget.grandTotal.toStringAsFixed(2),
-                                    ),
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Theme.of(context).colorScheme.primary,
-                                    ),
-                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
-                                    onChanged: (value) {
-                                      if (_selectedPaymentMethods.isNotEmpty) {
-                                        _updatePaymentAmount(_selectedPaymentMethods.first, value);
-                                      }
-                                    },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          MyText.bodySmall(
+                            widget.orderFor == 'seller'
+                                ? 'Amount You Will Receive'
+                                : 'Enter Amount You Are Paying',
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                          MySpacing.height(8),
+                          SizedBox(
+                            height: 44,
+                            child: TextField(
+                              key: const ValueKey('payment_amount'),
+                              controller: _selectedPaymentMethods.isNotEmpty
+                                  ? _controllers[_selectedPaymentMethods.first]
+                                  : null,
+                              focusNode: _selectedPaymentMethods.isNotEmpty
+                                  ? _focusNodes[_selectedPaymentMethods.first]
+                                  : null,
+                              decoration: InputDecoration(
+                                contentPadding: MySpacing.xy(12, 8),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
                                   ),
                                 ),
-                              ],
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                prefixText: '₹ ',
+                                hintText: widget.grandTotal.toStringAsFixed(2),
+                              ),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              onChanged: (value) {
+                                if (_selectedPaymentMethods.isNotEmpty) {
+                                  _updatePaymentAmount(_selectedPaymentMethods.first, value);
+                                }
+                              },
                             ),
                           ),
-                        ),
-                        MySpacing.width(12),
-                        Expanded(
-                          child: _modernSummaryCard(
-                            widget.orderFor == 'seller'
-                                ? 'Amount Pending'
-                                : (pendingPayment >= 0
-                                    ? 'Pending Payment'
-                                    : 'Payment Due'),
-                            pendingPayment.abs(),
-                            pendingPayment > 0
-                                ? Icons.pending
-                                : Icons.done_all,
-                            context,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                    MySpacing.height(8),
+                    // Balance
+                    Container(
+                      width: double.infinity,
+                      padding: MySpacing.all(12),
+                      decoration: BoxDecoration(
+                        color: pendingPayment > 0
+                            ? Theme.of(context).colorScheme.error.withOpacity(0.1)
+                            : Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          MyText.bodyMedium(
+                            widget.orderFor == 'seller'
+                                ? 'Remaining Amount'
+                                : (pendingPayment >= 0 ? 'Balance Remaining' : 'Extra Paid'),
+                            fontWeight: 500,
+                          ),
+                          MyText.bodyMedium(
+                            '₹${pendingPayment.abs().toStringAsFixed(2)}',
+                            fontWeight: 600,
+                            color: pendingPayment > 0
+                                ? Theme.of(context).colorScheme.error
+                                : Theme.of(context).colorScheme.primary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -480,7 +455,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
       case PaymentMethod.card:
         return 'Card';
       case PaymentMethod.credit:
-        return 'Credit';
+        return 'Pay Later';
     }
   }
 
@@ -497,43 +472,25 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     }
   }
 
-  Widget _modernSummaryCard(
-      String label, double amount, IconData icon, BuildContext context) {
-    return Container(
-      padding: MySpacing.xy(8, 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildSummaryRow(String label, double amount, BuildContext context, {bool isBold = false}) {
+    return Padding(
+      padding: MySpacing.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 14,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              MySpacing.width(4),
-              Flexible(
-                child: MyText.bodySmall(
-                  label,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                  fontSize: 10,
-                ),
-              ),
-            ],
+          MyText.bodyMedium(
+            label,
+            fontWeight: isBold ? 600 : 400,
+            color: isBold
+                ? Theme.of(context).colorScheme.onSurface
+                : Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
           ),
-          MySpacing.height(4),
-          MyText.bodySmall(
+          MyText.bodyMedium(
             '₹${amount.toStringAsFixed(2)}',
-            fontWeight: 600,
-            color: Theme.of(context).colorScheme.primary,
-            fontSize: 11,
+            fontWeight: isBold ? 600 : 500,
+            color: isBold
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurface,
           ),
         ],
       ),

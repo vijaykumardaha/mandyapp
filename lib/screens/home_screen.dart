@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/screens/order_item_screen.dart';
+import 'package:mandyapp/screens/billing_screen.dart';
 import 'package:mandyapp/screens/home_tab_screen.dart';
 import 'package:mandyapp/screens/selling_screen.dart';
 import 'package:mandyapp/screens/settings_screen.dart';
@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Widget> get _screens => [
         const HomeTabScreen(),
-        const OrderItemScreen(),
+        const BillingScreen(),
         const SellingScreen(),
         const PaymentScreen(),
         const SettingsScreen(),
@@ -52,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const TabItem(
         icon: Icons.shopping_basket,
         activeIcon: Icons.shopping_basket_outlined,
-        title: "Order"),
+        title: "Billing"),
     const TabItem(
         icon: Icons.point_of_sale,
         activeIcon: Icons.point_of_sale_outlined,

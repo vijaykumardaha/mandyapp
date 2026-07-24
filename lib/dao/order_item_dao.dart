@@ -83,10 +83,7 @@ class OrderItemDAO {
       whereClauses.add('seller_id = ?');
       whereArgs.add(sellerId);
     }
-    if (buyerId != null) {
-      whereClauses.add('buyer_id = ?');
-      whereArgs.add(buyerId);
-    }
+
     if (productId != null) {
       whereClauses.add('product_id = ?');
       whereArgs.add(productId);

@@ -40,11 +40,13 @@ class UpdateOrderItemEvent extends OrderItemEvent {
 
 class DeleteOrderItemEvent extends OrderItemEvent {
   final int orderItemId;
+  final int? sellerId;
+  final int? buyerId;
 
-  const DeleteOrderItemEvent(this.orderItemId);
+  const DeleteOrderItemEvent(this.orderItemId, {this.sellerId, this.buyerId});
 
   @override
-  List<Object?> get props => [orderItemId];
+  List<Object?> get props => [orderItemId, sellerId, buyerId];
 }
 
 class LoadBillableOrderItems extends OrderItemEvent {
@@ -58,4 +60,8 @@ class LoadBillableOrderItems extends OrderItemEvent {
 
   @override
   List<Object?> get props => [sellerId, excludeOrderLinked];
+}
+
+class ClearOrderItems extends OrderItemEvent {
+  const ClearOrderItems();
 }

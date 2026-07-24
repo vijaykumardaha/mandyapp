@@ -97,6 +97,17 @@ class CustomerDAO {
     return result.first['count'] as int? ?? 0;
   }
 
+  Future<Customer?> getCustomerById(int id) async {
+    final db = await dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'customers',
+      where: 'id = ? AND is_deleted = ?',
+      whereArgs: [id, 0],
+    );
+    if (maps.isEmpty) return null;
+    return Customer.fromJson(maps.first);
+  }
+
   // Bulk upsert customers
   Future<void> bulkUpsertCustomers(List<Customer> customers) async {
     final db = await dbHelper.database;

@@ -17,6 +17,7 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
     on<AddOrderItemEvent>(_onAddOrderItem);
     on<UpdateOrderItemEvent>(_onUpdateOrderItem);
     on<DeleteOrderItemEvent>(_onDeleteOrderItem);
+    on<ClearOrderItems>(_onClearOrderItems);
   }
 
   Future<void> _onLoadOrderItems(LoadOrderItems event, Emitter<OrderItemState> emit) async {
@@ -88,11 +89,30 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
   }
 
   Future<void> _onDeleteOrderItem(DeleteOrderItemEvent event, Emitter<OrderItemState> emit) async {
-    emit(const OrderItemLoading());
     try {
       await _orderItemDAO.deleteOrderItem(event.orderItemId);
+      List<OrderItem> orderItems = [];
+      if (event.sellerId != null) {
+        final sellerItems = await _orderItemDAO.getOrderItems(
+          sellerId: event.sellerId,
+          excludeSellerOrderLinked: true,
+        );
+        orderItems.addAll(sellerItems);
+      }
+      if (event.buyerId != null) {
+        final buyerItems = await _orderItemDAO.getOrderItems(
+          buyerId: event.buyerId,
+          excludeBuyerOrderLinked: true,
+        );
+        orderItems.addAll(buyerItems);
+      }
+      emit(OrderItemsLoaded(orderItems));
     } catch (error) {
       emit(OrderItemError('Failed to delete order item: ${error.toString()}'));
     }
+  }
+
+  void _onClearOrderItems(ClearOrderItems event, Emitter<OrderItemState> emit) {
+    emit(const OrderItemsLoaded([]));
   }
 }

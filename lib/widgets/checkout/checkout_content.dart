@@ -53,7 +53,7 @@ class _CheckoutContentState extends State<CheckoutContent> {
     for (final item in widget.cartItems!) {
       if (item.sellingPrice < 0 || item.quantity < 0) {
         return const Center(
-          child: Text('Invalid cart items detected'),
+          child: Text('Some items have invalid prices or quantities'),
         );
       }
     }
@@ -92,20 +92,35 @@ class _CheckoutContentState extends State<CheckoutContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MyText.bodyLarge('Cart Items', fontWeight: 600),
+          Container(
+            width: double.infinity,
+            padding: MySpacing.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                MyText.bodyMedium('Your Order Items', fontWeight: 600),
+                MySpacing.height(2),
+                MyText.bodySmall(
+                  'Products you are purchasing',
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ],
+            ),
+          ),
           MySpacing.height(12),
           ...?widget.cartItems?.map((item) {
             return Container(
-              margin: MySpacing.bottom(8),
-              padding: MySpacing.all(12),
+              margin: MySpacing.only(left: 12, bottom: 8),
+              padding: MySpacing.bottom(8),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .outline
-                      .withOpacity(0.2),
+                border: Border(
+                  bottom: BorderSide(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                  ),
                 ),
               ),
               child: Row(
@@ -120,7 +135,7 @@ class _CheckoutContentState extends State<CheckoutContent> {
                         ),
                         MySpacing.height(4),
                         MyText.bodySmall(
-                          'Qty: ${item.quantity} × ₹${item.sellingPrice.toStringAsFixed(2)}',
+                          '${item.quantity} × ₹${item.sellingPrice.toStringAsFixed(2)} each',
                           color: Theme.of(context)
                               .colorScheme
                               .onSurface

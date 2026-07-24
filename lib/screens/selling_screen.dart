@@ -35,77 +35,42 @@ class SellingScreenState extends State<SellingScreen> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      titleSpacing: 16,
-      title: sellerCustomer != null
-          ? GestureDetector(
-              onTap: () {
+      title: Text(sellerCustomer != null ? 'Selling to ${sellerCustomer!.name}' : 'Select Seller'),
+      actions: [
+        if (sellerCustomer != null)
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              icon: const Icon(Icons.swap_horiz),
+              tooltip: 'Change Customer',
+              onPressed: () {
                 setState(() {
                   sellerCustomer = null;
                 });
               },
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.colorScheme.shadow.withOpacity(0.08),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        sellerCustomer?.name != null
-                            ? 'Selling of ${sellerCustomer!.name}'
-                            : 'Select a seller',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: theme.colorScheme.onSurface,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      Icons.edit,
-                      size: 16,
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : SizedBox(
-              height: 36,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    // "All" tag
-                    _buildAlphabetTag('All', _selectedAlphabet == null),
-                    const SizedBox(width: 8),
-                    // A-Z tags
-                    ...List.generate(26, (index) {
-                      final alphabet = String.fromCharCode(65 + index); // A-Z
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: _buildAlphabetTag(
-                            alphabet, _selectedAlphabet == alphabet),
-                      );
-                    }),
-                  ],
-                ),
-              ),
             ),
-      actions: const [],
+          ),
+      ],
+    );
+  }
+
+  Widget _buildAlphabetFilter() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16),
+      child: Row(
+        children: [
+          _buildAlphabetTag('All', _selectedAlphabet == null),
+          const SizedBox(width: 8),
+          ...List.generate(26, (index) {
+            final alphabet = String.fromCharCode(65 + index);
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: _buildAlphabetTag(alphabet, _selectedAlphabet == alphabet),
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -118,26 +83,26 @@ class SellingScreenState extends State<SellingScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? theme.colorScheme.primary
-              : theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? theme.colorScheme.primary
-                : theme.colorScheme.outline.withOpacity(0.3),
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outline.withOpacity(0.3),
           ),
         ),
         child: Text(
           alphabet,
           style: TextStyle(
             color: isSelected
-                ? theme.colorScheme.onPrimary
-                : theme.colorScheme.onSurface,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface,
             fontSize: 14,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           ),
         ),
       ),
@@ -152,7 +117,6 @@ class SellingScreenState extends State<SellingScreen> {
             : <Customer>[];
         final isLoading = customerState is CustomerLoading;
 
-        // Filter customers by selected alphabet
         List<Customer> customers = allCustomers;
         if (_selectedAlphabet != null) {
           customers = allCustomers.where((customer) {
@@ -167,81 +131,98 @@ class SellingScreenState extends State<SellingScreen> {
 
         if (customers.isEmpty) {
           return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.person_outline,
-                  size: 64,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(height: 16),
-                MyText.bodyMedium(
-                  'No customers found',
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(height: 8),
-                MyText.bodySmall(
-                  'Add customers to get started',
-                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.only(top: 60),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.person_outline,
+                    size: 56,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                  ),
+                  const SizedBox(height: 16),
+                  MyText.bodyMedium(
+                    'No customers found',
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(height: 6),
+                  MyText.bodySmall(
+                    'Add customers to get started',
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                  ),
+                ],
+              ),
             ),
           );
         }
 
         return Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(10),
           child: GridView.builder(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              childAspectRatio: 1.6,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+              childAspectRatio: 2.2,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
             ),
             itemCount: customers.length,
             itemBuilder: (context, index) {
               final customer = customers[index];
+              final name = customer.name ?? 'Unnamed';
+              final initials = name.length >= 2
+                  ? name.substring(0, 2).toUpperCase()
+                  : name.toUpperCase();
               return GestureDetector(
                 onTap: () {
                   setState(() {
                     sellerCustomer = customer;
                   });
-                  context.read<OrderItemBloc>().add(LoadOrderItems(sellerId: customer.id, excludeOrderLinked: true));
                 },
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(8),
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: theme.colorScheme.outline.withOpacity(0.2),
+                      color: Theme.of(context).colorScheme.outline.withOpacity(0.15),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.colorScheme.shadow.withOpacity(0.04),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Row(
                     children: [
-                      MyText.bodySmall(
-                        customer.name ?? 'Unnamed',
-                        fontWeight: 600,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (customer.phone != null)
-                        MyText.bodySmall(
-                          customer.phone!,
-                          color: theme.colorScheme.onSurfaceVariant,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      CircleAvatar(
+                        radius: 14,
+                        backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        child: MyText.bodySmall(
+                          initials,
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: 600,
+                          fontSize: 11,
                         ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            MyText.bodySmall(
+                              name,
+                              fontWeight: 600,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              fontSize: 12,
+                            ),
+                            if (customer.phone != null)
+                              MyText.bodySmall(
+                                customer.phone!,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                fontSize: 10,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -253,46 +234,6 @@ class SellingScreenState extends State<SellingScreen> {
     );
   }
 
-  Widget _buildSheetFlashBanner(
-      ThemeData sheetTheme, String message, VoidCallback onDismiss) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: sheetTheme.colorScheme.primary.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.check_circle_rounded,
-              color: sheetTheme.colorScheme.primary, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: MyText.bodyMedium(
-              message,
-              fontWeight: 600,
-              fontSize: 12,
-              color: sheetTheme.colorScheme.onSurface,
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close, size: 16),
-            color: sheetTheme.colorScheme.onSurface.withOpacity(0.7),
-            onPressed: onDismiss,
-            padding: const EdgeInsets.all(2),
-            splashRadius: 14,
-            tooltip: 'Dismiss',
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 
   void _showAddToSaleBottomSheet(Product product) {
     if (sellerCustomer == null) {
@@ -390,7 +331,13 @@ class SellingScreenState extends State<SellingScreen> {
           }
         },
         child: sellerCustomer == null
-            ? _buildCustomerGrid()
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildAlphabetFilter(),
+                  Expanded(child: _buildCustomerGrid()),
+                ],
+              )
             : BlocBuilder<ProductBloc, ProductState>(
                 builder: (context, productState) {
                   if (productState is ProductLoading) {
@@ -407,14 +354,37 @@ class SellingScreenState extends State<SellingScreen> {
                     }
 
                     if (products.isEmpty) {
-                      return const Center(child: Text('No products found.'));
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 60),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.inventory_2_outlined,
+                                size: 56,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                              ),
+                              const SizedBox(height: 16),
+                              MyText.bodyMedium(
+                                'No products found',
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                              const SizedBox(height: 6),
+                              MyText.bodySmall(
+                                'Add products to start selling',
+                                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
                     }
 
                     return GridView.builder(
                       padding: const EdgeInsets.all(16),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
+                        crossAxisCount: 4,
                         childAspectRatio: 1,
                         crossAxisSpacing: 5,
                         mainAxisSpacing: 5,
@@ -424,7 +394,7 @@ class SellingScreenState extends State<SellingScreen> {
                         final product = products[index];
                         return ProductCard(
                           product: product,
-                          theme: theme,
+                          theme: Theme.of(context),
                           onAddTapped: () => _showAddToSaleBottomSheet(product),
                         );
                       },
@@ -435,7 +405,7 @@ class SellingScreenState extends State<SellingScreen> {
                     return Center(
                       child: Text(
                         productState.message,
-                        style: TextStyle(color: theme.colorScheme.error),
+                        style: TextStyle(color: Theme.of(context).colorScheme.error),
                       ),
                     );
                   }

@@ -44,13 +44,6 @@ class ChargesSectionWidget extends StatelessWidget {
   Widget _buildLoadingSection(BuildContext context) {
     return Container(
       margin: MySpacing.bottom(12),
-      padding: MySpacing.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-      ),
       child: const Center(child: CircularProgressIndicator()),
     );
   }
@@ -58,31 +51,35 @@ class ChargesSectionWidget extends StatelessWidget {
   Widget _buildNoChargesSection(BuildContext context) {
     return Container(
       margin: MySpacing.bottom(12),
-      padding: MySpacing.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.receipt_long,
-                size: 20,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              MySpacing.width(8),
-              MyText.bodyMedium('Charges', fontWeight: 600),
-            ],
+          Container(
+            width: double.infinity,
+            padding: MySpacing.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                MyText.bodyMedium('Additional Charges', fontWeight: 600),
+                MySpacing.height(2),
+                MyText.bodySmall(
+                  'Extra fees like delivery or service charges',
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ],
+            ),
           ),
           MySpacing.height(12),
-          MyText.bodySmall(
-            'No charges available',
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+          Padding(
+            padding: MySpacing.only(left: 12),
+            child: MyText.bodySmall(
+              'No extra charges for this order',
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            ),
           ),
         ],
       ),
@@ -93,26 +90,25 @@ class ChargesSectionWidget extends StatelessWidget {
       BuildContext context, List<ChargeType> activeCharges) {
     return Container(
       margin: MySpacing.bottom(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: MySpacing.all(16),
-            child: Row(
+          Container(
+            width: double.infinity,
+            padding: MySpacing.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.receipt_long,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
+                MyText.bodyMedium('Additional Charges', fontWeight: 600),
+                MySpacing.height(2),
+                MyText.bodySmall(
+                  'Select any extra fees that apply',
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                 ),
-                MySpacing.width(8),
-                MyText.bodyMedium('Charges', fontWeight: 600),
               ],
             ),
           ),
@@ -122,7 +118,7 @@ class ChargesSectionWidget extends StatelessWidget {
             final isSelected = selectedChargeIds.contains(charge.id);
 
             return Padding(
-              padding: MySpacing.horizontal(16),
+              padding: MySpacing.only(left: 12),
               child: CheckboxListTile(
                 value: isSelected,
                 onChanged: (value) {

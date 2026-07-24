@@ -429,6 +429,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     final product = Product(
       id: widget.product?.id,
+      mandyId: widget.product?.mandyId,
       defaultVariant: defaultVariant.id ?? widget.product?.defaultVariant ?? 0,
     );
 

@@ -10,6 +10,7 @@ class OrderDAO {
   // Insert a new order
   Future<int> insertOrder(Order order) async {
     final db = await dbHelper.database;
+    order.id = DBHelper.generateUuidInt();
     order.mandyId = await AppHelper.getCurrentMandyId();
     order.updatedAt = DateTime.now().millisecondsSinceEpoch;
     order.isDeleted = 0;

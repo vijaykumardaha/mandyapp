@@ -128,17 +128,7 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
 
     return Card(
       margin: MySpacing.bottom(12),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PaymentHistoriesScreen(customer: customer),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
+      child: Padding(
           padding: MySpacing.xy(12, 10),
           child: Row(
             children: [
@@ -186,7 +176,6 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
           ],
         ),
       ),
-      )
     );
   }
 

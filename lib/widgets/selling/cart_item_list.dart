@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/customer/customer_bloc.dart';
-import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/order_item_model.dart';
@@ -28,6 +27,7 @@ class CartItemList extends StatefulWidget {
     required this.onDeleteSale,
     required this.onCheckout,
     this.showCancelButton = true,
+    this.customerLabel = 'Customer',
   });
 
   final List<OrderItem> initialSales;
@@ -39,6 +39,7 @@ class CartItemList extends StatefulWidget {
   final SaleSelectionDeleteCallback onDeleteSale;
   final SaleSelectionCheckoutCallback onCheckout;
   final bool showCancelButton;
+  final String customerLabel;
 
   @override
   State<CartItemList> createState() => _CartItemListState();
@@ -106,6 +107,26 @@ class _CartItemListState extends State<CartItemList> {
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAlphabetFilter() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16),
+      child: Row(
+        children: [
+          _buildAlphabetTag('All', _selectedAlphabet == null),
+          const SizedBox(width: 8),
+          ...List.generate(26, (index) {
+            final alphabet = String.fromCharCode(65 + index);
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: _buildAlphabetTag(alphabet, _selectedAlphabet == alphabet),
+            );
+          }),
+        ],
       ),
     );
   }
@@ -221,94 +242,81 @@ class _CartItemListState extends State<CartItemList> {
           );
         }
 
-        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // Alphabet filter
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Row(
-              children: [
-                // "All" tag
-                _buildAlphabetTag('All', _selectedAlphabet == null),
-                const SizedBox(width: 8),
-                // A-Z tags
-                ...List.generate(26, (index) {
-                  final alphabet = String.fromCharCode(65 + index); // A-Z
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: _buildAlphabetTag(
-                        alphabet, _selectedAlphabet == alphabet),
-                  );
-                }),
-              ],
-            ),
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 2.2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
           ),
-          // Customer grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 1.6,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-            ),
-            itemCount: customers.length,
-            itemBuilder: (context, index) {
-              final customer = customers[index];
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _buyerCustomer = customer;
-                    _showCustomerList = false; // Auto-switch to cart view after selection
-                  });
-                  widget.onBuyerChanged(customer);
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .outline
-                          .withOpacity(0.2),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .shadow
-                            .withOpacity(0.04),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+          itemCount: customers.length,
+          itemBuilder: (context, index) {
+            final customer = customers[index];
+            final name = customer.name ?? 'Unnamed';
+            final initials = name.length >= 2
+                ? name.substring(0, 2).toUpperCase()
+                : name.toUpperCase();
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _buyerCustomer = customer;
+                  _showCustomerList = false;
+                });
+                widget.onBuyerChanged(customer);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.15),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      child: MyText.bodySmall(
+                        initials,
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: 600,
+                        fontSize: 11,
                       ),
-                    ]),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        MyText.bodySmall(
-                          customer.name ?? 'Unnamed',
-                          fontWeight: 600,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (customer.phone != null)
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
                           MyText.bodySmall(
-                            customer.phone!,
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            name,
+                            fontWeight: 600,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
+                            fontSize: 12,
                           ),
-                      ],
+                          if (customer.phone != null)
+                            MyText.bodySmall(
+                              customer.phone!,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              fontSize: 10,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
+                      ),
                     ),
-                  ));
-            },
-          ),
-        ]);
+                  ],
+                ),
+              ),
+            );
+          },
+        );
       },
     );
   }
@@ -329,6 +337,12 @@ class _CartItemListState extends State<CartItemList> {
       bottom: false,
       child: Column(
         children: [
+          // Sticky alphabet filter
+          if (_showCustomerList)
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: _buildAlphabetFilter(),
+            ),
           // Scrollable content area
           Expanded(
             child: Padding(
@@ -349,21 +363,25 @@ class _CartItemListState extends State<CartItemList> {
                       // Customer info bar at top of cart
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(14),
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
-                          color: sheetTheme.colorScheme.primaryContainer.withOpacity(0.3),
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.06),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: sheetTheme.colorScheme.primary.withOpacity(0.2),
+                            color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
                           ),
                         ),
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.person_outline,
-                              size: 20,
-                              color: sheetTheme.colorScheme.primary,
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                              child: Icon(
+                                Icons.person_outline,
+                                size: 20,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -371,36 +389,39 @@ class _CartItemListState extends State<CartItemList> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   MyText.bodySmall(
-                                    'Customer',
-                                    color: sheetTheme.colorScheme.primary,
+                                    widget.customerLabel,
+                                    color: Theme.of(context).colorScheme.primary,
                                     fontWeight: 500,
+                                    fontSize: 11,
                                   ),
                                   const SizedBox(height: 2),
                                   MyText.bodyMedium(
-                                    _buyerCustomer != null 
+                                    _buyerCustomer != null
                                         ? widget.formatCustomer(_buyerCustomer)
                                         : 'No customer selected',
                                     fontWeight: 600,
-                                    color: sheetTheme.colorScheme.onSurface,
                                   ),
                                 ],
                               ),
                             ),
-                            IconButton(
-                              onPressed: () {
+                            InkWell(
+                              onTap: () {
                                 setState(() {
                                   _showCustomerList = true;
                                 });
                               },
-                              icon: Icon(
-                                Icons.edit_outlined,
-                                size: 20,
-                                color: sheetTheme.colorScheme.primary,
-                              ),
-                              tooltip: 'Change Customer',
-                              style: IconButton.styleFrom(
-                                backgroundColor: sheetTheme.colorScheme.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
                                 padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.swap_horiz,
+                                  size: 18,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                               ),
                             ),
                           ],
@@ -408,26 +429,27 @@ class _CartItemListState extends State<CartItemList> {
                       ),
                       if (_saleList.isEmpty)
                         Center(
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 40),
-                              Icon(
-                                Icons.shopping_cart_outlined,
-                                size: 64,
-                                color: sheetTheme.colorScheme.onSurfaceVariant,
-                              ),
-                              const SizedBox(height: 16),
-                              MyText.bodyMedium(
-                                'No items in cart',
-                                color: sheetTheme.colorScheme.onSurfaceVariant,
-                              ),
-                              const SizedBox(height: 8),
-                              if (_buyerCustomer == null)
-                                MyText.bodySmall(
-                                  'Select a customer to add items',
-                                  color: sheetTheme.colorScheme.onSurfaceVariant,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 60),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.shopping_cart_outlined,
+                                  size: 56,
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
                                 ),
-                            ],
+                                const SizedBox(height: 16),
+                                MyText.bodyMedium(
+                                  'No items in cart',
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                                const SizedBox(height: 6),
+                                MyText.bodySmall(
+                                  'Add items to start billing',
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                ),
+                              ],
+                            ),
                           ),
                         )
                     ],
@@ -438,7 +460,7 @@ class _CartItemListState extends State<CartItemList> {
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         itemCount: _saleList.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final sale = _saleList[index];
                           final isChecked = _selectedIndices.contains(index);
@@ -463,107 +485,111 @@ class _CartItemListState extends State<CartItemList> {
                           return Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                               onTap: () => toggleSelection(!isChecked),
                               child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 220),
+                                duration: const Duration(milliseconds: 200),
                                 curve: Curves.easeOut,
-                                padding: const EdgeInsets.all(10),
+                                padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: sheetTheme.colorScheme.surface,
-                                  borderRadius: BorderRadius.circular(10),
+                                  color: isChecked
+                                      ? Theme.of(context).colorScheme.primary.withOpacity(0.05)
+                                      : Theme.of(context).colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: isChecked
-                                        ? sheetTheme.colorScheme.primary
-                                        : sheetTheme.colorScheme.outline
-                                            .withOpacity(0.15),
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).colorScheme.outline.withOpacity(0.12),
+                                    width: isChecked ? 1.5 : 1,
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: sheetTheme.colorScheme.shadow
-                                          .withOpacity(isChecked ? 0.16 : 0.08),
-                                      blurRadius: 14,
-                                      spreadRadius: 0,
-                                      offset: const Offset(0, 6),
-                                    ),
-                                  ],
                                 ),
                                 child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    const SizedBox(width: 8),
+                                    Container(
+                                      width: 22,
+                                      height: 22,
+                                      decoration: BoxDecoration(
+                                        color: isChecked
+                                            ? Theme.of(context).colorScheme.primary
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: isChecked
+                                              ? Theme.of(context).colorScheme.primary
+                                              : Theme.of(context).colorScheme.outline.withOpacity(0.4),
+                                        ),
+                                      ),
+                                      child: isChecked
+                                          ? const Icon(Icons.check, size: 16, color: Colors.white)
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           MyText.bodyMedium(
                                             titleText,
-                                            fontWeight: 700,
+                                            fontWeight: 600,
                                           ),
-                                          MySpacing.height(4),
+                                          const SizedBox(height: 4),
                                           Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
                                             children: [
-                                              MyText.bodySmall('Qty: $quantityLabel'),
                                               MyText.bodySmall(
-                                                  'Rate: ₹${sale.sellingPrice.toStringAsFixed(2)}'),
-                                              MyText.bodySmall(
-                                                'Total: ₹${(sale.quantity * sale.sellingPrice).toStringAsFixed(2)}',
+                                                '$quantityLabel × ₹${sale.sellingPrice.toStringAsFixed(2)}',
+                                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                              ),
+                                              const Spacer(),
+                                              MyText.bodyMedium(
+                                                '₹${(sale.quantity * sale.sellingPrice).toStringAsFixed(2)}',
                                                 fontWeight: 600,
+                                                color: Theme.of(context).colorScheme.primary,
                                               ),
                                             ],
                                           ),
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
+                                    const SizedBox(width: 8),
                                     IconButton(
-                                      icon: _isDeleting 
+                                      icon: _isDeleting
                                           ? const SizedBox(
-                                              width: 20,
-                                              height: 20,
+                                              width: 18,
+                                              height: 18,
                                               child: CircularProgressIndicator(
                                                 strokeWidth: 2,
                                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
                                               ),
                                             )
-                                          : const Icon(Icons.delete_outline),
-                                      color: sheetTheme.colorScheme.error,
-                                      tooltip: 'Delete item',
-                                      onPressed: _isDeleting ? null : () async {
-                                              debugPrint('Delete button pressed for item at index $index');
+                                          : Icon(
+                                              Icons.delete_outline,
+                                              size: 20,
+                                              color: Theme.of(context).colorScheme.error.withOpacity(0.7),
+                                            ),
+                                      onPressed: _isDeleting
+                                          ? null
+                                          : () async {
                                               setState(() {
                                                 _isDeleting = true;
                                               });
-                                              
+
                                               try {
-                                                // Always allow deletion, handle differently based on whether item has ID
                                                 bool removed = true;
                                                 if (sale.id != null) {
-                                                  debugPrint('Calling onDeleteSale for item with ID: ${sale.id}');
-                                                  // If item has ID, call the delete callback
                                                   removed = await widget.onDeleteSale(sale, index);
-                                                  debugPrint('onDeleteSale completed, removed: $removed');
-                                                } else {
-                                                  debugPrint('Deleting local item without ID');
                                                 }
-                                                
+
                                                 if (!mounted || !removed) {
-                                                  debugPrint('Early return from delete - mounted: $mounted, removed: $removed');
                                                   return;
                                                 }
 
                                                 setState(() {
-                                                  debugPrint('Updating state after deletion');
                                                   _saleList.removeAt(index);
 
                                                   final updatedIndices = <int>{};
-                                                  for (final selectedIndex
-                                                      in _selectedIndices) {
-                                                    if (selectedIndex == index) {
-                                                      continue;
-                                                    }
+                                                  for (final selectedIndex in _selectedIndices) {
+                                                    if (selectedIndex == index) continue;
                                                     updatedIndices.add(
                                                       selectedIndex > index
                                                           ? selectedIndex - 1
@@ -574,10 +600,8 @@ class _CartItemListState extends State<CartItemList> {
                                                     ..clear()
                                                     ..addAll(updatedIndices);
                                                   _isDeleting = false;
-                                                  debugPrint('State updated, _isDeleting set to false');
                                                 });
                                               } catch (e) {
-                                                debugPrint('Error during deletion: $e');
                                                 if (mounted) {
                                                   setState(() {
                                                     _isDeleting = false;
@@ -585,6 +609,8 @@ class _CartItemListState extends State<CartItemList> {
                                                 }
                                               }
                                             },
+                                      padding: const EdgeInsets.all(4),
+                                      constraints: const BoxConstraints(),
                                     ),
                                   ],
                                 ),
@@ -602,56 +628,47 @@ class _CartItemListState extends State<CartItemList> {
           ),
           
           // Sticky bottom button
+          if (!_showCustomerList)
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
             decoration: BoxDecoration(
               color: sheetTheme.colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: sheetTheme.colorScheme.shadow.withOpacity(0.1),
-                  blurRadius: 8,
+                  color: sheetTheme.colorScheme.shadow.withOpacity(0.08),
+                  blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
               ],
             ),
             child: ElevatedButton(
               onPressed: () {
-                if (_showCustomerList) {
-                  // If in customer selection mode, switch back to cart
-                  setState(() {
-                    _showCustomerList = false;
-                  });
-                } else if (_selectedIndices.isEmpty) {
-                  // No items selected, don't allow checkout
+                if (_selectedIndices.isEmpty) {
                   return;
                 } else if (_buyerCustomer == null) {
-                  // Show customer list for selection
                   setState(() {
                     _showCustomerList = true;
                   });
                 } else {
-                  // Proceed with checkout
                   _performCheckout();
                 }
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24)),
+                    borderRadius: BorderRadius.circular(14)),
               ),
               child: Builder(
                 builder: (context) {
-                  if (_showCustomerList) {
-                    return const Text('Back to Cart');
-                  } else if (_selectedIndices.isEmpty) {
+                  if (_selectedIndices.isEmpty) {
                     return const Text('Select Items to Checkout');
                   } else if (_buyerCustomer == null) {
                     return const Text('Select Customer');
                   } else {
                     final itemCount = _selectedIndices.length;
                     final itemLabel = itemCount == 1 ? 'item' : 'items';
-                    return Text('Checkout Cart ($itemCount $itemLabel)');
+                    return Text('Checkout ($itemCount $itemLabel)');
                   }
                 },
               ),
