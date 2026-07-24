@@ -115,7 +115,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         text: variant != null ? variant.sellingPrice.toString() : '');
     final quantityController = TextEditingController(
         text: variant != null ? variant.quantity.toString() : '');
-    String selectedUnit = variant?.unit ?? 'Kg';
+    String selectedUnit = variant?.unit ?? 'Kilogram';
     String imagePath = variant?.imagePath ?? '';
 
     context.read<VegetableBloc>().add(const FetchVegetables());
@@ -211,8 +211,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         fontSize: 9,
                                         color: isSelected
                                             ? theme.colorScheme.primary
-                                            : theme
-                                                .colorScheme.onBackground,
+                                            : theme.colorScheme.onBackground,
                                       ),
                                     ),
                                   ),
@@ -267,7 +266,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           labelText: 'unit'.tr(),
                           border: const OutlineInputBorder(),
                         ),
-                        items: ['Kg', 'g', 'L', 'ml', 'Pcs', 'Box']
+                        items: [
+                          'Gram',
+                          'Kilogram',
+                          'Quintal',
+                          'Metric Ton',
+                          'Piece',
+                          'Dozen',
+                          'Box',
+                          'Bag',
+                          'Crate',
+                          'Bundle',
+                          'Tray',
+                        ]
                             .map((unit) => DropdownMenuItem(
                                   value: unit,
                                   child: Text(unit),
@@ -351,8 +362,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               if (index != -1) {
                                 _variants[index] = newVariant;
                                 if (_defaultVariantKey == originalKey) {
-                                  _defaultVariantKey =
-                                      _variantKey(newVariant);
+                                  _defaultVariantKey = _variantKey(newVariant);
                                 }
                               }
                             }
@@ -624,9 +634,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 value: 'delete',
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.delete, size: 20, color: Colors.red),
+                                    const Icon(Icons.delete,
+                                        size: 20, color: Colors.red),
                                     MySpacing.width(8),
-                                    MyText.bodyMedium('delete'.tr(), color: Colors.red),
+                                    MyText.bodyMedium('delete'.tr(),
+                                        color: Colors.red),
                                   ],
                                 ),
                               ),

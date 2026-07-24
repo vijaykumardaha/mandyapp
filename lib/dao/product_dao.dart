@@ -2,6 +2,7 @@ import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandyapp/utils/sync_vegetable.dart';
 
 class ProductDAO {
   final dbHelper = DBHelper.instance;
@@ -114,6 +115,83 @@ class ProductDAO {
 
       await batch.commit(noResult: true);
     });
+  }
+
+  Future<void> productsSync() async {
+    final db = await dbHelper.database;
+    final mandyId = await AppHelper.getCurrentMandyId();
+
+    final existing = await db.query(
+      'products',
+      where: 'mandy_id = ? AND is_deleted = ?',
+      whereArgs: [mandyId, 0],
+      limit: 1,
+    );
+
+    if (existing.isNotEmpty) return;
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final commonProductIds = <int>[];
+
+    for (final veg in SyncVegetable.vegetables) {
+      final productId = DBHelper.generateUuidInt();
+      await db.insert('products', {
+        'id': productId,
+        'mandy_id': mandyId,
+        'default_variant': 0,
+        'updated_at': now,
+        'is_deleted': 0,
+        'sync_status': 0,
+      });
+
+      final variantId = DBHelper.generateUuidInt();
+      await db.insert('product_variants', {
+        'id': variantId,
+        'mandy_id': mandyId,
+        'product_id': productId,
+        'variant_name': veg['name'],
+        'selling_price': double.tryParse(veg['price'] ?? '0.0') ?? 0.0,
+        'quantity': 1.0,
+        'unit': veg['unit'] ?? 'Kilogram',
+        'image_path': veg['path'],
+        'updated_at': now,
+        'is_deleted': 0,
+        'sync_status': 0,
+      });
+
+      await db.update(
+        'products',
+        {'default_variant': variantId},
+        where: 'id = ?',
+        whereArgs: [productId],
+      );
+
+      if ((veg['common'] ?? 0) == 1) {
+        commonProductIds.add(productId);
+      }
+    }
+
+    if (commonProductIds.isNotEmpty) {
+      final customers = await db.query(
+        'customers',
+        where: 'mandy_id = ? AND is_deleted = ?',
+        whereArgs: [mandyId, 0],
+      );
+
+      for (final customer in customers) {
+        final existingIds = (customer['product_ids'] as String?) ?? '';
+        final currentIds = existingIds.isEmpty
+            ? <int>[]
+            : existingIds.split(',').map((e) => int.tryParse(e) ?? 0).where((id) => id > 0).toList();
+        final merged = {...currentIds, ...commonProductIds}.toList();
+        await db.update(
+          'customers',
+          {'product_ids': merged.join(',')},
+          where: 'id = ?',
+          whereArgs: [customer['id']],
+        );
+      }
+    }
   }
 
   Future<List<Product>> getAllProductsWithVariants() async {

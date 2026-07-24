@@ -21,7 +21,6 @@ class _OrderItemScreenState extends State<OrderItemScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<OrderItemBloc>().add(const LoadOrderItems());
   }
 
   String _formatCustomer(Customer? customer) {
@@ -54,6 +53,10 @@ class _OrderItemScreenState extends State<OrderItemScreen> {
         ),
       ),
     );
+
+    if (mounted && _buyerCustomer != null && _buyerCustomer!.id != null) {
+      context.read<OrderItemBloc>().add(LoadOrderItems(buyerId: _buyerCustomer!.id, excludeOrderLinked: true));
+    }
   }
 
   @override
@@ -76,35 +79,6 @@ class _OrderItemScreenState extends State<OrderItemScreen> {
   }
 
   Widget _buildCartContent(List<OrderItem> sales) {
-    if (sales.isEmpty) {
-      return Padding(
-        padding: MySpacing.xy(16, 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    MyText.bodyLarge(
-                      'Cart is empty',
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                    MySpacing.height(8),
-                    MyText.bodyMedium(
-                      'Add items from selling screen to continue',
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     return CartItemList(
       initialSales: sales,
       buyerCustomer: _buyerCustomer,
@@ -112,6 +86,9 @@ class _OrderItemScreenState extends State<OrderItemScreen> {
         setState(() {
           _buyerCustomer = customer;
         });
+        if (customer != null && customer.id != null) {
+          context.read<OrderItemBloc>().add(LoadOrderItems(buyerId: customer.id, excludeOrderLinked: true));
+        }
       },
       formatCustomer: _formatCustomer,
       sellerNameForSale: (sale) => sale.sellerName,

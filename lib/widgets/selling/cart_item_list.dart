@@ -48,7 +48,7 @@ class _CartItemListState extends State<CartItemList> {
   final Set<int> _selectedIndices = <int>{};
   List<OrderItem> _saleList = [];
   Customer? _buyerCustomer;
-  bool _showCustomerList = false;
+  bool _showCustomerList = true;
   String? _selectedAlphabet;
   bool _isDeleting = false;
 
@@ -62,6 +62,17 @@ class _CartItemListState extends State<CartItemList> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
     });
+  }
+
+  @override
+  void didUpdateWidget(CartItemList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialSales != widget.initialSales) {
+      _saleList = List<OrderItem>.from(widget.initialSales);
+    }
+    if (oldWidget.buyerCustomer != widget.buyerCustomer) {
+      _buyerCustomer = widget.buyerCustomer;
+    }
   }
 
   Widget _buildAlphabetTag(String alphabet, bool isSelected) {

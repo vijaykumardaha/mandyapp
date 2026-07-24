@@ -75,5 +75,15 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         emit(ProductError('Failed to search products: ${error.toString()}'));
       }
     });
+
+    on<ProductsSync>((event, emit) async {
+      try {
+        await productDAO.productsSync();
+        final products = await productDAO.getAllProductsWithVariants();
+        emit(ProductLoaded(products));
+      } catch (error) {
+        emit(ProductError('Failed to sync products: ${error.toString()}'));
+      }
+    });
   }
 }

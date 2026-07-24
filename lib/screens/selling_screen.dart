@@ -31,7 +31,6 @@ class SellingScreenState extends State<SellingScreen> {
     theme = AppTheme.shoppingManagerTheme;
     context.read<ProductBloc>().add(LoadProducts());
     context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
-    context.read<OrderItemBloc>().add(const LoadOrderItems());
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -208,6 +207,7 @@ class SellingScreenState extends State<SellingScreen> {
                   setState(() {
                     sellerCustomer = customer;
                   });
+                  context.read<OrderItemBloc>().add(LoadOrderItems(sellerId: customer.id, excludeOrderLinked: true));
                 },
                 child: Container(
                   padding: const EdgeInsets.all(12),

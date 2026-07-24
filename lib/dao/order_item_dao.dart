@@ -69,7 +69,8 @@ class OrderItemDAO {
     return OrderItem.fromJson(maps.first);
   }
 
-  Future<List<OrderItem>> getOrderItems({int? sellerId, int? productId, int? variantId, bool excludeOrderLinked = false}) async {
+  Future<List<OrderItem>> getOrderItems({int? sellerId, int? buyerId, int? productId, int? variantId, 
+  bool excludeBuyerOrderLinked = false, bool excludeSellerOrderLinked = false}) async {
     final db = await dbHelper.database;
     final whereClauses = <String>[];
     final whereArgs = <Object?>[];
@@ -82,6 +83,10 @@ class OrderItemDAO {
       whereClauses.add('seller_id = ?');
       whereArgs.add(sellerId);
     }
+    if (buyerId != null) {
+      whereClauses.add('buyer_id = ?');
+      whereArgs.add(buyerId);
+    }
     if (productId != null) {
       whereClauses.add('product_id = ?');
       whereArgs.add(productId);
@@ -90,8 +95,13 @@ class OrderItemDAO {
       whereClauses.add('variant_id = ?');
       whereArgs.add(variantId);
     }
-    if (excludeOrderLinked) {
-      whereClauses.add('buyer_order_id IS NULL AND seller_order_id IS NULL');
+
+    if (excludeBuyerOrderLinked) {
+      whereClauses.add('buyer_order_id IS NULL');
+    }
+
+    if (excludeSellerOrderLinked) {
+      whereClauses.add('seller_order_id IS NULL');
     }
 
     final maps = await db.query(

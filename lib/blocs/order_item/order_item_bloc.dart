@@ -22,12 +22,28 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
   Future<void> _onLoadOrderItems(LoadOrderItems event, Emitter<OrderItemState> emit) async {
     emit(const OrderItemLoading());
     try {
-      final orderItems = await _orderItemDAO.getOrderItems(
-        sellerId: event.sellerId,
-        productId: event.productId,
-        variantId: event.variantId,
-        excludeOrderLinked: event.excludeOrderLinked,
-      );
+      List<OrderItem> orderItems = [];
+
+      if (event.sellerId != null) {
+        final sellerItems = await _orderItemDAO.getOrderItems(
+          sellerId: event.sellerId,
+          productId: event.productId,
+          variantId: event.variantId,
+          excludeSellerOrderLinked: event.excludeOrderLinked,
+        );
+        orderItems.addAll(sellerItems);
+      }
+
+      if (event.buyerId != null) {
+        final buyerItems = await _orderItemDAO.getOrderItems(
+          buyerId: event.buyerId,
+          productId: event.productId,
+          variantId: event.variantId,
+          excludeBuyerOrderLinked: event.excludeOrderLinked,
+        );
+        orderItems.addAll(buyerItems);
+      }
+
       emit(OrderItemsLoaded(orderItems));
     } catch (error) {
       emit(OrderItemError('Failed to load order items: ${error.toString()}'));
@@ -52,7 +68,7 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
       await _orderItemDAO.insertOrderItem(event.orderItem);
       final orderItems = await _orderItemDAO.getOrderItems(
         sellerId: event.orderItem.sellerId,
-        excludeOrderLinked: true,
+        excludeSellerOrderLinked: true,
       );
       emit(OrderItemsLoaded(orderItems, message: 'Order item added successfully'));
     } catch (error) {

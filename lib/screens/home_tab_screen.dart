@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/blocs/reports/reports_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
@@ -54,6 +55,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       if (!mounted) return;
 
       if (response != null) {
+        context.read<ProductBloc>().add(const ProductsSync());
         _loadDashboardData(forceRefresh: true);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

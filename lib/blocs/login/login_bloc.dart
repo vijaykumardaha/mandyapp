@@ -1,7 +1,12 @@
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:mandyapp/dao/customer_dao.dart';
+import 'package:mandyapp/dao/product_dao.dart';
 import 'package:mandyapp/dao/user_dao.dart';
+import 'package:mandyapp/dao/vegetable_dao.dart';
+import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/user_model.dart';
 import 'package:mandyapp/sync/phoenix_socket_service.dart';
 import 'package:mandyapp/sync/sync_service.dart';
@@ -74,11 +79,37 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         );
         
        await userDAO.registerUser(newUser);
-
-        // Auto-login after registration
         await AppHelper.savePreferences('user', newUser.toJson());
+
+        
+
+        // Seed customers from phone contacts
+        final customerDao = CustomerDAO();
+        final existingCount = await customerDao.getCustomerCount();
+        if (existingCount <= 1) {
+          final hasPermission = await FlutterContacts.requestPermission(readonly: true);
+          if (hasPermission) {
+            final phoneContacts = await FlutterContacts.getContacts(withProperties: true);
+            final converted = phoneContacts
+                .where((c) => c.phones.isNotEmpty && c.phones.first.normalizedNumber.isNotEmpty)
+                .map((c) {
+                  final phone = c.phones.first.normalizedNumber;
+                  final last10 = phone.length >= 10 ? phone.substring(phone.length - 10) : phone;
+                  return Customer(name: c.displayName, phone: last10);
+                })
+                .toList();
+            if (converted.isNotEmpty) {
+              await customerDao.bulkInsert(converted);
+            }
+          }
+        }
+
+        await VegetableDAO().syncVegetables();
+        await ProductDAO().productsSync();
+
         emit(LoginSuccess(user: newUser));
       } catch (error) {
+        print(error);
         emit(const LoginFailure(error: 'Registration failed. Please try again.'));
       }
     });

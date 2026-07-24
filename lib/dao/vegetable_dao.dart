@@ -17,16 +17,31 @@ class VegetableDAO {
       limit: 1,
     );
 
-    if (existing.isNotEmpty) return;
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    if (existing.isNotEmpty) {
+      for (final veg in SyncVegetable.vegetables) {
+        await db.update(
+          'vegetables',
+          {
+            'price': double.tryParse(veg['price'] ?? '0.0') ?? 0.0,
+            'unit': veg['unit'] ?? 'Kilogram',
+            'common': veg['common'] ?? 0,
+          },
+          where: 'mandy_id = ? AND key = ?',
+          whereArgs: [mandyId, veg['key']],
+        );
+      }
+      return;
+    }
 
     final batch = db.batch();
-    final now = DateTime.now().millisecondsSinceEpoch;
 
     for (final veg in SyncVegetable.vegetables) {
       batch.rawInsert('''
-        INSERT INTO vegetables (mandy_id, key, name, path, updated_at, is_deleted, sync_status)
-        VALUES (?, ?, ?, ?, ?, 0, 0)
-      ''', [mandyId, veg['key'], veg['name'], veg['path'], now]);
+        INSERT INTO vegetables (mandy_id, key, name, path, price, unit, common, updated_at, is_deleted, sync_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0)
+      ''', [mandyId, veg['key'], veg['name'], veg['path'], double.tryParse(veg['price'] ?? '0.0') ?? 0.0, veg['unit'] ?? 'Kilogram', veg['common'] ?? 0, now]);
     }
 
     await batch.commit(noResult: true);

@@ -34,7 +34,7 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS users (
@@ -174,7 +174,7 @@ class DBHelper {
             buying_price REAL DEFAULT 0.0,
             selling_price REAL NOT NULL,
             quantity REAL NOT NULL,
-            unit TEXT DEFAULT 'Kg',
+            unit TEXT DEFAULT 'Kilogram',
             product_name TEXT,
             image_path TEXT,
             seller_name TEXT,
@@ -207,6 +207,9 @@ class DBHelper {
             key TEXT NOT NULL,
             name TEXT NOT NULL,
             path TEXT NOT NULL,
+            price REAL DEFAULT 0.0,
+            unit TEXT DEFAULT 'Kilogram',
+            common INTEGER DEFAULT 0,
             updated_at INTEGER NOT NULL,
             is_deleted INTEGER DEFAULT 0,
             sync_status INTEGER DEFAULT 0,
@@ -224,6 +227,11 @@ class DBHelper {
           await db.execute("ALTER TABLE order_items RENAME COLUMN variant_name TO product_name");
           await db.execute('ALTER TABLE order_items ADD COLUMN seller_name TEXT');
           await db.execute('ALTER TABLE order_items ADD COLUMN buyer_name TEXT');
+        }
+        if (oldVersion < 4) {
+          await db.execute('ALTER TABLE vegetables ADD COLUMN price REAL DEFAULT 0.0');
+          await db.execute("ALTER TABLE vegetables ADD COLUMN unit TEXT DEFAULT 'Kilogram'");
+          await db.execute('ALTER TABLE vegetables ADD COLUMN common INTEGER DEFAULT 0');
         }
       },
     );

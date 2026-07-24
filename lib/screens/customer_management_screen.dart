@@ -8,7 +8,6 @@ import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/screens/payment_histories_screen.dart';
 
 class CustomerManagementScreen extends StatefulWidget {
@@ -288,10 +287,10 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
                       ),
                     ),
                     MySpacing.height(16),
-                    MyText.bodyMedium('Product Choices', fontWeight: 600),
+                    MyText.bodyMedium('Customer Products', fontWeight: 600),
                     MySpacing.height(4),
                     MyText.bodySmall(
-                      'Select products this customer is interested in',
+                      'Select products this customer is selling it.',
                       color: theme.colorScheme.onBackground.withOpacity(0.6),
                       fontSize: 11,
                     ),
@@ -322,7 +321,7 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
+                              crossAxisCount: 4,
                               mainAxisSpacing: 8,
                               crossAxisSpacing: 8,
                               childAspectRatio: 1,

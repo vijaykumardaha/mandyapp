@@ -45,3 +45,7 @@ class SearchProducts extends ProductEvent {
   @override
   List<Object?> get props => [query];
 }
+
+class ProductsSync extends ProductEvent {
+  const ProductsSync();
+}
