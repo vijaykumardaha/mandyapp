@@ -5,7 +5,6 @@ import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/blocs/reports/reports_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
-import 'package:mandyapp/screens/reports_screen.dart';
 import 'package:mandyapp/sync/sync_service.dart';
 
 class HomeTabScreen extends StatefulWidget {
@@ -216,43 +215,6 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                               size: 18,
                               color: theme.primaryColor,
                             ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ReportsScreen(),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: theme.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: theme.primaryColor.withOpacity(0.2),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.insert_chart_outlined,
-                            size: 18,
-                            color: theme.primaryColor,
-                          ),
-                          const SizedBox(width: 6),
-                          MyText.bodySmall(
-                            "See Reports",
-                            color: theme.primaryColor,
-                            fontWeight: 600,
-                          ),
-                        ],
-                      ),
                     ),
                   ),
                 ],

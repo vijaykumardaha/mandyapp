@@ -209,10 +209,10 @@ class PrinterService {
       final StringBuffer invoiceText = StringBuffer();
 
       // Header
-      invoiceText.writeln(_centerText('INVOICE'));
-      invoiceText.writeln(_centerText('#$cartId'));
       invoiceText.writeln('=' * 32);
-
+      invoiceText.writeln(_centerText('Bill No #$cartId'));
+      invoiceText.writeln('=' * 32);
+     
       // Date and customer info
       final now = DateTime.now();
       final dateStr = '${now.day.toString().padLeft(2, '0')}/'
@@ -220,54 +220,44 @@ class PrinterService {
                      '${now.year} ${now.hour.toString().padLeft(2, '0')}:'
                      '${now.minute.toString().padLeft(2, '0')}';
 
-      invoiceText.writeln('Date: $dateStr');
-      invoiceText.writeln('Customer: $customerName');
-      invoiceText.writeln('Type: ${cartType.toUpperCase()}');
-      invoiceText.writeln('=' * 32);
+      invoiceText.writeln('Date:           $dateStr');
+      invoiceText.writeln('Customer:       $customerName');
+      invoiceText.writeln('Type:           ${cartType.toUpperCase()}');
 
       // Items header
-      invoiceText.writeln(' Items  Product                Amount');
+      invoiceText.writeln('Product         Amount');
       invoiceText.writeln('-' * 32);
 
-      int itemNo = 1;
       for (final item in items) {
-        final productName = item.productName.length > 18
+        final productName = item.productName.length > 20
             ? '${item.productName.substring(0, 15)}...'
             : item.productName;
-        final qty = '${item.quantity.toInt()} ${item.unit}';
-        final amount = '₹${item.total.toStringAsFixed(2)}';
+        final qty = item.quantity.toInt();
+        final amount = '${item.total.toStringAsFixed(2)}';
 
-        invoiceText.writeln('  ${itemNo.toString().padLeft(2)}. ${productName.padRight(18)} ${amount.padLeft(8)}');
-        invoiceText.writeln('      ${qty} x ₹${item.price.toStringAsFixed(2)}');
-        if (itemNo < items.length) {
-          invoiceText.writeln('  ' + '-' * 28);
-        }
-        itemNo++;
+        invoiceText.writeln('${productName.padRight(12)} ${qty} x ${item.price.toStringAsFixed(2)}   ${amount}');
       }
-
-      invoiceText.writeln('=' * 32);
+      invoiceText.writeln('-' * 32);
 
       // Summary
-      invoiceText.writeln('Item Total:      ₹${itemTotal.toStringAsFixed(2)}');
-      invoiceText.writeln('Total Charges:   ₹${chargesTotal.toStringAsFixed(2)}');
-      invoiceText.writeln('Total Expenses:  ₹${expensesTotal.toStringAsFixed(2)}');
+      invoiceText.writeln('Item Total:               ${itemTotal.toStringAsFixed(2)}');
+      invoiceText.writeln('Total Charges:            ${chargesTotal.toStringAsFixed(2)}');
+      invoiceText.writeln('Total Expenses:           ${expensesTotal.toStringAsFixed(2)}');
 
       invoiceText.writeln('-' * 32);
-      invoiceText.writeln(_centerText('GRAND TOTAL: ₹${grandTotal.toStringAsFixed(2)}'));
-      invoiceText.writeln('=' * 32);
+      invoiceText.writeln('GRAND TOTAL:              ${grandTotal.toStringAsFixed(2)}');
 
       // Payment info
       invoiceText.writeln('');
       invoiceText.writeln('Payment Info:');
       invoiceText.writeln('-' * 32);
-      invoiceText.writeln('Amount Paid:     ₹${receivedAmount.toStringAsFixed(2)}');
-      invoiceText.writeln('Amount Due:      ₹${pendingAmount.toStringAsFixed(2)}');
+      invoiceText.writeln('Amount Paid:              ${receivedAmount.toStringAsFixed(2)}');
+      invoiceText.writeln('Amount Due:               ${pendingAmount.toStringAsFixed(2)}');
 
       if (paymentMethod.isNotEmpty && paymentMethod != 'Not recorded') {
-        invoiceText.writeln('Payment Method:  $paymentMethod');
+        invoiceText.writeln('Payment Method:           $paymentMethod');
       }
 
-      invoiceText.writeln('=' * 32);
       invoiceText.writeln('');
       invoiceText.writeln(_centerText('Thank you!'));
       invoiceText.writeln('');

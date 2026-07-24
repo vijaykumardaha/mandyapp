@@ -13,7 +13,7 @@ import 'package:mandyapp/screens/privacy_policy_screen.dart';
 import 'package:mandyapp/screens/printer_settings_screen.dart';
 import 'package:mandyapp/screens/terms_conditions_screen.dart';
 import 'package:mandyapp/screens/customer_management_screen.dart';
-import 'package:mandyapp/screens/payment_screen.dart';
+import 'package:mandyapp/screens/reports_screen.dart';
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
@@ -102,7 +102,7 @@ class AppRoutes {
       GoRoute(
         path: '/bills',
         builder: (context, state) {
-          return const PaymentScreen();
+          return const ReportsScreen();
         },
       ),
     ],
