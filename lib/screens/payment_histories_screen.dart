@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:mandyapp/blocs/customer_payment/customer_payment_bloc.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/customer_payment_model.dart';
+import 'package:mandyapp/widgets/payment_histories/payment_item.dart';
+import 'package:mandyapp/widgets/payment_histories/summary_bar.dart';
+import 'package:mandyapp/widgets/payment_histories/type_tab.dart';
 
 class PaymentHistoriesScreen extends StatefulWidget {
   final Customer customer;
@@ -74,13 +76,16 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
 
             return Column(
               children: [
-                _buildSummaryBar(theme, state),
+                PaymentSummaryBar(
+                  totalReceived: state.totalReceived,
+                  totalPaid: state.totalPaid,
+                ),
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: state.payments.length,
                     itemBuilder: (context, index) {
-                      return _buildPaymentItem(context, state.payments[index]);
+                      return PaymentItem(payment: state.payments[index]);
                     },
                   ),
                 ),
@@ -90,44 +95,6 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
 
           return const SizedBox.shrink();
         },
-      ),
-    );
-  }
-
-  Widget _buildSummaryBar(ThemeData theme, CustomerPaymentsLoaded state) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildSummaryChip(theme, 'Received', state.totalReceived, Colors.green),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildSummaryChip(theme, 'Paid', state.totalPaid, Colors.red),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryChip(ThemeData theme, String label, double amount, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: theme.textTheme.bodySmall?.copyWith(color: color)),
-          const SizedBox(height: 2),
-          Text(
-            '₹${amount.toStringAsFixed(2)}',
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: color),
-          ),
-        ],
       ),
     );
   }
@@ -144,36 +111,6 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
             style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant.withOpacity(0.6)),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentItem(BuildContext context, CustomerPayment payment) {
-    final theme = Theme.of(context);
-    final isReceived = payment.type == 'received';
-    final date = DateTime.fromMillisecondsSinceEpoch(payment.paymentDate);
-    final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: isReceived ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-          child: Icon(
-            isReceived ? Icons.arrow_downward : Icons.arrow_upward,
-            color: isReceived ? Colors.green : Colors.red,
-            size: 20,
-          ),
-        ),
-        title: Text(payment.note.isNotEmpty ? payment.note : payment.source.toUpperCase()),
-        subtitle: Text('${payment.source.toUpperCase()} • ${dateFormat.format(date)}'),
-        trailing: Text(
-          '${isReceived ? '+' : '-'}₹${payment.amount.toStringAsFixed(2)}',
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: isReceived ? Colors.green : Colors.red,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
       ),
     );
   }
@@ -236,8 +173,7 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                       child: Row(
                         children: [
                           Expanded(
-                            child: _buildTypeTab(
-                              context,
+                            child: PaymentTypeTab(
                               label: 'Received',
                               icon: Icons.arrow_downward_rounded,
                               isSelected: isReceived,
@@ -246,8 +182,7 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                             ),
                           ),
                           Expanded(
-                            child: _buildTypeTab(
-                              context,
+                            child: PaymentTypeTab(
                               label: 'Paid',
                               icon: Icons.arrow_upward_rounded,
                               isSelected: !isReceived,
@@ -359,40 +294,4 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
     );
   }
 
-  Widget _buildTypeTab(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          border: isSelected ? Border.all(color: color.withOpacity(0.4), width: 1.5) : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 18, color: isSelected ? color : theme.colorScheme.onSurfaceVariant),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? color : theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

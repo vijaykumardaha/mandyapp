@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/widgets/about/feature_item.dart';
+import 'package:mandyapp/widgets/about/contact_item.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -91,52 +93,65 @@ class _AboutScreenState extends State<AboutScreen> {
             MySpacing.height(32),
             
             // Features Section
-            _buildSectionTitle('Features'),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: MyText.titleMedium('Features', fontWeight: 600),
+            ),
             MySpacing.height(16),
             
-            _buildFeatureItem(
+            FeatureItem(
               icon: Icons.people,
               title: 'Customer Management',
               description: 'Manage your customers and their transactions',
+              theme: theme,
             ),
             
-            _buildFeatureItem(
+            FeatureItem(
               icon: Icons.business,
               title: 'Supplier Management',
               description: 'Keep track of your suppliers and purchases',
+              theme: theme,
             ),
             
-            _buildFeatureItem(
+            FeatureItem(
               icon: Icons.receipt_long,
               title: 'Transaction History',
               description: 'View and manage all your business transactions',
+              theme: theme,
             ),
             
-            _buildFeatureItem(
+            FeatureItem(
               icon: Icons.analytics,
               title: 'Reports & Analytics',
               description: 'Get insights into your business performance',
+              theme: theme,
             ),
             
             MySpacing.height(32),
             
             // Contact Information
-            _buildSectionTitle('Contact Us'),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: MyText.titleMedium('Contact Us', fontWeight: 600),
+            ),
             MySpacing.height(16),
             
-            _buildContactItem(
+            ContactItem(
               icon: Icons.email,
               text: 'support@mymandy.com',
+              theme: theme,
             ),
             
-            _buildContactItem(
+            ContactItem(
               icon: Icons.phone,
               text: '+91 1234567890',
+              theme: theme,
             ),
             
-            _buildContactItem(
+            ContactItem(
               icon: Icons.language,
               text: 'www.mymandy.com',
+              theme: theme,
             ),
             
             MySpacing.height(32),
@@ -178,97 +193,6 @@ class _AboutScreenState extends State<AboutScreen> {
             MySpacing.height(20),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: MyText.titleMedium(
-        title,
-        fontWeight: 600,
-      ),
-    );
-  }
-
-  Widget _buildFeatureItem({
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
-    return Container(
-      margin: MySpacing.bottom(12),
-      padding: MySpacing.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: theme.dividerColor,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: MySpacing.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              size: 24,
-              color: theme.colorScheme.primary,
-            ),
-          ),
-          MySpacing.width(16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                MyText.bodyMedium(
-                  title,
-                  fontWeight: 600,
-                ),
-                MySpacing.height(4),
-                MyText.bodySmall(
-                  description,
-                  color: theme.colorScheme.onBackground.withOpacity(0.6),
-                  height: 1.4,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactItem({
-    required IconData icon,
-    required String text,
-  }) {
-    return Container(
-      margin: MySpacing.bottom(12),
-      padding: MySpacing.xy(16, 12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 20,
-            color: theme.colorScheme.primary,
-          ),
-          MySpacing.width(12),
-          MyText.bodyMedium(
-            text,
-            color: theme.colorScheme.onBackground.withOpacity(0.8),
-          ),
-        ],
       ),
     );
   }

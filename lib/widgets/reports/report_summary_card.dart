@@ -1,0 +1,39 @@
+import 'package:flutter/material.dart';
+import 'package:mandyapp/helpers/widgets/my_spacing.dart';
+import 'package:mandyapp/helpers/widgets/my_text.dart';
+
+class ReportSummaryCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const ReportSummaryCard({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: MySpacing.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 20, color: color),
+          MySpacing.height(4),
+          MyText.bodySmall(title, color: color, fontWeight: 600),
+          MySpacing.height(2),
+          MyText.titleSmall(value, fontWeight: 700, color: color),
+        ],
+      ),
+    );
+  }
+}

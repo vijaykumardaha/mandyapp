@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 
-enum PaymentType { single, split }
 enum PaymentMethod { cash, upi, card, credit }
 
 class PaymentMethodSelector extends StatefulWidget {

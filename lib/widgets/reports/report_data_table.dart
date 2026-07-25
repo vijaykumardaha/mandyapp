@@ -1,0 +1,67 @@
+import 'package:flutter/material.dart';
+import 'package:mandyapp/helpers/widgets/my_spacing.dart';
+import 'package:mandyapp/helpers/widgets/my_text.dart';
+
+class ReportTableHeader {
+  final String label;
+  final int flex;
+
+  const ReportTableHeader({required this.label, this.flex = 1});
+}
+
+class ReportDataTable extends StatelessWidget {
+  final List<ReportTableHeader> headers;
+  final List<Widget> rows;
+
+  const ReportDataTable({
+    super.key,
+    required this.headers,
+    required this.rows,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: MySpacing.xy(12, 8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withOpacity(0.1),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+              ),
+              child: Row(
+                children: headers
+                    .map(
+                      (h) => Expanded(
+                        flex: h.flex,
+                        child: MyText.bodySmall(h.label, fontWeight: 600),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+            Expanded(
+              child: ListView.separated(
+                padding: EdgeInsets.zero,
+                itemCount: rows.length,
+                separatorBuilder: (context, index) => Divider(
+                  height: 1,
+                  color: theme.colorScheme.outline.withOpacity(0.1),
+                ),
+                itemBuilder: (context, index) => rows[index],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

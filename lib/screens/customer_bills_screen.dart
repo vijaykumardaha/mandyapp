@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:mandyapp/blocs/order/order_bloc.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/order_model.dart';
-import 'package:mandyapp/screens/bill_details_screen.dart';
+import 'package:mandyapp/widgets/customer_bills/bill_card.dart';
 
 class CustomerBillsScreen extends StatefulWidget {
   final Customer customer;
@@ -65,7 +64,7 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
               return _buildEmptyState(theme);
             }
 
-            return _buildBillsList(theme, customerOrders);
+            return _buildBillsList(customerOrders);
           }
 
           if (state is OrderEmpty) {
@@ -78,107 +77,13 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
     );
   }
 
-  Widget _buildBillsList(ThemeData theme, List<Order> orders) {
+  Widget _buildBillsList(List<Order> orders) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: orders.length,
       itemBuilder: (context, index) {
-        return _buildBillCard(context, orders[index]);
+        return BillCard(order: orders[index]);
       },
-    );
-  }
-
-  Widget _buildBillCard(BuildContext context, Order order) {
-    final theme = Theme.of(context);
-    final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
-    DateTime? createdAt;
-    try {
-      createdAt = DateTime.parse(order.createdAt);
-    } catch (_) {
-      createdAt = DateTime.fromMillisecondsSinceEpoch(order.updatedAt ?? 0);
-    }
-
-    final orderForLabel = order.orderFor == 'seller' ? 'Seller' : 'Buyer';
-
-    return GestureDetector(
-      onTap: () {
-        if (order.id != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BillDetailsScreen(orderId: order.id!),
-            ),
-          );
-        }
-      },
-      child: Card(
-        margin: const EdgeInsets.only(bottom: 10),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Bill #${order.id ?? '-'}',
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    dateFormat.format(createdAt),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  _buildInfoChip(theme, orderForLabel, Icons.person_outline),
-                  const SizedBox(width: 8),
-                  _buildInfoChip(theme, '${order.lineItemCount} items', Icons.shopping_bag_outlined),
-                  const Spacer(),
-                  Text(
-                    '₹${order.totalPrice.toStringAsFixed(2)}',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoChip(ThemeData theme, String label, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

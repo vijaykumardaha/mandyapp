@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/screens/product_detail_screen.dart';
+import 'package:mandyapp/widgets/product_list/product_card_widget.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -35,32 +35,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
     _debounce = Timer(const Duration(milliseconds: 300), () {
       context.read<ProductBloc>().add(SearchProducts(query.trim()));
     });
-  }
-
-  Widget _buildVariantImage(String imagePath) {
-    final placeholder = Icon(
-      Icons.inventory_2,
-      size: 32,
-      color: theme.colorScheme.onSurfaceVariant,
-    );
-
-    if (imagePath.isEmpty) {
-      return placeholder;
-    }
-
-    if (imagePath.startsWith('assets/')) {
-      return Image.asset(
-        imagePath,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => placeholder,
-      );
-    }
-
-    return Image.file(
-      File(imagePath),
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) => placeholder,
-    );
   }
 
   @override
@@ -177,7 +151,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     itemCount: productState.products.length,
                     itemBuilder: (context, index) {
                       final product = productState.products[index];
-                      return _buildProductCard(product);
+                      return ProductCardWidget(
+                        product: product,
+                        theme: theme,
+                        onEdit: () => _navigateToProductDetail(product),
+                        onDelete: () => _deleteProduct(product),
+                      );
                     },
                   );
                 } else if (productState is ProductError) {
@@ -190,145 +169,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildProductCard(Product product) {
-    final variantCount = product.variantCount;
-    final defaultVariant = product.defaultVariantModel;
-    final variants = product.variants ?? [];
-
-    return Card(
-      margin: MySpacing.bottom(12),
-      child: Padding(
-        padding: MySpacing.all(16),
-        child: Row(
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: defaultVariant != null && defaultVariant.imagePath.isNotEmpty
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: _buildVariantImage(defaultVariant.imagePath),
-                    )
-                  : Center(
-                      child: Icon(
-                        Icons.inventory_2,
-                        size: 32,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-            ),
-            MySpacing.width(16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: MyText.bodyLarge(
-                          defaultVariant?.variantName ?? 'Product #${product.id ?? ''}',
-                          fontWeight: 600,
-                        ),
-                      ),
-                      Container(
-                        padding: MySpacing.xy(8, 4),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.tertiaryContainer,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: MyText.bodySmall(
-                          '$variantCount ${'variants'.tr()}',
-                          fontSize: 11,
-                          color: theme.colorScheme.onTertiaryContainer,
-                          fontWeight: 600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  MySpacing.height(8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Wrap(
-                          spacing: 4,
-                          runSpacing: 4,
-                          children: [
-                            ...variants.take(2).map((variant) => Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: MyText.bodySmall(
-                                '₹${variant.sellingPrice.toStringAsFixed(0)} \\ ${variant.quantity} ${variant.unit}',
-                                color: theme.colorScheme.primary,
-                                fontSize: 10,
-                              ),
-                            )),
-                            if (variants.length > 2)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.onSurface.withOpacity(0.08),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: MyText.bodySmall(
-                                  '+${variants.length - 2}',
-                                  color: theme.colorScheme.onSurface.withOpacity(0.6),
-                                  fontSize: 10,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            PopupMenuButton<String>(
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.more_vert, size: 20),
-              onSelected: (value) {
-                if (value == 'edit') {
-                  _navigateToProductDetail(product);
-                } else if (value == 'delete') {
-                  _deleteProduct(product);
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'edit',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.edit, size: 20),
-                      MySpacing.width(8),
-                      MyText.bodyMedium('edit'.tr()),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.delete, size: 20, color: Colors.red),
-                      MySpacing.width(8),
-                      MyText.bodyMedium('delete'.tr(), color: Colors.red),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }

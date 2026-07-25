@@ -5,6 +5,7 @@ import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/widgets/settings/settings_tile.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -37,89 +38,78 @@ class _SettingsScreenState extends State<SettingsScreen> {
             MySpacing.height(40),
             
             // Business Section
-            _buildSectionHeader('Business'),
-            _buildSettingsTile(
+            SettingsSectionHeader(title: 'Business', theme: theme),
+            SettingsTile(
               icon: Icons.person_outline,
               title: 'My Profile',
-              onTap: () {
-                // Navigate to profile screen
-                context.push('/profile');
-              },
+              theme: theme,
+              onTap: () => context.push('/profile'),
             ),
-            _buildSettingsTile(
+            SettingsTile(
               icon: Icons.help_center,
               title: 'Staff',
-              onTap: () {
-                context.push('/staff');
-              },
+              theme: theme,
+              onTap: () => context.push('/staff'),
             ),
-            _buildSettingsTile(
+            SettingsTile(
               icon: Icons.inventory_2,
               title: 'Products',
-              onTap: () {
-                context.push('/products');
-              },
+              theme: theme,
+              onTap: () => context.push('/products'),
             ),
-            _buildSettingsTile(
+            SettingsTile(
               icon: Icons.account_balance_wallet,
               title: 'Charges',
-              onTap: () {
-                context.push('/charges');
-              },
+              theme: theme,
+              onTap: () => context.push('/charges'),
             ),
-            _buildSettingsTile(
+            SettingsTile(
               icon: Icons.people_outline,
               title: 'Customers',
-              onTap: () {
-                context.push('/customers');
-              },
+              theme: theme,
+              onTap: () => context.push('/customers'),
             ),
-            _buildSettingsTile(
+            SettingsTile(
               icon: Icons.print_outlined,
               title: 'Printer',
-              onTap: () {
-                context.push('/printer-settings');
-              },
+              theme: theme,
+              onTap: () => context.push('/printer-settings'),
             ),
             
             MySpacing.height(24),
             
             // About Section
-            _buildSectionHeader('About'),
-            _buildSettingsTile(
+            SettingsSectionHeader(title: 'About', theme: theme),
+            SettingsTile(
               icon: Icons.info_outline,
               title: 'About App',
-              onTap: () {
-                context.push('/about');
-              },
+              theme: theme,
+              onTap: () => context.push('/about'),
             ),
-            _buildSettingsTile(
+            SettingsTile(
               icon: Icons.privacy_tip,
               title: 'Privacy Policy',
-              onTap: () {
-                context.push('/privacy-policy');
-              },
+              theme: theme,
+              onTap: () => context.push('/privacy-policy'),
             ),
-            _buildSettingsTile(
+            SettingsTile(
               icon: Icons.description,
               title: 'Terms & Conditions',
-              onTap: () {
-                context.push('/terms-conditions');
-              },
+              theme: theme,
+              onTap: () => context.push('/terms-conditions'),
             ),
             
             MySpacing.height(24),
             
             // Logout Section
-            _buildSectionHeader('Account'),
-            _buildSettingsTile(
+            SettingsSectionHeader(title: 'Account', theme: theme),
+            SettingsTile(
               icon: Icons.logout,
               title: 'Logout',
+              theme: theme,
               iconColor: Colors.red,
               titleColor: Colors.red,
-              onTap: () {
-                _showLogoutDialog();
-              },
+              onTap: () => _showLogoutDialog(),
             ),
             
             MySpacing.height(40),
@@ -130,63 +120,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 'Version 1.0.0',
                 color: theme.colorScheme.onBackground.withOpacity(0.4),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: MySpacing.bottom(12),
-      child: MyText.titleSmall(
-        title,
-        fontWeight: 600,
-        color: theme.colorScheme.primary,
-      ),
-    );
-  }
-
-  Widget _buildSettingsTile({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    Color? iconColor,
-    Color? titleColor,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: MySpacing.xy(12, 16),
-        margin: MySpacing.bottom(8),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: theme.dividerColor,
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 24,
-              color: iconColor ?? theme.colorScheme.onBackground.withOpacity(0.7),
-            ),
-            MySpacing.width(16),
-            Expanded(
-              child: MyText.bodyMedium(
-                title,
-                fontWeight: 500,
-                color: titleColor ?? theme.colorScheme.onBackground,
-              ),
-            ),
-            Icon(
-              Icons.chevron_right,
-              size: 20,
-              color: theme.colorScheme.onBackground.withOpacity(0.4),
             ),
           ],
         ),

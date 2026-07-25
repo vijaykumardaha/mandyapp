@@ -10,6 +10,8 @@ import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/blocs/customer/customer_bloc.dart';
 import 'package:mandyapp/widgets/selling/add_to_sale_bottom_sheet.dart';
+import 'package:mandyapp/widgets/selling/alphabet_filter.dart' as extracted;
+import 'package:mandyapp/widgets/selling/customer_grid.dart';
 import 'package:mandyapp/widgets/selling/product_card.dart';
 
 class SellingScreen extends StatefulWidget {
@@ -54,182 +56,13 @@ class SellingScreenState extends State<SellingScreen> {
     );
   }
 
-  Widget _buildAlphabetFilter() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16),
-      child: Row(
-        children: [
-          _buildAlphabetTag('All', _selectedAlphabet == null),
-          const SizedBox(width: 8),
-          ...List.generate(26, (index) {
-            final alphabet = String.fromCharCode(65 + index);
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: _buildAlphabetTag(alphabet, _selectedAlphabet == alphabet),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAlphabetTag(String alphabet, bool isSelected) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedAlphabet =
-              isSelected ? null : (alphabet == 'All' ? null : alphabet);
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.outline.withOpacity(0.3),
-          ),
-        ),
-        child: Text(
-          alphabet,
-          style: TextStyle(
-            color: isSelected
-                ? Theme.of(context).colorScheme.onPrimary
-                : Theme.of(context).colorScheme.onSurface,
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildCustomerGrid() {
-    return BlocBuilder<CustomerBloc, CustomerState>(
-      builder: (context, customerState) {
-        final allCustomers = customerState is CustomerLoaded
-            ? customerState.customers
-            : <Customer>[];
-        final isLoading = customerState is CustomerLoading;
-
-        List<Customer> customers = allCustomers;
-        if (_selectedAlphabet != null) {
-          customers = allCustomers.where((customer) {
-            final name = customer.name?.trim().toUpperCase() ?? '';
-            return name.startsWith(_selectedAlphabet!);
-          }).toList();
-        }
-
-        if (isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (customers.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 60),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.person_outline,
-                    size: 56,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
-                  ),
-                  const SizedBox(height: 16),
-                  MyText.bodyMedium(
-                    'No customers found',
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(height: 6),
-                  MyText.bodySmall(
-                    'Add customers to get started',
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        return Padding(
-          padding: const EdgeInsets.all(10),
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 2.2,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-            ),
-            itemCount: customers.length,
-            itemBuilder: (context, index) {
-              final customer = customers[index];
-              final name = customer.name ?? 'Unnamed';
-              final initials = name.length >= 2
-                  ? name.substring(0, 2).toUpperCase()
-                  : name.toUpperCase();
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    sellerCustomer = customer;
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outline.withOpacity(0.15),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 14,
-                        backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                        child: MyText.bodySmall(
-                          initials,
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: 600,
-                          fontSize: 11,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            MyText.bodySmall(
-                              name,
-                              fontWeight: 600,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              fontSize: 12,
-                            ),
-                            if (customer.phone != null)
-                              MyText.bodySmall(
-                                customer.phone!,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                fontSize: 10,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        );
+    return CustomerGrid(
+      selectedAlphabet: _selectedAlphabet,
+      onCustomerSelected: (customer) {
+        setState(() {
+          sellerCustomer = customer;
+        });
       },
     );
   }
@@ -334,7 +167,13 @@ class SellingScreenState extends State<SellingScreen> {
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildAlphabetFilter(),
+                  extracted.AlphabetFilter(
+                    onAlphabetSelected: (alphabet) {
+                      setState(() {
+                        _selectedAlphabet = alphabet;
+                      });
+                    },
+                  ),
                   Expanded(child: _buildCustomerGrid()),
                 ],
               )

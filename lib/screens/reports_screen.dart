@@ -4,16 +4,17 @@ import 'package:intl/intl.dart';
 import 'package:mandyapp/blocs/reports/reports_bloc.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
-
-enum ReportRangePreset { today, yesterday, week, month, custom }
-
-enum ReportType {
-  dailySales,
-  sellerPurchase,
-  buyerSales,
-  mandiProfit,
-  pendingPayment,
-}
+import 'package:mandyapp/widgets/reports/report_types.dart';
+import 'package:mandyapp/widgets/reports/report_filter_bar.dart';
+import 'package:mandyapp/widgets/reports/daily_sales_report.dart';
+import 'package:mandyapp/widgets/reports/seller_purchase_report.dart';
+import 'package:mandyapp/widgets/reports/buyer_sales_report.dart';
+import 'package:mandyapp/widgets/reports/mandi_profit_report.dart';
+import 'package:mandyapp/widgets/reports/pending_payment_report.dart';
+import 'package:mandyapp/widgets/reports/customer_ledger_report.dart';
+import 'package:mandyapp/widgets/reports/payment_mode_report.dart';
+import 'package:mandyapp/widgets/reports/top_selling_products_report.dart';
+import 'package:mandyapp/widgets/reports/charges_performance_report.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -30,311 +31,106 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   void initState() {
     super.initState();
-    // Load initial report data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadReportData();
     });
   }
 
-  // Helper methods
-  String _presetLabel(ReportRangePreset preset) {
-    switch (preset) {
-      case ReportRangePreset.today:
-        return 'Today';
-      case ReportRangePreset.yesterday:
-        return 'Yesterday';
-      case ReportRangePreset.week:
-        return 'This Week';
-      case ReportRangePreset.month:
-        return 'This Month';
-      case ReportRangePreset.custom:
-        return 'Custom';
-    }
-  }
-
-  String _reportTypeLabel(ReportType type) {
-    switch (type) {
-      case ReportType.dailySales:
-        return 'Daily Sales';
-      case ReportType.sellerPurchase:
-        return 'Seller Purchase';
-      case ReportType.buyerSales:
-        return 'Buyer Sales';
-      case ReportType.mandiProfit:
-        return 'Mandi Profit';
-      case ReportType.pendingPayment:
-        return 'Pending Payment';
-    }
-  }
-
-  IconData _getReportIcon(ReportType type) {
-    switch (type) {
-      case ReportType.dailySales:
-        return Icons.trending_up;
-      case ReportType.sellerPurchase:
-        return Icons.shopping_cart;
-      case ReportType.buyerSales:
-        return Icons.point_of_sale;
-      case ReportType.mandiProfit:
-        return Icons.account_balance;
-      case ReportType.pendingPayment:
-        return Icons.pending_actions;
-    }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
-  }
-
-  // Date picker methods
-  Future<void> _showCustomDateRangePicker() async {
-    final now = DateTime.now();
-    final firstDate = DateTime(now.year - 1);
-    final lastDate = DateTime(now.year + 1);
-
-    final picked = await showDateRangePicker(
-      context: context,
-      firstDate: firstDate,
-      lastDate: lastDate,
-      initialDateRange: _customDateRange ?? DateTimeRange(
-        start: DateTime(now.year, now.month, now.day - 7),
-        end: now,
-      ),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: Theme.of(context).colorScheme.primary,
-              brightness: Theme.of(context).brightness,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null) {
-      setState(() {
-        _customDateRange = picked;
-        _selectedPreset = ReportRangePreset.custom;
-      });
-      _loadReportData();
-    }
-  }
-
-  // UI building methods
-  Widget _buildDatePickerCard(ThemeData theme) {
-    final accent = theme.colorScheme.primary;
+  Widget _buildReportContentBasedOnState(dynamic state, ThemeData theme) {
+    final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
 
     return Container(
-      padding: MySpacing.all(12),
+      width: double.infinity,
+      padding: MySpacing.all(16),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.12)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: theme.shadowColor.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Dropdown buttons row
           Row(
             children: [
-              _buildPresetButton(theme, accent),
-              MySpacing.width(16),
-              _buildReportTypeButton(theme, accent),
-            ],
-          ),
-          // Selected date display - Always visible
-          MySpacing.height(12),
-          _buildSelectedDateDisplay(theme, accent),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPresetButton(ThemeData theme, Color accent) {
-    final isCustomSelected = _selectedPreset == ReportRangePreset.custom;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: isCustomSelected ? accent.withOpacity(0.15) : accent.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(16),
-        border: isCustomSelected ? Border.all(color: accent.withOpacity(0.3), width: 1) : null,
-      ),
-      child: PopupMenuButton<ReportRangePreset>(
-        color: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: isCustomSelected ? BorderSide(color: accent.withOpacity(0.3), width: 1) : BorderSide.none,
-        ),
-        position: PopupMenuPosition.under,
-        onSelected: (value) async {
-          if (value == ReportRangePreset.custom) {
-            await _showCustomDateRangePicker();
-          } else {
-            setState(() => _selectedPreset = value);
-            _loadReportData();
-          }
-        },
-        itemBuilder: (context) => const [
-          PopupMenuItem(value: ReportRangePreset.today, child: Text('Today')),
-          PopupMenuItem(value: ReportRangePreset.yesterday, child: Text('Yesterday')),
-          PopupMenuItem(value: ReportRangePreset.week, child: Text('This Week')),
-          PopupMenuItem(value: ReportRangePreset.month, child: Text('This Month')),
-          PopupMenuItem(value: ReportRangePreset.custom, child: Text('Custom Range')),
-        ],
-        child: Padding(
-          padding: MySpacing.xy(16, 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              MyText.labelLarge(
-                _presetLabel(_selectedPreset),
-                fontWeight: 600,
-                color: accent,
-              ),
-              MySpacing.width(8),
               Icon(
-                isCustomSelected ? Icons.calendar_today : Icons.keyboard_arrow_down,
-                color: accent,
-                size: 18,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildReportTypeButton(ThemeData theme, Color accent) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.16)),
-      ),
-      child: PopupMenuButton<ReportType>(
-        color: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        position: PopupMenuPosition.under,
-        onSelected: (value) {
-          setState(() => _selectedReportType = value);
-          _loadReportData();
-        },
-        itemBuilder: (context) => const [
-          PopupMenuItem(value: ReportType.dailySales, child: Text('Daily Sales Report')),
-          PopupMenuItem(value: ReportType.sellerPurchase, child: Text('Seller Purchase Summary')),
-          PopupMenuItem(value: ReportType.buyerSales, child: Text('Buyer Sales Summary')),
-          PopupMenuItem(value: ReportType.mandiProfit, child: Text('Mandi Profit Report')),
-          PopupMenuItem(value: ReportType.pendingPayment, child: Text('Pending Payment Report')),
-        ],
-        child: Padding(
-          padding: MySpacing.xy(16, 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              MyText.labelLarge(
-                _reportTypeLabel(_selectedReportType),
-                fontWeight: 600,
-                color: accent,
+                ReportHelpers.getReportIcon(_selectedReportType),
+                color: theme.colorScheme.primary,
               ),
               MySpacing.width(8),
-              Icon(Icons.keyboard_arrow_down, color: accent),
+              MyText.titleMedium(
+                ReportHelpers.reportTypeLabel(_selectedReportType),
+                fontWeight: 600,
+              ),
             ],
           ),
-        ),
+          MySpacing.height(16),
+          Expanded(
+            child: _buildReportContent(state, theme, currencyFormat),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildSelectedDateDisplay(ThemeData theme, Color accent) {
-    DateTime startDate;
-    DateTime endDate;
-    bool isCustom = false;
-
-    switch (_selectedPreset) {
-      case ReportRangePreset.today:
-        final now = DateTime.now();
-        startDate = DateTime(now.year, now.month, now.day);
-        endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+  Widget _buildReportContent(dynamic state, ThemeData theme, NumberFormat currencyFormat) {
+    switch (_selectedReportType) {
+      case ReportType.dailySales:
+        if (state is DailySalesReportLoaded) {
+          return DailySalesReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
+        }
         break;
-      case ReportRangePreset.yesterday:
-        final yesterday = DateTime.now().subtract(const Duration(days: 1));
-        startDate = DateTime(yesterday.year, yesterday.month, yesterday.day);
-        endDate = DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
+      case ReportType.sellerPurchase:
+        if (state is SellerPurchaseReportLoaded) {
+          return SellerPurchaseReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
+        }
         break;
-      case ReportRangePreset.week:
-        final now = DateTime.now();
-        final weekStart = now.subtract(Duration(days: now.weekday - 1));
-        startDate = DateTime(weekStart.year, weekStart.month, weekStart.day);
-        endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+      case ReportType.buyerSales:
+        if (state is BuyerSalesReportLoaded) {
+          return BuyerSalesReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
+        }
         break;
-      case ReportRangePreset.month:
-        final now = DateTime.now();
-        startDate = DateTime(now.year, now.month, 1);
-        endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+      case ReportType.mandiProfit:
+        if (state is MandiProfitReportLoaded) {
+          return MandiProfitReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
+        }
         break;
-      case ReportRangePreset.custom:
-        isCustom = true;
-        if (_customDateRange != null) {
-          startDate = DateTime(_customDateRange!.start.year, _customDateRange!.start.month, _customDateRange!.start.day);
-          endDate = DateTime(_customDateRange!.end.year, _customDateRange!.end.month, _customDateRange!.end.day, 23, 59, 59);
-        } else {
-          final now = DateTime.now();
-          startDate = DateTime(now.year, now.month, now.day);
-          endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+      case ReportType.pendingPayment:
+        if (state is PendingPaymentReportLoaded) {
+          return PendingPaymentReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
+        }
+        break;
+      case ReportType.customerLedger:
+        if (state is CustomerLedgerReportLoaded) {
+          return CustomerLedgerReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
+        }
+        break;
+      case ReportType.paymentMode:
+        if (state is PaymentModeReportLoaded) {
+          return PaymentModeReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
+        }
+        break;
+      case ReportType.topSellingProducts:
+        if (state is TopSellingProductsReportLoaded) {
+          return TopSellingProductsReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
+        }
+        break;
+      case ReportType.chargesPerformance:
+        if (state is ChargesPerformanceReportLoaded) {
+          return ChargesPerformanceReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
         }
         break;
     }
 
-    final startDateStr = _formatDate(startDate);
-    final endDateStr = _formatDate(endDate);
-
-    return Container(
-      padding: MySpacing.xy(16, 12),
-      decoration: BoxDecoration(
-        color: isCustom ? accent.withOpacity(0.08) : theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isCustom ? accent.withOpacity(0.2) : theme.colorScheme.outline.withOpacity(0.1), width: 1),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            isCustom ? Icons.calendar_today_outlined : Icons.date_range,
-            size: 18,
-            color: isCustom ? accent : theme.colorScheme.onSurface.withOpacity(0.7),
-          ),
-          MySpacing.width(8),
-          MyText.bodyMedium(
-            isCustom ? 'Selected: $startDateStr - $endDateStr' : 'Range: $startDateStr - $endDateStr',
-            fontWeight: 500,
-            color: isCustom ? accent : theme.colorScheme.onSurface.withOpacity(0.8),
-          ),
-          if (isCustom) ...[
-            const Spacer(),
-            GestureDetector(
-              onTap: () async {
-                await _showCustomDateRangePicker();
-              },
-              child: Icon(
-                Icons.edit_calendar,
-                size: 18,
-                color: accent.withOpacity(0.7),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
+    return _buildPlaceholderReport(theme);
   }
 
-  // State builder methods
   Widget _buildLoadingState(ThemeData theme) {
     return Container(
       width: double.infinity,
@@ -357,12 +153,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
           Row(
             children: [
               Icon(
-                _getReportIcon(_selectedReportType),
+                ReportHelpers.getReportIcon(_selectedReportType),
                 color: theme.colorScheme.primary,
               ),
               MySpacing.width(8),
               MyText.titleMedium(
-                _reportTypeLabel(_selectedReportType),
+                ReportHelpers.reportTypeLabel(_selectedReportType),
                 fontWeight: 600,
               ),
             ],
@@ -407,12 +203,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
           Row(
             children: [
               Icon(
-                _getReportIcon(_selectedReportType),
+                ReportHelpers.getReportIcon(_selectedReportType),
                 color: theme.colorScheme.primary,
               ),
               MySpacing.width(8),
               MyText.titleMedium(
-                _reportTypeLabel(_selectedReportType),
+                ReportHelpers.reportTypeLabel(_selectedReportType),
                 fontWeight: 600,
               ),
             ],
@@ -464,12 +260,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
           Row(
             children: [
               Icon(
-                _getReportIcon(_selectedReportType),
+                ReportHelpers.getReportIcon(_selectedReportType),
                 color: theme.colorScheme.primary,
               ),
               MySpacing.width(8),
               MyText.titleMedium(
-                _reportTypeLabel(_selectedReportType),
+                ReportHelpers.reportTypeLabel(_selectedReportType),
                 fontWeight: 600,
               ),
             ],
@@ -481,7 +277,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    _getReportIcon(_selectedReportType),
+                    ReportHelpers.getReportIcon(_selectedReportType),
                     size: 48,
                     color: theme.colorScheme.primary.withOpacity(0.5),
                   ),
@@ -501,1046 +297,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildReportContentBasedOnState(dynamic state, ThemeData theme) {
-    final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
-
-    return Container(
-      width: double.infinity,
-      padding: MySpacing.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-        boxShadow: [
-          BoxShadow(
-            color: theme.shadowColor.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                _getReportIcon(_selectedReportType),
-                color: theme.colorScheme.primary,
-              ),
-              MySpacing.width(8),
-              MyText.titleMedium(
-                _reportTypeLabel(_selectedReportType),
-                fontWeight: 600,
-              ),
-            ],
-          ),
-          MySpacing.height(16),
-          Expanded(
-            child: _buildReportContent(state, theme, currencyFormat),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReportContent(dynamic state, ThemeData theme, NumberFormat currencyFormat) {
-    switch (_selectedReportType) {
-      case ReportType.dailySales:
-        if (state is DailySalesReportLoaded) {
-          return _buildDailySalesReport(state, theme, currencyFormat);
-        }
-        break;
-      case ReportType.sellerPurchase:
-        if (state is SellerPurchaseReportLoaded) {
-          return _buildSellerPurchaseReport(state, theme, currencyFormat);
-        }
-        break;
-      case ReportType.buyerSales:
-        if (state is BuyerSalesReportLoaded) {
-          return _buildBuyerSalesReport(state, theme, currencyFormat);
-        }
-        break;
-      case ReportType.mandiProfit:
-        if (state is MandiProfitReportLoaded) {
-          return _buildMandiProfitReport(state, theme, currencyFormat);
-        }
-        break;
-      case ReportType.pendingPayment:
-        if (state is PendingPaymentReportLoaded) {
-          return _buildPendingPaymentReport(state, theme, currencyFormat);
-        }
-        break;
-    }
-
-    // Default fallback
-    return _buildPlaceholderReport(theme);
-  }
-
-  // Report display methods
-  Widget _buildDailySalesReport(DailySalesReportLoaded state, ThemeData theme, NumberFormat currencyFormat) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Summary Cards
-        Row(
-          children: [
-            Expanded(
-              child: _buildSummaryCard(
-                'Total Revenue',
-                currencyFormat.format(state.totalRevenue),
-                Icons.attach_money,
-                theme.colorScheme.primary,
-                theme,
-              ),
-            ),
-            MySpacing.width(12),
-            Expanded(
-              child: _buildSummaryCard(
-                'Total Quantity',
-                '${state.totalQuantity.toStringAsFixed(2)} units',
-                Icons.inventory,
-                theme.colorScheme.secondary,
-                theme,
-              ),
-            ),
-          ],
-        ),
-        MySpacing.height(16),
-
-        // Data Table
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                // Table Header
-                Container(
-                  padding: MySpacing.xy(12, 8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(flex: 2, child: MyText.bodySmall('Product', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Qty', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Revenue', fontWeight: 600)),
-                    ],
-                  ),
-                ),
-
-                // Table Rows
-                Expanded(
-                  child: ListView.separated(
-                    padding: EdgeInsets.zero,
-                    itemCount: state.data.length,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1,
-                      color: theme.colorScheme.outline.withOpacity(0.1),
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = state.data[index];
-                      return Container(
-                        padding: MySpacing.xy(12, 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  MyText.bodySmall(item.productName, fontWeight: 600),
-                                  MyText.bodySmall(item.unit, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                '${item.totalQuantity.toStringAsFixed(2)}',
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                currencyFormat.format(item.totalRevenue),
-                                textAlign: TextAlign.center,
-                                fontWeight: 600,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSellerPurchaseReport(SellerPurchaseReportLoaded state, ThemeData theme, NumberFormat currencyFormat) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Summary Cards
-        Row(
-          children: [
-            Expanded(
-              child: _buildSummaryCard(
-                'Total Cost',
-                currencyFormat.format(state.totalCost),
-                Icons.shopping_cart,
-                theme.colorScheme.primary,
-                theme,
-              ),
-            ),
-            MySpacing.width(12),
-            Expanded(
-              child: _buildSummaryCard(
-                'Total Quantity',
-                '${state.totalQuantity.toStringAsFixed(2)} units',
-                Icons.inventory,
-                theme.colorScheme.secondary,
-                theme,
-              ),
-            ),
-          ],
-        ),
-        MySpacing.height(16),
-
-        // Data Table
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                // Table Header
-                Container(
-                  padding: MySpacing.xy(12, 8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(flex: 2, child: MyText.bodySmall('Seller', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Purchases', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Cost', fontWeight: 600)),
-                    ],
-                  ),
-                ),
-
-                // Table Rows
-                Expanded(
-                  child: ListView.separated(
-                    padding: EdgeInsets.zero,
-                    itemCount: state.data.length,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1,
-                      color: theme.colorScheme.outline.withOpacity(0.1),
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = state.data[index];
-                      return Container(
-                        padding: MySpacing.xy(12, 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  MyText.bodySmall(item.sellerName, fontWeight: 600),
-                                  MyText.bodySmall(item.sellerPhone, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                '${item.totalPurchases}',
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                currencyFormat.format(item.totalCost),
-                                textAlign: TextAlign.center,
-                                fontWeight: 600,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBuyerSalesReport(BuyerSalesReportLoaded state, ThemeData theme, NumberFormat currencyFormat) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Summary Cards
-        Row(
-          children: [
-            Expanded(
-              child: _buildSummaryCard(
-                'Total Revenue',
-                currencyFormat.format(state.totalRevenue),
-                Icons.point_of_sale,
-                theme.colorScheme.primary,
-                theme,
-              ),
-            ),
-            MySpacing.width(12),
-            Expanded(
-              child: _buildSummaryCard(
-                'Total Quantity',
-                '${state.totalQuantity.toStringAsFixed(2)} units',
-                Icons.inventory,
-                theme.colorScheme.secondary,
-                theme,
-              ),
-            ),
-          ],
-        ),
-        MySpacing.height(16),
-
-        // Data Table
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                // Table Header
-                Container(
-                  padding: MySpacing.xy(12, 8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(flex: 2, child: MyText.bodySmall('Buyer', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Bills', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Revenue', fontWeight: 600)),
-                    ],
-                  ),
-                ),
-
-                // Table Rows
-                Expanded(
-                  child: ListView.separated(
-                    padding: EdgeInsets.zero,
-                    itemCount: state.data.length,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1,
-                      color: theme.colorScheme.outline.withOpacity(0.1),
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = state.data[index];
-                      return Container(
-                        padding: MySpacing.xy(12, 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  MyText.bodySmall(item.buyerName, fontWeight: 600),
-                                  MyText.bodySmall(item.buyerPhone, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                '${item.totalBills}',
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                currencyFormat.format(item.totalRevenue),
-                                textAlign: TextAlign.center,
-                                fontWeight: 600,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMandiProfitReport(MandiProfitReportLoaded state, ThemeData theme, NumberFormat currencyFormat) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Summary Cards
-        Row(
-          children: [
-            Expanded(
-              child: _buildSummaryCard(
-                'Total Profit',
-                currencyFormat.format(state.totalProfit),
-                Icons.account_balance,
-                theme.colorScheme.primary,
-                theme,
-              ),
-            ),
-            MySpacing.width(12),
-            Expanded(
-              child: _buildSummaryCard(
-                'Total Revenue',
-                currencyFormat.format(state.totalRevenue),
-                Icons.trending_up,
-                theme.colorScheme.secondary,
-                theme,
-              ),
-            ),
-          ],
-        ),
-        MySpacing.height(16),
-
-        // Data Table
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                // Table Header
-                Container(
-                  padding: MySpacing.xy(12, 8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(flex: 1, child: MyText.bodySmall('Date', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Revenue', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Cost', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Profit', fontWeight: 600)),
-                    ],
-                  ),
-                ),
-
-                // Table Rows
-                Expanded(
-                  child: ListView.separated(
-                    padding: EdgeInsets.zero,
-                    itemCount: state.data.length,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1,
-                      color: theme.colorScheme.outline.withOpacity(0.1),
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = state.data[index];
-                      return Container(
-                        padding: MySpacing.xy(12, 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(item.date, fontWeight: 600),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                currencyFormat.format(item.dailyRevenue),
-                                textAlign: TextAlign.center,
-                                color: Colors.green,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                currencyFormat.format(item.dailyCost),
-                                textAlign: TextAlign.center,
-                                color: Colors.red,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                currencyFormat.format(item.dailyProfit),
-                                textAlign: TextAlign.center,
-                                fontWeight: 600,
-                                color: item.dailyProfit >= 0 ? Colors.green : Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCustomerLedgerReport(CustomerLedgerReportLoaded state, ThemeData theme, NumberFormat currencyFormat) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Summary Card
-        _buildSummaryCard(
-          'Net Balance',
-          currencyFormat.format(state.totalNetBalance),
-          Icons.account_balance_wallet,
-          state.totalNetBalance >= 0 ? Colors.green : Colors.red,
-          theme,
-        ),
-        MySpacing.height(16),
-
-        // Data Table
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                // Table Header
-                Container(
-                  padding: MySpacing.xy(12, 8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(flex: 2, child: MyText.bodySmall('Customer', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Purchases', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Sales', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Balance', fontWeight: 600)),
-                    ],
-                  ),
-                ),
-
-                // Table Rows
-                Expanded(
-                  child: ListView.separated(
-                    padding: EdgeInsets.zero,
-                    itemCount: state.data.length,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1,
-                      color: theme.colorScheme.outline.withOpacity(0.1),
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = state.data[index];
-                      return Container(
-                        padding: MySpacing.xy(12, 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  MyText.bodySmall(item.customerName, fontWeight: 600),
-                                  MyText.bodySmall(item.customerPhone, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                currencyFormat.format(item.totalPurchases),
-                                textAlign: TextAlign.center,
-                                color: Colors.red,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                currencyFormat.format(item.totalSales),
-                                textAlign: TextAlign.center,
-                                color: Colors.green,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                currencyFormat.format(item.netBalance),
-                                textAlign: TextAlign.center,
-                                fontWeight: 600,
-                                color: item.netBalance >= 0 ? Colors.green : Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPendingPaymentReport(PendingPaymentReportLoaded state, ThemeData theme, NumberFormat currencyFormat) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Summary Card
-        _buildSummaryCard(
-          'Total Pending',
-          currencyFormat.format(state.totalPendingAmount),
-          Icons.pending_actions,
-          theme.colorScheme.error,
-          theme,
-        ),
-        MySpacing.height(16),
-
-        // Data Table
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                // Table Header
-                Container(
-                  padding: MySpacing.xy(12, 8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(flex: 2, child: MyText.bodySmall('Customer', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Amount', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Days', fontWeight: 600)),
-                    ],
-                  ),
-                ),
-
-                // Table Rows
-                Expanded(
-                  child: ListView.separated(
-                    padding: EdgeInsets.zero,
-                    itemCount: state.data.length,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1,
-                      color: theme.colorScheme.outline.withOpacity(0.1),
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = state.data[index];
-                      return Container(
-                        padding: MySpacing.xy(12, 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  MyText.bodySmall(item.customerName, fontWeight: 600),
-                                  MyText.bodySmall(item.customerPhone, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                currencyFormat.format(item.pendingAmount),
-                                textAlign: TextAlign.center,
-                                fontWeight: 600,
-                                color: theme.colorScheme.error,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                '${item.daysPending}',
-                                textAlign: TextAlign.center,
-                                fontWeight: 600,
-                                color: item.daysPending > 30 ? theme.colorScheme.error : theme.colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentModeReport(PaymentModeReportLoaded state, ThemeData theme, NumberFormat currencyFormat) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Summary Card
-        _buildSummaryCard(
-          'Total Amount',
-          currencyFormat.format(state.totalAmount),
-          Icons.payment,
-          theme.colorScheme.primary,
-          theme,
-        ),
-        MySpacing.height(16),
-
-        // Data Table
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                // Table Header
-                Container(
-                  padding: MySpacing.xy(12, 8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(flex: 2, child: MyText.bodySmall('Payment Mode', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Transactions', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Amount', fontWeight: 600)),
-                    ],
-                  ),
-                ),
-
-                // Table Rows
-                Expanded(
-                  child: ListView.separated(
-                    padding: EdgeInsets.zero,
-                    itemCount: state.data.length,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1,
-                      color: theme.colorScheme.outline.withOpacity(0.1),
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = state.data[index];
-                      return Container(
-                        padding: MySpacing.xy(12, 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: MyText.bodySmall(item.paymentMethod, fontWeight: 600),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                '${item.transactionCount}',
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                currencyFormat.format(item.totalAmount),
-                                textAlign: TextAlign.center,
-                                fontWeight: 600,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTopSellingProductsReport(TopSellingProductsReportLoaded state, ThemeData theme, NumberFormat currencyFormat) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Summary Card
-        _buildSummaryCard(
-          'Total Revenue',
-          currencyFormat.format(state.totalRevenue),
-          Icons.star,
-          theme.colorScheme.primary,
-          theme,
-        ),
-        MySpacing.height(16),
-
-        // Data Table
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                // Table Header
-                Container(
-                  padding: MySpacing.xy(12, 8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(flex: 2, child: MyText.bodySmall('Product', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Qty Sold', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Revenue', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Rank', fontWeight: 600)),
-                    ],
-                  ),
-                ),
-
-                // Table Rows
-                Expanded(
-                  child: ListView.separated(
-                    padding: EdgeInsets.zero,
-                    itemCount: state.data.length,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1,
-                      color: theme.colorScheme.outline.withOpacity(0.1),
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = state.data[index];
-                      return Container(
-                        padding: MySpacing.xy(12, 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  MyText.bodySmall(item.productName, fontWeight: 600),
-                                  MyText.bodySmall(item.unit, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                '${item.totalQuantitySold.toStringAsFixed(2)}',
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                currencyFormat.format(item.totalRevenue),
-                                textAlign: TextAlign.center,
-                                fontWeight: 600,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: Container(
-                                padding: MySpacing.xy(8, 4),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: MyText.bodySmall(
-                                  '#${index + 1}',
-                                  textAlign: TextAlign.center,
-                                  fontWeight: 600,
-                                  color: theme.colorScheme.primary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildChargesPerformanceReport(ChargesPerformanceReportLoaded state, ThemeData theme, NumberFormat currencyFormat) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Summary Card
-        _buildSummaryCard(
-          'Total Charges',
-          currencyFormat.format(state.totalChargeAmount),
-          Icons.assessment,
-          theme.colorScheme.primary,
-          theme,
-        ),
-        MySpacing.height(16),
-
-        // Data Table
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                // Table Header
-                Container(
-                  padding: MySpacing.xy(12, 8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(flex: 2, child: MyText.bodySmall('Charge Type', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Transactions', fontWeight: 600)),
-                      Expanded(flex: 1, child: MyText.bodySmall('Amount', fontWeight: 600)),
-                    ],
-                  ),
-                ),
-
-                // Table Rows
-                Expanded(
-                  child: ListView.separated(
-                    padding: EdgeInsets.zero,
-                    itemCount: state.data.length,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1,
-                      color: theme.colorScheme.outline.withOpacity(0.1),
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = state.data[index];
-                      return Container(
-                        padding: MySpacing.xy(12, 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: MyText.bodySmall(item.chargeType, fontWeight: 600),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                '${item.transactionCount}',
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: MyText.bodySmall(
-                                currencyFormat.format(item.totalChargeAmount),
-                                textAlign: TextAlign.center,
-                                fontWeight: 600,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSummaryCard(String title, String value, IconData icon, Color color, ThemeData theme) {
-    return Container(
-      padding: MySpacing.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 20, color: color),
-          MySpacing.height(4),
-          MyText.bodySmall(title, color: color, fontWeight: 600),
-          MySpacing.height(2),
-          MyText.titleSmall(value, fontWeight: 700, color: color),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPlaceholderReport(ThemeData theme) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            _getReportIcon(_selectedReportType),
+            ReportHelpers.getReportIcon(_selectedReportType),
             size: 48,
             color: theme.colorScheme.primary.withOpacity(0.5),
           ),
           MySpacing.height(12),
-          MyText.bodyMedium(_reportTypeLabel(_selectedReportType), fontWeight: 600),
+          MyText.bodyMedium(ReportHelpers.reportTypeLabel(_selectedReportType), fontWeight: 600),
           MySpacing.height(8),
           MyText.bodySmall(
             'Report implementation coming soon',
@@ -1549,7 +317,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           MySpacing.height(16),
           ElevatedButton(
             onPressed: () => _loadReportData(),
-            child: Text('Load ${_reportTypeLabel(_selectedReportType)}'),
+            child: Text('Load ${ReportHelpers.reportTypeLabel(_selectedReportType)}'),
           ),
         ],
       ),
@@ -1586,6 +354,30 @@ class _ReportsScreenState extends State<ReportsScreen> {
         break;
       case ReportType.pendingPayment:
         reportsBloc.add(LoadPendingPaymentReport(
+          fromDate: _getStartDate(),
+          toDate: _getEndDate(),
+        ));
+        break;
+      case ReportType.customerLedger:
+        reportsBloc.add(LoadCustomerLedgerReport(
+          fromDate: _getStartDate(),
+          toDate: _getEndDate(),
+        ));
+        break;
+      case ReportType.paymentMode:
+        reportsBloc.add(LoadPaymentModeReport(
+          fromDate: _getStartDate(),
+          toDate: _getEndDate(),
+        ));
+        break;
+      case ReportType.topSellingProducts:
+        reportsBloc.add(LoadTopSellingProductsReport(
+          fromDate: _getStartDate(),
+          toDate: _getEndDate(),
+        ));
+        break;
+      case ReportType.chargesPerformance:
+        reportsBloc.add(LoadChargesPerformanceReport(
           fromDate: _getStartDate(),
           toDate: _getEndDate(),
         ));
@@ -1640,290 +432,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
-  // Filter dialog and summary methods
-  void _showFilterDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              const Icon(Icons.filter_list_outlined),
-              const SizedBox(width: 8),
-              Text('Filter Reports'),
-            ],
-          ),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setDialogState) {
-              return SizedBox(
-                width: double.maxFinite,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Date Range Selection
-                    Text(
-                      'Date Range',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: ReportRangePreset.values.map((preset) {
-                        final isSelected = _selectedPreset == preset;
-                        return GestureDetector(
-                          onTap: () {
-                            setDialogState(() {
-                              _selectedPreset = preset;
-                            });
-                            setState(() {
-                              _selectedPreset = preset;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isSelected 
-                                    ? Theme.of(context).colorScheme.primary 
-                                    : Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                              ),
-                            ),
-                            child: Text(
-                              preset.name.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: isSelected 
-                                    ? Theme.of(context).colorScheme.onPrimary 
-                                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    
-                    if (_selectedPreset == ReportRangePreset.custom)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            _showCustomDateRangePicker().then((_) {
-                              setDialogState(() {});
-                            });
-                          },
-                          icon: const Icon(Icons.date_range, size: 16),
-                          label: Text(_customDateRange != null 
-                              ? '${_formatDate(_customDateRange!.start)} - ${_formatDate(_customDateRange!.end)}'
-                              : 'Select Custom Range'),
-                        ),
-                      ),
-                    
-                    const SizedBox(height: 20),
-                    
-                    // Report Type Selection
-                    Text(
-                      'Report Type',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ...ReportType.values.map((reportType) {
-                      final isSelected = _selectedReportType == reportType;
-                      final icon = _getReportIcon(reportType);
-                      final name = _reportTypeLabel(reportType);
-                      
-                      return GestureDetector(
-                        onTap: () {
-                          setDialogState(() {
-                            _selectedReportType = reportType;
-                          });
-                          setState(() {
-                            _selectedReportType = reportType;
-                          });
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: isSelected 
-                                ? Theme.of(context).colorScheme.primary.withOpacity(0.1) 
-                                : Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isSelected 
-                                  ? Theme.of(context).colorScheme.primary 
-                                  : Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                icon,
-                                size: 20,
-                                color: isSelected 
-                                    ? Theme.of(context).colorScheme.primary 
-                                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  name,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: isSelected 
-                                        ? Theme.of(context).colorScheme.primary 
-                                        : Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                ),
-                              ),
-                              if (isSelected)
-                                Icon(
-                                  Icons.check_circle,
-                                  size: 20,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ],
-                ),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _loadReportData();
-              },
-              child: const Text('Apply'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildFilterSummary(ThemeData theme) {
-    final colorScheme = theme.colorScheme;
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorScheme.outline.withOpacity(0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.filter_list_outlined,
-                size: 16,
-                color: colorScheme.primary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Current Filters',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _FilterChip(
-                  icon: Icons.date_range,
-                  label: _selectedPreset.name.toUpperCase(),
-                  color: colorScheme.primary,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _FilterChip(
-                  icon: _getReportIcon(_selectedReportType),
-                  label: _reportTypeLabel(_selectedReportType),
-                  color: colorScheme.secondary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Filter chip widget
-  Widget _FilterChip({
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withOpacity(0.2),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 14,
-            color: color,
-          ),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Row(
           children: [
-            // Date Range Chip
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -1943,7 +457,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    _selectedPreset.name.toUpperCase(),
+                    ReportHelpers.presetLabel(_selectedPreset),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -1954,7 +468,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            // Report Type Chip
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -1968,14 +481,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    _getReportIcon(_selectedReportType),
+                    ReportHelpers.getReportIcon(_selectedReportType),
                     size: 14,
                     color: Theme.of(context).colorScheme.secondary,
                   ),
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
-                      _reportTypeLabel(_selectedReportType),
+                      ReportHelpers.reportTypeLabel(_selectedReportType),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -1989,19 +502,33 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: _showFilterDialog,
-            icon: const Icon(Icons.filter_list_outlined),
-            tooltip: 'Filter Reports',
-          ),
-        ],
       ),
       body: Padding(
         padding: MySpacing.xy(16, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            ReportFilterBar(
+              selectedPreset: _selectedPreset,
+              selectedReportType: _selectedReportType,
+              customDateRange: _customDateRange,
+              onPresetChanged: (preset) {
+                setState(() => _selectedPreset = preset);
+                _loadReportData();
+              },
+              onReportTypeChanged: (type) {
+                setState(() => _selectedReportType = type);
+                _loadReportData();
+              },
+              onCustomDateRangeChanged: (range) {
+                setState(() {
+                  _customDateRange = range;
+                  _selectedPreset = ReportRangePreset.custom;
+                });
+                _loadReportData();
+              },
+            ),
+            MySpacing.height(16),
             Expanded(
               child: BlocBuilder<ReportsBloc, ReportsState>(
                 builder: (context, state) {
@@ -2023,11 +550,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _loadReportData,
-        tooltip: 'Load Report',
-        child: const Icon(Icons.refresh),
       ),
     );
   }

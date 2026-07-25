@@ -6,6 +6,8 @@ import 'package:mandyapp/blocs/reports/reports_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/sync/sync_service.dart';
+import 'package:mandyapp/widgets/home_tab/financial_metric.dart';
+import 'package:mandyapp/widgets/home_tab/dashboard_overview_card.dart';
 
 class HomeTabScreen extends StatefulWidget {
   const HomeTabScreen({super.key});
@@ -224,62 +226,44 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
           const SizedBox(height: 24),
 
           // Financial Overview Card (Single unified card)
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.shadowColor.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-              border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.1),
+          DashboardOverviewCard(
+            title: "Financial Overview",
+            theme: theme,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: FinancialMetric(
+                      title: "Net Balance",
+                      value: _currencyFormat.format(data.netBalance),
+                      icon: Icons.account_balance,
+                      color: data.netBalance >= 0 ? Colors.green : Colors.red,
+                      theme: theme,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: FinancialMetric(
+                      title: "Profit Today",
+                      value: _currencyFormat.format(data.grossProfit),
+                      icon: Icons.trending_up,
+                      color: data.grossProfit >= 0 ? Colors.green : Colors.red,
+                      theme: theme,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: FinancialMetric(
+                      title: "Today's Sales",
+                      value: _currencyFormat.format(data.todaySales),
+                      icon: Icons.shopping_cart,
+                      color: Colors.blue,
+                      theme: theme,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                MyText.titleMedium("Financial Overview", fontWeight: 600),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _FinancialMetric(
-                        title: "Net Balance",
-                        value: _currencyFormat.format(data.netBalance),
-                        icon: Icons.account_balance,
-                        color: data.netBalance >= 0 ? Colors.green : Colors.red,
-                        theme: theme,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _FinancialMetric(
-                        title: "Profit Today",
-                        value: _currencyFormat.format(data.grossProfit),
-                        icon: Icons.trending_up,
-                        color: data.grossProfit >= 0 ? Colors.green : Colors.red,
-                        theme: theme,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _FinancialMetric(
-                        title: "Today's Sales",
-                        value: _currencyFormat.format(data.todaySales),
-                        icon: Icons.shopping_cart,
-                        color: Colors.blue,
-                        theme: theme,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+            ],
           ),
           const SizedBox(height: 16),
 
@@ -308,7 +292,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: _FinancialMetric(
+                      child: FinancialMetric(
                         title: "Total Received",
                         value: _currencyFormat.format(data.totalReceived),
                         icon: Icons.account_balance_wallet,
@@ -318,7 +302,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: _FinancialMetric(
+                      child: FinancialMetric(
                         title: "Pending Payments",
                         value: _currencyFormat.format(data.totalPending),
                         icon: Icons.pending,
@@ -358,7 +342,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: _FinancialMetric(
+                      child: FinancialMetric(
                         title: "Paid to Sellers",
                         value: _currencyFormat.format(data.paidToSellers),
                         icon: Icons.payments,
@@ -368,7 +352,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: _FinancialMetric(
+                      child: FinancialMetric(
                         title: "Pending to Sellers",
                         value: _currencyFormat.format(data.pendingToSellers),
                         icon: Icons.schedule,
@@ -384,126 +368,6 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
           const SizedBox(height: 16),
         ],
       ),
-    );
-  }
-}
-
-class _ReportCard extends StatelessWidget {
-  final String title;
-  final String description;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-  final ThemeData theme;
-
-  const _ReportCard({
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-    required this.theme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: color.withOpacity(0.2),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                icon,
-                size: 20,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 12),
-            MyText.titleSmall(
-              title,
-              fontWeight: 600,
-              color: theme.colorScheme.onSurface,
-            ),
-            const SizedBox(height: 4),
-            MyText.bodySmall(
-              description,
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FinancialMetric extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-  final ThemeData theme;
-
-  const _FinancialMetric({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-    required this.theme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                icon,
-                size: 20,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        MyText.bodySmall(
-          title,
-          color: theme.colorScheme.onSurface.withOpacity(0.7),
-          fontWeight: 500,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 4),
-        MyText.titleSmall(
-          value,
-          fontWeight: 700,
-          color: theme.colorScheme.onSurface,
-          textAlign: TextAlign.center,
-        ),
-      ],
     );
   }
 }

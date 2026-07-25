@@ -1,0 +1,173 @@
+import 'package:flutter/material.dart';
+import 'package:mandyapp/helpers/widgets/my_spacing.dart';
+import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/models/charge_type_model.dart';
+
+class ChargeListItem extends StatelessWidget {
+  final ChargeType charge;
+  final ThemeData theme;
+  final VoidCallback onEdit;
+  final VoidCallback onToggle;
+  final VoidCallback onDelete;
+
+  const ChargeListItem({
+    super.key,
+    required this.charge,
+    required this.theme,
+    required this.onEdit,
+    required this.onToggle,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: MySpacing.bottom(8),
+      child: ListTile(
+        title: MyText.bodyLarge(
+          charge.chargeName,
+          fontWeight: 500,
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              Container(
+                padding: MySpacing.xy(6, 2),
+                decoration: BoxDecoration(
+                  color: charge.chargeType == 'percentage'
+                      ? Colors.purple.withOpacity(0.1)
+                      : theme.colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: charge.chargeType == 'percentage'
+                        ? Colors.purple.withOpacity(0.3)
+                        : theme.colorScheme.primary.withOpacity(0.3),
+                  ),
+                ),
+                child: MyText.bodySmall(
+                  charge.chargeType == 'percentage'
+                      ? 'Percentage ${charge.chargeAmount.toStringAsFixed(2)}%'
+                      : 'Fixed ₹${charge.chargeAmount.toStringAsFixed(2)}',
+                  color: charge.chargeType == 'percentage'
+                      ? Colors.purple
+                      : theme.colorScheme.primary,
+                  fontWeight: 600,
+                  fontSize: 10,
+                ),
+              ),
+              Container(
+                padding: MySpacing.xy(6, 2),
+                decoration: BoxDecoration(
+                  color: charge.chargeFor == 'buyer'
+                      ? Colors.blue.withOpacity(0.1)
+                      : Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: charge.chargeFor == 'buyer'
+                        ? Colors.blue.withOpacity(0.3)
+                        : Colors.orange.withOpacity(0.3),
+                  ),
+                ),
+                child: MyText.bodySmall(
+                  charge.chargeFor == 'buyer' ? 'For Buyers' : 'For Sellers',
+                  color: charge.chargeFor == 'buyer' ? Colors.blue : Colors.orange,
+                  fontWeight: 500,
+                  fontSize: 10,
+                ),
+              ),
+              if (charge.isDefault == 1)
+                Container(
+                  padding: MySpacing.xy(6, 2),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.green.withOpacity(0.3),
+                    ),
+                  ),
+                  child: MyText.bodySmall(
+                    'Default',
+                    color: Colors.green,
+                    fontWeight: 500,
+                    fontSize: 10,
+                  ),
+                ),
+              Container(
+                padding: MySpacing.xy(6, 2),
+                decoration: BoxDecoration(
+                  color: charge.isActive == 1
+                      ? Colors.green.withOpacity(0.1)
+                      : Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: charge.isActive == 1
+                        ? Colors.green.withOpacity(0.3)
+                        : Colors.red.withOpacity(0.3),
+                  ),
+                ),
+                child: MyText.bodySmall(
+                  charge.isActive == 1 ? 'Active' : 'Disabled',
+                  color: charge.isActive == 1 ? Colors.green : Colors.red,
+                  fontWeight: 500,
+                  fontSize: 10,
+                ),
+              ),
+            ],
+          ),
+        ),
+        trailing: PopupMenuButton<String>(
+          icon: const Icon(Icons.more_vert),
+          onSelected: (value) {
+            if (value == 'edit') {
+              onEdit();
+            } else if (value == 'toggle') {
+              onToggle();
+            } else if (value == 'delete') {
+              onDelete();
+            }
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: 'edit',
+              child: Row(
+                children: [
+                  const Icon(Icons.edit, size: 20),
+                  MySpacing.width(8),
+                  const Text('Edit'),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: 'toggle',
+              child: Row(
+                children: [
+                  Icon(
+                    charge.isActive == 1
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    size: 20,
+                  ),
+                  MySpacing.width(8),
+                  Text(charge.isActive == 1 ? 'Disable' : 'Activate'),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: 'delete',
+              child: Row(
+                children: [
+                  const Icon(Icons.delete, size: 20, color: Colors.red),
+                  MySpacing.width(8),
+                  const Text('Delete', style: TextStyle(color: Colors.red)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
