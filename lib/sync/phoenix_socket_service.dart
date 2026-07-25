@@ -16,10 +16,12 @@ class PhoenixSocketService {
   bool _isConnecting = false;
   bool _isConnected = false;
   int? _mandyId;
+  final _connectionController = StreamController<bool>.broadcast();
 
   PhoenixSocket? get socket => _socket;
   PhoenixChannel? get channel => _channel;
   bool get isConnected => _isConnected;
+  Stream<bool> get connectionStream => _connectionController.stream;
 
   Future<void> connect() async {
     if (_isConnecting || _isConnected) {
@@ -33,6 +35,7 @@ class PhoenixSocketService {
       if (userData == null) {
         log('No user data found, skipping socket connect');
         _isConnecting = false;
+        _connectionController.add(false);
         return;
       }
 
@@ -41,17 +44,15 @@ class PhoenixSocketService {
       if (_mandyId == null) {
         log('No mandy_id found, skipping socket connect');
         _isConnecting = false;
+        _connectionController.add(false);
         return;
       }
-
-      final token = await AppHelper.getPreferences(SocketConfig.tokenKey);
 
       _socket = PhoenixSocket(
         SocketConfig.wsUrl,
         socketOptions: PhoenixSocketOptions(
           params: {
-            'mandy_id': '$_mandyId',
-            if (token != null) 'token': token,
+            'mandy_id': '$_mandyId'
           },
         ),
       );
@@ -62,6 +63,7 @@ class PhoenixSocketService {
         _socket?.dispose();
         _socket = null;
         _isConnecting = false;
+        _connectionController.add(false);
         return;
       }
 
@@ -74,11 +76,13 @@ class PhoenixSocketService {
 
       _isConnected = true;
       _isConnecting = false;
+      _connectionController.add(true);
       log('Socket connected and channel joined for mandy_id=$_mandyId');
     } catch (e, st) {
       log('Socket connect failed: $e', stackTrace: st);
       _isConnecting = false;
       _isConnected = false;
+      _connectionController.add(false);
       _channel = null;
       _socket?.dispose();
       _socket = null;
@@ -94,6 +98,11 @@ class PhoenixSocketService {
     _socket = null;
     _isConnected = false;
     _isConnecting = false;
+    _connectionController.add(false);
+  }
+
+  void dispose() {
+    _connectionController.close();
   }
 
   Future<void> ensureConnected() async {

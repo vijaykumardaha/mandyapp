@@ -21,7 +21,7 @@ class AuthNameField extends StatelessWidget {
     return TextFormField(
       style: MyTextStyle.bodyMedium(),
       decoration: InputDecoration(
-        hintText: "Full Name",
+        hintText: "Mandy Name",
         hintStyle: MyTextStyle.bodyMedium(),
         border: outlineInputBorder,
         enabledBorder: outlineInputBorder,

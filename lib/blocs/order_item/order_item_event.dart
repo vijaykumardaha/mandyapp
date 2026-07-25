@@ -65,3 +65,10 @@ class LoadBillableOrderItems extends OrderItemEvent {
 class ClearOrderItems extends OrderItemEvent {
   const ClearOrderItems();
 }
+
+class LoadAllUnlinkedOrderItems extends OrderItemEvent {
+  const LoadAllUnlinkedOrderItems();
+
+  @override
+  List<Object?> get props => [];
+}

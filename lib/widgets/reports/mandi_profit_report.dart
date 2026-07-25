@@ -29,7 +29,6 @@ class MandiProfitReportWidget extends StatelessWidget {
               child: ReportSummaryCard(
                 title: 'Total Profit',
                 value: currencyFormat.format(state.totalProfit),
-                icon: Icons.account_balance,
                 color: theme.colorScheme.primary,
               ),
             ),
@@ -38,7 +37,6 @@ class MandiProfitReportWidget extends StatelessWidget {
               child: ReportSummaryCard(
                 title: 'Total Revenue',
                 value: currencyFormat.format(state.totalRevenue),
-                icon: Icons.trending_up,
                 color: theme.colorScheme.secondary,
               ),
             ),
@@ -48,9 +46,9 @@ class MandiProfitReportWidget extends StatelessWidget {
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Date', flex: 1),
-            ReportTableHeader(label: 'Revenue', flex: 1),
-            ReportTableHeader(label: 'Cost', flex: 1),
-            ReportTableHeader(label: 'Profit', flex: 1),
+            ReportTableHeader(label: 'Revenue', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Cost', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Profit', flex: 1, textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(

@@ -29,7 +29,6 @@ class SellerPurchaseReportWidget extends StatelessWidget {
               child: ReportSummaryCard(
                 title: 'Total Cost',
                 value: currencyFormat.format(state.totalCost),
-                icon: Icons.shopping_cart,
                 color: theme.colorScheme.primary,
               ),
             ),
@@ -38,7 +37,6 @@ class SellerPurchaseReportWidget extends StatelessWidget {
               child: ReportSummaryCard(
                 title: 'Total Quantity',
                 value: '${state.totalQuantity.toStringAsFixed(2)} units',
-                icon: Icons.inventory,
                 color: theme.colorScheme.secondary,
               ),
             ),
@@ -48,8 +46,8 @@ class SellerPurchaseReportWidget extends StatelessWidget {
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Seller', flex: 2),
-            ReportTableHeader(label: 'Purchases', flex: 1),
-            ReportTableHeader(label: 'Cost', flex: 1),
+            ReportTableHeader(label: 'Purchases', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Cost', flex: 1, textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(

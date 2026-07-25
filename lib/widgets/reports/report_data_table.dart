@@ -5,8 +5,9 @@ import 'package:mandyapp/helpers/widgets/my_text.dart';
 class ReportTableHeader {
   final String label;
   final int flex;
+  final TextAlign textAlign;
 
-  const ReportTableHeader({required this.label, this.flex = 1});
+  const ReportTableHeader({required this.label, this.flex = 1, this.textAlign = TextAlign.left});
 }
 
 class ReportDataTable extends StatelessWidget {
@@ -42,7 +43,7 @@ class ReportDataTable extends StatelessWidget {
                     .map(
                       (h) => Expanded(
                         flex: h.flex,
-                        child: MyText.bodySmall(h.label, fontWeight: 600),
+                        child: MyText.bodySmall(h.label, fontWeight: 600, textAlign: h.textAlign),
                       ),
                     )
                     .toList(),

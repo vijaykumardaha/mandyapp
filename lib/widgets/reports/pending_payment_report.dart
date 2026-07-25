@@ -26,15 +26,14 @@ class PendingPaymentReportWidget extends StatelessWidget {
         ReportSummaryCard(
           title: 'Total Pending',
           value: currencyFormat.format(state.totalPendingAmount),
-          icon: Icons.pending_actions,
           color: theme.colorScheme.error,
         ),
         MySpacing.height(16),
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Customer', flex: 2),
-            ReportTableHeader(label: 'Amount', flex: 1),
-            ReportTableHeader(label: 'Days', flex: 1),
+            ReportTableHeader(label: 'Amount', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Days', flex: 1, textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(

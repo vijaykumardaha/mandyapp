@@ -15,13 +15,16 @@ class BillingScreen extends StatefulWidget {
 
 class _BillingScreenState extends State<BillingScreen> {
   Customer? _selectedCustomer;
-  bool _isBuyerMode = false;
+  bool _isBuyerMode = true;
 
   String get _orderFor => _isBuyerMode ? 'buyer' : 'seller';
 
   @override
   void initState() {
     super.initState();
+    if (_isBuyerMode) {
+      context.read<OrderItemBloc>().add(const LoadAllUnlinkedOrderItems());
+    }
   }
 
   String _formatCustomer(Customer? customer) {
@@ -37,12 +40,12 @@ class _BillingScreenState extends State<BillingScreen> {
     setState(() {
       _selectedCustomer = customer;
     });
+    if (_isBuyerMode) {
+      // In buyer mode, items are already loaded — don't reload by customer
+      return;
+    }
     if (customer != null && customer.id != null) {
-      if (_isBuyerMode) {
-        context.read<OrderItemBloc>().add(LoadOrderItems(buyerId: customer.id, excludeOrderLinked: true));
-      } else {
-        context.read<OrderItemBloc>().add(LoadOrderItems(sellerId: customer.id, excludeOrderLinked: true));
-      }
+      context.read<OrderItemBloc>().add(LoadOrderItems(sellerId: customer.id, excludeOrderLinked: true));
     }
   }
 
@@ -51,7 +54,11 @@ class _BillingScreenState extends State<BillingScreen> {
       _isBuyerMode = !_isBuyerMode;
       _selectedCustomer = null;
     });
-    context.read<OrderItemBloc>().add(const ClearOrderItems());
+    if (_isBuyerMode) {
+      context.read<OrderItemBloc>().add(const LoadAllUnlinkedOrderItems());
+    } else {
+      context.read<OrderItemBloc>().add(const ClearOrderItems());
+    }
   }
 
   Future<void> _createNewCart(List<OrderItem> selectedSales) async {
@@ -76,10 +83,10 @@ class _BillingScreenState extends State<BillingScreen> {
       ),
     );
 
-    if (mounted && _selectedCustomer != null && _selectedCustomer!.id != null) {
+    if (mounted) {
       if (_isBuyerMode) {
-        context.read<OrderItemBloc>().add(LoadOrderItems(buyerId: _selectedCustomer!.id, excludeOrderLinked: true));
-      } else {
+        context.read<OrderItemBloc>().add(const LoadAllUnlinkedOrderItems());
+      } else if (_selectedCustomer != null && _selectedCustomer!.id != null) {
         context.read<OrderItemBloc>().add(LoadOrderItems(sellerId: _selectedCustomer!.id, excludeOrderLinked: true));
       }
     }
@@ -171,6 +178,7 @@ class _BillingScreenState extends State<BillingScreen> {
       },
       showCancelButton: false,
       customerLabel: _isBuyerMode ? 'Buyer' : 'Seller',
+      buyerMode: _isBuyerMode,
     );
   }
 }

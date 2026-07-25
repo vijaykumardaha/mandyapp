@@ -28,6 +28,7 @@ class CartItemList extends StatefulWidget {
     required this.onCheckout,
     this.showCancelButton = true,
     this.customerLabel = 'Customer',
+    this.buyerMode = false,
   });
 
   final List<OrderItem> initialSales;
@@ -40,6 +41,7 @@ class CartItemList extends StatefulWidget {
   final SaleSelectionCheckoutCallback onCheckout;
   final bool showCancelButton;
   final String customerLabel;
+  final bool buyerMode;
 
   @override
   State<CartItemList> createState() => _CartItemListState();
@@ -58,6 +60,7 @@ class _CartItemListState extends State<CartItemList> {
     super.initState();
     _saleList = List<OrderItem>.from(widget.initialSales);
     _buyerCustomer = widget.buyerCustomer;
+    _showCustomerList = !widget.buyerMode;
     
     // Load customer data to ensure it's available
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -73,6 +76,10 @@ class _CartItemListState extends State<CartItemList> {
     }
     if (oldWidget.buyerCustomer != widget.buyerCustomer) {
       _buyerCustomer = widget.buyerCustomer;
+    }
+    if (oldWidget.buyerMode != widget.buyerMode) {
+      _showCustomerList = !widget.buyerMode;
+      _selectedIndices.clear();
     }
   }
 
@@ -388,13 +395,6 @@ class _CartItemListState extends State<CartItemList> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  MyText.bodySmall(
-                                    widget.customerLabel,
-                                    color: Theme.of(context).colorScheme.primary,
-                                    fontWeight: 500,
-                                    fontSize: 11,
-                                  ),
-                                  const SizedBox(height: 2),
                                   MyText.bodyMedium(
                                     _buyerCustomer != null
                                         ? widget.formatCustomer(_buyerCustomer)

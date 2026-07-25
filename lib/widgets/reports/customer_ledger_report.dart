@@ -26,16 +26,15 @@ class CustomerLedgerReportWidget extends StatelessWidget {
         ReportSummaryCard(
           title: 'Net Balance',
           value: currencyFormat.format(state.totalNetBalance),
-          icon: Icons.account_balance_wallet,
           color: state.totalNetBalance >= 0 ? Colors.green : Colors.red,
         ),
         MySpacing.height(16),
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Customer', flex: 2),
-            ReportTableHeader(label: 'Purchases', flex: 1),
-            ReportTableHeader(label: 'Sales', flex: 1),
-            ReportTableHeader(label: 'Balance', flex: 1),
+            ReportTableHeader(label: 'Purchases', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Sales', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Balance', flex: 1, textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(

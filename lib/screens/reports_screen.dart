@@ -5,7 +5,6 @@ import 'package:mandyapp/blocs/reports/reports_bloc.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/widgets/reports/report_types.dart';
-import 'package:mandyapp/widgets/reports/report_filter_bar.dart';
 import 'package:mandyapp/widgets/reports/daily_sales_report.dart';
 import 'package:mandyapp/widgets/reports/seller_purchase_report.dart';
 import 'package:mandyapp/widgets/reports/buyer_sales_report.dart';
@@ -36,50 +35,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
     });
   }
 
-  Widget _buildReportContentBasedOnState(dynamic state, ThemeData theme) {
+  Widget _buildReportContent(dynamic state, ThemeData theme) {
     final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
 
-    return Container(
-      width: double.infinity,
-      padding: MySpacing.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-        boxShadow: [
-          BoxShadow(
-            color: theme.shadowColor.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                ReportHelpers.getReportIcon(_selectedReportType),
-                color: theme.colorScheme.primary,
-              ),
-              MySpacing.width(8),
-              MyText.titleMedium(
-                ReportHelpers.reportTypeLabel(_selectedReportType),
-                fontWeight: 600,
-              ),
-            ],
-          ),
-          MySpacing.height(16),
-          Expanded(
-            child: _buildReportContent(state, theme, currencyFormat),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReportContent(dynamic state, ThemeData theme, NumberFormat currencyFormat) {
     switch (_selectedReportType) {
       case ReportType.dailySales:
         if (state is DailySalesReportLoaded) {
@@ -128,176 +86,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
         break;
     }
 
-    return _buildPlaceholderReport(theme);
-  }
-
-  Widget _buildLoadingState(ThemeData theme) {
-    return Container(
-      width: double.infinity,
-      padding: MySpacing.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-        boxShadow: [
-          BoxShadow(
-            color: theme.shadowColor.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                ReportHelpers.getReportIcon(_selectedReportType),
-                color: theme.colorScheme.primary,
-              ),
-              MySpacing.width(8),
-              MyText.titleMedium(
-                ReportHelpers.reportTypeLabel(_selectedReportType),
-                fontWeight: 600,
-              ),
-            ],
-          ),
-          MySpacing.height(16),
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(),
-                  MySpacing.height(16),
-                  MyText.bodyMedium('Loading report data...', fontWeight: 500),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorState(ThemeData theme, String message) {
-    return Container(
-      width: double.infinity,
-      padding: MySpacing.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-        boxShadow: [
-          BoxShadow(
-            color: theme.shadowColor.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                ReportHelpers.getReportIcon(_selectedReportType),
-                color: theme.colorScheme.primary,
-              ),
-              MySpacing.width(8),
-              MyText.titleMedium(
-                ReportHelpers.reportTypeLabel(_selectedReportType),
-                fontWeight: 600,
-              ),
-            ],
-          ),
-          MySpacing.height(16),
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, color: theme.colorScheme.error, size: 48),
-                  MySpacing.height(12),
-                  MyText.bodyMedium('Error loading report', fontWeight: 600),
-                  MySpacing.height(8),
-                  MyText.bodySmall(message, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                  MySpacing.height(16),
-                  ElevatedButton(
-                    onPressed: _loadReportData,
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(ThemeData theme) {
-    return Container(
-      width: double.infinity,
-      padding: MySpacing.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
-        boxShadow: [
-          BoxShadow(
-            color: theme.shadowColor.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                ReportHelpers.getReportIcon(_selectedReportType),
-                color: theme.colorScheme.primary,
-              ),
-              MySpacing.width(8),
-              MyText.titleMedium(
-                ReportHelpers.reportTypeLabel(_selectedReportType),
-                fontWeight: 600,
-              ),
-            ],
-          ),
-          MySpacing.height(16),
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    ReportHelpers.getReportIcon(_selectedReportType),
-                    size: 48,
-                    color: theme.colorScheme.primary.withOpacity(0.5),
-                  ),
-                  MySpacing.height(12),
-                  MyText.bodyMedium('No data found', fontWeight: 600),
-                  MySpacing.height(8),
-                  MyText.bodySmall(
-                    'No records found for the selected period',
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPlaceholderReport(ThemeData theme) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -318,6 +106,52 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ElevatedButton(
             onPressed: () => _loadReportData(),
             child: Text('Load ${ReportHelpers.reportTypeLabel(_selectedReportType)}'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error, size: 48),
+          MySpacing.height(12),
+          MyText.bodyMedium('Error loading report', fontWeight: 600),
+          MySpacing.height(8),
+          MyText.bodySmall(message, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+          MySpacing.height(16),
+          ElevatedButton(
+            onPressed: _loadReportData,
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            ReportHelpers.getReportIcon(_selectedReportType),
+            size: 48,
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+          ),
+          MySpacing.height(12),
+          MyText.bodyMedium('No data found', fontWeight: 600),
+          MySpacing.height(8),
+          MyText.bodySmall(
+            'No records found for the selected period',
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
           ),
         ],
       ),
@@ -432,6 +266,219 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              const Icon(Icons.filter_list_outlined),
+              const SizedBox(width: 8),
+              Text('Filter Reports'),
+            ],
+          ),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setDialogState) {
+              return SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Date Range',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: ReportRangePreset.values.map((preset) {
+                        final isSelected = _selectedPreset == preset;
+                        return GestureDetector(
+                          onTap: () {
+                            setDialogState(() {
+                              _selectedPreset = preset;
+                            });
+                            setState(() {
+                              _selectedPreset = preset;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                              ),
+                            ),
+                            child: Text(
+                              preset.name.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected
+                                    ? Theme.of(context).colorScheme.onPrimary
+                                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    if (_selectedPreset == ReportRangePreset.custom)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            _showCustomDateRangePicker().then((_) {
+                              setDialogState(() {});
+                            });
+                          },
+                          icon: const Icon(Icons.date_range, size: 16),
+                          label: Text(_customDateRange != null
+                              ? '${ReportHelpers.formatDate(_customDateRange!.start)} - ${ReportHelpers.formatDate(_customDateRange!.end)}'
+                              : 'Select Custom Range'),
+                        ),
+                      ),
+
+                    const SizedBox(height: 20),
+
+                    Text(
+                      'Report Type',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...ReportType.values.map((reportType) {
+                      final isSelected = _selectedReportType == reportType;
+                      final icon = ReportHelpers.getReportIcon(reportType);
+                      final name = ReportHelpers.reportTypeLabel(reportType);
+
+                      return GestureDetector(
+                        onTap: () {
+                          setDialogState(() {
+                            _selectedReportType = reportType;
+                          });
+                          setState(() {
+                            _selectedReportType = reportType;
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                                : Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                icon,
+                                size: 20,
+                                color: isSelected
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  name,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: isSelected
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                ),
+                              ),
+                              if (isSelected)
+                                Icon(
+                                  Icons.check_circle,
+                                  size: 20,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ),
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _loadReportData();
+              },
+              child: const Text('Apply'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showCustomDateRangePicker() async {
+    final now = DateTime.now();
+    final firstDate = DateTime(now.year - 1);
+    final lastDate = DateTime(now.year + 1);
+
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      initialDateRange: _customDateRange ?? DateTimeRange(
+        start: DateTime(now.year, now.month, now.day - 7),
+        end: now,
+      ),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Theme.of(context).colorScheme.primary,
+              brightness: Theme.of(context).brightness,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _customDateRange = picked;
+        _selectedPreset = ReportRangePreset.custom;
+      });
+      _loadReportData();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -502,53 +549,23 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            onPressed: _showFilterDialog,
+            icon: const Icon(Icons.filter_list_outlined),
+            tooltip: 'Filter Reports',
+          ),
+        ],
       ),
       body: Padding(
         padding: MySpacing.xy(16, 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ReportFilterBar(
-              selectedPreset: _selectedPreset,
-              selectedReportType: _selectedReportType,
-              customDateRange: _customDateRange,
-              onPresetChanged: (preset) {
-                setState(() => _selectedPreset = preset);
-                _loadReportData();
-              },
-              onReportTypeChanged: (type) {
-                setState(() => _selectedReportType = type);
-                _loadReportData();
-              },
-              onCustomDateRangeChanged: (range) {
-                setState(() {
-                  _customDateRange = range;
-                  _selectedPreset = ReportRangePreset.custom;
-                });
-                _loadReportData();
-              },
-            ),
-            MySpacing.height(16),
-            Expanded(
-              child: BlocBuilder<ReportsBloc, ReportsState>(
-                builder: (context, state) {
-                  if (state is ReportsLoading) {
-                    return _buildLoadingState(Theme.of(context));
-                  }
-
-                  if (state is ReportsError) {
-                    return _buildErrorState(Theme.of(context), state.message);
-                  }
-
-                  if (state is ReportsEmpty) {
-                    return _buildEmptyState(Theme.of(context));
-                  }
-
-                  return _buildReportContentBasedOnState(state, Theme.of(context));
-                },
-              ),
-            ),
-          ],
+        child: BlocBuilder<ReportsBloc, ReportsState>(
+          builder: (context, state) {
+            if (state is ReportsLoading) return _buildLoadingState();
+            if (state is ReportsError) return _buildErrorState(state.message);
+            if (state is ReportsEmpty) return _buildEmptyState();
+            return _buildReportContent(state, Theme.of(context));
+          },
         ),
       ),
     );

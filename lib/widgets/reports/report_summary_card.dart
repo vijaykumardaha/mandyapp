@@ -5,14 +5,12 @@ import 'package:mandyapp/helpers/widgets/my_text.dart';
 class ReportSummaryCard extends StatelessWidget {
   final String title;
   final String value;
-  final IconData icon;
   final Color color;
 
   const ReportSummaryCard({
     super.key,
     required this.title,
     required this.value,
-    required this.icon,
     required this.color,
   });
 
@@ -27,8 +25,6 @@ class ReportSummaryCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, size: 20, color: color),
-          MySpacing.height(4),
           MyText.bodySmall(title, color: color, fontWeight: 600),
           MySpacing.height(2),
           MyText.titleSmall(value, fontWeight: 700, color: color),

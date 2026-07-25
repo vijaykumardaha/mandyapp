@@ -14,6 +14,7 @@ import 'package:mandyapp/models/order_item_model.dart';
 import 'package:mandyapp/models/order_model.dart';
 import 'package:mandyapp/models/order_payment_model.dart';
 import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandyapp/utils/printer/printer_service.dart';
 import 'package:mandyapp/widgets/checkout/checkout_content.dart';
 import 'package:mandyapp/widgets/checkout/payment_method_selector.dart';
 
@@ -41,6 +42,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Map<PaymentMethod, double> _paymentAmounts = {};
   bool _defaultChargesInitialized = false;
   bool _isPlacingOrder = false;
+  bool _autoPrint = true;
   String? _customerName;
 
   final _orderChargeDAO = OrderChargeDAO();
@@ -205,6 +207,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         await OrderDAO().updateOrderStatus(orderId, 'completed');
       }
 
+      if (_autoPrint) {
+        _printBill(orderId, chargeTypes);
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -224,6 +230,66 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         );
         setState(() => _isPlacingOrder = false);
       }
+    }
+  }
+
+  void _printBill(int orderId, List<ChargeType> chargeTypes) async {
+    final printerService = PrinterService.instance;
+
+    if (!printerService.connectionStatus.value) return;
+
+    final subtotal = widget.cartItems?.fold<double>(
+          0.0,
+          (sum, item) => sum + item.sellingPrice * item.quantity,
+        ) ??
+        0.0;
+    final chargesTotal = _computeChargesTotal(chargeTypes);
+    final expensesTotal = _computeExpensesTotal();
+    final grandTotal = widget.orderFor == 'seller'
+        ? subtotal + chargesTotal - expensesTotal
+        : subtotal + chargesTotal + expensesTotal;
+
+    final receivedAmount = _paymentAmounts.values.fold<double>(0.0, (a, b) => a + b);
+    final pendingAmount = grandTotal - receivedAmount;
+
+    final paymentMethods = _paymentAmounts.entries
+        .where((e) => e.value > 0)
+        .map((e) => _paymentMethodToLabel(e.key))
+        .join(', ');
+
+    final items = (widget.cartItems ?? []).map((item) => InvoiceItem(
+      productName: item.productName ?? 'Unknown',
+      quantity: item.quantity.toDouble(),
+      unit: 'pc',
+      price: item.sellingPrice,
+      total: item.sellingPrice * item.quantity,
+    )).toList();
+
+    await printerService.printInvoice(
+      cartId: orderId,
+      customerName: _customerName ?? '',
+      cartType: widget.orderFor,
+      items: items,
+      itemTotal: subtotal,
+      chargesTotal: chargesTotal,
+      expensesTotal: expensesTotal,
+      grandTotal: grandTotal,
+      receivedAmount: receivedAmount,
+      pendingAmount: pendingAmount,
+      paymentMethod: paymentMethods,
+    );
+  }
+
+  String _paymentMethodToLabel(PaymentMethod method) {
+    switch (method) {
+      case PaymentMethod.cash:
+        return 'Cash';
+      case PaymentMethod.upi:
+        return 'UPI';
+      case PaymentMethod.card:
+        return 'Card';
+      case PaymentMethod.credit:
+        return 'Credit';
     }
   }
 
@@ -251,6 +317,50 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               '${widget.orderFor == 'seller' ? 'Seller' : 'Buyer'} billing for ${_customerName ?? ''}',
             ),
             foregroundColor: Theme.of(context).colorScheme.onSurface,
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Tooltip(
+                  message: _autoPrint ? 'Auto-print ON' : 'Auto-print OFF',
+                  child: GestureDetector(
+                    onTap: () => setState(() => _autoPrint = !_autoPrint),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _autoPrint
+                            ? Theme.of(context).colorScheme.primaryContainer
+                            : Theme.of(context).colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.print,
+                            size: 16,
+                            color: _autoPrint
+                                ? Theme.of(context).colorScheme.onPrimaryContainer
+                                : Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            _autoPrint ? 'Print' : 'No Print',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: _autoPrint
+                                  ? Theme.of(context).colorScheme.onPrimaryContainer
+                                  : Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           bottomNavigationBar: SafeArea(
             child: Padding(

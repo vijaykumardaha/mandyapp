@@ -18,6 +18,7 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
     on<UpdateOrderItemEvent>(_onUpdateOrderItem);
     on<DeleteOrderItemEvent>(_onDeleteOrderItem);
     on<ClearOrderItems>(_onClearOrderItems);
+    on<LoadAllUnlinkedOrderItems>(_onLoadAllUnlinkedOrderItems);
   }
 
   Future<void> _onLoadOrderItems(LoadOrderItems event, Emitter<OrderItemState> emit) async {
@@ -114,5 +115,18 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
 
   void _onClearOrderItems(ClearOrderItems event, Emitter<OrderItemState> emit) {
     emit(const OrderItemsLoaded([]));
+  }
+
+  Future<void> _onLoadAllUnlinkedOrderItems(LoadAllUnlinkedOrderItems event, Emitter<OrderItemState> emit) async {
+    emit(const OrderItemLoading());
+    try {
+      final orderItems = await _orderItemDAO.getOrderItems(
+        excludeBuyerOrderLinked: true,
+        excludeSellerOrderLinked: true,
+      );
+      emit(OrderItemsLoaded(orderItems));
+    } catch (error) {
+      emit(OrderItemError('Failed to load order items: ${error.toString()}'));
+    }
   }
 }

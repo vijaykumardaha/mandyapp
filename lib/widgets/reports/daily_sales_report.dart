@@ -29,7 +29,6 @@ class DailySalesReportWidget extends StatelessWidget {
               child: ReportSummaryCard(
                 title: 'Total Revenue',
                 value: currencyFormat.format(state.totalRevenue),
-                icon: Icons.attach_money,
                 color: theme.colorScheme.primary,
               ),
             ),
@@ -38,7 +37,6 @@ class DailySalesReportWidget extends StatelessWidget {
               child: ReportSummaryCard(
                 title: 'Total Quantity',
                 value: '${state.totalQuantity.toStringAsFixed(2)} units',
-                icon: Icons.inventory,
                 color: theme.colorScheme.secondary,
               ),
             ),
@@ -48,8 +46,8 @@ class DailySalesReportWidget extends StatelessWidget {
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Product', flex: 2),
-            ReportTableHeader(label: 'Qty', flex: 1),
-            ReportTableHeader(label: 'Revenue', flex: 1),
+            ReportTableHeader(label: 'Qty', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Revenue', flex: 1, textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(

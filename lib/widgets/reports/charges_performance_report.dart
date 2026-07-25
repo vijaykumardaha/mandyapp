@@ -26,15 +26,14 @@ class ChargesPerformanceReportWidget extends StatelessWidget {
         ReportSummaryCard(
           title: 'Total Charges',
           value: currencyFormat.format(state.totalChargeAmount),
-          icon: Icons.assessment,
           color: theme.colorScheme.primary,
         ),
         MySpacing.height(16),
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Charge Type', flex: 2),
-            ReportTableHeader(label: 'Transactions', flex: 1),
-            ReportTableHeader(label: 'Amount', flex: 1),
+            ReportTableHeader(label: 'Transactions', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Amount', flex: 1, textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(

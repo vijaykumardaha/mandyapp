@@ -26,16 +26,15 @@ class TopSellingProductsReportWidget extends StatelessWidget {
         ReportSummaryCard(
           title: 'Total Revenue',
           value: currencyFormat.format(state.totalRevenue),
-          icon: Icons.star,
           color: theme.colorScheme.primary,
         ),
         MySpacing.height(16),
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Product', flex: 2),
-            ReportTableHeader(label: 'Qty Sold', flex: 1),
-            ReportTableHeader(label: 'Revenue', flex: 1),
-            ReportTableHeader(label: 'Rank', flex: 1),
+            ReportTableHeader(label: 'Qty Sold', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Revenue', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Rank', flex: 1, textAlign: TextAlign.center),
           ],
           rows: List.generate(state.data.length, (index) {
             final item = state.data[index];

@@ -26,15 +26,14 @@ class PaymentModeReportWidget extends StatelessWidget {
         ReportSummaryCard(
           title: 'Total Amount',
           value: currencyFormat.format(state.totalAmount),
-          icon: Icons.payment,
           color: theme.colorScheme.primary,
         ),
         MySpacing.height(16),
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Payment Mode', flex: 2),
-            ReportTableHeader(label: 'Transactions', flex: 1),
-            ReportTableHeader(label: 'Amount', flex: 1),
+            ReportTableHeader(label: 'Transactions', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Amount', flex: 1, textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(

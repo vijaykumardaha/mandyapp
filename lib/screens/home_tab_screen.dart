@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/blocs/reports/reports_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
-import 'package:mandyapp/sync/sync_service.dart';
+import 'package:mandyapp/models/user_model.dart';
+import 'package:mandyapp/sync/socket_config.dart';
+import 'package:mandyapp/utils/app_helper.dart';
+import 'package:mandyapp/widgets/common/connection_status_indicator.dart';
 import 'package:mandyapp/widgets/home_tab/financial_metric.dart';
 import 'package:mandyapp/widgets/home_tab/dashboard_overview_card.dart';
 
@@ -21,8 +23,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   final DateFormat _dateFormat = DateFormat('dd MMM yyyy');
   final NumberFormat _currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
   bool _hasLoadedData = false;
-  bool _isSyncing = false;
   DashboardDataLoaded? _cachedData;
+  String _userName = 'Dashboard';
 
   @override
   void initState() {
@@ -30,8 +32,17 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     theme = AppTheme.shoppingManagerTheme;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserName();
       _loadDashboardData();
     });
+  }
+
+  Future<void> _loadUserName() async {
+    final userData = await AppHelper.getPreferences(SocketConfig.userKey);
+    if (userData != null && mounted) {
+      final user = User.fromJson(userData);
+      setState(() => _userName = user.name ?? 'Dashboard');
+    }
   }
 
   void _loadDashboardData({bool forceRefresh = false}) {
@@ -44,47 +55,6 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       _hasLoadedData = true;
     } else {
       print('Skipping dashboard data load - using cached data');
-    }
-  }
-
-  Future<void> _syncData() async {
-    if (_isSyncing) return;
-    setState(() => _isSyncing = true);
-
-    try {
-      final response = await SyncService.instance.bulkSync();
-      if (!mounted) return;
-
-      if (response != null) {
-        context.read<ProductBloc>().add(const ProductsSync());
-        _loadDashboardData(forceRefresh: true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sync completed'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sync failed. Please try again.'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Sync error: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isSyncing = false);
     }
   }
 
@@ -179,48 +149,19 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
           // Header with reports link
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  MyText.titleLarge("Business Dashboard", fontWeight: 700),
+                  MyText.titleLarge(_userName, fontWeight: 700),
                   MyText.bodyMedium(
                     _dateFormat.format(DateTime.now()),
                     color: theme.colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ],
               ),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: _isSyncing ? null : _syncData,
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: theme.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: theme.primaryColor.withOpacity(0.2),
-                        ),
-                      ),
-                      child: _isSyncing
-                          ? SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: theme.primaryColor,
-                              ),
-                            )
-                          : Icon(
-                              Icons.sync,
-                              size: 18,
-                              color: theme.primaryColor,
-                            ),
-                    ),
-                  ),
-                ],
-              ),
+              const ConnectionStatusIndicator(),
             ],
           ),
           const SizedBox(height: 24),

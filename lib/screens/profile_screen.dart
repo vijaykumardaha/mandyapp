@@ -103,16 +103,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Center(
                       child: Column(
                         children: [
-                          CircleAvatar(
-                            radius: 50,
-                            backgroundColor: theme.colorScheme.primary,
-                            child: Icon(
-                              Icons.person,
-                              size: 50,
-                              color: theme.colorScheme.onPrimary,
-                            ),
-                          ),
-                          MySpacing.height(12),
                           MyText.titleLarge(
                             user.name ?? 'User',
                             fontWeight: 600,
@@ -128,10 +118,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     MySpacing.height(32),
 
                     // Name Field
-                    MyText.bodyMedium('Name', fontWeight: 600),
+                    MyText.bodyMedium('Mandy Name', fontWeight: 600),
                     MySpacing.height(8),
                     TextFormField(
                       controller: _nameController,
+                      enabled: false,
                       style: MyTextStyle.bodyMedium(),
                       decoration: InputDecoration(
                         hintText: 'Enter your name',
@@ -158,6 +149,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     MySpacing.height(8),
                     TextFormField(
                       controller: _mobileController,
+                      enabled: false,
                       style: MyTextStyle.bodyMedium(),
                       decoration: InputDecoration(
                         hintText: 'Enter mobile number',
@@ -221,18 +213,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     MyButton.block(
                       padding: MySpacing.y(16),
                       onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          // Update profile
-                          context.read<UserBloc>().add(
-                            UpdateUserProfile(
-                              name: _nameController.text,
-                              mobile: _mobileController.text,
-                              password: _passwordController.text.isNotEmpty
-                                  ? _passwordController.text
-                                  : null,
+                        if (_passwordController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.only(top: 16, left: 16, right: 16),
+                              content: Text('Please enter a new password'),
+                              backgroundColor: Colors.orange,
                             ),
                           );
+                          return;
                         }
+                        context.read<UserBloc>().add(
+                          UpdateUserProfile(
+                            name: _nameController.text,
+                            mobile: _mobileController.text,
+                            password: _passwordController.text,
+                          ),
+                        );
                       },
                       backgroundColor: theme.colorScheme.primary,
                       elevation: 0,
