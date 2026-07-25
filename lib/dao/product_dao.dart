@@ -93,11 +93,12 @@ class ProductDAO {
       for (final product in products) {
         batch.rawInsert('''
           INSERT INTO products (
-            mandy_id, default_variant, updated_at, is_deleted, sync_status
+            id, mandy_id, default_variant, updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?)
 
-          ON CONFLICT(mandy_id) DO UPDATE SET
+          ON CONFLICT(id) DO UPDATE SET
+            mandy_id = excluded.mandy_id,
             default_variant = excluded.default_variant,
             updated_at = excluded.updated_at,
             is_deleted = excluded.is_deleted,
@@ -105,6 +106,7 @@ class ProductDAO {
 
           WHERE excluded.updated_at > products.updated_at;
         ''', [
+          product.id,
           product.mandyId,
           product.defaultVariant,
           product.updatedAt ?? DateTime.now().millisecondsSinceEpoch,

@@ -169,22 +169,30 @@ class OrderPaymentDAO {
       for (final orderPayment in orderPayments) {
         batch.rawInsert('''
           INSERT INTO order_payments (
-            order_id, source, amount, updated_at
+            id, mandy_id, order_id, source, amount,
+            updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(id) DO UPDATE SET
+            mandy_id = excluded.mandy_id,
             order_id = excluded.order_id,
             source = excluded.source,
             amount = excluded.amount,
-            updated_at = excluded.updated_at
+            updated_at = excluded.updated_at,
+            is_deleted = excluded.is_deleted,
+            sync_status = excluded.sync_status
 
           WHERE excluded.updated_at > order_payments.updated_at;
         ''', [
+          orderPayment.id,
+          null,
           orderPayment.orderId,
           orderPayment.source,
           orderPayment.amount,
           orderPayment.updatedAt,
+          0,
+          1,
         ]);
       }
 

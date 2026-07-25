@@ -72,4 +72,50 @@ class VegetableDAO {
     }
     return null;
   }
+
+  // Bulk upsert vegetables
+  Future<void> bulkUpsertVegetables(List<Vegetable> vegetables) async {
+    final db = await dbHelper.database;
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+
+      for (final veg in vegetables) {
+        batch.rawInsert('''
+          INSERT INTO vegetables (
+            id, mandy_id, key, name, path, price, unit,
+            common, updated_at, is_deleted, sync_status
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+          ON CONFLICT(id) DO UPDATE SET
+            mandy_id = excluded.mandy_id,
+            key = excluded.key,
+            name = excluded.name,
+            path = excluded.path,
+            price = excluded.price,
+            unit = excluded.unit,
+            common = excluded.common,
+            updated_at = excluded.updated_at,
+            is_deleted = excluded.is_deleted,
+            sync_status = excluded.sync_status
+
+          WHERE excluded.updated_at > vegetables.updated_at;
+        ''', [
+          veg.id,
+          veg.mandyId,
+          veg.key,
+          veg.name,
+          veg.path,
+          veg.price,
+          veg.unit,
+          veg.common,
+          veg.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
+          veg.isDeleted ?? 0,
+          veg.syncStatus ?? 1,
+        ]);
+      }
+
+      await batch.commit(noResult: true);
+    });
+  }
 }

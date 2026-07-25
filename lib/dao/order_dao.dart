@@ -315,12 +315,13 @@ class OrderDAO {
       for (final order in orders) {
         batch.rawInsert('''
           INSERT INTO orders (
-            mandy_id, customer_id, order_for,
+            id, mandy_id, customer_id, order_for,
             updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
 
-          ON CONFLICT(mandy_id) DO UPDATE SET
+          ON CONFLICT(id) DO UPDATE SET
+            mandy_id = excluded.mandy_id,
             customer_id = excluded.customer_id,
             order_for = excluded.order_for,
             updated_at = excluded.updated_at,
@@ -329,6 +330,7 @@ class OrderDAO {
 
           WHERE excluded.updated_at > orders.updated_at;
         ''', [
+          order.id,
           order.mandyId,
           order.customerId,
           order.orderFor,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandyapp/helpers/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/user/user_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
@@ -83,31 +84,13 @@ class _StaffScreenState extends State<StaffScreen> {
       body: BlocConsumer<UserBloc, UserState>(
         listener: (context, state) {
           if (state is UserError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                behavior: SnackBarBehavior.floating,
-                margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-                content: Text(state.errorMsg),
-              ),
-            );
+            Info.error(state.errorMsg, context: context);
           } else if (state is UserUpdated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                behavior: SnackBarBehavior.floating,
-                margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-                content: Text('Staff member updated successfully'),
-              ),
-            );
+            Info.message('Staff member updated successfully', context: context);
             // Reload the staff list
             context.read<UserBloc>().add(LoadUsersByRole(role: 'staff'));
           } else if (state is UserDeleted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                behavior: SnackBarBehavior.floating,
-                margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-                content: Text('Staff member deleted successfully'),
-              ),
-            );
+            Info.message('Staff member deleted successfully', context: context);
             // Reload the staff list
             context.read<UserBloc>().add(LoadUsersByRole(role: 'staff'));
           }

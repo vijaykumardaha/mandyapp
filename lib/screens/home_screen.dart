@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +13,8 @@ import 'package:mandyapp/screens/home_tab_screen.dart';
 import 'package:mandyapp/screens/selling_screen.dart';
 import 'package:mandyapp/screens/settings_screen.dart';
 import 'package:mandyapp/screens/customer_management_screen.dart';
+import 'package:mandyapp/sync/phoenix_socket_service.dart';
+import 'package:mandyapp/sync/sync_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final int activeTab;
@@ -21,9 +27,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late ThemeData theme;
   int initialIndex = 0;
-
-  // Bottom nav config removed with sync code
   late CustomTheme customTheme;
+
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  bool _wasOffline = false;
 
   @override
   void initState() {
@@ -31,6 +38,30 @@ class _HomeScreenState extends State<HomeScreen> {
     theme = AppTheme.shoppingManagerTheme;
     customTheme = AppTheme.customTheme;
     initialIndex = widget.activeTab;
+    _startConnectivityListener();
+  }
+
+  void _startConnectivityListener() {
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen(
+      (results) async {
+        final hasConnection = results.any((r) => r != ConnectivityResult.none);
+
+        if (hasConnection && _wasOffline) {
+          log('HomeScreen: connectivity restored, reconnecting websocket');
+          if (!PhoenixSocketService.instance.isConnected) {
+            await SyncService.instance.connectAndSync();
+          }
+        }
+
+        _wasOffline = !hasConnection;
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
   }
 
   List<Widget> get _screens => [
@@ -40,11 +71,6 @@ class _HomeScreenState extends State<HomeScreen> {
         const CustomerManagementScreen(),
         const SettingsScreen(),
       ];
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 
   List<TabItem> tabItems = [
     const TabItem(
@@ -92,5 +118,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
 }

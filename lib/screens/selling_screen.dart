@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandyapp/helpers/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/order_item/order_item_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
@@ -70,13 +71,7 @@ class SellingScreenState extends State<SellingScreen> {
 
   void _showAddToSaleBottomSheet(Product product) {
     if (sellerCustomer == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-          content: Text('Please select a customer before recording sales.'),
-        ),
-      );
+      Info.message('Please select a customer before recording sales.', context: context);
       return;
     }
 
@@ -88,13 +83,7 @@ class SellingScreenState extends State<SellingScreen> {
     }
 
     if (variants.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-          content: Text('No variants available for this product.'),
-        ),
-      );
+      Info.message('No variants available for this product.', context: context);
       return;
     }
 
@@ -155,12 +144,7 @@ class SellingScreenState extends State<SellingScreen> {
         listenWhen: (previous, current) => current is OrderItemError,
         listener: (context, saleState) {
           if (saleState is OrderItemError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                behavior: SnackBarBehavior.floating,
-                content: Text(saleState.message),
-              ),
-            );
+            Info.error(saleState.message, context: context);
           }
         },
         child: sellerCustomer == null

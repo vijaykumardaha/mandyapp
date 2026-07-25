@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandyapp/helpers/utils/info_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:mandyapp/dao/order_charge_dao.dart';
 import 'package:mandyapp/dao/order_dao.dart';
@@ -39,36 +40,20 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
 
     if (!printerService.connectionStatus.value) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No printer connected. Please connect a printer first.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        Info.error('No printer connected. Please connect a printer first.', context: context);
       }
       return;
     }
 
     if (!printerService.bluetoothEnabled.value) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Bluetooth is not enabled. Please enable Bluetooth.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        Info.error('Bluetooth is not enabled. Please enable Bluetooth.', context: context);
       }
       return;
     }
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Printing invoice...'),
-          backgroundColor: Colors.blue,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      Info.message('Printing invoice...', context: context, duration: Duration(seconds: 2));
     }
 
     final invoiceItems = data.lineItems.map((item) => InvoiceItem(
@@ -94,13 +79,11 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     );
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? 'Invoice printed successfully!' : 'Failed to print invoice. Please try again.'),
-          backgroundColor: success ? Colors.green : Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      if (success) {
+        Info.message('Invoice printed successfully!', context: context, duration: const Duration(seconds: 3));
+      } else {
+        Info.error('Failed to print invoice. Please try again.', context: context, duration: const Duration(seconds: 3));
+      }
     }
   }
 

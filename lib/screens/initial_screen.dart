@@ -26,8 +26,7 @@ class _InitialScreenState extends State<InitialScreen> {
     return BlocConsumer<LoginBloc, LoginState>(
       listener: (context, state) async {
         if (state is LoginSuccess) {
-          await PhoenixSocketService.instance.connect();
-          SyncService.instance.startListening();
+          await SyncService.instance.connectAndSync();
           context.go('/home');
         } else if (state is CheckingFailed) {
           context.go('/login');

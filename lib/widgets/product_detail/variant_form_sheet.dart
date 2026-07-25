@@ -7,6 +7,7 @@ import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/blocs/vegetable/vegetable_bloc.dart';
+import 'package:mandyapp/helpers/utils/info_controller.dart';
 
 class VariantFormSheet extends StatefulWidget {
   final int productId;
@@ -276,13 +277,7 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
         imagePath.isEmpty ||
         sellingPriceText.isEmpty ||
         quantityText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-          content: Text('please_fill_required_fields'.tr()),
-        ),
-      );
+      Info.message('please_fill_required_fields'.tr(), context: context);
       return;
     }
 
@@ -290,13 +285,7 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
     final quantity = double.tryParse(quantityText);
 
     if (sellingPrice == null || quantity == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-          content: Text('please_enter_valid_numbers'.tr()),
-        ),
-      );
+      Info.message('please_enter_valid_numbers'.tr(), context: context);
       return;
     }
 

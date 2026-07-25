@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/dao/user_dao.dart';
 import 'package:mandyapp/models/user_model.dart';
+import 'package:mandyapp/services/auth_api.dart';
 import 'package:mandyapp/utils/app_helper.dart';
 
 part 'user_event.dart';
@@ -12,6 +13,7 @@ part 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
   final UserDAO userDAO = UserDAO();
+  final AuthApi _authApi = AuthApi();
 
   UserBloc() : super(UserInitial()) {
     // Load user by ID from database
@@ -120,24 +122,28 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       }
     });
 
-    // Save/Create new user (legacy support)
+    // Save/Create new staff via API
     on<SaveUser>((event, emit) async {
       try {
         emit(UserLoading());
         
-        final newUser = User(
+        final mandyId = await AppHelper.getCurrentMandyId();
+        
+        final newUser = await _authApi.addStaff(
+          mandyId: mandyId ?? 0,
           name: event.name,
           mobile: event.mobile,
           password: event.password,
-          role: event.role,
         );
-        
-        int userId = await userDAO.insertUser(newUser);
-        newUser.id = userId;
-        
+
+        newUser.role = event.role;
+        newUser.password = event.password;
+        newUser.mandyId = mandyId ?? newUser.mandyId;
+        await userDAO.registerUser(newUser);
+
         emit(UserUpdated(user: newUser));
-      } catch (error) {
-        emit(UserError(errorMsg: 'Failed to save user: ${error.toString()}'));
+      } catch (e) {
+        emit(UserError(errorMsg: e.toString().replaceFirst('Exception: ', '')));
       }
     });
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandyapp/helpers/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/order_item/order_item_bloc.dart';
 import 'package:mandyapp/models/customer_model.dart';
@@ -63,13 +64,7 @@ class _BillingScreenState extends State<BillingScreen> {
 
   Future<void> _createNewCart(List<OrderItem> selectedSales) async {
     if (_selectedCustomer == null || _selectedCustomer!.id == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-          content: Text('Please select a ${_isBuyerMode ? 'buyer' : 'seller'} name before checkout.'),
-        ),
-      );
+      Info.error('Please select a ${_isBuyerMode ? 'buyer' : 'seller'} name before checkout.', context: context);
       return;
     }
 

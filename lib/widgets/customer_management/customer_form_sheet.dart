@@ -6,6 +6,7 @@ import 'package:mandyapp/blocs/customer/customer_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/helpers/utils/info_controller.dart';
 import 'package:mandyapp/models/customer_model.dart';
 
 class CustomerFormSheet extends StatefulWidget {
@@ -37,10 +38,15 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
   @override
   void initState() {
     super.initState();
-    theme = Theme.of(context);
     nameController = TextEditingController(text: widget.customer?.name ?? '');
     phoneController = TextEditingController(text: widget.customer?.phone ?? '');
     selectedProductIds = Set<int>.from(widget.customer?.selectedProductIds ?? []);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
     context.read<ProductBloc>().add(LoadProducts());
   }
 
@@ -229,9 +235,7 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
                         final name = nameController.text.trim();
                         final phone = phoneController.text.trim();
                         if (name.isEmpty || phone.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Please enter both name and phone.')),
-                          );
+                          Info.message('Please enter both name and phone.', context: context);
                           return;
                         }
                         final productIdsStr = selectedProductIds.join(',');

@@ -109,12 +109,13 @@ class ProductVariantDAO {
       for (final variant in variants) {
         batch.rawInsert('''
           INSERT INTO product_variants (
-            mandy_id, product_id, variant_name, selling_price,
+            id, mandy_id, product_id, variant_name, selling_price,
             quantity, unit, image_path, updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
-          ON CONFLICT(mandy_id) DO UPDATE SET
+          ON CONFLICT(id) DO UPDATE SET
+            mandy_id = excluded.mandy_id,
             product_id = excluded.product_id,
             variant_name = excluded.variant_name,
             selling_price = excluded.selling_price,
@@ -127,6 +128,7 @@ class ProductVariantDAO {
 
           WHERE excluded.updated_at > product_variants.updated_at;
         ''', [
+          variant.id,
           variant.mandyId,
           variant.productId,
           variant.variantName,

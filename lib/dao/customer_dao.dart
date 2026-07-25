@@ -117,12 +117,13 @@ class CustomerDAO {
       for (final customer in customers) {
           batch.rawInsert('''
           INSERT INTO customers (
-            mandy_id, name, phone,
+            id, mandy_id, name, phone,
             updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
 
-          ON CONFLICT(mandy_id) DO UPDATE SET
+          ON CONFLICT(id) DO UPDATE SET
+            mandy_id = excluded.mandy_id,
             name = excluded.name,
             phone = excluded.phone,
             updated_at = excluded.updated_at,
@@ -131,6 +132,7 @@ class CustomerDAO {
 
           WHERE excluded.updated_at > customers.updated_at;
         ''', [
+          customer.id,
           customer.mandyId,
           customer.name,
           customer.phone,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandyapp/helpers/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
@@ -205,13 +206,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                         onPressed: () async {
                           final chargeAmount = double.tryParse(amountController.text);
                           if (chargeAmount == null || chargeAmount < 0) {
-                            ScaffoldMessenger.of(sheetContext).showSnackBar(
-                              const SnackBar(
-                                behavior: SnackBarBehavior.floating,
-                                margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-                                content: Text('Please enter a valid amount'),
-                              ),
-                            );
+                            Info.message('Please enter a valid amount', context: sheetContext);
                             return;
                           }
 
@@ -320,22 +315,9 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
       body: BlocConsumer<ChargeTypesBloc, ChargeTypesState>(
         listener: (context, state) {
           if (state is ChargeTypesError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                behavior: SnackBarBehavior.floating,
-                margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-                content: Text(state.message),
-              ),
-            );
+            Info.error(state.message, context: context);
           } else if (state is ChargeTypesOperationSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                behavior: SnackBarBehavior.floating,
-                margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-                content: Text(state.message),
-                backgroundColor: Colors.green,
-              ),
-            );
+            Info.message(state.message, context: context);
             // Reload the charge types after successful operation
             context.read<ChargeTypesBloc>().add(LoadChargeTypes());
           }

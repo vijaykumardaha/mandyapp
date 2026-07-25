@@ -123,25 +123,32 @@ class OrderExpenseDao {
       for (final orderExpense in orderExpenses) {
         batch.rawInsert('''
           INSERT INTO order_expenses (
-            order_id, expense_name, expense_amount, expense_note,
-            updated_at
+            id, mandy_id, order_id, expense_name, expense_amount,
+            expense_note, updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(id) DO UPDATE SET
+            mandy_id = excluded.mandy_id,
             order_id = excluded.order_id,
             expense_name = excluded.expense_name,
             expense_amount = excluded.expense_amount,
             expense_note = excluded.expense_note,
-            updated_at = excluded.updated_at
+            updated_at = excluded.updated_at,
+            is_deleted = excluded.is_deleted,
+            sync_status = excluded.sync_status
 
           WHERE excluded.updated_at > order_expenses.updated_at;
         ''', [
+          orderExpense.id,
+          null,
           orderExpense.orderId,
           orderExpense.expenseName,
           orderExpense.expenseAmount,
           orderExpense.expenseNote,
           orderExpense.updatedAt,
+          0,
+          1,
         ]);
       }
 

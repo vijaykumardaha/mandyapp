@@ -75,4 +75,50 @@ class CustomerPaymentDAO {
     );
     return (result.first['total'] as num?)?.toDouble() ?? 0.0;
   }
+
+  // Bulk upsert customer payments
+  Future<void> bulkUpsertCustomerPayments(List<CustomerPayment> customerPayments) async {
+    final db = await dbHelper.database;
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+
+      for (final payment in customerPayments) {
+        batch.rawInsert('''
+          INSERT INTO customer_payments (
+            id, mandy_id, customer_id, amount, type, source,
+            note, payment_date, updated_at, is_deleted, sync_status
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+          ON CONFLICT(id) DO UPDATE SET
+            mandy_id = excluded.mandy_id,
+            customer_id = excluded.customer_id,
+            amount = excluded.amount,
+            type = excluded.type,
+            source = excluded.source,
+            note = excluded.note,
+            payment_date = excluded.payment_date,
+            updated_at = excluded.updated_at,
+            is_deleted = excluded.is_deleted,
+            sync_status = excluded.sync_status
+
+          WHERE excluded.updated_at > customer_payments.updated_at;
+        ''', [
+          payment.id,
+          payment.mandyId,
+          payment.customerId,
+          payment.amount,
+          payment.type,
+          payment.source,
+          payment.note,
+          payment.paymentDate,
+          payment.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
+          payment.isDeleted ?? 0,
+          payment.syncStatus ?? 1,
+        ]);
+      }
+
+      await batch.commit(noResult: true);
+    });
+  }
 }

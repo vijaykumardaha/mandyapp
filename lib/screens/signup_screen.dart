@@ -9,6 +9,7 @@ import 'package:mandyapp/helpers/widgets/my_button.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:flutter/material.dart';
+import 'package:mandyapp/helpers/utils/info_controller.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:mandyapp/widgets/auth/name_field.dart';
 import 'package:mandyapp/widgets/auth/mobile_field.dart';
@@ -52,18 +53,11 @@ class _SignupScreenState extends State<SignupScreen> {
       body: BlocConsumer<LoginBloc, LoginState>(
         listener: (context, state) async {
           if (state is LoginFailure) {
-            final snackBar = SnackBar(
-              behavior: SnackBarBehavior.floating,
-              margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-              content: Text(state.error),
-              backgroundColor: Colors.red,
-            );
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+            Info.error(state.error, context: context);
           }
 
           if (state is LoginSuccess) {
-            await PhoenixSocketService.instance.connect();
-            SyncService.instance.startListening();
+            await SyncService.instance.connectAndSync();
             context.go('/home');
           }
         },

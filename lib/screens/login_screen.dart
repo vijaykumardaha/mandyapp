@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/controllers/login_controller.dart';
-import 'package:mandyapp/sync/phoenix_socket_service.dart';
 import 'package:mandyapp/sync/sync_service.dart';
 
 import 'package:mandyapp/helpers/theme/app_theme.dart';
@@ -10,6 +9,7 @@ import 'package:mandyapp/helpers/widgets/my_button.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
 import 'package:flutter/material.dart';
+import 'package:mandyapp/helpers/utils/info_controller.dart';
 import 'package:mandyapp/widgets/auth/mobile_field.dart';
 import 'package:mandyapp/widgets/auth/password_field.dart';
 
@@ -44,18 +44,11 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocConsumer<LoginBloc, LoginState>(
         listener: (context, state) async {
           if (state is LoginFailure) {
-            final snackBar = SnackBar(
-              behavior: SnackBarBehavior.floating,
-              margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-              content: Text(state.error),
-              backgroundColor: Colors.red,
-            );
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+            Info.error(state.error, context: context);
           }
 
           if (state is LoginSuccess) {
-            await PhoenixSocketService.instance.connect();
-            SyncService.instance.startListening();
+            await SyncService.instance.connectAndSync();
             context.go('/home');
           }
         },

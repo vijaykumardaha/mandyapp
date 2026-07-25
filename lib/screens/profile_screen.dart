@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandyapp/helpers/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mandyapp/blocs/user/user_bloc.dart';
@@ -53,23 +54,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: BlocConsumer<UserBloc, UserState>(
         listener: (context, state) {
           if (state is UserUpdated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                behavior: SnackBarBehavior.floating,
-                margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-                content: Text('Profile updated successfully'),
-                backgroundColor: Colors.green,
-              ),
-            );
+            Info.message('Profile updated successfully', context: context);
           } else if (state is UserError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                behavior: SnackBarBehavior.floating,
-                margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-                content: Text(state.errorMsg),
-                backgroundColor: Colors.red,
-              ),
-            );
+            Info.error(state.errorMsg, context: context);
           }
         },
         builder: (context, state) {
@@ -214,14 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: MySpacing.y(16),
                       onPressed: () {
                         if (_passwordController.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-                              content: Text('Please enter a new password'),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
+                          Info.error('Please enter a new password', context: context);
                           return;
                         }
                         context.read<UserBloc>().add(

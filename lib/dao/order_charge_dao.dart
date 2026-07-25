@@ -120,12 +120,13 @@ class OrderChargeDAO {
       for (final orderCharge in orderCharges) {
         batch.rawInsert('''
           INSERT INTO order_charges (
-            mandy_id, order_id, charge_name, charge_amount,
+            id, mandy_id, order_id, charge_name, charge_amount,
             updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 
-          ON CONFLICT(mandy_id) DO UPDATE SET
+          ON CONFLICT(id) DO UPDATE SET
+            mandy_id = excluded.mandy_id,
             order_id = excluded.order_id,
             charge_name = excluded.charge_name,
             charge_amount = excluded.charge_amount,
@@ -135,6 +136,7 @@ class OrderChargeDAO {
 
           WHERE excluded.updated_at > order_charges.updated_at;
         ''', [
+          orderCharge.id,
           orderCharge.mandyId,
           orderCharge.orderId,
           orderCharge.chargeName,

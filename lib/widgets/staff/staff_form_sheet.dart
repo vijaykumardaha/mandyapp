@@ -4,6 +4,7 @@ import 'package:mandyapp/blocs/user/user_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_spacing.dart';
 import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/helpers/utils/info_controller.dart';
 import 'package:mandyapp/models/user_model.dart';
 
 class StaffFormSheet extends StatefulWidget {
@@ -22,6 +23,7 @@ class _StaffFormSheetState extends State<StaffFormSheet> {
   late TextEditingController passwordController;
   final String selectedRole = 'staff';
   bool _obscurePassword = true;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -40,147 +42,150 @@ class _StaffFormSheetState extends State<StaffFormSheet> {
     super.dispose();
   }
 
+  void _save() {
+    if (nameController.text.trim().isEmpty) {
+      Info.message('Please enter staff name', context: context);
+      return;
+    }
+
+    if (mobileController.text.trim().isEmpty ||
+        mobileController.text.length != 10) {
+      Info.message('Please enter a valid 10-digit mobile number', context: context);
+      return;
+    }
+
+    if (passwordController.text.trim().isEmpty) {
+      Info.message('Please enter a password', context: context);
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    if (widget.staff != null) {
+      final updatedStaff = User(
+        id: widget.staff?.id,
+        name: nameController.text.trim(),
+        mobile: mobileController.text.trim(),
+        password: passwordController.text.trim(),
+        role: selectedRole,
+      );
+      context.read<UserBloc>().add(UpdateUser(user: updatedStaff));
+    } else {
+      context.read<UserBloc>().add(SaveUser(
+        name: nameController.text.trim(),
+        mobile: mobileController.text.trim(),
+        password: passwordController.text.trim(),
+        role: selectedRole,
+      ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.staff != null;
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          MyText.titleMedium(
-            isEditing ? 'Edit Staff Member' : 'Add Staff Member',
-            fontWeight: 600,
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: nameController,
-            decoration: const InputDecoration(
-              labelText: 'Staff Name',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          MySpacing.height(16),
-          TextField(
-            controller: mobileController,
-            decoration: const InputDecoration(
-              labelText: 'Mobile Number',
-              border: OutlineInputBorder(),
-              helperText: 'Enter 10-digit mobile number',
-            ),
-            keyboardType: TextInputType.phone,
-            maxLength: 10,
-          ),
-          MySpacing.height(16),
-          TextField(
-            controller: passwordController,
-            decoration: InputDecoration(
-              labelText: 'Password',
-              border: const OutlineInputBorder(),
-              helperText: 'Enter password for staff login',
-              suffixIcon: InkWell(
-                onTap: () {
-                  setState(() {
-                    _obscurePassword = !_obscurePassword;
-                  });
-                },
-                child: Icon(
-                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                  color: theme.colorScheme.onSurfaceVariant,
+    return BlocListener<UserBloc, UserState>(
+      listener: (context, state) {
+        if (state is UserUpdated) {
+          Navigator.pop(context);
+          Info.message(isEditing ? 'Staff updated successfully' : 'Staff added successfully', context: context);
+          context.read<UserBloc>().add(LoadUsersByRole(role: 'staff'));
+        } else if (state is UserError) {
+          setState(() => _isSaving = false);
+          Info.error(state.errorMsg, context: context);
+        }
+      },
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 24,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            obscureText: _obscurePassword,
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: MyText.bodyMedium('Cancel'),
-                ),
+            const SizedBox(height: 20),
+            MyText.titleMedium(
+              isEditing ? 'Edit Staff Member' : 'Add Staff Member',
+              fontWeight: 600,
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Staff Name',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (nameController.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          behavior: SnackBarBehavior.floating,
-                          margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-                          content: Text('Please enter staff name'),
-                        ),
-                      );
-                      return;
-                    }
-
-                    if (mobileController.text.trim().isEmpty ||
-                        mobileController.text.length != 10) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          behavior: SnackBarBehavior.floating,
-                          margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-                          content: Text('Please enter a valid 10-digit mobile number'),
-                        ),
-                      );
-                      return;
-                    }
-
-                    if (passwordController.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          behavior: SnackBarBehavior.floating,
-                          margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-                          content: Text('Please enter a password'),
-                        ),
-                      );
-                      return;
-                    }
-
-                    if (isEditing) {
-                      final updatedStaff = User(
-                        id: widget.staff?.id,
-                        name: nameController.text.trim(),
-                        mobile: mobileController.text.trim(),
-                        password: passwordController.text.trim(),
-                        role: selectedRole,
-                      );
-                      context.read<UserBloc>().add(UpdateUser(user: updatedStaff));
-                    } else {
-                      context.read<UserBloc>().add(SaveUser(
-                        name: nameController.text.trim(),
-                        mobile: mobileController.text.trim(),
-                        password: passwordController.text.trim(),
-                        role: selectedRole,
-                      ));
-                    }
-                    Navigator.pop(context);
+            ),
+            MySpacing.height(16),
+            TextField(
+              controller: mobileController,
+              decoration: const InputDecoration(
+                labelText: 'Mobile Number',
+                border: OutlineInputBorder(),
+                helperText: 'Enter 10-digit mobile number',
+              ),
+              keyboardType: TextInputType.phone,
+              maxLength: 10,
+            ),
+            MySpacing.height(16),
+            TextField(
+              controller: passwordController,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                border: const OutlineInputBorder(),
+                helperText: 'Enter password for staff login',
+                suffixIcon: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
                   },
-                  child: MyText.bodyMedium(isEditing ? 'Update' : 'Add'),
+                  child: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
-            ],
-          ),
-        ],
+              obscureText: _obscurePassword,
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _isSaving ? null : () => Navigator.pop(context),
+                    child: MyText.bodyMedium('Cancel'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isSaving ? null : _save,
+                    child: _isSaving
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : MyText.bodyMedium(isEditing ? 'Update' : 'Add'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

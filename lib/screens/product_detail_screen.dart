@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandyapp/helpers/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/helpers/extensions/string.dart';
@@ -116,24 +117,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     _ensureDefaultVariantKey();
 
     if (_variants.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-          content: Text('please_add_at_least_one_variant'.tr()),
-        ),
-      );
+      Info.message('please_add_at_least_one_variant'.tr(), context: context);
       return;
     }
 
     if (_defaultVariantKey == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
-          content: Text('please_select_default_variant'.tr()),
-        ),
-      );
+      Info.message('please_select_default_variant'.tr(), context: context);
       return;
     }
 

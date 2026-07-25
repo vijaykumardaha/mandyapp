@@ -8,6 +8,7 @@ import 'package:mandyapp/dao/user_dao.dart';
 import 'package:mandyapp/dao/vegetable_dao.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/user_model.dart';
+import 'package:mandyapp/services/auth_api.dart';
 import 'package:mandyapp/sync/phoenix_socket_service.dart';
 import 'package:mandyapp/sync/sync_service.dart';
 import 'package:mandyapp/utils/app_helper.dart';
@@ -17,7 +18,8 @@ part 'login_event.dart';
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  final UserDAO userDAO = UserDAO();
+  // final UserDAO userDAO = UserDAO(); // local - commented out
+  final AuthApi _authApi = AuthApi();
 
   LoginBloc() : super(LoginChecking()) {
     // Check if user is already logged in on app start
@@ -40,19 +42,16 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       try {
         emit(LoginLoading());
         
-        // Validate credentials against database
-        User? user = await userDAO.userLogin(event.mobile, event.password);
+        final user = await _authApi.login(
+          mobile: event.mobile,
+          password: event.password,
+        );
 
-        if (user != null) {
-          // Valid credentials - save user and emit success
-          await AppHelper.savePreferences('user', user.toJson());
-          emit(LoginSuccess(user: user));
-        } else {
-          // Invalid credentials - emit failure
-          emit(LoginFailure(error: 'Invalid mobile number or password'));
-        }
-      } catch (error) {
-        emit(LoginFailure(error: 'An error occurred. Please try again.'));
+        await AppHelper.savePreferences('user', user.toJson());
+        emit(LoginSuccess(user: user));
+
+      } catch (e) {
+        emit(LoginFailure(error: e.toString().replaceFirst('Exception: ', '')));
       }
     });
 
@@ -61,27 +60,13 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       try {
         emit(LoginLoading());
         
-        // Check if user already exists by mobile number
-        User? existingUser = await userDAO.getUserByMobile(event.mobile);
-        
-        if (existingUser != null) {
-          emit(const LoginFailure(error: 'Mobile number already registered. Please login.'));
-          return;
-        }
-        
-        // Create new user
-        final newUser = User(
-          id: DBHelper.generateUuidInt(),
-          mandyId: DBHelper.generateUuidInt(),
+        final user = await _authApi.signup(
+          name: event.name,
           mobile: event.mobile,
           password: event.password,
-          name: event.name,
         );
-        
-       await userDAO.registerUser(newUser);
-        await AppHelper.savePreferences('user', newUser.toJson());
 
-        
+        await AppHelper.savePreferences('user', user.toJson());
 
         // Seed customers from phone contacts
         final customerDao = CustomerDAO();
@@ -107,10 +92,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         await VegetableDAO().syncVegetables();
         await ProductDAO().productsSync();
 
-        emit(LoginSuccess(user: newUser));
-      } catch (error) {
-        print(error);
-        emit(const LoginFailure(error: 'Registration failed. Please try again.'));
+        emit(LoginSuccess(user: user));
+      } catch (e) {
+        emit(LoginFailure(error: e.toString().replaceFirst('Exception: ', '')));
       }
     });
 
@@ -118,6 +102,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       try {
         SyncService.instance.stopListening();
         PhoenixSocketService.instance.disconnect();
+        await DBHelper.instance.clearAllTables();
         await AppHelper.removePreferences('user');
         emit(LogoutSuccess());
       } catch (error) {
@@ -126,7 +111,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     });
 
     on<ResetDatabase>((event, emit) async {
-      // Handle database reset if needed
       emit(LoginInitial());
     });
   }

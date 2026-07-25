@@ -120,12 +120,13 @@ class UserDAO {
       for (final user in users) {
         batch.rawInsert('''
           INSERT INTO users (
-            mandy_id, name, mobile, password, role, is_active,
+            id, mandy_id, name, mobile, password, role, is_active,
             updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
-          ON CONFLICT(mandy_id) DO UPDATE SET
+          ON CONFLICT(id) DO UPDATE SET
+            mandy_id = excluded.mandy_id,
             name = excluded.name,
             mobile = excluded.mobile,
             password = excluded.password,
@@ -137,6 +138,7 @@ class UserDAO {
 
           WHERE excluded.updated_at > users.updated_at;
         ''', [
+          user.id,
           user.mandyId,
           user.name,
           user.mobile,

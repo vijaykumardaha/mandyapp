@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:mandyapp/utils/synced_database.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:uuid/uuid.dart';
@@ -9,14 +10,27 @@ class DBHelper {
 
   static final DBHelper instance = DBHelper._();
 
-  static Database? _database;
+  static SyncedDatabase? _syncedDb;
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
+  Future<SyncedDatabase> get database async {
+    if (_syncedDb != null) return _syncedDb!;
 
-    // If the database does not exist, create it
-    _database = await initDB();
-    return _database!;
+    final db = await initDB();
+    _syncedDb = SyncedDatabase(db);
+    return _syncedDb!;
+  }
+
+  Future<void> clearAllTables() async {
+    final db = await database;
+    final tables = [
+      'users', 'products', 'product_variants', 'orders',
+      'order_items', 'order_payments', 'order_charges',
+      'order_expenses', 'charge_types', 'customers',
+      'customer_payments', 'vegetables',
+    ];
+    for (final table in tables) {
+      await db.delete(table);
+    }
   }
 
   static int generateUuidInt() {
@@ -120,7 +134,7 @@ class DBHelper {
           CREATE TABLE charge_types (
             id INTEGER PRIMARY KEY,
             mandy_id INTEGER NOT NULL,
-            charge_name TEXT NOT NULL UNIQUE,
+            charge_name TEXT NOT NULL,
             charge_type TEXT NOT NULL DEFAULT 'fixed', -- fixed, percentage
             charge_amount REAL NOT NULL,
             charge_for TEXT NOT NULL,
@@ -211,36 +225,13 @@ class DBHelper {
             common INTEGER DEFAULT 0,
             updated_at INTEGER NOT NULL,
             is_deleted INTEGER DEFAULT 0,
-            sync_status INTEGER DEFAULT 0,
-            UNIQUE(mandy_id, key)
+            sync_status INTEGER DEFAULT 0
           )
         ''');
 
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          await db.execute('ALTER TABLE order_items ADD COLUMN variant_name TEXT');
-          await db.execute('ALTER TABLE order_items ADD COLUMN image_path TEXT');
-        }
-        if (oldVersion < 3) {
-          await db.execute("ALTER TABLE order_items RENAME COLUMN variant_name TO product_name");
-          await db.execute('ALTER TABLE order_items ADD COLUMN seller_name TEXT');
-          await db.execute('ALTER TABLE order_items ADD COLUMN buyer_name TEXT');
-        }
-        if (oldVersion < 4) {
-          await db.execute('ALTER TABLE vegetables ADD COLUMN price REAL DEFAULT 0.0');
-          await db.execute("ALTER TABLE vegetables ADD COLUMN unit TEXT DEFAULT 'Kilogram'");
-          await db.execute('ALTER TABLE vegetables ADD COLUMN common INTEGER DEFAULT 0');
-        }
-        if (oldVersion < 5) {
-          await db.execute('ALTER TABLE orders DROP COLUMN created_at');
-        }
-        if (oldVersion < 6) {
-          await db.execute('ALTER TABLE orders DROP COLUMN status');
-        }
-        if (oldVersion < 7) {
-          await db.execute('ALTER TABLE users ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1');
-        }
+ 
       },
     );
   }

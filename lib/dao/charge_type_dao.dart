@@ -180,12 +180,13 @@ class ChargeTypeDAO {
       for (final chargeType in chargeTypes) {
         batch.rawInsert('''
           INSERT INTO charge_types (
-            mandy_id, charge_name, charge_type, charge_amount, charge_for,
+            id, mandy_id, charge_name, charge_type, charge_amount, charge_for,
             is_default, is_active, updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
-          ON CONFLICT(mandy_id) DO UPDATE SET
+          ON CONFLICT(id) DO UPDATE SET
+            mandy_id = excluded.mandy_id,
             charge_name = excluded.charge_name,
             charge_type = excluded.charge_type,
             charge_amount = excluded.charge_amount,
@@ -198,6 +199,7 @@ class ChargeTypeDAO {
 
           WHERE excluded.updated_at > charge_types.updated_at;
         ''', [
+          chargeType.id,
           chargeType.mandyId,
           chargeType.chargeName,
           chargeType.chargeType,

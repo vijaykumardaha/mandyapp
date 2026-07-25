@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandyapp/helpers/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandyapp/dao/customer_dao.dart';
@@ -225,22 +226,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            behavior: SnackBarBehavior.floating,
-            content: Text('Order placed successfully'),
-          ),
-        );
+        Info.message('Order placed successfully', context: context);
         Navigator.pop(context, orderId);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            behavior: SnackBarBehavior.floating,
-            content: Text('Failed to place order: $e'),
-          ),
-        );
+        Info.error('Failed to place order: $e', context: context);
         setState(() => _isPlacingOrder = false);
       }
     }
