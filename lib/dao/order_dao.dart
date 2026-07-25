@@ -96,7 +96,7 @@ class OrderDAO {
       'orders',
       where: 'is_deleted = ?',
       whereArgs: [0],
-      orderBy: 'created_at DESC',
+      orderBy: 'updated_at DESC',
     );
 
     return List.generate(maps.length, (i) {
@@ -111,7 +111,7 @@ class OrderDAO {
       'orders',
       where: 'customer_id = ? AND is_deleted = ?',
       whereArgs: [customerId, 0],
-      orderBy: 'created_at DESC',
+      orderBy: 'updated_at DESC',
     );
 
     // Load items for each order
@@ -122,26 +122,6 @@ class OrderDAO {
       orders.add(order.copyWith(id: order.id!, items: items, orderFor: order.orderFor));
     }
     return orders;
-  }
-
-  // Get open order for user
-  Future<Order?> getOpenOrderForCustomer(int customerId) async {
-    final db = await dbHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'orders',
-      where: 'customer_id = ? AND status = ?',
-      whereArgs: [customerId, 'open'],
-      orderBy: 'created_at DESC',
-      limit: 1,
-    );
-
-    if (maps.isNotEmpty) {
-      final order = Order.fromJson(maps.first);
-      // Load items for this order
-      final items = await getOrderItems(order.id!, orderFor: order.orderFor);
-      return order.copyWith(items: items, id: DBHelper.generateUuidInt(), orderFor: order.orderFor);
-    }
-    return null;
   }
 
   // Get order with items
@@ -159,17 +139,6 @@ class OrderDAO {
       return Order.fromJson(orderMaps.first, items: items);
     }
     return null;
-  }
-
-  // Update order status
-  Future<int> updateOrderStatus(int orderId, String status) async {
-    final db = await dbHelper.database;
-    return await db.update(
-      'orders',
-      {'status': status},
-      where: 'id = ?',
-      whereArgs: [orderId],
-    );
   }
 
   // === Order OrderItem Methods ===
@@ -346,15 +315,13 @@ class OrderDAO {
       for (final order in orders) {
         batch.rawInsert('''
           INSERT INTO orders (
-            mandy_id, customer_id, created_at, status, order_for,
+            mandy_id, customer_id, order_for,
             updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(mandy_id) DO UPDATE SET
             customer_id = excluded.customer_id,
-            created_at = excluded.created_at,
-            status = excluded.status,
             order_for = excluded.order_for,
             updated_at = excluded.updated_at,
             is_deleted = excluded.is_deleted,
@@ -364,8 +331,6 @@ class OrderDAO {
         ''', [
           order.mandyId,
           order.customerId,
-          order.createdAt,
-          order.status,
           order.orderFor,
           order.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           order.isDeleted ?? 0,

@@ -310,7 +310,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
 
           final data = snapshot.data!;
           final currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
-          final createdAt = DateTime.tryParse(data.order.createdAt) ?? DateTime.now();
+          final createdAt = DateTime.fromMillisecondsSinceEpoch(data.order.updatedAt ?? DateTime.now().millisecondsSinceEpoch);
 
           return Center(
             child: SingleChildScrollView(

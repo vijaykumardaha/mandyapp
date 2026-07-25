@@ -9,13 +9,12 @@ abstract class BillListEvent extends Equatable {
 
 class LoadBillSummaries extends BillListEvent {
   final bool forceRefresh;
-  final String? statusFilter; // 'open', 'completed', null = all
   final int? customerId;
 
-  const LoadBillSummaries({this.forceRefresh = false, this.statusFilter, this.customerId});
+  const LoadBillSummaries({this.forceRefresh = false, this.customerId});
 
   @override
-  List<Object?> get props => [forceRefresh, statusFilter, customerId];
+  List<Object?> get props => [forceRefresh, customerId];
 }
 
 class DeleteBillRequested extends BillListEvent {

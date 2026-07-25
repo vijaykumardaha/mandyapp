@@ -61,7 +61,7 @@ class OrderPaymentDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'order_payments',
-      orderBy: 'created_at DESC',
+      orderBy: 'updated_at DESC',
     );
 
     return List.generate(maps.length, (i) {
@@ -109,9 +109,9 @@ class OrderPaymentDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'order_payments',
-      where: 'created_at BETWEEN ? AND ?',
+      where: 'updated_at BETWEEN ? AND ?',
       whereArgs: [startDate, endDate],
-      orderBy: 'created_at DESC',
+      orderBy: 'updated_at DESC',
     );
 
     return List.generate(maps.length, (i) {
@@ -124,7 +124,7 @@ class OrderPaymentDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'order_payments',
-      orderBy: 'created_at DESC',
+      orderBy: 'updated_at DESC',
       limit: limit,
     );
 
@@ -139,7 +139,7 @@ class OrderPaymentDAO {
     final List<Map<String, dynamic>> maps = await db.query(
       'order_payments',
       where: 'pending_amount > 0 OR pending_payment > 0',
-      orderBy: 'created_at DESC',
+      orderBy: 'updated_at DESC',
     );
 
     return List.generate(maps.length, (i) {

@@ -159,22 +159,48 @@ class _StaffScreenState extends State<StaffScreen> {
                 final initials = nameParts.length >= 2
                     ? '${nameParts.first[0]}${nameParts.last[0]}'
                     : nameParts.first[0];
+                final isActive = staff.isEnabled;
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                      backgroundColor: isActive
+                          ? theme.colorScheme.primary.withOpacity(0.1)
+                          : theme.colorScheme.onSurfaceVariant.withOpacity(0.1),
                       child: Text(
                         initials.toUpperCase(),
                         style: theme.textTheme.titleSmall?.copyWith(
-                          color: theme.colorScheme.primary,
+                          color: isActive
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.onSurfaceVariant,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    title: MyText.bodyLarge(
-                      staff.name ?? 'Unknown',
-                      fontWeight: 500,
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: MyText.bodyLarge(
+                            staff.name ?? 'Unknown',
+                            fontWeight: 500,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? Colors.green.withOpacity(0.1)
+                                : Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: MyText.bodySmall(
+                            isActive ? 'Active' : 'Disabled',
+                            color: isActive ? Colors.green : Colors.red,
+                            fontWeight: 500,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
                     ),
                     subtitle: MyText.bodyMedium(
                       staff.mobile ?? 'No mobile',
@@ -184,6 +210,14 @@ class _StaffScreenState extends State<StaffScreen> {
                       onSelected: (value) {
                         if (value == 'edit') {
                           _showStaffDialog(staff);
+                        } else if (value == 'toggle') {
+                          context.read<UserBloc>().add(
+                            ToggleUserActive(
+                              userId: staff.id!,
+                              active: !isActive,
+                            ),
+                          );
+                          context.read<UserBloc>().add(LoadUsersByRole(role: 'staff'));
                         }
                       },
                       itemBuilder: (context) => [
@@ -194,6 +228,20 @@ class _StaffScreenState extends State<StaffScreen> {
                               Icon(Icons.edit, size: 16),
                               SizedBox(width: 8),
                               Text('Edit'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'toggle',
+                          child: Row(
+                            children: [
+                              Icon(
+                                isActive ? Icons.block : Icons.check_circle,
+                                size: 16,
+                                color: isActive ? Colors.red : Colors.green,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(isActive ? 'Disable' : 'Enable'),
                             ],
                           ),
                         ),

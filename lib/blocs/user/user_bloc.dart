@@ -170,5 +170,17 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         emit(UserError(errorMsg: 'Failed to load admin user: ${error.toString()}'));
       }
     });
+
+    // Toggle user active status
+    on<ToggleUserActive>((event, emit) async {
+      try {
+        await userDAO.toggleUserActive(event.userId, event.active);
+        emit(UserUpdated(
+          user: User(id: event.userId, isActive: event.active ? 1 : 0),
+        ));
+      } catch (error) {
+        emit(UserError(errorMsg: 'Failed to update status: ${error.toString()}'));
+      }
+    });
   }
 }

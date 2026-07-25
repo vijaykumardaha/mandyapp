@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mandyapp/blocs/reports/reports_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
@@ -307,7 +308,87 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             ),
           ),
           const SizedBox(height: 16),
+
+          // Quick Actions
+          Row(
+            children: [
+              Expanded(
+                child: _QuickActionCard(
+                  icon: Icons.receipt_long_outlined,
+                  label: 'See Bills',
+                  color: Colors.orange,
+                  theme: theme,
+                  onTap: () => context.push('/search-bills'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _QuickActionCard(
+                  icon: Icons.receipt_long,
+                  label: 'See Report',
+                  color: Colors.purple,
+                  theme: theme,
+                  onTap: () => context.push('/bills'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
         ],
+      ),
+    );
+  }
+}
+
+class _QuickActionCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final ThemeData theme;
+  final VoidCallback onTap;
+
+  const _QuickActionCard({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.theme,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: theme.shadowColor.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+          border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 8),
+            MyText.bodyMedium(label, fontWeight: 600),
+          ],
+        ),
       ),
     );
   }

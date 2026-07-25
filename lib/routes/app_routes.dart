@@ -14,6 +14,8 @@ import 'package:mandyapp/screens/printer_settings_screen.dart';
 import 'package:mandyapp/screens/terms_conditions_screen.dart';
 import 'package:mandyapp/screens/customer_management_screen.dart';
 import 'package:mandyapp/screens/reports_screen.dart';
+import 'package:mandyapp/screens/bills_screen.dart';
+import 'package:mandyapp/screens/bill_details_screen.dart';
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
@@ -103,6 +105,19 @@ class AppRoutes {
         path: '/bills',
         builder: (context, state) {
           return const ReportsScreen();
+        },
+      ),
+      GoRoute(
+        path: '/search-bills',
+        builder: (context, state) {
+          return const BillsScreen();
+        },
+      ),
+      GoRoute(
+        path: '/bill-details/:id',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return BillDetailsScreen(orderId: id);
         },
       ),
     ],

@@ -26,8 +26,8 @@ class UserDAO {
   Future<User?> userLogin(String mobile, String password) async {
     final db = await dbHelper.database;
     var result = await db.query("users",
-        where: 'mobile = ? AND password = ? AND is_deleted = ?',
-        whereArgs: [mobile, password, 0]);
+        where: 'mobile = ? AND password = ? AND is_deleted = ? AND is_active = ?',
+        whereArgs: [mobile, password, 0, 1]);
 
     return result.isNotEmpty ? User.fromJson(result.first) : null;
   }
@@ -72,6 +72,19 @@ class UserDAO {
     );
   }
 
+  Future<int> toggleUserActive(int userId, bool active) async {
+    final db = await dbHelper.database;
+    return await db.update(
+      'users',
+      {
+        'is_active': active ? 1 : 0,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+  }
+
   Future<int> restoreUser(int id) async {
     final db = await dbHelper.database;
     return await db.update(
@@ -107,16 +120,17 @@ class UserDAO {
       for (final user in users) {
         batch.rawInsert('''
           INSERT INTO users (
-            mandy_id, name, mobile, password, role,
+            mandy_id, name, mobile, password, role, is_active,
             updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(mandy_id) DO UPDATE SET
             name = excluded.name,
             mobile = excluded.mobile,
             password = excluded.password,
             role = excluded.role,
+            is_active = excluded.is_active,
             updated_at = excluded.updated_at,
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
@@ -128,6 +142,7 @@ class UserDAO {
           user.mobile,
           user.password,
           user.role,
+          user.isActive ?? 1,
           user.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           user.isDeleted ?? 0,
           user.syncStatus ?? 1,

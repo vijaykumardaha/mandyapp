@@ -82,12 +82,6 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
     final orders = List.of(orderState.orders);
     List<Order> filteredOrders = orders;
 
-    if (event.statusFilter != null && event.statusFilter!.isNotEmpty) {
-      filteredOrders = filteredOrders
-          .where((order) => order.status.toLowerCase() == event.statusFilter!.toLowerCase())
-          .toList();
-    }
-
     if (event.customerId != null) {
       filteredOrders = filteredOrders.where((order) => order.customerId == event.customerId).toList();
     }
@@ -140,7 +134,7 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
         BillSummary(
           cartId: order.id!,
           customerId: order.customerId,
-          createdAt: DateTime.tryParse(order.createdAt) ?? DateTime.now(),
+          createdAt: DateTime.fromMillisecondsSinceEpoch(order.updatedAt ?? DateTime.now().millisecondsSinceEpoch),
           itemTotal: itemTotal,
           chargesTotal: chargeTotal,
           expensesTotal: expenseTotal,
@@ -149,7 +143,6 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
           pendingPayment: pendingPayment,
           totalAmount: totalAmount,
           billNumber: order.id,
-          status: order.status,
           billType: order.orderFor,
         ),
       );

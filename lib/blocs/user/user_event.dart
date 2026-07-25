@@ -70,4 +70,14 @@ class LoadUsersByRole extends UserEvent {
   List<Object> get props => [role];
 }
 
+class ToggleUserActive extends UserEvent {
+  final int userId;
+  final bool active;
+
+  const ToggleUserActive({required this.userId, required this.active});
+
+  @override
+  List<Object> get props => [userId, active];
+}
+
 class LoadAdminUser extends UserEvent {}

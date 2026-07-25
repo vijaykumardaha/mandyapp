@@ -167,21 +167,6 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
       }
     });
 
-    // Update order status
-    on<UpdateOrderStatus>((event, emit) async {
-      try {
-        emit(OrderLoading());
-        await orderDAO.updateOrderStatus(event.orderId, event.status);
-        final order = await orderDAO.getOrderWithItems(event.orderId);
-        if (order != null) {
-          emit(OrderWithItemsLoaded(order));
-          emit(const OrderOperationSuccess('Order status updated'));
-        }
-      } catch (error) {
-        emit(OrderError('Failed to update status: ${error.toString()}'));
-      }
-    });
-
     // Clear order
     on<ClearOrder>((event, emit) async {
       try {

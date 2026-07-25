@@ -8,7 +8,7 @@ import 'package:mandyapp/screens/billing_screen.dart';
 import 'package:mandyapp/screens/home_tab_screen.dart';
 import 'package:mandyapp/screens/selling_screen.dart';
 import 'package:mandyapp/screens/settings_screen.dart';
-import 'package:mandyapp/screens/reports_screen.dart';
+import 'package:mandyapp/screens/customer_management_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final int activeTab;
@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const HomeTabScreen(),
         const BillingScreen(),
         const SellingScreen(),
-        const ReportsScreen(),
+        const CustomerManagementScreen(),
         const SettingsScreen(),
       ];
 
@@ -58,9 +58,9 @@ class _HomeScreenState extends State<HomeScreen> {
         activeIcon: Icons.point_of_sale_outlined,
         title: "Selling"),
     const TabItem(
-        icon: Icons.receipt_long,
-        activeIcon: Icons.receipt_outlined,
-        title: "Reports"),
+        icon: Icons.people_outline,
+        activeIcon: Icons.people,
+        title: "Customers"),
     const TabItem(
         icon: Icons.settings,
         activeIcon: Icons.settings_outlined,

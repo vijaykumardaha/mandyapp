@@ -13,12 +13,7 @@ class BillCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
-    DateTime? createdAt;
-    try {
-      createdAt = DateTime.parse(order.createdAt);
-    } catch (_) {
-      createdAt = DateTime.fromMillisecondsSinceEpoch(order.updatedAt ?? 0);
-    }
+    final orderDate = DateTime.fromMillisecondsSinceEpoch(order.updatedAt ?? 0);
 
     final orderForLabel = order.orderFor == 'seller' ? 'Seller' : 'Buyer';
 
@@ -51,7 +46,7 @@ class BillCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    dateFormat.format(createdAt),
+                    dateFormat.format(orderDate),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),

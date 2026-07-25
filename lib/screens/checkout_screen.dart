@@ -15,6 +15,8 @@ import 'package:mandyapp/models/order_model.dart';
 import 'package:mandyapp/models/order_payment_model.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 import 'package:mandyapp/utils/printer/printer_service.dart';
+import 'package:mandyapp/dao/customer_payment_dao.dart';
+import 'package:mandyapp/models/customer_payment_model.dart';
 import 'package:mandyapp/widgets/checkout/checkout_content.dart';
 import 'package:mandyapp/widgets/checkout/payment_method_selector.dart';
 
@@ -130,9 +132,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       } else {
         final order = Order(
           customerId: widget.customerId ?? 0,
-          createdAt: now,
           orderFor: widget.orderFor,
-          status: 'completed',
         );
         orderId = await OrderDAO().insertOrder(order);
 
@@ -203,8 +203,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         }
       }
 
-      if (widget.orderId != null) {
-        await OrderDAO().updateOrderStatus(orderId, 'completed');
+      final transactionType = widget.orderFor == 'buyer' ? 'received' : 'paid';
+      final totalReceived = paymentAmountsToSave.entries.fold<double>(0.0, (sum, e) => sum + e.value);
+      if (widget.customerId != null && totalReceived > 0) {
+        final source = paymentAmountsToSave.entries
+            .where((e) => e.value > 0)
+            .map((e) => _paymentMethodToSource(e.key))
+            .first;
+        await CustomerPaymentDAO().insertPayment(CustomerPayment(
+          customerId: widget.customerId!,
+          amount: totalReceived,
+          type: transactionType,
+          source: source,
+          note: 'Bill #$orderId',
+          paymentDate: DateTime.now().millisecondsSinceEpoch,
+        ));
       }
 
       if (_autoPrint) {

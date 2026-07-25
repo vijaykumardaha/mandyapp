@@ -101,17 +101,6 @@ class RemoveItemFromOrder extends OrderEvent {
   List<Object?> get props => [item];
 }
 
-// Update order status
-class UpdateOrderStatus extends OrderEvent {
-  final int orderId;
-  final String status;
-
-  const UpdateOrderStatus(this.orderId, this.status);
-
-  @override
-  List<Object?> get props => [orderId, status];
-}
-
 // Clear order (remove all items)
 class ClearOrder extends OrderEvent {
   final int orderId;

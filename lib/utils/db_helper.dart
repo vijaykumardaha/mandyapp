@@ -34,7 +34,7 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 7,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS users (
@@ -44,6 +44,7 @@ class DBHelper {
               mobile TEXT NOT NULL,
               password TEXT NOT NULL,
               role TEXT NOT NULL DEFAULT 'admin' CHECK(role IN ('admin', 'staff')),
+              is_active INTEGER NOT NULL DEFAULT 1,
               updated_at INTEGER NOT NULL,
               is_deleted INTEGER DEFAULT 0,
               sync_status INTEGER DEFAULT 0
@@ -82,9 +83,7 @@ class DBHelper {
             id INTEGER PRIMARY KEY,
             mandy_id INTEGER NOT NULL,
             customer_id INTEGER NOT NULL,
-            created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
             order_for TEXT NOT NULL DEFAULT 'buyer' CHECK (order_for IN ('seller','buyer')),
-            status TEXT DEFAULT 'open', -- open, completed
             updated_at INTEGER NOT NULL,
             is_deleted INTEGER DEFAULT 0,
             sync_status INTEGER DEFAULT 0
@@ -232,6 +231,15 @@ class DBHelper {
           await db.execute('ALTER TABLE vegetables ADD COLUMN price REAL DEFAULT 0.0');
           await db.execute("ALTER TABLE vegetables ADD COLUMN unit TEXT DEFAULT 'Kilogram'");
           await db.execute('ALTER TABLE vegetables ADD COLUMN common INTEGER DEFAULT 0');
+        }
+        if (oldVersion < 5) {
+          await db.execute('ALTER TABLE orders DROP COLUMN created_at');
+        }
+        if (oldVersion < 6) {
+          await db.execute('ALTER TABLE orders DROP COLUMN status');
+        }
+        if (oldVersion < 7) {
+          await db.execute('ALTER TABLE users ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1');
         }
       },
     );
