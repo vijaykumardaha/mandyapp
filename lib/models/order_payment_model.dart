@@ -3,7 +3,7 @@ class OrderPayment {
   int orderId;
   String source; // 'cash', 'upi', 'card', 'credit'
   double amount;
-  String updatedAt;
+  int updatedAt;
 
   OrderPayment({
     required this.id,
@@ -29,7 +29,7 @@ class OrderPayment {
       orderId: json['order_id'] as int,
       source: json['source'] as String,
       amount: (json['amount'] as num).toDouble(),
-      updatedAt: json['updated_at'] as String,
+      updatedAt: json['updated_at'] as int,
     );
   }
 
@@ -38,7 +38,7 @@ class OrderPayment {
     int? orderId,
     String? source,
     double? amount,
-    String? updatedAt,
+    int? updatedAt,
   }) {
     return OrderPayment(
       id: id ?? this.id,

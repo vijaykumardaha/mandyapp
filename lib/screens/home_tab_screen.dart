@@ -176,16 +176,6 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                 children: [
                   Expanded(
                     child: FinancialMetric(
-                      title: "Net Balance",
-                      value: _currencyFormat.format(data.netBalance),
-                      icon: Icons.account_balance,
-                      color: data.netBalance >= 0 ? Colors.green : Colors.red,
-                      theme: theme,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: FinancialMetric(
                       title: "Profit Today",
                       value: _currencyFormat.format(data.grossProfit),
                       icon: Icons.trending_up,
@@ -319,6 +309,16 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                   color: Colors.orange,
                   theme: theme,
                   onTap: () => context.push('/search-bills'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _QuickActionCard(
+                  icon: Icons.refresh_rounded,
+                  label: 'Update Price',
+                  color: Colors.teal,
+                  theme: theme,
+                  onTap: () => context.push('/price-update'),
                 ),
               ),
               const SizedBox(width: 12),

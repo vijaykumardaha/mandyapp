@@ -41,6 +41,34 @@ class ProductVariant {
     };
   }
 
+  ProductVariant copyWith({
+    int? id,
+    int? mandyId,
+    int? productId,
+    String? variantName,
+    double? sellingPrice,
+    double? quantity,
+    String? unit,
+    String? imagePath,
+    int? updatedAt,
+    int? isDeleted,
+    int? syncStatus,
+  }) {
+    return ProductVariant(
+      id: id ?? this.id,
+      mandyId: mandyId ?? this.mandyId,
+      productId: productId ?? this.productId,
+      variantName: variantName ?? this.variantName,
+      sellingPrice: sellingPrice ?? this.sellingPrice,
+      quantity: quantity ?? this.quantity,
+      unit: unit ?? this.unit,
+      imagePath: imagePath ?? this.imagePath,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isDeleted: isDeleted ?? this.isDeleted,
+      syncStatus: syncStatus ?? this.syncStatus,
+    );
+  }
+
   factory ProductVariant.fromJson(Map<String, dynamic> json) {
     return ProductVariant(
       id: json['id'] as int?,

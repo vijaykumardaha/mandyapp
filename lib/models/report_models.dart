@@ -56,7 +56,6 @@ class SellerPurchaseData {
   final int totalPurchases;
   final double totalCost;
   final double totalQuantity;
-  final double avgBuyingPrice;
 
   const SellerPurchaseData({
     required this.sellerName,
@@ -64,7 +63,6 @@ class SellerPurchaseData {
     required this.totalPurchases,
     required this.totalCost,
     required this.totalQuantity,
-    required this.avgBuyingPrice,
   });
 
   factory SellerPurchaseData.fromJson(Map<String, dynamic> json) {
@@ -74,7 +72,6 @@ class SellerPurchaseData {
       totalPurchases: json['total_purchases'] as int? ?? 0,
       totalCost: (json['total_cost'] as num?)?.toDouble() ?? 0.0,
       totalQuantity: (json['total_quantity'] as num?)?.toDouble() ?? 0.0,
-      avgBuyingPrice: (json['avg_buying_price'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }

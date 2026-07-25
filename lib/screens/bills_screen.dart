@@ -357,21 +357,38 @@ class _BillsScreenState extends State<BillsScreen> {
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                MyText.bodyMedium(
-                  _currencyFormat.format(result.totalAmount),
-                  fontWeight: 600,
-                ),
-                const SizedBox(height: 2),
-                MyText.bodySmall(
-                  order.orderFor.toUpperCase(),
-                  color: order.orderFor == 'buyer' ? Colors.blue : Colors.teal,
-                  fontWeight: 500,
-                ),
-              ],
-            ),
+             Column(
+               crossAxisAlignment: CrossAxisAlignment.end,
+               children: [
+                 Row(
+                   mainAxisSize: MainAxisSize.min,
+                   children: [
+                     if (result.pendingAmount.abs() > 0.01) ...[
+                       MyText.bodySmall(
+                         '(${_currencyFormat.format(result.pendingAmount)} ${result.pendingAmount > 0 ? "Dues" : "Refund"})',
+                         color: result.pendingAmount > 0
+                             ? Colors.red
+                             : Colors.green,
+                         fontWeight: 500,
+                       ),
+                       const SizedBox(width: 8),
+                     ],
+                     MyText.bodyMedium(
+                       _currencyFormat.format(result.totalAmount),
+                       fontWeight: 600,
+                     ),
+                   ],
+                 ),
+                 const SizedBox(height: 2),
+                 MyText.bodySmall(
+                   order.orderFor.toUpperCase(),
+                   color: order.orderFor == 'buyer'
+                       ? Colors.blue
+                       : Colors.teal,
+                   fontWeight: 500,
+                 ),
+               ],
+             ),
           ],
         ),
       ),

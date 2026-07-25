@@ -48,7 +48,7 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 7,
+      version: 8,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS users (
@@ -184,7 +184,6 @@ class DBHelper {
             buyer_id INTEGER,
             product_id INTEGER NOT NULL,
             variant_id INTEGER NOT NULL,
-            buying_price REAL DEFAULT 0.0,
             selling_price REAL NOT NULL,
             quantity REAL NOT NULL,
             unit TEXT DEFAULT 'Kilogram',
@@ -231,7 +230,31 @@ class DBHelper {
 
       },
       onUpgrade: (db, oldVersion, newVersion) async {
- 
+        if (oldVersion < 8) {
+          await db.execute('DROP TABLE IF EXISTS order_items');
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS order_items (
+              id INTEGER PRIMARY KEY,
+              mandy_id INTEGER NOT NULL UNIQUE,
+              seller_id INTEGER NOT NULL,
+              buyer_order_id INTEGER,
+              seller_order_id INTEGER,
+              buyer_id INTEGER,
+              product_id INTEGER NOT NULL,
+              variant_id INTEGER NOT NULL,
+              selling_price REAL NOT NULL,
+              quantity REAL NOT NULL,
+              unit TEXT DEFAULT 'Kilogram',
+              product_name TEXT,
+              image_path TEXT,
+              seller_name TEXT,
+              buyer_name TEXT,
+              updated_at INTEGER NOT NULL,
+              is_deleted INTEGER DEFAULT 0,
+              sync_status INTEGER DEFAULT 0
+            )
+          ''');
+        }
       },
     );
   }

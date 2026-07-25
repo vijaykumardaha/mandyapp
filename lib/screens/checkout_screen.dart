@@ -125,7 +125,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     setState(() => _isPlacingOrder = true);
 
     try {
-      final now = DateTime.now().toIso8601String();
+      final now = DateTime.now().millisecondsSinceEpoch;
       int orderId;
 
       if (widget.orderId != null) {

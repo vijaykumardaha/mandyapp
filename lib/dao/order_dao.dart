@@ -230,7 +230,6 @@ class OrderDAO {
         oi.buyer_id,
         oi.product_id,
         oi.variant_id,
-        oi.buying_price,
         oi.selling_price,
         oi.quantity,
         oi.unit,

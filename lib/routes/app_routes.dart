@@ -16,6 +16,7 @@ import 'package:mandyapp/screens/customer_management_screen.dart';
 import 'package:mandyapp/screens/reports_screen.dart';
 import 'package:mandyapp/screens/bills_screen.dart';
 import 'package:mandyapp/screens/bill_details_screen.dart';
+import 'package:mandyapp/screens/price_update_screen.dart';
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
@@ -118,6 +119,12 @@ class AppRoutes {
         builder: (context, state) {
           final id = int.parse(state.pathParameters['id']!);
           return BillDetailsScreen(orderId: id);
+        },
+      ),
+      GoRoute(
+        path: '/price-update',
+        builder: (context, state) {
+          return const PriceUpdateScreen();
         },
       ),
     ],

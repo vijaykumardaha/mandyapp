@@ -7,7 +7,6 @@ class OrderItem {
   int? buyerId;
   int productId;
   int variantId;
-  double buyingPrice;
   double sellingPrice;
   double quantity;
   String unit;
@@ -28,7 +27,6 @@ class OrderItem {
     this.buyerId,
     required this.productId,
     required this.variantId,
-    this.buyingPrice = 0.0,
     required this.sellingPrice,
     required this.quantity,
     this.unit = 'Kilogram',
@@ -51,7 +49,6 @@ class OrderItem {
       buyerId: json['buyer_id'] as int?,
       productId: json['product_id'] as int,
       variantId: json['variant_id'] as int,
-      buyingPrice: (json['buying_price'] as num?)?.toDouble() ?? 0.0,
       sellingPrice: (json['selling_price'] as num).toDouble(),
       quantity: (json['quantity'] as num).toDouble(),
       unit: json['unit'] as String? ?? 'Kilogram',
@@ -75,7 +72,6 @@ class OrderItem {
       'buyer_id': buyerId,
       'product_id': productId,
       'variant_id': variantId,
-      'buying_price': buyingPrice,
       'selling_price': sellingPrice,
       'quantity': quantity,
       'unit': unit,
@@ -98,7 +94,6 @@ class OrderItem {
     int? buyerId,
     int? productId,
     int? variantId,
-    double? buyingPrice,
     double? sellingPrice,
     double? quantity,
     String? unit,
@@ -119,7 +114,6 @@ class OrderItem {
       buyerId: buyerId ?? this.buyerId,
       productId: productId ?? this.productId,
       variantId: variantId ?? this.variantId,
-      buyingPrice: buyingPrice ?? this.buyingPrice,
       sellingPrice: sellingPrice ?? this.sellingPrice,
       quantity: quantity ?? this.quantity,
       unit: unit ?? this.unit,
@@ -135,7 +129,7 @@ class OrderItem {
 
   @override
   String toString() {
-    return 'OrderItem(id: $id, mandyId: $mandyId, sellerId: $sellerId, buyerOrderId: $buyerOrderId, sellerOrderId: $sellerOrderId, buyerId: $buyerId, productId: $productId, variantId: $variantId, buyingPrice: $buyingPrice, sellingPrice: $sellingPrice, quantity: $quantity, unit: $unit, updatedAt: $updatedAt, isDeleted: $isDeleted, syncStatus: $syncStatus, productName: $productName, imagePath: $imagePath, sellerName: $sellerName, buyerName: $buyerName)';
+    return 'OrderItem(id: $id, mandyId: $mandyId, sellerId: $sellerId, buyerOrderId: $buyerOrderId, sellerOrderId: $sellerOrderId, buyerId: $buyerId, productId: $productId, variantId: $variantId, sellingPrice: $sellingPrice, quantity: $quantity, unit: $unit, updatedAt: $updatedAt, isDeleted: $isDeleted, syncStatus: $syncStatus, productName: $productName, imagePath: $imagePath, sellerName: $sellerName, buyerName: $buyerName)';
   }
 
   @override
@@ -151,7 +145,6 @@ class OrderItem {
       other.buyerId == buyerId &&
       other.productId == productId &&
       other.variantId == variantId &&
-      other.buyingPrice == buyingPrice &&
       other.sellingPrice == sellingPrice &&
       other.quantity == quantity &&
       other.unit == unit &&
@@ -175,7 +168,6 @@ class OrderItem {
       buyerId,
       productId,
       variantId,
-      buyingPrice,
       sellingPrice,
       quantity,
       unit,

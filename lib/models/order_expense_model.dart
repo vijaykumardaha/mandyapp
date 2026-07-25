@@ -4,7 +4,7 @@ class OrderExpense {
   double expenseAmount;
   String? expenseNote;
   int? orderId;
-  String updatedAt;
+  int updatedAt;
 
   OrderExpense({
     this.id,
@@ -43,7 +43,7 @@ class OrderExpense {
     double? expenseAmount,
     String? expenseNote,
     int? orderId,
-    String? updatedAt,
+    int? updatedAt,
   }) {
     return OrderExpense(
       id: id ?? this.id,

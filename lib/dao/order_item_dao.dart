@@ -189,10 +189,10 @@ class OrderItemDAO {
         batch.rawInsert('''
           INSERT INTO order_items (
             id, mandy_id, seller_id, buyer_order_id, seller_order_id, buyer_id,
-            product_id, variant_id, buying_price, selling_price, quantity,
+            product_id, variant_id, selling_price, quantity,
             unit, product_name, image_path, seller_name, buyer_name, updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(id) DO UPDATE SET
             mandy_id = excluded.mandy_id,
@@ -202,7 +202,6 @@ class OrderItemDAO {
             buyer_id = excluded.buyer_id,
             product_id = excluded.product_id,
             variant_id = excluded.variant_id,
-            buying_price = excluded.buying_price,
             selling_price = excluded.selling_price,
             quantity = excluded.quantity,
             unit = excluded.unit,
@@ -224,7 +223,6 @@ class OrderItemDAO {
           orderItem.buyerId,
           orderItem.productId,
           orderItem.variantId,
-          orderItem.buyingPrice,
           orderItem.sellingPrice,
           orderItem.quantity,
           orderItem.unit,
