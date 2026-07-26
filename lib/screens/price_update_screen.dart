@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mandyapp/dao/product_variant_dao.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
-import 'package:mandyapp/helpers/utils/info_controller.dart';
+import 'package:mandyapp/widgets/common/my_text.dart';
+import 'package:mandyapp/utils/info_controller.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/widgets/common/vertical_stepper.dart';
 

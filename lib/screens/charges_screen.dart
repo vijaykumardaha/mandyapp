@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/helpers/utils/info_controller.dart';
+import 'package:mandyapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/helpers/widgets/my_spacing.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/widgets/common/my_spacing.dart';
+import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/models/charge_type_model.dart';
 import 'package:mandyapp/widgets/charges/charge_list_item.dart';
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/helpers/widgets/my_spacing.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/widgets/common/my_spacing.dart';
+import 'package:mandyapp/widgets/common/my_text.dart';
 
 class PrivacyPolicyScreen extends StatefulWidget {
   const PrivacyPolicyScreen({super.key});

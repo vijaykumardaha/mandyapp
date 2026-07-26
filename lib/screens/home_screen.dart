@@ -13,8 +13,8 @@ import 'package:mandyapp/screens/home_tab_screen.dart';
 import 'package:mandyapp/screens/selling_screen.dart';
 import 'package:mandyapp/screens/settings_screen.dart';
 import 'package:mandyapp/screens/customer_management_screen.dart';
-import 'package:mandyapp/sync/socket_service.dart';
-import 'package:mandyapp/sync/sync_service.dart';
+import 'package:mandyapp/services/socket_service.dart';
+import 'package:mandyapp/services/sync_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final int activeTab;

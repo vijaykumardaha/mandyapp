@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:mandyapp/models/user_model.dart';
-import 'package:mandyapp/sync/socket_config.dart';
+import 'package:mandyapp/services/socket_config.dart';
 import 'package:mandyapp/utils/app_helper.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 

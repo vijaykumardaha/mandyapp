@@ -5,7 +5,7 @@
 
 import 'package:mandyapp/helpers/theme/custom_theme.dart';
 import 'package:mandyapp/helpers/theme/theme_type.dart';
-import 'package:mandyapp/helpers/widgets/my_text_style.dart';
+import 'package:mandyapp/widgets/common/my_text_style.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 

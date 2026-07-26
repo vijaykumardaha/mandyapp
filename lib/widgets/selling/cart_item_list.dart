@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/customer/customer_bloc.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/order_item_model.dart';
 

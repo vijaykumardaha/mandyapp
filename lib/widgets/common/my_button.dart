@@ -1,6 +1,6 @@
 // ignore_for_file: curly_braces_in_flow_control_structures
 
-import 'package:mandyapp/helpers/utils/constant_data.dart';
+import 'package:mandyapp/utils/constant_data.dart';
 import 'package:flutter/material.dart';
 
 enum MyButtonType { elevated, outlined, text }

@@ -187,7 +187,7 @@ class OrderPaymentDAO {
           WHERE excluded.updated_at > order_payments.updated_at;
         ''', [
           orderPayment.id,
-          null,
+          orderPayment.mandyId ?? 0,
           orderPayment.orderId,
           orderPayment.source,
           orderPayment.amount,

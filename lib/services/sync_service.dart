@@ -25,7 +25,7 @@ import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/models/user_model.dart';
 import 'package:mandyapp/models/vegetable_model.dart';
-import 'package:mandyapp/sync/socket_service.dart';
+import 'package:mandyapp/services/socket_service.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 
 class SyncService {

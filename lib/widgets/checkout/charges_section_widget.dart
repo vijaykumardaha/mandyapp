@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
-import 'package:mandyapp/helpers/widgets/my_spacing.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/widgets/common/my_spacing.dart';
+import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/models/charge_type_model.dart';
 
 class ChargesSectionWidget extends StatelessWidget {

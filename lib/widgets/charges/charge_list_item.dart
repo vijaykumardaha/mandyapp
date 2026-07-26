@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/helpers/widgets/my_spacing.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/widgets/common/my_spacing.dart';
+import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/models/charge_type_model.dart';
 
 class ChargeListItem extends StatelessWidget {

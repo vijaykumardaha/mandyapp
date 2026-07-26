@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/helpers/widgets/my_spacing.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/widgets/common/my_spacing.dart';
+import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/widgets/settings/settings_tile.dart';
 
 class SettingsScreen extends StatefulWidget {

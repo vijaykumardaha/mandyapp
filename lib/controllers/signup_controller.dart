@@ -1,4 +1,4 @@
-import 'package:mandyapp/helpers/utils/my_string_utils.dart';
+import 'package:mandyapp/utils/my_string_utils.dart';
 import 'package:flutter/material.dart';
 
 class SignupController {

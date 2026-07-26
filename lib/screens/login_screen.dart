@@ -2,14 +2,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/controllers/login_controller.dart';
-import 'package:mandyapp/sync/sync_service.dart';
+import 'package:mandyapp/services/sync_service.dart';
 
 import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/helpers/widgets/my_button.dart';
-import 'package:mandyapp/helpers/widgets/my_spacing.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/widgets/common/my_button.dart';
+import 'package:mandyapp/widgets/common/my_spacing.dart';
+import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:flutter/material.dart';
-import 'package:mandyapp/helpers/utils/info_controller.dart';
+import 'package:mandyapp/utils/info_controller.dart';
 import 'package:mandyapp/widgets/auth/mobile_field.dart';
 import 'package:mandyapp/widgets/auth/password_field.dart';
 

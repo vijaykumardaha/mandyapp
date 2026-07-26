@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mandyapp/services/printer_service.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
-import 'package:mandyapp/helpers/widgets/my_spacing.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/widgets/common/my_spacing.dart';
+import 'package:mandyapp/widgets/common/my_text.dart';
 
 class ConnectedPrinterCard extends StatelessWidget {
   final bool bluetoothEnabled;

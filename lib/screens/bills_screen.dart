@@ -7,8 +7,8 @@ import 'package:mandyapp/dao/order_charge_dao.dart';
 import 'package:mandyapp/dao/order_expense_dao.dart';
 import 'package:mandyapp/dao/order_payment_dao.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/helpers/widgets/my_spacing.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/widgets/common/my_spacing.dart';
+import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/models/order_model.dart';
 
 class _BillSearchResult {

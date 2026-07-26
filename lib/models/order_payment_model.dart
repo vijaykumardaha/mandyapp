@@ -15,8 +15,8 @@ class OrderPayment {
     required this.source,
     required this.amount,
     required this.updatedAt,
-    this.isDeleted,
-    this.syncStatus,
+    this.isDeleted = 0,
+    this.syncStatus = 0,
   });
 
   Map<String, dynamic> toJson() {

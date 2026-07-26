@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mandyapp/helpers/extensions/string.dart';
-import 'package:mandyapp/helpers/widgets/my_spacing.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/widgets/common/my_spacing.dart';
+import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/widgets/product_list/variant_image.dart';
 

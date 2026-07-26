@@ -9,8 +9,8 @@ import 'package:mandyapp/dao/vegetable_dao.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/user_model.dart';
 import 'package:mandyapp/services/auth_api.dart';
-import 'package:mandyapp/sync/socket_service.dart';
-import 'package:mandyapp/sync/sync_service.dart';
+import 'package:mandyapp/services/socket_service.dart';
+import 'package:mandyapp/services/sync_service.dart';
 import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 

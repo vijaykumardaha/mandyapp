@@ -4,7 +4,6 @@
  * Version : 13
  * */
 
-import 'package:another_telephony/telephony.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:mandyapp/blocs/bill_list/bill_list_bloc.dart';
@@ -49,10 +48,6 @@ Future<void> main() async {
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await FlutterContacts.requestPermission(readonly: true);
   await requestBluetoothPermissions();
-
-  // asking sms permission for sending entry sms
-  final Telephony telephony = Telephony.instance;
-  await telephony.requestPhoneAndSmsPermissions;
 
   runApp(ChangeNotifierProvider<AppNotifier>(
     create: (context) => AppNotifier(),

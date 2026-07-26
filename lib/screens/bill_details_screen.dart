@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/helpers/utils/info_controller.dart';
+import 'package:mandyapp/utils/info_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:mandyapp/dao/order_charge_dao.dart';
 import 'package:mandyapp/dao/order_dao.dart';

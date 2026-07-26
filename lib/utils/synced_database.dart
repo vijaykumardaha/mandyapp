@@ -1,4 +1,4 @@
-import 'package:mandyapp/sync/sync_service.dart';
+import 'package:mandyapp/services/sync_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 const _syncedTables = {

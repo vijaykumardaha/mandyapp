@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/helpers/utils/info_controller.dart';
+import 'package:mandyapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandyapp/dao/customer_dao.dart';
@@ -7,7 +7,7 @@ import 'package:mandyapp/dao/order_charge_dao.dart';
 import 'package:mandyapp/dao/order_dao.dart';
 import 'package:mandyapp/dao/order_expense_dao.dart';
 import 'package:mandyapp/dao/order_payment_dao.dart';
-import 'package:mandyapp/helpers/widgets/my_text.dart';
+import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/models/charge_type_model.dart';
 import 'package:mandyapp/models/order_charge_model.dart';
 import 'package:mandyapp/models/order_expense_model.dart';
@@ -75,6 +75,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   void _initDefaultCharges(List<ChargeType> charges) {
     if (_defaultChargesInitialized) return;
+    if (charges.isEmpty) return;
     _defaultChargesInitialized = true;
     for (final charge in charges) {
       if (charge.isDefault == 1 &&
