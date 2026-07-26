@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mandyapp/blocs/user/user_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/widgets/common/my_button.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/common/my_spacing.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/widgets/common/my_text_style.dart';
@@ -43,13 +44,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        title: MyText.titleMedium('Profile', fontWeight: 600),
+      appBar: CommonAppBar(
+        titleWidget: MyText.titleMedium('Profile', fontWeight: 600),
       ),
       body: BlocConsumer<UserBloc, UserState>(
         listener: (context, state) {

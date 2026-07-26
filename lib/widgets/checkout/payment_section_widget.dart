@@ -28,7 +28,7 @@ class _PaymentSectionWidgetState extends State<PaymentSectionWidget> {
   @override
   Widget build(BuildContext context) {
     final grandTotal = widget.orderFor == 'seller'
-        ? widget.subtotal + widget.chargesTotal - widget.expensesTotal
+        ? widget.subtotal - widget.chargesTotal - widget.expensesTotal
         : widget.subtotal + widget.chargesTotal + widget.expensesTotal;
 
     return PaymentMethodSelector(

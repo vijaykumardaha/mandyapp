@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/order/order_bloc.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/order_model.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/customer_bills/bill_card.dart';
 
 class CustomerBillsScreen extends StatefulWidget {
@@ -28,8 +29,8 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
+      appBar: CommonAppBar(
+        titleWidget: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(

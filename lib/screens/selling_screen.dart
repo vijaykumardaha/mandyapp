@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/order_item/order_item_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/order_item_model.dart';
@@ -37,8 +38,8 @@ class SellingScreenState extends State<SellingScreen> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text(sellerCustomer != null ? 'Selling to ${sellerCustomer!.name}' : 'Select Seller'),
+    return CommonAppBar(
+      title: sellerCustomer != null ? 'Selling to ${sellerCustomer!.name}' : 'Select Seller',
       actions: [
         if (sellerCustomer != null)
           Padding(

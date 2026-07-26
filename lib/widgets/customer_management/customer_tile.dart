@@ -107,37 +107,38 @@ class _CustomerTileState extends State<CustomerTile> {
                   ),
                   if (displayPhone != null) ...[
                     const SizedBox(height: 2),
-                    MyText.bodySmall(
-                      displayPhone,
-                      color: theme.colorScheme.onSurface.withOpacity(0.5),
-                    ),
-                  ],
-                  if (_loaded && _billCount > 0) ...[
-                    const SizedBox(height: 6),
                     Row(
                       children: [
-                        _StatChip(
-                          label: 'Bills',
-                          value: '$_billCount',
-                          color: theme.colorScheme.primary,
-                          theme: theme,
+                        MyText.bodySmall(
+                          displayPhone,
+                          color: theme.colorScheme.onSurface.withOpacity(0.5),
                         ),
-                        const SizedBox(width: 8),
-                        if (_totalReceived > 0)
-                          _StatChip(
-                            label: 'Received',
-                            value: '₹${_totalReceived.toStringAsFixed(0)}',
-                            color: Colors.green,
-                            theme: theme,
-                          ),
-                        if (_totalPaid > 0) ...[
+                        if (_loaded && _billCount > 0) ...[
                           const SizedBox(width: 8),
                           _StatChip(
-                            label: 'Paid',
-                            value: '₹${_totalPaid.toStringAsFixed(0)}',
-                            color: Colors.orange,
+                            label: 'Bills',
+                            value: '$_billCount',
+                            color: theme.colorScheme.primary,
                             theme: theme,
                           ),
+                          if (_totalReceived > 0) ...[
+                            const SizedBox(width: 4),
+                            _StatChip(
+                              label: 'Received',
+                              value: '₹${_totalReceived.toStringAsFixed(0)}',
+                              color: Colors.green,
+                              theme: theme,
+                            ),
+                          ],
+                          if (_totalPaid > 0) ...[
+                            const SizedBox(width: 4),
+                            _StatChip(
+                              label: 'Paid',
+                              value: '₹${_totalPaid.toStringAsFixed(0)}',
+                              color: Colors.orange,
+                              theme: theme,
+                            ),
+                          ],
                         ],
                       ],
                     ),

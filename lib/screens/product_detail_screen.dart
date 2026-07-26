@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/helpers/extensions/string.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/common/my_spacing.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/models/product_model.dart';
@@ -180,8 +181,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: MyText.titleMedium(
+        appBar: CommonAppBar(
+          titleWidget: MyText.titleMedium(
             widget.product == null ? 'add_product'.tr() : 'edit_product'.tr(),
             fontWeight: 600,
           ),

@@ -7,6 +7,7 @@ import 'package:mandyapp/dao/order_charge_dao.dart';
 import 'package:mandyapp/dao/order_expense_dao.dart';
 import 'package:mandyapp/dao/order_payment_dao.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/common/my_spacing.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/models/order_model.dart';
@@ -169,9 +170,8 @@ class _BillsScreenState extends State<BillsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: TextField(
+      appBar: CommonAppBar(
+        titleWidget: TextField(
           controller: _searchController,
           onChanged: (q) => _search(q),
           style: theme.textTheme.bodyMedium,

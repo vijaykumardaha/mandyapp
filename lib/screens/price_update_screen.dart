@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mandyapp/dao/product_variant_dao.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/utils/info_controller.dart';
@@ -111,10 +112,9 @@ class _PriceUpdateScreenState extends State<PriceUpdateScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
+      appBar: CommonAppBar(
         backgroundColor: theme.colorScheme.surface,
-        title: TextField(
+        titleWidget: TextField(
           controller: _searchController,
           onChanged: _onSearchChanged,
           style: theme.textTheme.bodyMedium,

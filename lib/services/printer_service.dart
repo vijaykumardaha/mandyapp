@@ -204,7 +204,7 @@ class PrinterService {
     }
 
     try {
-      statusMessage.value = 'Printing invoice...';
+      statusMessage.value = 'Printing bill...';
 
       final StringBuffer invoiceText = StringBuffer();
 
@@ -240,9 +240,11 @@ class PrinterService {
       invoiceText.writeln('-' * 32);
 
       // Summary
+      final chargesPrefix = cartType == 'seller' ? '-' : '+';
+      final expensesPrefix = cartType == 'seller' ? '-' : '+';
       invoiceText.writeln('Item Total:               ${itemTotal.toStringAsFixed(2)}');
-      invoiceText.writeln('Total Charges:            ${chargesTotal.toStringAsFixed(2)}');
-      invoiceText.writeln('Total Expenses:           ${expensesTotal.toStringAsFixed(2)}');
+      invoiceText.writeln('Total Charges:           $chargesPrefix ${chargesTotal.toStringAsFixed(2)}');
+      invoiceText.writeln('Total Expenses:          $expensesPrefix ${expensesTotal.toStringAsFixed(2)}');
 
       invoiceText.writeln('-' * 32);
       invoiceText.writeln('GRAND TOTAL:              ${grandTotal.toStringAsFixed(2)}');
@@ -266,9 +268,9 @@ class PrinterService {
       final bool result = await PrintBluetoothThermal.writeBytes(invoiceText.toString().codeUnits);
 
       if (result) {
-        statusMessage.value = 'Invoice printed successfully';
+        statusMessage.value = 'Bill printed successfully';
       } else {
-        statusMessage.value = 'Failed to print invoice';
+        statusMessage.value = 'Failed to print bill';
       }
 
       return result;

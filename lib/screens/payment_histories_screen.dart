@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/customer_payment/customer_payment_bloc.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/customer_payment_model.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/payment_histories/payment_item.dart';
 import 'package:mandyapp/widgets/payment_histories/summary_bar.dart';
 import 'package:mandyapp/widgets/payment_histories/type_tab.dart';
@@ -30,8 +31,8 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
+      appBar: CommonAppBar(
+        titleWidget: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(

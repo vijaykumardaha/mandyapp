@@ -17,17 +17,10 @@ class ReceiptHeader extends StatelessWidget {
     return Column(
       children: [
         Text(
-          'INVOICE',
+          '#${data.order.id ?? '-'}',
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
             letterSpacing: 1,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '#${data.order.id ?? '-'}',
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 4),

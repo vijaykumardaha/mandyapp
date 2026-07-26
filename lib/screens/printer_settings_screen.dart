@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mandyapp/services/printer_service.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/common/my_spacing.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/widgets/printer_settings/connected_printer_card.dart';
@@ -31,8 +32,8 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: MyText.titleMedium('Printer', fontWeight: 600),
+      appBar: CommonAppBar(
+        titleWidget: MyText.titleMedium('Printer', fontWeight: 600),
       ),
       body: AnimatedBuilder(
         animation: Listenable.merge([

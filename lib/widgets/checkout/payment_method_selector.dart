@@ -308,8 +308,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                   children: [
                     // Line items
                     _buildSummaryRow('Products', widget.subtotal, context),
-                    _buildSummaryRow('Additional Charges', widget.chargesTotal, context),
-                    _buildSummaryRow('Other Expenses', widget.expensesTotal, context),
+                    _buildSummaryRow('Additional Charges', widget.chargesTotal, context, prefix: widget.orderFor == 'seller' ? '-' : '+'),
+                    _buildSummaryRow('Other Expenses', widget.expensesTotal, context, prefix: widget.orderFor == 'seller' ? '-' : '+'),
                     MySpacing.height(8),
                     // Divider
                     Container(
@@ -497,7 +497,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     }
   }
 
-  Widget _buildSummaryRow(String label, double amount, BuildContext context, {bool isBold = false}) {
+  Widget _buildSummaryRow(String label, double amount, BuildContext context, {bool isBold = false, String? prefix}) {
     return Padding(
       padding: MySpacing.symmetric(vertical: 6),
       child: Row(
@@ -511,7 +511,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                 : Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
           ),
           MyText.bodyMedium(
-            '₹${amount.toStringAsFixed(2)}',
+            '${prefix != null ? '$prefix ' : ''}₹${amount.toStringAsFixed(2)}',
             fontWeight: isBold ? 600 : 500,
             color: isBold
                 ? Theme.of(context).colorScheme.primary

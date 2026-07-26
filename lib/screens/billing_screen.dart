@@ -3,6 +3,7 @@ import 'package:mandyapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/order_item/order_item_bloc.dart';
 import 'package:mandyapp/models/customer_model.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/models/order_item_model.dart';
 import 'package:mandyapp/screens/checkout_screen.dart';
 import 'package:mandyapp/widgets/selling/cart_item_list.dart';
@@ -90,8 +91,8 @@ class _BillingScreenState extends State<BillingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('${_isBuyerMode ? 'Buyer' : 'Seller'} Billing'),
+      appBar: CommonAppBar(
+        title: '${_isBuyerMode ? 'Buyer' : 'Seller'} Billing',
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),

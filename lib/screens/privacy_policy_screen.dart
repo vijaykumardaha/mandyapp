@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/common/my_spacing.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
 
@@ -23,13 +24,8 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        title: MyText.titleMedium('Privacy Policy', fontWeight: 600),
+      appBar: CommonAppBar(
+        titleWidget: MyText.titleMedium('Privacy Policy', fontWeight: 600),
       ),
       body: SingleChildScrollView(
         padding: MySpacing.all(20),

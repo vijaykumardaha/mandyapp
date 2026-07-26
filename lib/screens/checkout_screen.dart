@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mandyapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
@@ -7,6 +8,7 @@ import 'package:mandyapp/dao/order_charge_dao.dart';
 import 'package:mandyapp/dao/order_dao.dart';
 import 'package:mandyapp/dao/order_expense_dao.dart';
 import 'package:mandyapp/dao/order_payment_dao.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/models/charge_type_model.dart';
 import 'package:mandyapp/models/order_charge_model.dart';
@@ -198,7 +200,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final chargesTotal = _computeChargesTotal(chargeTypes);
       final expensesTotal = _computeExpensesTotal();
       final grandTotal = widget.orderFor == 'seller'
-          ? subtotal + chargesTotal - expensesTotal
+          ? subtotal - chargesTotal - expensesTotal
           : subtotal + chargesTotal + expensesTotal;
 
       final paymentAmountsToSave = Map<PaymentMethod, double>.from(_paymentAmounts);
@@ -250,7 +252,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       if (mounted) {
         Info.message('Order placed successfully', context: context);
-        Navigator.pop(context, orderId);
+        context.go('/bill-details/$orderId');
       }
     } catch (e) {
       if (mounted) {
@@ -272,9 +274,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         0.0;
     final chargesTotal = _computeChargesTotal(chargeTypes);
     final expensesTotal = _computeExpensesTotal();
-    final grandTotal = widget.orderFor == 'seller'
-        ? subtotal + chargesTotal - expensesTotal
-        : subtotal + chargesTotal + expensesTotal;
+        final grandTotal = widget.orderFor == 'seller'
+            ? subtotal - chargesTotal - expensesTotal
+            : subtotal + chargesTotal + expensesTotal;
 
     final receivedAmount = _paymentAmounts.values.fold<double>(0.0, (a, b) => a + b);
     final pendingAmount = grandTotal - receivedAmount;
@@ -339,15 +341,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         final expensesTotal = _computeExpensesTotal();
 
         final grandTotal = widget.orderFor == 'seller'
-            ? subtotal + chargesTotal - expensesTotal
+            ? subtotal - chargesTotal - expensesTotal
             : subtotal + chargesTotal + expensesTotal;
 
         final totalPaid = _paymentAmounts.entries.fold<double>(0.0, (sum, e) => sum + e.value);
         final isOverpaid = totalPaid > grandTotal && totalPaid > 0;
 
         return Scaffold(
-          appBar: AppBar(
-            title: MyText.titleMedium(
+          appBar: CommonAppBar(
+            titleWidget: MyText.titleMedium(
               '${widget.orderFor == 'seller' ? 'Seller' : 'Buyer'} billing for ${_customerName ?? ''}',
             ),
             foregroundColor: Theme.of(context).colorScheme.onSurface,

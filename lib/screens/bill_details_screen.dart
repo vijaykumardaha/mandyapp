@@ -18,6 +18,7 @@ import 'package:mandyapp/models/customer_payment_model.dart';
 import 'package:mandyapp/utils/db_helper.dart';
 import 'package:mandyapp/services/printer_service.dart' as printer_service;
 import 'package:mandyapp/widgets/billing/invoice_item.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/billing/bill_line_item.dart';
 
 class BillDetailsScreen extends StatefulWidget {
@@ -56,7 +57,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     }
 
     if (mounted) {
-      Info.message('Printing invoice...', context: context, duration: Duration(seconds: 2));
+      Info.message('Printing bills...', context: context, duration: Duration(seconds: 2));
     }
 
     final invoiceItems = data.lineItems.map((item) => InvoiceItem(
@@ -83,9 +84,9 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
 
     if (mounted) {
       if (success) {
-        Info.message('Invoice printed successfully!', context: context, duration: const Duration(seconds: 3));
+        Info.message('Bill printed successfully!', context: context, duration: const Duration(seconds: 3));
       } else {
-        Info.error('Failed to print invoice. Please try again.', context: context, duration: const Duration(seconds: 3));
+        Info.error('Failed to print bill. Please try again.', context: context, duration: const Duration(seconds: 3));
       }
     }
   }
@@ -337,8 +338,8 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: FutureBuilder<_BillDetailsData>(
+      appBar: CommonAppBar(
+        titleWidget: FutureBuilder<_BillDetailsData>(
           future: _billFuture,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
@@ -440,7 +441,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Failed to load invoice',
+                      'Failed to load bill',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -494,21 +495,12 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _buildReceiptHeader(data, theme),
-                          const SizedBox(height: 16),
-                          const Divider(thickness: 1),
                           _buildReceiptInfo(data, createdAt, theme),
                           const SizedBox(height: 12),
                           const Divider(thickness: 1),
                           _buildReceiptItems(data, currency, theme),
                           const Divider(thickness: 1),
                           _buildReceiptSummary(data, currency, theme),
-                          if (data.charges.isNotEmpty) ...[
-                            _buildReceiptCharges(data, currency, theme),
-                          ],
-                          if (data.expenses.isNotEmpty) ...[
-                            _buildReceiptExpenses(data, currency, theme),
-                          ],
                           const Divider(thickness: 1),
                           _buildReceiptPayment(data, currency, theme),
                           const SizedBox(height: 16),
@@ -583,36 +575,6 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
           );
         },
       ),
-    );
-  }
-
-  Widget _buildReceiptHeader(_BillDetailsData data, ThemeData theme) {
-    final orderForLabel = data.order.orderFor == 'seller' ? 'Seller' : 'Buyer';
-    return Column(
-      children: [
-        Text(
-          'INVOICE',
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '#${data.order.id ?? '-'}',
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '$orderForLabel • ${data.customerName}',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
     );
   }
 
@@ -703,15 +665,18 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
   }
 
   Widget _buildReceiptSummary(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
+    final isSeller = data.order.orderFor == 'seller';
+    final chargesPrefix = isSeller ? '- ' : '+ ';
+    final expensesPrefix = isSeller ? '- ' : '+ ';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         children: [
           _buildSummaryRow('Item Total', currency.format(data.itemTotal), theme),
           const SizedBox(height: 4),
-          _buildSummaryRow('Total Charges', currency.format(data.chargesTotal), theme),
+          _buildSummaryRow('Total Charges', '$chargesPrefix${currency.format(data.chargesTotal)}', theme),
           const SizedBox(height: 4),
-          _buildSummaryRow('Total Expenses', currency.format(data.expensesTotal), theme),
+          _buildSummaryRow('Total Expenses', '$expensesPrefix${currency.format(data.expensesTotal)}', theme),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8),
             child: Divider(thickness: 1),
@@ -754,83 +719,6 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
           style: theme.textTheme.bodyMedium,
         ),
       ],
-    );
-  }
-
-  Widget _buildReceiptCharges(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Charges',
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 4),
-          ...data.charges.map((charge) => Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  charge.chargeName,
-                  style: theme.textTheme.bodySmall,
-                ),
-                Text(
-                  currency.format(charge.chargeAmount),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          )),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReceiptExpenses(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Expenses',
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 4),
-          ...data.expenses.map((expense) => Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    expense.expenseName,
-                    style: theme.textTheme.bodySmall,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  currency.format(expense.expenseAmount),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          )),
-        ],
-      ),
     );
   }
 

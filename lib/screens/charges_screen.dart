@@ -3,6 +3,7 @@ import 'package:mandyapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/common/my_spacing.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/models/charge_type_model.dart';
@@ -278,9 +279,8 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: TextField(
+      appBar: CommonAppBar(
+        titleWidget: TextField(
           controller: _searchController,
           onChanged: (value) => setState(() => _searchQuery = value),
           style: theme.textTheme.bodyMedium,

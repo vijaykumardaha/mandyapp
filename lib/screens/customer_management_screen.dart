@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/customer/customer_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
+import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/common/my_spacing.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/models/customer_model.dart';
@@ -44,9 +45,8 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: TextField(
+      appBar: CommonAppBar(
+        titleWidget: TextField(
           controller: _searchController,
           onChanged: _onSearchChanged,
           style: theme.textTheme.bodyMedium,
