@@ -9,7 +9,6 @@ import 'package:mandyapp/dao/order_item_dao.dart';
 import 'package:mandyapp/dao/order_expense_dao.dart';
 import 'package:mandyapp/models/bill_summary_model.dart';
 import 'package:mandyapp/models/order_model.dart';
-import 'package:mandyapp/models/order_payment_model.dart';
 
 part 'bill_list_event.dart';
 part 'bill_list_state.dart';

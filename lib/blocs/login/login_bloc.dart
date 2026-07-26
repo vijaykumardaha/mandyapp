@@ -4,7 +4,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:mandyapp/dao/customer_dao.dart';
 import 'package:mandyapp/dao/product_dao.dart';
-import 'package:mandyapp/dao/user_dao.dart';
 import 'package:mandyapp/dao/vegetable_dao.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/user_model.dart';
