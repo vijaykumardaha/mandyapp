@@ -316,7 +316,10 @@ class _BillsScreenState extends State<BillsScreen> {
     final order = result.order;
 
     return GestureDetector(
-      onTap: () => context.push('/bill-details/${order.id}'),
+      onTap: () async {
+        await context.push('/bill-details/${order.id}');
+        if (mounted) _search(_searchController.text);
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

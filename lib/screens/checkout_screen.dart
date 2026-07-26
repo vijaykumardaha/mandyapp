@@ -14,8 +14,8 @@ import 'package:mandyapp/models/order_expense_model.dart';
 import 'package:mandyapp/models/order_item_model.dart';
 import 'package:mandyapp/models/order_model.dart';
 import 'package:mandyapp/models/order_payment_model.dart';
+import 'package:mandyapp/services/printer_service.dart';
 import 'package:mandyapp/utils/db_helper.dart';
-import 'package:mandyapp/utils/printer/printer_service.dart';
 import 'package:mandyapp/dao/customer_payment_dao.dart';
 import 'package:mandyapp/models/customer_payment_model.dart';
 import 'package:mandyapp/widgets/checkout/checkout_content.dart';
@@ -88,12 +88,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   double _computeChargesTotal(List<ChargeType> charges) {
     double total = 0.0;
+    final subtotal = widget.cartItems?.fold<double>(
+          0.0,
+          (sum, item) => sum + item.sellingPrice * item.quantity,
+        ) ??
+        0.0;
     for (final charge in charges) {
       if (charge.isActive == 1 &&
           charge.chargeFor == widget.orderFor &&
           charge.id != null &&
           _selectedChargeIds.contains(charge.id)) {
-        total += charge.chargeAmount;
+        if (charge.chargeType == 'percentage') {
+          total += subtotal * charge.chargeAmount / 100;
+        } else {
+          total += charge.chargeAmount;
+        }
       }
     }
     return total;
@@ -147,15 +156,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
 
       final selectedCharges = <OrderCharge>[];
+      final subtotal = widget.cartItems?.fold<double>(
+            0.0,
+            (sum, item) => sum + item.sellingPrice * item.quantity,
+          ) ??
+          0.0;
       for (final charge in chargeTypes) {
         if (charge.isActive == 1 &&
             charge.chargeFor == widget.orderFor &&
             charge.id != null &&
             _selectedChargeIds.contains(charge.id)) {
+          final amount = charge.chargeType == 'percentage'
+              ? subtotal * charge.chargeAmount / 100
+              : charge.chargeAmount;
           selectedCharges.add(OrderCharge(
             orderId: orderId.toString(),
             chargeName: charge.chargeName,
-            chargeAmount: charge.chargeAmount,
+            chargeAmount: amount,
           ));
         }
       }
@@ -168,6 +185,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         final description = (expense['description'] as String?) ?? '';
         if (amount > 0) {
           await _orderExpenseDAO.insert(OrderExpense(
+            id: DBHelper.generateUuidInt(),
             expenseName: description,
             expenseAmount: amount,
             orderId: orderId,
@@ -176,11 +194,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         }
       }
 
-      final subtotal = widget.cartItems?.fold<double>(
-            0.0,
-            (sum, item) => sum + item.sellingPrice * item.quantity,
-          ) ??
-          0.0;
       final chargesTotal = _computeChargesTotal(chargeTypes);
       final expensesTotal = _computeExpensesTotal();
       final grandTotal = widget.orderFor == 'seller'
@@ -190,6 +203,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final paymentAmountsToSave = Map<PaymentMethod, double>.from(_paymentAmounts);
       if (paymentAmountsToSave.isEmpty || paymentAmountsToSave.values.every((a) => a <= 0)) {
         paymentAmountsToSave[PaymentMethod.cash] = grandTotal;
+      }
+
+      final totalPaid = paymentAmountsToSave.entries.fold<double>(0.0, (sum, e) => sum + e.value);
+      if (totalPaid > grandTotal) {
+        if (mounted) {
+          Info.error('Payment amount (₹${totalPaid.toStringAsFixed(2)}) cannot exceed grand total (₹${grandTotal.toStringAsFixed(2)})', context: context);
+          setState(() => _isPlacingOrder = false);
+        }
+        return;
       }
 
       for (final entry in paymentAmountsToSave.entries) {
@@ -315,6 +337,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         final chargesTotal = _computeChargesTotal(chargeTypes);
         final expensesTotal = _computeExpensesTotal();
 
+        final grandTotal = widget.orderFor == 'seller'
+            ? subtotal + chargesTotal - expensesTotal
+            : subtotal + chargesTotal + expensesTotal;
+
+        final totalPaid = _paymentAmounts.entries.fold<double>(0.0, (sum, e) => sum + e.value);
+        final isOverpaid = totalPaid > grandTotal && totalPaid > 0;
+
         return Scaffold(
           appBar: AppBar(
             title: MyText.titleMedium(
@@ -372,7 +401,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               child: SizedBox(
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: _isPlacingOrder
+                  onPressed: (_isPlacingOrder || isOverpaid)
                       ? null
                       : () => _placeOrder(chargeTypes),
                   style: ElevatedButton.styleFrom(

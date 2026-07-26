@@ -9,7 +9,7 @@ import 'package:mandyapp/dao/vegetable_dao.dart';
 import 'package:mandyapp/models/customer_model.dart';
 import 'package:mandyapp/models/user_model.dart';
 import 'package:mandyapp/services/auth_api.dart';
-import 'package:mandyapp/sync/phoenix_socket_service.dart';
+import 'package:mandyapp/sync/socket_service.dart';
 import 'package:mandyapp/sync/sync_service.dart';
 import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/db_helper.dart';
@@ -101,7 +101,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LogoutSubmit>((event, emit) async {
       try {
         SyncService.instance.stopListening();
-        PhoenixSocketService.instance.disconnect();
+        SocketService.instance.disconnect();
         await DBHelper.instance.clearAllTables();
         await AppHelper.removePreferences('user');
         emit(LogoutSuccess());

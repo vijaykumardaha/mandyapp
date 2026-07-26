@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mandyapp/blocs/login/login_bloc.dart';
 import 'package:mandyapp/controllers/signup_controller.dart';
-import 'package:mandyapp/sync/phoenix_socket_service.dart';
 import 'package:mandyapp/sync/sync_service.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
 import 'package:mandyapp/helpers/widgets/my_button.dart';

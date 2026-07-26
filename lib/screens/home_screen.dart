@@ -13,7 +13,7 @@ import 'package:mandyapp/screens/home_tab_screen.dart';
 import 'package:mandyapp/screens/selling_screen.dart';
 import 'package:mandyapp/screens/settings_screen.dart';
 import 'package:mandyapp/screens/customer_management_screen.dart';
-import 'package:mandyapp/sync/phoenix_socket_service.dart';
+import 'package:mandyapp/sync/socket_service.dart';
 import 'package:mandyapp/sync/sync_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         if (hasConnection && _wasOffline) {
           log('HomeScreen: connectivity restored, reconnecting websocket');
-          if (!PhoenixSocketService.instance.isConnected) {
+          if (!SocketService.instance.isConnected) {
             await SyncService.instance.connectAndSync();
           }
         }

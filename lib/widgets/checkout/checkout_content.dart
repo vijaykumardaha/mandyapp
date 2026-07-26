@@ -67,6 +67,7 @@ class _CheckoutContentState extends State<CheckoutContent> {
           orderFor: widget.orderFor,
           selectedChargeIds: widget.selectedChargeIds,
           chargesState: widget.chargesState,
+          subtotal: widget.subtotal,
           onSelectionChanged: widget.onChargesSelectionChanged,
         ),
         ExpenseSectionWidget(

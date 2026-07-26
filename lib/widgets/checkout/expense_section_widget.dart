@@ -41,17 +41,15 @@ class ExpenseSectionWidget extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                          color: Theme.of(context).colorScheme.primary,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.add, size: 16, color: Theme.of(context).colorScheme.primary),
+                            const Icon(Icons.add, size: 16, color: Colors.white),
                             MySpacing.width(4),
-                            MyText.bodySmall('Add', color: Theme.of(context).colorScheme.primary, fontWeight: 600),
+                            MyText.bodySmall('Add', color: Colors.white, fontWeight: 600),
                           ],
                         ),
                       ),
@@ -177,6 +175,11 @@ class ExpenseSectionWidget extends StatelessWidget {
                   MySpacing.width(12),
                   Expanded(
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
                       onPressed: () {
                         final amount = double.tryParse(amountController.text);
                         if (descriptionController.text.trim().isNotEmpty && amount != null && amount > 0) {

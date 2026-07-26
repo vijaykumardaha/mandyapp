@@ -43,9 +43,9 @@ class BillDetailsData {
 
   double get grandTotal {
     if (order.orderFor == 'seller') {
-      return itemTotal - chargesTotal;
+      return itemTotal - chargesTotal - expensesTotal;
     } else {
-      return itemTotal + chargesTotal;
+      return itemTotal + chargesTotal + expensesTotal;
     }
   }
 

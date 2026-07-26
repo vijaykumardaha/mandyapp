@@ -8,12 +8,15 @@ import 'package:mandyapp/dao/order_expense_dao.dart';
 import 'package:mandyapp/dao/product_dao.dart';
 import 'package:mandyapp/dao/product_variant_dao.dart';
 import 'package:mandyapp/dao/customer_dao.dart';
+import 'package:mandyapp/dao/customer_payment_dao.dart';
 import 'package:mandyapp/models/order_charge_model.dart';
 import 'package:mandyapp/models/order_expense_model.dart';
 import 'package:mandyapp/models/order_model.dart';
 import 'package:mandyapp/models/order_payment_model.dart';
 import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/utils/printer/printer_service.dart' as printer_service;
+import 'package:mandyapp/models/customer_payment_model.dart';
+import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandyapp/services/printer_service.dart' as printer_service;
 import 'package:mandyapp/widgets/billing/invoice_item.dart';
 import 'package:mandyapp/widgets/billing/bill_line_item.dart';
 
@@ -141,6 +144,195 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     });
   }
 
+  void _showReceivePaymentSheet(_BillDetailsData data) {
+    String selectedSource = 'cash';
+    final amountController = TextEditingController(
+      text: data.pendingPayment.toStringAsFixed(0),
+    );
+    final formKey = GlobalKey<FormState>();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final theme = Theme.of(context);
+            final accentColor = Colors.green;
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Receive Payment',
+                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Due: ${NumberFormat.currency(locale: 'en_IN', symbol: '₹').format(data.pendingPayment)}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.orange.shade700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: amountController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        labelText: 'Amount',
+                        prefixText: '₹ ',
+                        prefixStyle: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: accentColor,
+                        ),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: accentColor, width: 2),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) return 'Enter amount';
+                        final amount = double.tryParse(value.trim());
+                        if (amount == null || amount <= 0) return 'Enter valid amount';
+                        if (amount > data.pendingPayment) return 'Amount exceeds pending balance';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                    DropdownButtonFormField<String>(
+                      value: selectedSource,
+                      dropdownColor: Theme.of(context).colorScheme.surface,
+                      decoration: InputDecoration(
+                        labelText: 'Payment Method',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: accentColor, width: 2),
+                        ),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'cash', child: Text('Cash')),
+                        DropdownMenuItem(value: 'upi', child: Text('UPI')),
+                        DropdownMenuItem(value: 'card', child: Text('Card')),
+                        DropdownMenuItem(value: 'credit', child: Text('Credit')),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) setSheetState(() => selectedSource = value);
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      height: 48,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accentColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () async {
+                          if (!formKey.currentState!.validate()) return;
+                          final amount = double.parse(amountController.text.trim());
+                          Navigator.pop(context);
+                          await _receivePayment(data, amount, selectedSource);
+                        },
+                        child: const Text(
+                          'Receive Payment',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _receivePayment(_BillDetailsData data, double amount, String source) async {
+    if (!mounted) return;
+    Info.message('Recording payment...', context: context, duration: const Duration(seconds: 2));
+
+    try {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final orderPaymentDAO = OrderPaymentDAO();
+      final customerPaymentDAO = CustomerPaymentDAO();
+
+      // 1. Insert into order_payments (reduces bill pending)
+      await orderPaymentDAO.insertOrderPayment(OrderPayment(
+        id: DBHelper.generateUuidInt(),
+        orderId: data.order.id!,
+        source: source,
+        amount: amount,
+        updatedAt: now,
+      ));
+
+      // 2. Insert into customer_payments (keeps customer ledger consistent)
+      final transactionType = data.order.orderFor == 'buyer' ? 'received' : 'paid';
+      await customerPaymentDAO.insertPayment(CustomerPayment(
+        customerId: data.order.customerId,
+        amount: amount,
+        type: transactionType,
+        source: source,
+        note: 'Bill #${data.order.id}',
+        paymentDate: now,
+      ));
+
+      // 3. Refresh bill details
+      if (mounted) {
+        setState(() {
+          _billFuture = _loadBillDetails();
+        });
+        Info.message('Payment recorded successfully!', context: context, duration: const Duration(seconds: 2));
+      }
+    } catch (e) {
+      if (mounted) {
+        Info.error('Failed to record payment: ${e.toString()}', context: context, duration: const Duration(seconds: 3));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -182,52 +374,33 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                   !snapshot.hasData) {
                 return const SizedBox.shrink();
               }
+              final data = snapshot.data!;
+              if (data.pendingPayment <= 0) return const SizedBox.shrink();
               return Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: GestureDetector(
-                  onTap: () async {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text('Print Bill'),
-                        content: const Text('Do you really want to print this bill?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text('Print'),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirmed == true) {
-                      _handlePrint(snapshot.data!);
-                    }
-                  },
+                  onTap: () => _showReceivePaymentSheet(data),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
+                      color: Colors.green,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.print_outlined,
+                        const Icon(
+                          Icons.account_balance_wallet,
                           size: 16,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color: Colors.white,
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Print',
+                          'Pending Amount',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            color: Colors.white,
                           ),
                         ),
                       ],
@@ -298,58 +471,113 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
           return Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 360),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: theme.colorScheme.outline.withOpacity(0.2),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.shadowColor.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildReceiptHeader(data, theme),
-                      const SizedBox(height: 16),
-                      const Divider(thickness: 1),
-                      _buildReceiptInfo(data, createdAt, theme),
-                      const SizedBox(height: 12),
-                      const Divider(thickness: 1),
-                      _buildReceiptItems(data, currency, theme),
-                      const Divider(thickness: 1),
-                      _buildReceiptSummary(data, currency, theme),
-                      if (data.charges.isNotEmpty) ...[
-                        _buildReceiptCharges(data, currency, theme),
-                      ],
-                      if (data.expenses.isNotEmpty) ...[
-                        _buildReceiptExpenses(data, currency, theme),
-                      ],
-                      const Divider(thickness: 1),
-                      _buildReceiptPayment(data, currency, theme),
-                      const SizedBox(height: 16),
-                      const Divider(thickness: 1),
-                      Center(
-                        child: Text(
-                          'Thank you!',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
+              child: Column(
+                children: [
+                  Container(
+                    constraints: const BoxConstraints(maxWidth: 360),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withOpacity(0.2),
                       ),
-                    ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.shadowColor.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildReceiptHeader(data, theme),
+                          const SizedBox(height: 16),
+                          const Divider(thickness: 1),
+                          _buildReceiptInfo(data, createdAt, theme),
+                          const SizedBox(height: 12),
+                          const Divider(thickness: 1),
+                          _buildReceiptItems(data, currency, theme),
+                          const Divider(thickness: 1),
+                          _buildReceiptSummary(data, currency, theme),
+                          if (data.charges.isNotEmpty) ...[
+                            _buildReceiptCharges(data, currency, theme),
+                          ],
+                          if (data.expenses.isNotEmpty) ...[
+                            _buildReceiptExpenses(data, currency, theme),
+                          ],
+                          const Divider(thickness: 1),
+                          _buildReceiptPayment(data, currency, theme),
+                          const SizedBox(height: 16),
+                          const Divider(thickness: 1),
+                          Center(
+                            child: Text(
+                              'Thank you!',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Print Bill'),
+                          content: const Text('Do you really want to print this bill?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              child: const Text('Print'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed == true) {
+                        _handlePrint(data);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.print_outlined,
+                            size: 18,
+                            color: theme.colorScheme.onPrimaryContainer,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Print Bill',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -671,9 +899,9 @@ class _BillDetailsData {
 
   double get grandTotal {
     if (order.orderFor == 'seller') {
-      return itemTotal - chargesTotal;
+      return itemTotal - chargesTotal - expensesTotal;
     } else {
-      return itemTotal + chargesTotal;
+      return itemTotal + chargesTotal + expensesTotal;
     }
   }
 

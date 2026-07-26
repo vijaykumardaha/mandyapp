@@ -10,10 +10,11 @@ class OrderExpenseDao {
 
   Future<int> insert(OrderExpense orderExpense) async {
     final db = await dbHelper.database;
-    final mandyId = await AppHelper.getCurrentMandyId();
-    final data = orderExpense.toMap();
-    data['mandy_id'] = mandyId;
-    return await db.insert('order_expenses', data);
+    orderExpense.mandyId = await AppHelper.getCurrentMandyId();
+    orderExpense.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    orderExpense.isDeleted = 0;
+    orderExpense.syncStatus = 0;
+    return await db.insert('order_expenses', orderExpense.toMap());
   }
 
   Future<OrderExpense?> getById(int id) async {
@@ -141,14 +142,14 @@ class OrderExpenseDao {
           WHERE excluded.updated_at > order_expenses.updated_at;
         ''', [
           orderExpense.id,
-          null,
+          orderExpense.mandyId,
           orderExpense.orderId,
           orderExpense.expenseName,
           orderExpense.expenseAmount,
           orderExpense.expenseNote,
           orderExpense.updatedAt,
-          0,
-          1,
+          orderExpense.isDeleted ?? 0,
+          orderExpense.syncStatus ?? 0,
         ]);
       }
 

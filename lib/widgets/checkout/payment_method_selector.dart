@@ -102,6 +102,21 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
       }
     }
 
+    if (oldWidget.grandTotal != widget.grandTotal) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _selectedPaymentMethods.isNotEmpty) {
+          final method = _selectedPaymentMethods.first;
+          final controller = _controllers[method];
+          if (controller != null && !_focusNodes[method]!.hasFocus) {
+            controller.text = widget.grandTotal.toStringAsFixed(2);
+            final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
+            updatedAmounts[method] = widget.grandTotal;
+            widget.onSelectionChanged(_selectedPaymentMethods, updatedAmounts);
+          }
+        }
+      });
+    }
+
     if (oldWidget.selectedPaymentMethods != widget.selectedPaymentMethods) {
       _selectedPaymentMethods = Set.from(widget.selectedPaymentMethods);
     }
@@ -162,6 +177,15 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     updatedSelected.clear();
 
     updatedSelected.add(method);
+
+      if (method == PaymentMethod.credit) {
+      _controllers[method]?.text = '0';
+      setState(() {
+        _selectedPaymentMethods = updatedSelected;
+      });
+      widget.onSelectionChanged(updatedSelected, updatedAmounts);
+      return;
+    }
 
     final grandTotalText = widget.grandTotal.toStringAsFixed(2);
     _controllers[method]?.text = grandTotalText;
@@ -326,6 +350,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                               focusNode: _selectedPaymentMethods.isNotEmpty
                                   ? _focusNodes[_selectedPaymentMethods.first]
                                   : null,
+                              enabled: _selectedPaymentMethods.isEmpty ||
+                                  _selectedPaymentMethods.first != PaymentMethod.credit,
                               decoration: InputDecoration(
                                 contentPadding: MySpacing.xy(12, 8),
                                 border: OutlineInputBorder(

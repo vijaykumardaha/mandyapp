@@ -6,10 +6,10 @@ import 'package:mandyapp/sync/socket_config.dart';
 import 'package:mandyapp/utils/app_helper.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 
-class PhoenixSocketService {
-  PhoenixSocketService._();
+class SocketService {
+  SocketService._();
 
-  static final PhoenixSocketService instance = PhoenixSocketService._();
+  static final SocketService instance = SocketService._();
 
   PhoenixSocket? _socket;
   PhoenixChannel? _channel;

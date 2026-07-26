@@ -288,7 +288,7 @@ class ReportDAO {
   Future<Map<String, dynamic>> getPaymentSummary() async {
     final db = await dbHelper.database;
 
-    // Get total received amount from buyers (exclude pending/unpaid)
+    // Get total received amount from buyers
     const receivedAmountSql = '''
       SELECT COALESCE(SUM(op.amount), 0) as total_received
       FROM order_payments op
@@ -299,42 +299,83 @@ class ReportDAO {
         )
     ''';
 
-    // Get pending payments from buyers (unpaid balance)
+    // Get pending payments from buyers: (itemTotal + charges + expenses) - payments
     const pendingPaymentsSql = '''
       SELECT COALESCE(SUM(pending_amount), 0) as total_pending
       FROM (
         SELECT
-          SUM(CASE WHEN oi.buyer_order_id IS NOT NULL THEN oi.quantity * oi.selling_price ELSE 0 END) -
-           COALESCE(SUM(CASE WHEN cp.order_id IS NOT NULL THEN cp.amount ELSE 0 END), 0) as pending_amount
-        FROM order_items oi
-        LEFT JOIN order_payments cp ON oi.buyer_order_id = cp.order_id
-        WHERE oi.buyer_order_id IS NOT NULL
-        GROUP BY oi.buyer_order_id
-        HAVING pending_amount > 0
-      )
+          item_totals.item_total
+          + COALESCE(charge_totals.total_charges, 0)
+          + COALESCE(expense_totals.total_expenses, 0)
+          - COALESCE(payment_totals.total_paid, 0) as pending_amount
+        FROM (
+          SELECT buyer_order_id as order_id, SUM(quantity * selling_price) as item_total
+          FROM order_items
+          WHERE buyer_order_id IS NOT NULL
+          GROUP BY buyer_order_id
+        ) item_totals
+        LEFT JOIN (
+          SELECT CAST(order_id AS INTEGER) as order_id, SUM(charge_amount) as total_charges
+          FROM order_charges
+          GROUP BY order_id
+        ) charge_totals ON item_totals.order_id = charge_totals.order_id
+        LEFT JOIN (
+          SELECT order_id, SUM(expense_amount) as total_expenses
+          FROM order_expenses
+          GROUP BY order_id
+        ) expense_totals ON item_totals.order_id = expense_totals.order_id
+        LEFT JOIN (
+          SELECT order_id, SUM(amount) as total_paid
+          FROM order_payments
+          GROUP BY order_id
+        ) payment_totals ON item_totals.order_id = payment_totals.order_id
+      ) sub
+      WHERE pending_amount > 0
     ''';
 
-    // Get total paid to sellers (charges on fulfilled buyer orders + seller directly placed orders)
+    // Get total paid to sellers (actual payments made to sellers)
     const paidToSellersSql = '''
-      SELECT COALESCE(SUM(charge_amount), 0) as total_paid_to_sellers
-      FROM order_charges
-      WHERE order_id IN (
-        SELECT DISTINCT buyer_order_id FROM order_items
-        WHERE buyer_order_id IS NOT NULL AND seller_order_id IS NOT NULL
-        UNION
-        SELECT DISTINCT seller_order_id FROM order_items
-        WHERE buyer_order_id IS NULL AND seller_order_id IS NOT NULL
-      )
+      SELECT COALESCE(SUM(op.amount), 0) as total_paid_to_sellers
+      FROM order_payments op
+      WHERE op.amount > 0
+        AND op.order_id IN (
+          SELECT DISTINCT seller_order_id FROM order_items
+          WHERE seller_order_id IS NOT NULL
+        )
     ''';
 
-    // Get pending payments to sellers (unpaid purchases)
+    // Get pending payments to sellers: (itemTotal - charges - expenses) - payments
     const pendingToSellersSql = '''
-      SELECT COALESCE(SUM(charge_amount), 0) as total_pending_to_sellers
-      FROM order_charges
-      WHERE order_id IN (
-        SELECT DISTINCT buyer_order_id FROM order_items
-        WHERE buyer_order_id IS NOT NULL AND seller_order_id IS NULL
-      )
+      SELECT COALESCE(SUM(pending_amount), 0) as total_pending_to_sellers
+      FROM (
+        SELECT
+          item_totals.item_total
+          - COALESCE(charge_totals.total_charges, 0)
+          - COALESCE(expense_totals.total_expenses, 0)
+          - COALESCE(payment_totals.total_paid, 0) as pending_amount
+        FROM (
+          SELECT seller_order_id as order_id, SUM(quantity * selling_price) as item_total
+          FROM order_items
+          WHERE seller_order_id IS NOT NULL
+          GROUP BY seller_order_id
+        ) item_totals
+        LEFT JOIN (
+          SELECT CAST(order_id AS INTEGER) as order_id, SUM(charge_amount) as total_charges
+          FROM order_charges
+          GROUP BY order_id
+        ) charge_totals ON item_totals.order_id = charge_totals.order_id
+        LEFT JOIN (
+          SELECT order_id, SUM(expense_amount) as total_expenses
+          FROM order_expenses
+          GROUP BY order_id
+        ) expense_totals ON item_totals.order_id = expense_totals.order_id
+        LEFT JOIN (
+          SELECT order_id, SUM(amount) as total_paid
+          FROM order_payments
+          GROUP BY order_id
+        ) payment_totals ON item_totals.order_id = payment_totals.order_id
+      ) sub
+      WHERE pending_amount > 0
     ''';
 
     final receivedResult = await db.rawQuery(receivedAmountSql);

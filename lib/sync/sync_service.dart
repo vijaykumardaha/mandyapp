@@ -25,7 +25,7 @@ import 'package:mandyapp/models/product_model.dart';
 import 'package:mandyapp/models/product_variant_model.dart';
 import 'package:mandyapp/models/user_model.dart';
 import 'package:mandyapp/models/vegetable_model.dart';
-import 'package:mandyapp/sync/phoenix_socket_service.dart';
+import 'package:mandyapp/sync/socket_service.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 
 class SyncService {
@@ -60,7 +60,7 @@ class SyncService {
     if (_listening) return;
     _listening = true;
 
-    _messageSubscription = PhoenixSocketService.instance.messages?.listen(
+    _messageSubscription = SocketService.instance.messages?.listen(
       _onMessage,
     );
     log('SyncService: started listening for broadcasts');
@@ -102,7 +102,7 @@ class SyncService {
     required String table,
     required Map<String, dynamic> record,
   }) {
-    if (!PhoenixSocketService.instance.isConnected) return;
+    if (!SocketService.instance.isConnected) return;
     entitySync(table: table, record: record);
   }
 
@@ -111,7 +111,7 @@ class SyncService {
     required String table,
     required Map<String, dynamic> record,
   }) async {
-    final response = await PhoenixSocketService.instance.push(
+    final response = await SocketService.instance.push(
       'entity_sync',
       {
         'table': table,
@@ -158,7 +158,7 @@ class SyncService {
       final pendingTables = await _collectPendingRecords();
       log('SyncService: bulkSync → sending ${pendingTables.length} tables');
 
-      final response = await PhoenixSocketService.instance.push(
+      final response = await SocketService.instance.push(
         'bulk_sync',
         {
           'tables': pendingTables,
@@ -335,7 +335,7 @@ class SyncService {
   /// Connects the websocket, starts broadcast listener, then runs bulkSync.
   /// Call this after login/registration.
   Future<void> connectAndSync() async {
-    await PhoenixSocketService.instance.connect();
+    await SocketService.instance.connect();
     startListening();
     await bulkSync();
   }

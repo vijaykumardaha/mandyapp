@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mandyapp/sync/phoenix_socket_service.dart';
+import 'package:mandyapp/sync/socket_service.dart';
 
 class ConnectionStatusIndicator extends StatefulWidget {
   const ConnectionStatusIndicator({super.key});
@@ -15,7 +15,7 @@ class _ConnectionStatusIndicatorState extends State<ConnectionStatusIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  bool _isConnected = PhoenixSocketService.instance.isConnected;
+  bool _isConnected = SocketService.instance.isConnected;
   StreamSubscription<bool>? _subscription;
 
   @override
@@ -34,7 +34,7 @@ class _ConnectionStatusIndicatorState extends State<ConnectionStatusIndicator>
     }
 
     _subscription =
-        PhoenixSocketService.instance.connectionStream.listen((connected) {
+        SocketService.instance.connectionStream.listen((connected) {
       if (!mounted) return;
       setState(() => _isConnected = connected);
       if (connected) {

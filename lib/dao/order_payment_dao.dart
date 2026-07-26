@@ -8,11 +8,12 @@ class OrderPaymentDAO {
 
   Future<int> insertOrderPayment(OrderPayment payment) async {
     final db = await dbHelper.database;
-    final mandyId = await AppHelper.getCurrentMandyId();
-    final json = payment.toJson();
-    json.remove('id');
-    json['mandy_id'] = mandyId;
-    return await db.insert('order_payments', json);
+    payment.mandyId = await AppHelper.getCurrentMandyId();
+    payment.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    payment.isDeleted = 0;
+    payment.syncStatus = 0;
+
+    return await db.insert('order_payments', payment.toJson());
   }
 
   Future<int> updateOrderPayment(OrderPayment payment) async {

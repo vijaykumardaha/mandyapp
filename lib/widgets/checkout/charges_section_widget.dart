@@ -8,6 +8,7 @@ class ChargesSectionWidget extends StatelessWidget {
   final String orderFor;
   final Set<int> selectedChargeIds;
   final ChargeTypesState chargesState;
+  final double subtotal;
   final Function(Set<int>) onSelectionChanged;
 
   const ChargesSectionWidget({
@@ -15,6 +16,7 @@ class ChargesSectionWidget extends StatelessWidget {
     required this.orderFor,
     required this.selectedChargeIds,
     required this.chargesState,
+    required this.subtotal,
     required this.onSelectionChanged,
   });
 
@@ -89,7 +91,7 @@ class ChargesSectionWidget extends StatelessWidget {
   Widget _buildChargesSection(
       BuildContext context, List<ChargeType> activeCharges) {
     return Container(
-      margin: MySpacing.bottom(12),
+      margin: MySpacing.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -112,38 +114,49 @@ class ChargesSectionWidget extends StatelessWidget {
               ],
             ),
           ),
+          SizedBox(height: 5),
           ...activeCharges.map((charge) {
             if (charge.id == null) return const SizedBox.shrink();
 
             final isSelected = selectedChargeIds.contains(charge.id);
 
             return Padding(
-              padding: MySpacing.only(left: 12),
-              child: CheckboxListTile(
-                value: isSelected,
-                onChanged: (value) {
+              padding: MySpacing.only(left: 12, top: 8),
+              child: InkWell(
+                onTap: () {
                   final updated = Set<int>.from(selectedChargeIds);
-                  if (value == true) {
-                    updated.add(charge.id!);
-                  } else {
+                  if (isSelected) {
                     updated.remove(charge.id!);
+                  } else {
+                    updated.add(charge.id!);
                   }
                   onSelectionChanged(updated);
                 },
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Row(
                   children: [
-                    MyText.bodyMedium(charge.chargeName),
+                    Icon(
+                      isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+                      size: 20,
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                    ),
+                    MySpacing.width(12),
+                    Expanded(
+                      child: MyText.bodyMedium(charge.chargeName, fontWeight: 500),
+                    ),
                     MyText.bodySmall(
-                      '₹${charge.chargeAmount.toStringAsFixed(2)}',
+                      charge.chargeType == 'percentage'
+                          ? () {
+                              final pct = charge.chargeAmount.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
+                              final amt = (subtotal * charge.chargeAmount / 100).toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
+                              return '$pct% = ₹$amt';
+                            }()
+                          : '₹${charge.chargeAmount.toStringAsFixed(2)}',
                       color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                     ),
                   ],
                 ),
-                controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: EdgeInsets.zero,
-                visualDensity: VisualDensity.compact,
-                dense: true,
               ),
             );
           }),
