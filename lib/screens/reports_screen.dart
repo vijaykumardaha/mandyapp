@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:mandyapp/blocs/reports/reports_bloc.dart';
+import 'package:mandyapp/services/report_pdf_service.dart';
 import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/common/my_spacing.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
@@ -11,6 +12,7 @@ import 'package:mandyapp/widgets/reports/daily_purchase_report.dart';
 import 'package:mandyapp/widgets/reports/mandi_profit_report.dart';
 import 'package:mandyapp/widgets/reports/pending_payment_report.dart';
 import 'package:mandyapp/widgets/reports/customer_ledger_report.dart';
+import 'package:open_file/open_file.dart';
 
 
 class ReportsScreen extends StatefulWidget {
@@ -170,6 +172,49 @@ class _ReportsScreenState extends State<ReportsScreen> {
           toDate: _getEndDate(),
         ));
         break;
+    }
+  }
+
+  String _getDateRangeString() {
+    final start = _getStartDate();
+    final end = _getEndDate();
+    return '${DateFormat('dd MMM yyyy').format(start)} - ${DateFormat('dd MMM yyyy').format(end)}';
+  }
+
+  Future<void> _downloadPdf() async {
+    final state = context.read<ReportsBloc>().state;
+    if (state is ReportsLoading || state is ReportsEmpty || state is ReportsError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No report data to download')),
+      );
+      return;
+    }
+
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Generating PDF...')),
+      );
+
+      final file = await ReportPdfService.generatePdf(
+        state: state,
+        reportType: _selectedReportType,
+        dateRange: _getDateRangeString(),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        await OpenFile.open(file.path);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to generate PDF: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -638,7 +683,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         ],
       ),
       body: Padding(
-        padding: MySpacing.xy(16, 20),
+        padding: MySpacing.xy(16, 12),
         child: BlocBuilder<ReportsBloc, ReportsState>(
           builder: (context, state) {
             if (state is ReportsLoading) return _buildLoadingState();
@@ -646,6 +691,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
             if (state is ReportsEmpty) return _buildEmptyState();
             return _buildReportContent(state, Theme.of(context));
           },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _downloadPdf,
+        backgroundColor: Theme.of(context).colorScheme.tertiary,
+        foregroundColor: Theme.of(context).colorScheme.onTertiary,
+        icon: const Icon(Icons.download_rounded, size: 20),
+        label: const Text(
+          'Download',
+          style: TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
     );
