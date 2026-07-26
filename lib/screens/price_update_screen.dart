@@ -171,108 +171,157 @@ class _PriceUpdateScreenState extends State<PriceUpdateScreen> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(
+          color: theme.colorScheme.outline.withValues(alpha: 0.15),
+        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: MyText.bodyMedium(
-                    variant.variantName,
-                     fontWeight: 600,
-                   ),
-                 ),
-               ],
-             ),
-             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: TextField(
-                    controller: sellingPriceCtrl,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600),
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: 'Rate (₹)',
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 6),
-                      suffixIcon: VerticalStepper(
-                        controller: sellingPriceCtrl,
-                        onChanged: () => setState(() {}),
-                        step: 1,
-                        minValue: 0,
-                      ),
-                      suffixIconConstraints: const BoxConstraints(
-                          minWidth: 36, maxWidth: 36),
-                    ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.inventory_2_outlined,
+                    size: 18,
+                    color: theme.colorScheme.primary,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
-                  flex: 2,
-                  child: TextField(
-                    controller: quantityCtrl,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600),
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: 'Qty (${variant.unit})',
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 6),
-                      suffixIcon: VerticalStepper(
-                        controller: quantityCtrl,
-                        onChanged: () => setState(() {}),
-                        step: 1,
-                        minValue: 0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      MyText.bodyMedium(
+                        variant.variantName,
+                        fontWeight: 600,
                       ),
-                      suffixIconConstraints: const BoxConstraints(
-                          minWidth: 36, maxWidth: 36),
-                    ),
+                      if (variant.unit.isNotEmpty)
+                        MyText.bodySmall(
+                          variant.unit,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
+                          fontSize: 11,
+                        ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    final newPrice =
-                        double.tryParse(sellingPriceCtrl.text);
-                    final newQty = double.tryParse(quantityCtrl.text);
-                    if (newPrice != null || newQty != null) {
-                      _updateVariant(variant, newPrice, newQty);
-                    } else {
-                      Info.message(
-                          'Enter at least one value to update',
-                          context: context);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                    foregroundColor: theme.colorScheme.onPrimary,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text('Update'),
                 ),
               ],
-             ),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        MyText.bodySmall(
+                          'Rate (₹)',
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          fontSize: 11,
+                        ),
+                        const SizedBox(height: 4),
+                        TextField(
+                          controller: sellingPriceCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                            suffixIcon: VerticalStepper(
+                              controller: sellingPriceCtrl,
+                              onChanged: () => setState(() {}),
+                              step: 1,
+                              minValue: 0,
+                            ),
+                            suffixIconConstraints: const BoxConstraints(minWidth: 36, maxWidth: 36),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: theme.colorScheme.outline.withValues(alpha: 0.15),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        MyText.bodySmall(
+                          'Qty',
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          fontSize: 11,
+                        ),
+                        const SizedBox(height: 4),
+                        TextField(
+                          controller: quantityCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                            suffixIcon: VerticalStepper(
+                              controller: quantityCtrl,
+                              onChanged: () => setState(() {}),
+                              step: 1,
+                              minValue: 0,
+                            ),
+                            suffixIconConstraints: const BoxConstraints(minWidth: 36, maxWidth: 36),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 40,
+              child: ElevatedButton(
+                onPressed: () {
+                  final newPrice = double.tryParse(sellingPriceCtrl.text);
+                  final newQty = double.tryParse(quantityCtrl.text);
+                  if (newPrice != null || newQty != null) {
+                    _updateVariant(variant, newPrice, newQty);
+                  } else {
+                    Info.message('Enter at least one value to update', context: context);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text('Update', style: TextStyle(fontWeight: FontWeight.w600)),
+              ),
+            ),
           ],
         ),
       ),

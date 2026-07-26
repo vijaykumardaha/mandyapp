@@ -50,57 +50,40 @@ class DailySalesData {
   }
 }
 
-class SellerPurchaseData {
-  final String sellerName;
-  final String sellerPhone;
-  final int totalPurchases;
+class DailyPurchaseData {
+  final String date;
+  final int productId;
+  final int variantId;
+  final String productName;
+  final String unit;
+  final double totalQuantity;
+  final int transactionCount;
   final double totalCost;
-  final double totalQuantity;
+  final double avgPrice;
 
-  const SellerPurchaseData({
-    required this.sellerName,
-    required this.sellerPhone,
-    required this.totalPurchases,
+  const DailyPurchaseData({
+    required this.date,
+    required this.productId,
+    required this.variantId,
+    required this.productName,
+    required this.unit,
+    required this.totalQuantity,
+    required this.transactionCount,
     required this.totalCost,
-    required this.totalQuantity,
+    required this.avgPrice,
   });
 
-  factory SellerPurchaseData.fromJson(Map<String, dynamic> json) {
-    return SellerPurchaseData(
-      sellerName: json['seller_name'] as String? ?? 'Unknown Seller',
-      sellerPhone: json['seller_phone'] as String? ?? '',
-      totalPurchases: json['total_purchases'] as int? ?? 0,
+  factory DailyPurchaseData.fromJson(Map<String, dynamic> json) {
+    return DailyPurchaseData(
+      date: json['date'] as String,
+      productId: json['product_id'] as int,
+      variantId: json['variant_id'] as int,
+      productName: json['variant_name'] as String? ?? 'Product ${json['product_id']}',
+      unit: json['unit'] as String? ?? 'units',
+      totalQuantity: (json['total_quantity'] as num?)?.toDouble() ?? 0.0,
+      transactionCount: json['transaction_count'] as int? ?? 0,
       totalCost: (json['total_cost'] as num?)?.toDouble() ?? 0.0,
-      totalQuantity: (json['total_quantity'] as num?)?.toDouble() ?? 0.0,
-    );
-  }
-}
-
-class BuyerSalesData {
-  final String buyerName;
-  final String buyerPhone;
-  final int totalBills;
-  final double totalRevenue;
-  final double totalQuantity;
-  final double avgSellingPrice;
-
-  const BuyerSalesData({
-    required this.buyerName,
-    required this.buyerPhone,
-    required this.totalBills,
-    required this.totalRevenue,
-    required this.totalQuantity,
-    required this.avgSellingPrice,
-  });
-
-  factory BuyerSalesData.fromJson(Map<String, dynamic> json) {
-    return BuyerSalesData(
-      buyerName: json['buyer_name'] as String? ?? 'Unknown Buyer',
-      buyerPhone: json['buyer_phone'] as String? ?? '',
-      totalBills: json['total_bills'] as int? ?? 0,
-      totalRevenue: (json['total_revenue'] as num?)?.toDouble() ?? 0.0,
-      totalQuantity: (json['total_quantity'] as num?)?.toDouble() ?? 0.0,
-      avgSellingPrice: (json['avg_selling_price'] as num?)?.toDouble() ?? 0.0,
+      avgPrice: (json['avg_price'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }
@@ -207,108 +190,6 @@ class PendingPaymentData {
       oldestBillDate: json['oldest_bill_date'] as String? ?? '',
       latestBillDate: json['latest_bill_date'] as String? ?? '',
       daysPending: daysPending,
-    );
-  }
-}
-
-class PaymentModeData {
-  final String paymentMethod;
-  final int transactionCount;
-  final double totalAmount;
-  final double avgTransaction;
-  final String firstPaymentDate;
-  final String lastPaymentDate;
-
-  const PaymentModeData({
-    required this.paymentMethod,
-    required this.transactionCount,
-    required this.totalAmount,
-    required this.avgTransaction,
-    required this.firstPaymentDate,
-    required this.lastPaymentDate,
-  });
-
-  factory PaymentModeData.fromJson(Map<String, dynamic> json) {
-    return PaymentModeData(
-      paymentMethod: json['payment_method'] as String? ?? 'Unknown',
-      transactionCount: json['transaction_count'] as int? ?? 0,
-      totalAmount: (json['total_amount'] as num?)?.toDouble() ?? 0.0,
-      avgTransaction: (json['avg_transaction'] as num?)?.toDouble() ?? 0.0,
-      firstPaymentDate: json['first_payment_date'] as String? ?? '',
-      lastPaymentDate: json['last_payment_date'] as String? ?? '',
-    );
-  }
-}
-
-class TopSellingProductData {
-  final int productId;
-  final int variantId;
-  final String productName;
-  final String unit;
-  final double totalQuantitySold;
-  final double totalRevenue;
-  final int transactionCount;
-  final double avgSellingPrice;
-  final String lastSoldDate;
-  final int revenueRank;
-  final int quantityRank;
-
-  const TopSellingProductData({
-    required this.productId,
-    required this.variantId,
-    required this.productName,
-    required this.unit,
-    required this.totalQuantitySold,
-    required this.totalRevenue,
-    required this.transactionCount,
-    required this.avgSellingPrice,
-    required this.lastSoldDate,
-    required this.revenueRank,
-    required this.quantityRank,
-  });
-
-  factory TopSellingProductData.fromJson(Map<String, dynamic> json) {
-    return TopSellingProductData(
-      productId: json['product_id'] as int,
-      variantId: json['variant_id'] as int,
-      productName: json['variant_name'] as String? ?? 'Product ${json['product_id']}',
-      unit: json['unit'] as String? ?? 'units',
-      totalQuantitySold: (json['total_quantity_sold'] as num?)?.toDouble() ?? 0.0,
-      totalRevenue: (json['total_revenue'] as num?)?.toDouble() ?? 0.0,
-      transactionCount: json['transaction_count'] as int? ?? 0,
-      avgSellingPrice: (json['avg_selling_price'] as num?)?.toDouble() ?? 0.0,
-      lastSoldDate: json['last_sold_date'] as String? ?? '',
-      revenueRank: json['revenue_rank'] as int? ?? 0,
-      quantityRank: json['quantity_rank'] as int? ?? 0,
-    );
-  }
-}
-
-class ChargesPerformanceData {
-  final String chargeType;
-  final int transactionCount;
-  final double totalChargeAmount;
-  final double avgChargeAmount;
-  final int uniqueCarts;
-  final double avgChargePerCart;
-
-  const ChargesPerformanceData({
-    required this.chargeType,
-    required this.transactionCount,
-    required this.totalChargeAmount,
-    required this.avgChargeAmount,
-    required this.uniqueCarts,
-    required this.avgChargePerCart,
-  });
-
-  factory ChargesPerformanceData.fromJson(Map<String, dynamic> json) {
-    return ChargesPerformanceData(
-      chargeType: json['charge_name'] as String? ?? 'Unknown Charge',
-      transactionCount: json['times_applied'] as int? ?? 0,
-      totalChargeAmount: (json['total_charge_amount'] as num?)?.toDouble() ?? 0.0,
-      avgChargeAmount: (json['avg_charge_amount'] as num?)?.toDouble() ?? 0.0,
-      uniqueCarts: json['unique_carts'] as int? ?? 0,
-      avgChargePerCart: (json['avg_charge_per_cart'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }

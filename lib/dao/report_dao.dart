@@ -31,54 +31,30 @@ class ReportDAO {
     return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
   }
 
-   // 2. Seller Purchase Summary
-  Future<List<Map<String, dynamic>>> getSellerPurchaseSummary({
+  // 1b. Daily Purchase Report
+  Future<List<Map<String, dynamic>>> getDailyPurchaseReport({
     required DateTime fromDate,
     required DateTime toDate,
   }) async {
     final db = await dbHelper.database;
     const sql = '''
       SELECT
-        c.name as seller_name,
-        c.phone as seller_phone,
-        COUNT(*) as total_purchases,
-        COALESCE(SUM(order_charges.charge_amount), 0) as total_cost,
+        date(oi.updated_at / 1000, 'unixepoch', 'localtime') as date,
+        oi.product_id,
+        oi.variant_id,
+        pv.variant_name,
+        pv.unit,
         SUM(oi.quantity) as total_quantity,
+        COUNT(*) as transaction_count,
+        SUM(oi.quantity * oi.selling_price) as total_cost,
+        AVG(oi.selling_price) as avg_price
       FROM order_items oi
-      LEFT JOIN customers c ON oi.seller_id = c.id
-      LEFT JOIN order_charges order_charges ON oi.buyer_order_id = order_charges.order_id
+      LEFT JOIN product_variants pv ON oi.variant_id = pv.id
       WHERE date(oi.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
         AND date(oi.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
-        AND oi.seller_order_id IS NULL
-        AND oi.buyer_order_id IS NULL
-      GROUP BY oi.seller_id, c.name, c.phone
-      ORDER BY total_cost DESC
-    ''';
-
-    return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
-  }
-
-  // 3. Buyer Sales Summary
-  Future<List<Map<String, dynamic>>> getBuyerSalesSummary({
-    required DateTime fromDate,
-    required DateTime toDate,
-  }) async {
-    final db = await dbHelper.database;
-    const sql = '''
-      SELECT
-        c.name as buyer_name,
-        c.phone as buyer_phone,
-        COUNT(DISTINCT order_items.buyer_order_id) as total_bills,
-        SUM(order_items.quantity * order_items.selling_price) as total_revenue,
-        SUM(order_items.quantity) as total_quantity,
-        AVG(order_items.selling_price) as avg_selling_price
-      FROM order_items
-      LEFT JOIN customers c ON order_items.buyer_id = c.id
-      WHERE date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
-        AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
-        AND order_items.buyer_order_id IS NOT NULL
-      GROUP BY order_items.buyer_id, c.name, c.phone
-      ORDER BY total_revenue DESC
+        AND oi.seller_order_id IS NOT NULL
+      GROUP BY date(oi.updated_at / 1000, 'unixepoch', 'localtime'), oi.product_id, oi.variant_id, pv.variant_name, pv.unit
+      ORDER BY date DESC, total_cost DESC
     ''';
 
     return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
@@ -163,87 +139,6 @@ class ReportDAO {
       GROUP BY c.id, c.name, c.phone
       HAVING pending_amount > 0
       ORDER BY pending_amount DESC
-    ''';
-
-    return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
-  }
-
-  // 7. Payment Mode Summary
-  Future<List<Map<String, dynamic>>> getPaymentModeSummary({
-    required DateTime fromDate,
-    required DateTime toDate,
-  }) async {
-    final db = await dbHelper.database;
-    const sql = '''
-      SELECT
-        cp.source as payment_method,
-        COUNT(*) as transaction_count,
-        SUM(cp.amount) as total_amount,
-        AVG(cp.amount) as avg_transaction,
-        MIN(date(cp.updated_at / 1000, 'unixepoch', 'localtime')) as first_payment_date,
-        MAX(date(cp.updated_at / 1000, 'unixepoch', 'localtime')) as last_payment_date
-      FROM order_payments cp
-      WHERE date(cp.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
-        AND date(cp.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
-        AND cp.amount > 0
-      GROUP BY cp.source
-      ORDER BY total_amount DESC
-    ''';
-
-    return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
-  }
-
-  // 9. Top Selling Products
-  Future<List<Map<String, dynamic>>> getTopSellingProducts({
-    required DateTime fromDate,
-    required DateTime toDate,
-  }) async {
-    final db = await dbHelper.database;
-    const sql = '''
-      SELECT
-        order_items.product_id,
-        order_items.variant_id,
-        pv.variant_name,
-        pv.unit,
-        SUM(order_items.quantity) as total_quantity_sold,
-        SUM(order_items.quantity * order_items.selling_price) as total_revenue,
-        COUNT(*) as transaction_count,
-        AVG(order_items.selling_price) as avg_selling_price,
-        MAX(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as last_sold_date,
-        RANK() OVER (ORDER BY SUM(order_items.quantity * order_items.selling_price) DESC) as revenue_rank,
-        RANK() OVER (ORDER BY SUM(order_items.quantity) DESC) as quantity_rank
-      FROM order_items
-      LEFT JOIN product_variants pv ON order_items.variant_id = pv.id
-      WHERE date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
-        AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
-        AND order_items.buyer_order_id IS NOT NULL
-      GROUP BY order_items.product_id, order_items.variant_id, pv.variant_name, pv.unit
-      ORDER BY total_revenue DESC
-      LIMIT 20
-    ''';
-
-    return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
-  }
-
-  // 10. Charges Performance Report
-  Future<List<Map<String, dynamic>>> getChargesPerformanceReport({
-    required DateTime fromDate,
-    required DateTime toDate,
-  }) async {
-    final db = await dbHelper.database;
-    const sql = '''
-      SELECT
-        cc.charge_name,
-        COUNT(*) as times_applied,
-        SUM(cc.charge_amount) as total_charge_amount,
-        AVG(cc.charge_amount) as avg_charge_amount,
-        COUNT(DISTINCT cc.order_id) as unique_carts,
-        (SUM(cc.charge_amount) / COUNT(DISTINCT cc.order_id)) as avg_charge_per_cart
-      FROM order_charges cc
-      WHERE date(cc.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
-        AND date(cc.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
-      GROUP BY cc.charge_name
-      ORDER BY total_charge_amount DESC
     ''';
 
     return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);

@@ -6,12 +6,12 @@ import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/widgets/reports/report_data_table.dart';
 import 'package:mandyapp/widgets/reports/report_summary_card.dart';
 
-class PaymentModeReportWidget extends StatelessWidget {
-  final PaymentModeReportLoaded state;
+class DailyPurchaseReportWidget extends StatelessWidget {
+  final DailyPurchaseReportLoaded state;
   final ThemeData theme;
   final NumberFormat currencyFormat;
 
-  const PaymentModeReportWidget({
+  const DailyPurchaseReportWidget({
     super.key,
     required this.state,
     required this.theme,
@@ -23,17 +23,31 @@ class PaymentModeReportWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ReportSummaryCard(
-          title: 'Total Amount',
-          value: currencyFormat.format(state.totalAmount),
-          color: theme.colorScheme.primary,
+        Row(
+          children: [
+            Expanded(
+              child: ReportSummaryCard(
+                title: 'Total Cost',
+                value: currencyFormat.format(state.totalCost),
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            MySpacing.width(12),
+            Expanded(
+              child: ReportSummaryCard(
+                title: 'Total Quantity',
+                value: '${state.totalQuantity.toStringAsFixed(2)} units',
+                color: theme.colorScheme.secondary,
+              ),
+            ),
+          ],
         ),
         MySpacing.height(16),
         ReportDataTable(
           headers: const [
-            ReportTableHeader(label: 'Payment Mode', flex: 2),
-            ReportTableHeader(label: 'Transactions', flex: 1, textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Amount', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Product', flex: 2),
+            ReportTableHeader(label: 'Qty', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Cost', flex: 1, textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(
@@ -42,19 +56,25 @@ class PaymentModeReportWidget extends StatelessWidget {
                 children: [
                   Expanded(
                     flex: 2,
-                    child: MyText.bodySmall(item.paymentMethod, fontWeight: 600),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        MyText.bodySmall(item.productName, fontWeight: 600),
+                        MyText.bodySmall(item.unit, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                      ],
+                    ),
                   ),
                   Expanded(
                     flex: 1,
                     child: MyText.bodySmall(
-                      '${item.transactionCount}',
+                      '${item.totalQuantity.toStringAsFixed(2)}',
                       textAlign: TextAlign.center,
                     ),
                   ),
                   Expanded(
                     flex: 1,
                     child: MyText.bodySmall(
-                      currencyFormat.format(item.totalAmount),
+                      currencyFormat.format(item.totalCost),
                       textAlign: TextAlign.center,
                       fontWeight: 600,
                       color: theme.colorScheme.primary,

@@ -252,7 +252,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       if (mounted) {
         Info.message('Order placed successfully', context: context);
-        context.go('/bill-details/$orderId');
+        context.push('/bill-details/$orderId');
       }
     } catch (e) {
       if (mounted) {

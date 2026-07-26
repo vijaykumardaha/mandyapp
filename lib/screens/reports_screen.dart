@@ -7,14 +7,11 @@ import 'package:mandyapp/widgets/common/my_spacing.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
 import 'package:mandyapp/widgets/reports/report_types.dart';
 import 'package:mandyapp/widgets/reports/daily_sales_report.dart';
-import 'package:mandyapp/widgets/reports/seller_purchase_report.dart';
-import 'package:mandyapp/widgets/reports/buyer_sales_report.dart';
+import 'package:mandyapp/widgets/reports/daily_purchase_report.dart';
 import 'package:mandyapp/widgets/reports/mandi_profit_report.dart';
 import 'package:mandyapp/widgets/reports/pending_payment_report.dart';
 import 'package:mandyapp/widgets/reports/customer_ledger_report.dart';
-import 'package:mandyapp/widgets/reports/payment_mode_report.dart';
-import 'package:mandyapp/widgets/reports/top_selling_products_report.dart';
-import 'package:mandyapp/widgets/reports/charges_performance_report.dart';
+
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -45,14 +42,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
           return DailySalesReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
         }
         break;
-      case ReportType.sellerPurchase:
-        if (state is SellerPurchaseReportLoaded) {
-          return SellerPurchaseReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
-        }
-        break;
-      case ReportType.buyerSales:
-        if (state is BuyerSalesReportLoaded) {
-          return BuyerSalesReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
+      case ReportType.dailyPurchase:
+        if (state is DailyPurchaseReportLoaded) {
+          return DailyPurchaseReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
         }
         break;
       case ReportType.mandiProfit:
@@ -68,21 +60,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
       case ReportType.customerLedger:
         if (state is CustomerLedgerReportLoaded) {
           return CustomerLedgerReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
-        }
-        break;
-      case ReportType.paymentMode:
-        if (state is PaymentModeReportLoaded) {
-          return PaymentModeReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
-        }
-        break;
-      case ReportType.topSellingProducts:
-        if (state is TopSellingProductsReportLoaded) {
-          return TopSellingProductsReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
-        }
-        break;
-      case ReportType.chargesPerformance:
-        if (state is ChargesPerformanceReportLoaded) {
-          return ChargesPerformanceReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
         }
         break;
     }
@@ -169,14 +146,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
           toDate: _getEndDate(),
         ));
         break;
-      case ReportType.sellerPurchase:
-        reportsBloc.add(LoadSellerPurchaseReport(
-          fromDate: _getStartDate(),
-          toDate: _getEndDate(),
-        ));
-        break;
-      case ReportType.buyerSales:
-        reportsBloc.add(LoadBuyerSalesReport(
+      case ReportType.dailyPurchase:
+        reportsBloc.add(LoadDailyPurchaseReport(
           fromDate: _getStartDate(),
           toDate: _getEndDate(),
         ));
@@ -195,24 +166,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
         break;
       case ReportType.customerLedger:
         reportsBloc.add(LoadCustomerLedgerReport(
-          fromDate: _getStartDate(),
-          toDate: _getEndDate(),
-        ));
-        break;
-      case ReportType.paymentMode:
-        reportsBloc.add(LoadPaymentModeReport(
-          fromDate: _getStartDate(),
-          toDate: _getEndDate(),
-        ));
-        break;
-      case ReportType.topSellingProducts:
-        reportsBloc.add(LoadTopSellingProductsReport(
-          fromDate: _getStartDate(),
-          toDate: _getEndDate(),
-        ));
-        break;
-      case ReportType.chargesPerformance:
-        reportsBloc.add(LoadChargesPerformanceReport(
           fromDate: _getStartDate(),
           toDate: _getEndDate(),
         ));
@@ -268,180 +221,276 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   void _showFilterDialog() {
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              const Icon(Icons.filter_list_outlined),
-              const SizedBox(width: 8),
-              Text('Filter Reports'),
-            ],
-          ),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setDialogState) {
-              return SizedBox(
-                width: double.maxFinite,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Date Range',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+        final theme = Theme.of(context);
+        final accent = theme.colorScheme.primary;
+
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.7,
+              ),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorScheme.shadow.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.outline.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: ReportRangePreset.values.map((preset) {
-                        final isSelected = _selectedPreset == preset;
-                        return GestureDetector(
-                          onTap: () {
-                            setDialogState(() {
-                              _selectedPreset = preset;
-                            });
-                            setState(() {
-                              _selectedPreset = preset;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isSelected
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                              ),
-                            ),
-                            child: Text(
-                              preset.name.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: isSelected
-                                    ? Theme.of(context).colorScheme.onPrimary
-                                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-
-                    if (_selectedPreset == ReportRangePreset.custom)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            _showCustomDateRangePicker().then((_) {
-                              setDialogState(() {});
-                            });
-                          },
-                          icon: const Icon(Icons.date_range, size: 16),
-                          label: Text(_customDateRange != null
-                              ? '${ReportHelpers.formatDate(_customDateRange!.start)} - ${ReportHelpers.formatDate(_customDateRange!.end)}'
-                              : 'Select Custom Range'),
-                        ),
-                      ),
-
-                    const SizedBox(height: 20),
-
-                    Text(
-                      'Report Type',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ...ReportType.values.map((reportType) {
-                      final isSelected = _selectedReportType == reportType;
-                      final icon = ReportHelpers.getReportIcon(reportType);
-                      final name = ReportHelpers.reportTypeLabel(reportType);
-
-                      return GestureDetector(
-                        onTap: () {
-                          setDialogState(() {
-                            _selectedReportType = reportType;
-                          });
-                          setState(() {
-                            _selectedReportType = reportType;
-                          });
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(12),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: isSelected
-                                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-                                : Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isSelected
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                            ),
+                            color: accent.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                icon,
-                                size: 20,
-                                color: isSelected
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  name,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
+                          child: Icon(Icons.filter_list_outlined, size: 20, color: accent),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Filter Reports',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSectionHeader('Date Range', Icons.date_range, theme),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: ReportRangePreset.values.map((preset) {
+                              final isSelected = _selectedPreset == preset;
+                              return GestureDetector(
+                                onTap: () {
+                                  setDialogState(() {
+                                    _selectedPreset = preset;
+                                  });
+                                  setState(() {
+                                    _selectedPreset = preset;
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  decoration: BoxDecoration(
                                     color: isSelected
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Theme.of(context).colorScheme.onSurface,
+                                        ? accent
+                                        : accent.withOpacity(0.06),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? accent
+                                          : theme.colorScheme.outline.withOpacity(0.12),
+                                      width: isSelected ? 1.5 : 1,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    preset.name[0].toUpperCase() + preset.name.substring(1),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                      color: isSelected
+                                          ? theme.colorScheme.onPrimary
+                                          : theme.colorScheme.onSurface.withOpacity(0.7),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          if (_selectedPreset == ReportRangePreset.custom) ...[
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: GestureDetector(
+                                onTap: () {
+                                  _showCustomDateRangePicker().then((_) {
+                                    setDialogState(() {});
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: accent.withOpacity(0.06),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: accent.withOpacity(0.2),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.calendar_today_outlined, size: 16, color: accent),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        _customDateRange != null
+                                            ? '${ReportHelpers.formatDate(_customDateRange!.start)} - ${ReportHelpers.formatDate(_customDateRange!.end)}'
+                                            : 'Select Date Range',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: accent,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                              if (isSelected)
-                                Icon(
-                                  Icons.check_circle,
-                                  size: 20,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                            ],
+                            ),
+                          ],
+                          const SizedBox(height: 24),
+                          Container(
+                            height: 1,
+                            color: theme.colorScheme.outline.withOpacity(0.1),
                           ),
-                        ),
-                      );
-                    }).toList(),
-                  ],
-                ),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _loadReportData();
-              },
-              child: const Text('Apply'),
-            ),
-          ],
+                          const SizedBox(height: 24),
+                          _buildSectionHeader('Report Type', Icons.assessment_outlined, theme),
+                          const SizedBox(height: 12),
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              childAspectRatio: 2.5,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                            ),
+                            itemCount: ReportType.values.length,
+                            itemBuilder: (context, index) {
+                              final reportType = ReportType.values[index];
+                              final isSelected = _selectedReportType == reportType;
+                              final name = ReportHelpers.reportTypeLabel(reportType);
+
+                              return GestureDetector(
+                                onTap: () {
+                                  setDialogState(() {
+                                    _selectedReportType = reportType;
+                                  });
+                                  setState(() {
+                                    _selectedReportType = reportType;
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? accent
+                                        : accent.withOpacity(0.06),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? accent
+                                          : theme.colorScheme.outline.withOpacity(0.12),
+                                      width: isSelected ? 1.5 : 1,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      name,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                        color: isSelected
+                                            ? theme.colorScheme.onPrimary
+                                            : theme.colorScheme.onSurface.withOpacity(0.8),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                _loadReportData();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: accent,
+                                foregroundColor: theme.colorScheme.onPrimary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: const Text(
+                                'Apply',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
+    );
+  }
+
+  Widget _buildSectionHeader(String title, IconData icon, ThemeData theme) {
+    final accent = theme.colorScheme.primary;
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: accent.withOpacity(0.7)),
+        const SizedBox(width: 6),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface.withOpacity(0.6),
+          ),
+        ),
+      ],
     );
   }
 
@@ -551,10 +600,40 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            onPressed: _showFilterDialog,
-            icon: const Icon(Icons.filter_list_outlined),
-            tooltip: 'Filter Reports',
+          Padding(
+            padding: const EdgeInsets.only(right: 15),
+            child: GestureDetector(
+              onTap: _showFilterDialog,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.tune,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Filter',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),

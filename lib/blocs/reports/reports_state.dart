@@ -39,13 +39,13 @@ class DailySalesReportLoaded extends ReportsState {
   List<Object?> get props => [data, totalRevenue, totalQuantity, totalTransactions];
 }
 
-class SellerPurchaseReportLoaded extends ReportsState {
-  final List<SellerPurchaseData> data;
+class DailyPurchaseReportLoaded extends ReportsState {
+  final List<DailyPurchaseData> data;
   final double totalCost;
   final double totalQuantity;
   final int totalTransactions;
 
-  const SellerPurchaseReportLoaded({
+  const DailyPurchaseReportLoaded({
     required this.data,
     required this.totalCost,
     required this.totalQuantity,
@@ -54,23 +54,6 @@ class SellerPurchaseReportLoaded extends ReportsState {
 
   @override
   List<Object?> get props => [data, totalCost, totalQuantity, totalTransactions];
-}
-
-class BuyerSalesReportLoaded extends ReportsState {
-  final List<BuyerSalesData> data;
-  final double totalRevenue;
-  final double totalQuantity;
-  final int totalTransactions;
-
-  const BuyerSalesReportLoaded({
-    required this.data,
-    required this.totalRevenue,
-    required this.totalQuantity,
-    required this.totalTransactions,
-  });
-
-  @override
-  List<Object?> get props => [data, totalRevenue, totalQuantity, totalTransactions];
 }
 
 class MandiProfitReportLoaded extends ReportsState {
@@ -114,45 +97,6 @@ class PendingPaymentReportLoaded extends ReportsState {
 
   @override
   List<Object?> get props => [data, totalPendingAmount];
-}
-
-class PaymentModeReportLoaded extends ReportsState {
-  final List<PaymentModeData> data;
-  final double totalAmount;
-
-  const PaymentModeReportLoaded({
-    required this.data,
-    required this.totalAmount,
-  });
-
-  @override
-  List<Object?> get props => [data, totalAmount];
-}
-
-class TopSellingProductsReportLoaded extends ReportsState {
-  final List<TopSellingProductData> data;
-  final double totalRevenue;
-
-  const TopSellingProductsReportLoaded({
-    required this.data,
-    required this.totalRevenue,
-  });
-
-  @override
-  List<Object?> get props => [data, totalRevenue];
-}
-
-class ChargesPerformanceReportLoaded extends ReportsState {
-  final List<ChargesPerformanceData> data;
-  final double totalChargeAmount;
-
-  const ChargesPerformanceReportLoaded({
-    required this.data,
-    required this.totalChargeAmount,
-  });
-
-  @override
-  List<Object?> get props => [data, totalChargeAmount];
 }
 
 class ReportsSummaryLoaded extends ReportsState {

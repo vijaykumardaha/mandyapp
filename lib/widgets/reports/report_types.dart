@@ -4,14 +4,10 @@ enum ReportRangePreset { today, yesterday, week, month, custom }
 
 enum ReportType {
   dailySales,
-  sellerPurchase,
-  buyerSales,
+  dailyPurchase,
   mandiProfit,
   pendingPayment,
   customerLedger,
-  paymentMode,
-  topSellingProducts,
-  chargesPerformance,
 }
 
 class ReportHelpers {
@@ -34,22 +30,14 @@ class ReportHelpers {
     switch (type) {
       case ReportType.dailySales:
         return 'Daily Sales';
-      case ReportType.sellerPurchase:
-        return 'Seller Purchase';
-      case ReportType.buyerSales:
-        return 'Buyer Sales';
+      case ReportType.dailyPurchase:
+        return 'Daily Purchase';
       case ReportType.mandiProfit:
         return 'Mandi Profit';
       case ReportType.pendingPayment:
         return 'Pending Payment';
       case ReportType.customerLedger:
         return 'Customer Ledger';
-      case ReportType.paymentMode:
-        return 'Payment Mode';
-      case ReportType.topSellingProducts:
-        return 'Top Selling Products';
-      case ReportType.chargesPerformance:
-        return 'Charges Performance';
     }
   }
 
@@ -57,22 +45,14 @@ class ReportHelpers {
     switch (type) {
       case ReportType.dailySales:
         return Icons.trending_up;
-      case ReportType.sellerPurchase:
+      case ReportType.dailyPurchase:
         return Icons.shopping_cart;
-      case ReportType.buyerSales:
-        return Icons.point_of_sale;
       case ReportType.mandiProfit:
         return Icons.account_balance;
       case ReportType.pendingPayment:
         return Icons.pending_actions;
       case ReportType.customerLedger:
         return Icons.account_balance_wallet;
-      case ReportType.paymentMode:
-        return Icons.payment;
-      case ReportType.topSellingProducts:
-        return Icons.star;
-      case ReportType.chargesPerformance:
-        return Icons.assessment;
     }
   }
 

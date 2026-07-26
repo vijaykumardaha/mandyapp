@@ -367,50 +367,6 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
           },
         ),
         actions: [
-          FutureBuilder<_BillDetailsData>(
-            future: _billFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState != ConnectionState.done ||
-                  snapshot.hasError ||
-                  !snapshot.hasData) {
-                return const SizedBox.shrink();
-              }
-              final data = snapshot.data!;
-              if (data.pendingPayment <= 0) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: GestureDetector(
-                  onTap: () => _showReceivePaymentSheet(data),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.account_balance_wallet,
-                          size: 16,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Pending Amount',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
         ],
       ),
       body: FutureBuilder<_BillDetailsData>(
@@ -519,55 +475,92 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  GestureDetector(
-                    onTap: () async {
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Print Bill'),
-                          content: const Text('Do you really want to print this bill?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: const Text('Cancel'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Print Bill'),
+                              content: const Text('Do you really want to print this bill?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  child: const Text('Print'),
+                                ),
+                              ],
                             ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, true),
-                              child: const Text('Print'),
-                            ),
-                          ],
+                          );
+                          if (confirmed == true) {
+                            _handlePrint(data);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.print_outlined,
+                                size: 18,
+                                color: theme.colorScheme.onPrimaryContainer,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Print Bill',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.onPrimaryContainer,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      );
-                      if (confirmed == true) {
-                        _handlePrint(data);
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.print_outlined,
-                            size: 18,
-                            color: theme.colorScheme.onPrimaryContainer,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Print Bill',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: theme.colorScheme.onPrimaryContainer,
+                      if (data.pendingPayment > 0) ...[
+                        const SizedBox(width: 10),
+                        GestureDetector(
+                          onTap: () => _showReceivePaymentSheet(data),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.account_balance_wallet,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 6),
+                                const Text(
+                                  'Pay Due Amount',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),

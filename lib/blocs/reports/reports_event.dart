@@ -20,24 +20,11 @@ class LoadDailySalesReport extends ReportsEvent {
   List<Object?> get props => [fromDate, toDate];
 }
 
-class LoadSellerPurchaseReport extends ReportsEvent {
+class LoadDailyPurchaseReport extends ReportsEvent {
   final DateTime fromDate;
   final DateTime toDate;
 
-  const LoadSellerPurchaseReport({
-    required this.fromDate,
-    required this.toDate,
-  });
-
-  @override
-  List<Object?> get props => [fromDate, toDate];
-}
-
-class LoadBuyerSalesReport extends ReportsEvent {
-  final DateTime fromDate;
-  final DateTime toDate;
-
-  const LoadBuyerSalesReport({
+  const LoadDailyPurchaseReport({
     required this.fromDate,
     required this.toDate,
   });
@@ -77,45 +64,6 @@ class LoadPendingPaymentReport extends ReportsEvent {
   final DateTime toDate;
 
   const LoadPendingPaymentReport({
-    required this.fromDate,
-    required this.toDate,
-  });
-
-  @override
-  List<Object?> get props => [fromDate, toDate];
-}
-
-class LoadPaymentModeReport extends ReportsEvent {
-  final DateTime fromDate;
-  final DateTime toDate;
-
-  const LoadPaymentModeReport({
-    required this.fromDate,
-    required this.toDate,
-  });
-
-  @override
-  List<Object?> get props => [fromDate, toDate];
-}
-
-class LoadTopSellingProductsReport extends ReportsEvent {
-  final DateTime fromDate;
-  final DateTime toDate;
-
-  const LoadTopSellingProductsReport({
-    required this.fromDate,
-    required this.toDate,
-  });
-
-  @override
-  List<Object?> get props => [fromDate, toDate];
-}
-
-class LoadChargesPerformanceReport extends ReportsEvent {
-  final DateTime fromDate;
-  final DateTime toDate;
-
-  const LoadChargesPerformanceReport({
     required this.fromDate,
     required this.toDate,
   });

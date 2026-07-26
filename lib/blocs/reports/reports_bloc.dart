@@ -13,14 +13,10 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     required this.reportDAO,
   }) : super(ReportsInitial()) {
     on<LoadDailySalesReport>(_onLoadDailySalesReport);
-    on<LoadSellerPurchaseReport>(_onLoadSellerPurchaseReport);
-    on<LoadBuyerSalesReport>(_onLoadBuyerSalesReport);
+    on<LoadDailyPurchaseReport>(_onLoadDailyPurchaseReport);
     on<LoadMandiProfitReport>(_onLoadMandiProfitReport);
     on<LoadCustomerLedgerReport>(_onLoadCustomerLedgerReport);
     on<LoadPendingPaymentReport>(_onLoadPendingPaymentReport);
-    on<LoadPaymentModeReport>(_onLoadPaymentModeReport);
-    on<LoadTopSellingProductsReport>(_onLoadTopSellingProductsReport);
-    on<LoadChargesPerformanceReport>(_onLoadChargesPerformanceReport);
     on<LoadReportsSummary>(_onLoadReportsSummary);
     on<LoadDashboardData>(_onLoadDashboardData);
     on<LoadPaymentSummary>(_onLoadPaymentSummary);
@@ -62,14 +58,14 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     }
   }
 
-  Future<void> _onLoadSellerPurchaseReport(
-    LoadSellerPurchaseReport event,
+  Future<void> _onLoadDailyPurchaseReport(
+    LoadDailyPurchaseReport event,
     Emitter<ReportsState> emit,
   ) async {
     emit(ReportsLoading());
 
     try {
-      final rawData = await reportDAO.getSellerPurchaseSummary(
+      final rawData = await reportDAO.getDailyPurchaseReport(
         fromDate: event.fromDate,
         toDate: event.toDate,
       );
@@ -79,54 +75,20 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         return;
       }
 
-      final data = rawData.map(SellerPurchaseData.fromJson).toList();
+      final data = rawData.map(DailyPurchaseData.fromJson).toList();
 
       final totalCost = data.fold(0.0, (sum, item) => sum + item.totalCost);
       final totalQuantity = data.fold(0.0, (sum, item) => sum + item.totalQuantity);
-      final totalTransactions = data.fold(0, (sum, item) => sum + item.totalPurchases);
+      final totalTransactions = data.fold(0, (sum, item) => sum + item.transactionCount);
 
-      emit(SellerPurchaseReportLoaded(
+      emit(DailyPurchaseReportLoaded(
         data: data,
         totalCost: totalCost,
         totalQuantity: totalQuantity,
         totalTransactions: totalTransactions,
       ));
     } catch (error) {
-      emit(ReportsError('Failed to load seller purchase report: ${error.toString()}'));
-    }
-  }
-
-  Future<void> _onLoadBuyerSalesReport(
-    LoadBuyerSalesReport event,
-    Emitter<ReportsState> emit,
-  ) async {
-    emit(ReportsLoading());
-
-    try {
-      final rawData = await reportDAO.getBuyerSalesSummary(
-        fromDate: event.fromDate,
-        toDate: event.toDate,
-      );
-
-      if (rawData.isEmpty) {
-        emit(ReportsEmpty());
-        return;
-      }
-
-      final data = rawData.map(BuyerSalesData.fromJson).toList();
-
-      final totalRevenue = data.fold(0.0, (sum, item) => sum + item.totalRevenue);
-      final totalQuantity = data.fold(0.0, (sum, item) => sum + item.totalQuantity);
-      final totalTransactions = data.fold(0, (sum, item) => sum + item.totalBills);
-
-      emit(BuyerSalesReportLoaded(
-        data: data,
-        totalRevenue: totalRevenue,
-        totalQuantity: totalQuantity,
-        totalTransactions: totalTransactions,
-      ));
-    } catch (error) {
-      emit(ReportsError('Failed to load buyer sales report: ${error.toString()}'));
+      emit(ReportsError('Failed to load daily purchase report: ${error.toString()}'));
     }
   }
 
@@ -219,93 +181,6 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       ));
     } catch (error) {
       emit(ReportsError('Failed to load pending payment report: ${error.toString()}'));
-    }
-  }
-
-  Future<void> _onLoadPaymentModeReport(
-    LoadPaymentModeReport event,
-    Emitter<ReportsState> emit,
-  ) async {
-    emit(ReportsLoading());
-
-    try {
-      final rawData = await reportDAO.getPaymentModeSummary(
-        fromDate: event.fromDate,
-        toDate: event.toDate,
-      );
-
-      if (rawData.isEmpty) {
-        emit(ReportsEmpty());
-        return;
-      }
-
-      final data = rawData.map(PaymentModeData.fromJson).toList();
-      final totalAmount = data.fold(0.0, (sum, item) => sum + item.totalAmount);
-
-      emit(PaymentModeReportLoaded(
-        data: data,
-        totalAmount: totalAmount,
-      ));
-    } catch (error) {
-      emit(ReportsError('Failed to load payment mode report: ${error.toString()}'));
-    }
-  }
-
-  Future<void> _onLoadTopSellingProductsReport(
-    LoadTopSellingProductsReport event,
-    Emitter<ReportsState> emit,
-  ) async {
-    emit(ReportsLoading());
-
-    try {
-      final rawData = await reportDAO.getTopSellingProducts(
-        fromDate: event.fromDate,
-        toDate: event.toDate,
-      );
-
-      if (rawData.isEmpty) {
-        emit(ReportsEmpty());
-        return;
-      }
-
-      final data = rawData.map(TopSellingProductData.fromJson).toList();
-      final totalRevenue = data.fold(0.0, (sum, item) => sum + item.totalRevenue);
-
-      emit(TopSellingProductsReportLoaded(
-        data: data,
-        totalRevenue: totalRevenue,
-      ));
-    } catch (error) {
-      emit(ReportsError('Failed to load top selling products report: ${error.toString()}'));
-    }
-  }
-
-  Future<void> _onLoadChargesPerformanceReport(
-    LoadChargesPerformanceReport event,
-    Emitter<ReportsState> emit,
-  ) async {
-    emit(ReportsLoading());
-
-    try {
-      final rawData = await reportDAO.getChargesPerformanceReport(
-        fromDate: event.fromDate,
-        toDate: event.toDate,
-      );
-
-      if (rawData.isEmpty) {
-        emit(ReportsEmpty());
-        return;
-      }
-
-      final data = rawData.map(ChargesPerformanceData.fromJson).toList();
-      final totalChargeAmount = data.fold(0.0, (sum, item) => sum + item.totalChargeAmount);
-
-      emit(ChargesPerformanceReportLoaded(
-        data: data,
-        totalChargeAmount: totalChargeAmount,
-      ));
-    } catch (error) {
-      emit(ReportsError('Failed to load charges performance report: ${error.toString()}'));
     }
   }
 

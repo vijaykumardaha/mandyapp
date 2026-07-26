@@ -158,14 +158,10 @@ class _ReportFilterBarState extends State<ReportFilterBar> {
         },
         itemBuilder: (context) => const [
           PopupMenuItem(value: ReportType.dailySales, child: Text('Daily Sales Report')),
-          PopupMenuItem(value: ReportType.sellerPurchase, child: Text('Seller Purchase Summary')),
-          PopupMenuItem(value: ReportType.buyerSales, child: Text('Buyer Sales Summary')),
+          PopupMenuItem(value: ReportType.dailyPurchase, child: Text('Daily Purchase Report')),
           PopupMenuItem(value: ReportType.mandiProfit, child: Text('Mandi Profit Report')),
           PopupMenuItem(value: ReportType.pendingPayment, child: Text('Pending Payment Report')),
           PopupMenuItem(value: ReportType.customerLedger, child: Text('Customer Ledger Report')),
-          PopupMenuItem(value: ReportType.paymentMode, child: Text('Payment Mode Report')),
-          PopupMenuItem(value: ReportType.topSellingProducts, child: Text('Top Selling Products Report')),
-          PopupMenuItem(value: ReportType.chargesPerformance, child: Text('Charges Performance Report')),
         ],
         child: Padding(
           padding: MySpacing.xy(16, 12),
