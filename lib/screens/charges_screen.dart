@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
@@ -20,12 +21,23 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
   late ThemeData theme;
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  bool _isAdmin = true;
 
   @override
   void initState() {
     super.initState();
     theme = AppTheme.shoppingManagerTheme;
+    _loadRole();
     context.read<ChargeTypesBloc>().add(LoadChargeTypes());
+  }
+
+  Future<void> _loadRole() async {
+    final user = await AppHelper.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        _isAdmin = user?.isAdmin ?? true;
+      });
+    }
   }
 
   @override
@@ -303,11 +315,13 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
             ),
             prefixIcon: Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
             prefixIconConstraints: const BoxConstraints(minWidth: 36),
-            suffixIcon: IconButton(
-              icon: Icon(Icons.add, size: 20, color: theme.colorScheme.onSurfaceVariant),
-              tooltip: 'Add charge',
-              onPressed: () => _showChargeTypeDialog(),
-            ),
+            suffixIcon: _isAdmin
+                ? IconButton(
+                    icon: Icon(Icons.add, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                    tooltip: 'Add charge',
+                    onPressed: () => _showChargeTypeDialog(),
+                  )
+                : null,
             suffixIconConstraints: const BoxConstraints(minWidth: 40),
           ),
         ),
@@ -362,6 +376,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                 return ChargeListItem(
                   charge: charge,
                   theme: theme,
+                  isAdmin: _isAdmin,
                   onEdit: () => _showChargeTypeDialog(charge),
                   onToggle: () => _toggleChargeTypeStatus(charge),
                   onDelete: () => _deleteChargeType(charge),

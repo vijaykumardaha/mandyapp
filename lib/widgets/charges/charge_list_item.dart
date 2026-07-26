@@ -6,6 +6,7 @@ import 'package:mandyapp/models/charge_type_model.dart';
 class ChargeListItem extends StatelessWidget {
   final ChargeType charge;
   final ThemeData theme;
+  final bool isAdmin;
   final VoidCallback onEdit;
   final VoidCallback onToggle;
   final VoidCallback onDelete;
@@ -14,6 +15,7 @@ class ChargeListItem extends StatelessWidget {
     super.key,
     required this.charge,
     required this.theme,
+    this.isAdmin = true,
     required this.onEdit,
     required this.onToggle,
     required this.onDelete,
@@ -118,55 +120,57 @@ class ChargeListItem extends StatelessWidget {
             ],
           ),
         ),
-        trailing: PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert),
-          onSelected: (value) {
-            if (value == 'edit') {
-              onEdit();
-            } else if (value == 'toggle') {
-              onToggle();
-            } else if (value == 'delete') {
-              onDelete();
-            }
-          },
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'edit',
-              child: Row(
-                children: [
-                  const Icon(Icons.edit, size: 20),
-                  MySpacing.width(8),
-                  const Text('Edit'),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'toggle',
-              child: Row(
-                children: [
-                  Icon(
-                    charge.isActive == 1
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                    size: 20,
+        trailing: isAdmin
+            ? PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert),
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    onEdit();
+                  } else if (value == 'toggle') {
+                    onToggle();
+                  } else if (value == 'delete') {
+                    onDelete();
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.edit, size: 20),
+                        MySpacing.width(8),
+                        const Text('Edit'),
+                      ],
+                    ),
                   ),
-                  MySpacing.width(8),
-                  Text(charge.isActive == 1 ? 'Disable' : 'Activate'),
+                  PopupMenuItem(
+                    value: 'toggle',
+                    child: Row(
+                      children: [
+                        Icon(
+                          charge.isActive == 1
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          size: 20,
+                        ),
+                        MySpacing.width(8),
+                        Text(charge.isActive == 1 ? 'Disable' : 'Activate'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.delete, size: 20, color: Colors.red),
+                        MySpacing.width(8),
+                        const Text('Delete', style: TextStyle(color: Colors.red)),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Row(
-                children: [
-                  const Icon(Icons.delete, size: 20, color: Colors.red),
-                  MySpacing.width(8),
-                  const Text('Delete', style: TextStyle(color: Colors.red)),
-                ],
-              ),
-            ),
-          ],
-        ),
+              )
+            : null,
       ),
     );
   }

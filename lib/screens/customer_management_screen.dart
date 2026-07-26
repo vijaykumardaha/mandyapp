@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/customer/customer_bloc.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
+import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/common/my_spacing.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
@@ -19,13 +20,24 @@ class CustomerManagementScreen extends StatefulWidget {
 class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
   late ThemeData theme;
+  bool _isAdmin = true;
   CustomerBloc get _customerBloc => context.read<CustomerBloc>();
 
   @override
   void initState() {
     super.initState();
     theme = AppTheme.shoppingManagerTheme;
+    _loadRole();
     _customerBloc.add(const FetchCustomer(query: ''));
+  }
+
+  Future<void> _loadRole() async {
+    final user = await AppHelper.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        _isAdmin = user?.isAdmin ?? true;
+      });
+    }
   }
 
   @override
@@ -69,11 +81,13 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
             ),
             prefixIcon: Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
             prefixIconConstraints: const BoxConstraints(minWidth: 36),
-            suffixIcon: IconButton(
-              icon: Icon(Icons.person_add_outlined, size: 20, color: theme.colorScheme.onSurfaceVariant),
-              tooltip: 'Add customer',
-              onPressed: _showAddCustomerSheet,
-            ),
+            suffixIcon: _isAdmin
+                ? IconButton(
+                    icon: Icon(Icons.person_add_outlined, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                    tooltip: 'Add customer',
+                    onPressed: _showAddCustomerSheet,
+                  )
+                : null,
             suffixIconConstraints: const BoxConstraints(minWidth: 40),
           ),
         ),
@@ -103,6 +117,7 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
                   return CustomerTile(
                     customer: customer,
                     theme: theme,
+                    isAdmin: _isAdmin,
                     onEdit: () => _showAddCustomerSheet(customer: customer),
                   );
                 },

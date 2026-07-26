@@ -92,7 +92,14 @@ class _BillingScreenState extends State<BillingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonAppBar(
-        title: '${_isBuyerMode ? 'Buyer' : 'Seller'} Billing',
+        centerTitle: false,
+        titleWidget: Text(
+          '${_isBuyerMode ? 'Buyer' : 'Seller'} Billing',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),

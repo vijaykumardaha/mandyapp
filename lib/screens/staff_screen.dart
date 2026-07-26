@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/user/user_bloc.dart';
@@ -18,12 +19,23 @@ class StaffScreen extends StatefulWidget {
 class _StaffScreenState extends State<StaffScreen> {
   late ThemeData theme;
   final TextEditingController _searchController = TextEditingController();
+  bool _isAdmin = true;
 
   @override
   void initState() {
     super.initState();
     theme = AppTheme.shoppingManagerTheme;
+    _loadRole();
     context.read<UserBloc>().add(LoadUsersByRole(role: 'staff'));
+  }
+
+  Future<void> _loadRole() async {
+    final user = await AppHelper.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        _isAdmin = user?.isAdmin ?? true;
+      });
+    }
   }
 
   @override
@@ -72,11 +84,13 @@ class _StaffScreenState extends State<StaffScreen> {
             ),
             prefixIcon: Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
             prefixIconConstraints: const BoxConstraints(minWidth: 36),
-            suffixIcon: IconButton(
-              icon: Icon(Icons.person_add_outlined, size: 20, color: theme.colorScheme.onSurfaceVariant),
-              tooltip: 'Add staff',
-              onPressed: () => _showStaffDialog(),
-            ),
+            suffixIcon: _isAdmin
+                ? IconButton(
+                    icon: Icon(Icons.person_add_outlined, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                    tooltip: 'Add staff',
+                    onPressed: () => _showStaffDialog(),
+                  )
+                : null,
             suffixIconConstraints: const BoxConstraints(minWidth: 40),
           ),
         ),
@@ -204,16 +218,17 @@ class _StaffScreenState extends State<StaffScreen> {
                         }
                       },
                       itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              Icon(Icons.edit, size: 16),
-                              SizedBox(width: 8),
-                              Text('Edit'),
-                            ],
+                        if (_isAdmin)
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit, size: 16),
+                                SizedBox(width: 8),
+                                Text('Edit'),
+                              ],
+                            ),
                           ),
-                        ),
                         PopupMenuItem(
                           value: 'toggle',
                           child: Row(

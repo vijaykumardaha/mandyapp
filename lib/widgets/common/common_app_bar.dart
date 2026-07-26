@@ -8,6 +8,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Color? backgroundColor;
   final Color? foregroundColor;
   final double elevation;
+  final bool centerTitle;
 
   const CommonAppBar({
     super.key,
@@ -18,6 +19,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.backgroundColor,
     this.foregroundColor,
     this.elevation = 0,
+    this.centerTitle = true,
   });
 
   @override
@@ -34,7 +36,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: bgColor,
       elevation: elevation,
-      centerTitle: true,
+      centerTitle: centerTitle,
       leading: showBackButton && canPop
           ? Padding(
               padding: const EdgeInsets.only(left: 12, top: 8, bottom: 8, right: 0),

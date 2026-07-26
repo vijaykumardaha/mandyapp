@@ -8,6 +8,7 @@ import 'package:mandyapp/widgets/product_list/variant_image.dart';
 class ProductCardWidget extends StatelessWidget {
   final Product product;
   final ThemeData theme;
+  final bool isAdmin;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -15,6 +16,7 @@ class ProductCardWidget extends StatelessWidget {
     super.key,
     required this.product,
     required this.theme,
+    this.isAdmin = true,
     required this.onEdit,
     required this.onDelete,
   });
@@ -120,39 +122,40 @@ class ProductCardWidget extends StatelessWidget {
                 ],
               ),
             ),
-            PopupMenuButton<String>(
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.more_vert, size: 20),
-              onSelected: (value) {
-                if (value == 'edit') {
-                  onEdit();
-                } else if (value == 'delete') {
-                  onDelete();
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'edit',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.edit, size: 20),
-                      MySpacing.width(8),
-                      MyText.bodyMedium('edit'.tr()),
-                    ],
+            if (isAdmin)
+              PopupMenuButton<String>(
+                padding: EdgeInsets.zero,
+                icon: const Icon(Icons.more_vert, size: 20),
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    onEdit();
+                  } else if (value == 'delete') {
+                    onDelete();
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.edit, size: 20),
+                        MySpacing.width(8),
+                        MyText.bodyMedium('edit'.tr()),
+                      ],
+                    ),
                   ),
-                ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.delete, size: 20, color: Colors.red),
-                      MySpacing.width(8),
-                      MyText.bodyMedium('delete'.tr(), color: Colors.red),
-                    ],
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.delete, size: 20, color: Colors.red),
+                        MySpacing.width(8),
+                        MyText.bodyMedium('delete'.tr(), color: Colors.red),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
           ],
         ),
       ),

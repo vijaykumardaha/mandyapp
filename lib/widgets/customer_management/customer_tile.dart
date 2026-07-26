@@ -10,12 +10,14 @@ import 'package:mandyapp/screens/payment_histories_screen.dart';
 class CustomerTile extends StatefulWidget {
   final Customer customer;
   final ThemeData theme;
+  final bool isAdmin;
   final VoidCallback onEdit;
 
   const CustomerTile({
     super.key,
     required this.customer,
     required this.theme,
+    this.isAdmin = true,
     required this.onEdit,
   });
 
@@ -167,7 +169,8 @@ class _CustomerTileState extends State<CustomerTile> {
                 }
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                if (widget.isAdmin)
+                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
                 const PopupMenuItem(value: 'payments', child: Text('Payments')),
                 const PopupMenuItem(value: 'bills', child: Text('Bills')),
               ],

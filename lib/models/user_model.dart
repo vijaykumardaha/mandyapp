@@ -24,6 +24,8 @@ class User {
   });
 
   bool get isEnabled => isActive == 1;
+  bool get isAdmin => role == 'admin';
+  bool get isStaff => role == 'staff';
 
   User.fromJson(Map<String, dynamic> json) {
     id = json['id'];

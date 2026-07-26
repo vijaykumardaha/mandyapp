@@ -53,7 +53,6 @@ class _CartItemListState extends State<CartItemList> {
   Customer? _buyerCustomer;
   bool _showCustomerList = true;
   String? _selectedAlphabet;
-  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -529,18 +528,17 @@ class _CartItemListState extends State<CartItemList> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          MyText.bodyMedium(
-                                            titleText,
-                                            fontWeight: 600,
-                                          ),
-                                          const SizedBox(height: 4),
                                           Row(
                                             children: [
-                                              MyText.bodySmall(
-                                                '$quantityLabel × ₹${sale.sellingPrice.toStringAsFixed(2)}',
-                                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                              Expanded(
+                                                child: MyText.bodyMedium(
+                                                  titleText,
+                                                  fontWeight: 600,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
                                               ),
-                                              const Spacer(),
+                                              const SizedBox(width: 8),
                                               MyText.bodyMedium(
                                                 '₹${(sale.quantity * sale.sellingPrice).toStringAsFixed(2)}',
                                                 fontWeight: 600,
@@ -548,69 +546,13 @@ class _CartItemListState extends State<CartItemList> {
                                               ),
                                             ],
                                           ),
+                                          const SizedBox(height: 4),
+                                          MyText.bodySmall(
+                                            '$quantityLabel × ₹${sale.sellingPrice.toStringAsFixed(2)}',
+                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                          ),
                                         ],
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    IconButton(
-                                      icon: _isDeleting
-                                          ? const SizedBox(
-                                              width: 18,
-                                              height: 18,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
-                                              ),
-                                            )
-                                          : Icon(
-                                              Icons.delete_outline,
-                                              size: 20,
-                                              color: Theme.of(context).colorScheme.error.withOpacity(0.7),
-                                            ),
-                                      onPressed: _isDeleting
-                                          ? null
-                                          : () async {
-                                              setState(() {
-                                                _isDeleting = true;
-                                              });
-
-                                              try {
-                                                bool removed = true;
-                                                if (sale.id != null) {
-                                                  removed = await widget.onDeleteSale(sale, index);
-                                                }
-
-                                                if (!mounted || !removed) {
-                                                  return;
-                                                }
-
-                                                setState(() {
-                                                  _saleList.removeAt(index);
-
-                                                  final updatedIndices = <int>{};
-                                                  for (final selectedIndex in _selectedIndices) {
-                                                    if (selectedIndex == index) continue;
-                                                    updatedIndices.add(
-                                                      selectedIndex > index
-                                                          ? selectedIndex - 1
-                                                          : selectedIndex,
-                                                    );
-                                                  }
-                                                  _selectedIndices
-                                                    ..clear()
-                                                    ..addAll(updatedIndices);
-                                                  _isDeleting = false;
-                                                });
-                                              } catch (e) {
-                                                if (mounted) {
-                                                  setState(() {
-                                                    _isDeleting = false;
-                                                  });
-                                                }
-                                              }
-                                            },
-                                      padding: const EdgeInsets.all(4),
-                                      constraints: const BoxConstraints(),
                                     ),
                                   ],
                                 ),

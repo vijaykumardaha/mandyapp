@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandyapp/blocs/product/product_bloc.dart';
 import 'package:mandyapp/helpers/extensions/string.dart';
 import 'package:mandyapp/helpers/theme/app_theme.dart';
+import 'package:mandyapp/utils/app_helper.dart';
 import 'package:mandyapp/widgets/common/common_app_bar.dart';
 import 'package:mandyapp/widgets/common/my_spacing.dart';
 import 'package:mandyapp/widgets/common/my_text.dart';
@@ -23,6 +24,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   late ThemeData theme;
   final _searchController = TextEditingController();
   Timer? _debounce;
+  bool _isAdmin = true;
 
   @override
   void dispose() {
@@ -42,7 +44,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
   void initState() {
     super.initState();
     theme = AppTheme.shoppingManagerTheme;
+    _loadRole();
     context.read<ProductBloc>().add(LoadProducts());
+  }
+
+  Future<void> _loadRole() async {
+    final user = await AppHelper.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        _isAdmin = user?.isAdmin ?? true;
+      });
+    }
   }
 
   void _navigateToProductDetail([Product? product]) async {
@@ -109,11 +121,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
             ),
             prefixIcon: Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
             prefixIconConstraints: const BoxConstraints(minWidth: 36),
-            suffixIcon: IconButton(
-              icon: Icon(Icons.add_box_outlined, size: 20, color: theme.colorScheme.onSurfaceVariant),
-              tooltip: 'add_product'.tr(),
-              onPressed: () => _navigateToProductDetail(),
-            ),
+            suffixIcon: _isAdmin
+                ? IconButton(
+                    icon: Icon(Icons.add_box_outlined, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                    tooltip: 'add_product'.tr(),
+                    onPressed: () => _navigateToProductDetail(),
+                  )
+                : null,
             suffixIconConstraints: const BoxConstraints(minWidth: 40),
           ),
         ),
@@ -154,6 +168,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       return ProductCardWidget(
                         product: product,
                         theme: theme,
+                        isAdmin: _isAdmin,
                         onEdit: () => _navigateToProductDetail(product),
                         onDelete: () => _deleteProduct(product),
                       );
