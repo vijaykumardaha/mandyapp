@@ -17,6 +17,7 @@ import 'package:mandiapp/screens/reports_screen.dart';
 import 'package:mandiapp/screens/bills_screen.dart';
 import 'package:mandiapp/screens/bill_details_screen.dart';
 import 'package:mandiapp/screens/price_update_screen.dart';
+import 'package:mandiapp/screens/stock_screen.dart';
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
@@ -125,6 +126,12 @@ class AppRoutes {
         path: '/price-update',
         builder: (context, state) {
           return const PriceUpdateScreen();
+        },
+      ),
+      GoRoute(
+        path: '/stock',
+        builder: (context, state) {
+          return const StockScreen();
         },
       ),
     ],

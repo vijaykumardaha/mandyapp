@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/dao/vegetable_dao.dart';
 import 'package:mandiapp/models/vegetable_model.dart';
-import 'package:mandiapp/services/sync_service.dart';
 
 part 'vegetable_event.dart';
 part 'vegetable_state.dart';
@@ -41,12 +40,6 @@ class VegetableBloc extends Bloc<VegetableEvent, VegetableState> {
         ));
       } catch (error) {
         emit(VegetableError(errorMsg: error.toString()));
-      }
-    });
-
-    SyncService.instance.tableUpdates.listen((table) {
-      if (table == 'vegetables' && !isClosed) {
-        add(const FetchVegetables());
       }
     });
   }

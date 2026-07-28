@@ -2,7 +2,6 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:mandiapp/dao/product_dao.dart';
 import 'package:mandiapp/models/product_model.dart';
-import 'package:mandiapp/services/sync_service.dart';
 
 part 'product_event.dart';
 part 'product_state.dart';
@@ -84,12 +83,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         emit(ProductLoaded(products));
       } catch (error) {
         emit(ProductError('Failed to sync products: ${error.toString()}'));
-      }
-    });
-
-    SyncService.instance.tableUpdates.listen((table) {
-      if ((table == 'products' || table == 'product_variants') && !isClosed) {
-        add(LoadProducts());
       }
     });
   }

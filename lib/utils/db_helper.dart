@@ -26,7 +26,7 @@ class DBHelper {
       'users', 'products', 'product_variants', 'orders',
       'order_items', 'order_payments', 'order_charges',
       'order_expenses', 'charge_types', 'customers',
-      'customer_payments', 'vegetables',
+      'customer_payments', 'vegetables', 'stocks', 'stock_transactions',
     ];
     for (final table in tables) {
       await db.delete(table);
@@ -48,7 +48,7 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 8,
+      version: 11,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS users (
@@ -228,34 +228,44 @@ class DBHelper {
           )
         ''');
 
+        await db.execute('''
+          CREATE TABLE stocks (
+            id INTEGER PRIMARY KEY,
+            mandi_id INTEGER NOT NULL,
+            seller_id INTEGER NOT NULL,
+            product_id INTEGER NOT NULL,
+            product_variant_id INTEGER,
+            initial_quantity REAL NOT NULL,
+            quantity REAL NOT NULL,
+            sold_quantity REAL NOT NULL DEFAULT 0,
+            loss_quantity REAL NOT NULL DEFAULT 0,
+            purchase_amount REAL NOT NULL,
+            sold_amount REAL NOT NULL DEFAULT 0,
+            updated_at INTEGER NOT NULL,
+            sync_status INTEGER NOT NULL DEFAULT 0,
+            is_deleted INTEGER NOT NULL DEFAULT 0
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE stock_transactions (
+            id INTEGER PRIMARY KEY,
+            stock_id INTEGER NOT NULL,
+            mandi_id INTEGER NOT NULL,
+            product_id INTEGER NOT NULL,
+            product_variant_id INTEGER,
+            buyer_id INTEGER NOT NULL,
+            bill_id INTEGER,
+            buy_quantity REAL NOT NULL,
+            total_amount REAL NOT NULL,
+            updated_at INTEGER NOT NULL,
+            sync_status INTEGER NOT NULL DEFAULT 0,
+            is_deleted INTEGER NOT NULL DEFAULT 0
+          )
+        ''');
+
       },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 8) {
-          await db.execute('DROP TABLE IF EXISTS order_items');
-          await db.execute('''
-            CREATE TABLE IF NOT EXISTS order_items (
-              id INTEGER PRIMARY KEY,
-              mandi_id INTEGER NOT NULL UNIQUE,
-              seller_id INTEGER NOT NULL,
-              buyer_order_id INTEGER,
-              seller_order_id INTEGER,
-              buyer_id INTEGER,
-              product_id INTEGER NOT NULL,
-              variant_id INTEGER NOT NULL,
-              selling_price REAL NOT NULL,
-              quantity REAL NOT NULL,
-              unit TEXT DEFAULT 'Kilogram',
-              product_name TEXT,
-              image_path TEXT,
-              seller_name TEXT,
-              buyer_name TEXT,
-              updated_at INTEGER NOT NULL,
-              is_deleted INTEGER DEFAULT 0,
-              sync_status INTEGER DEFAULT 0
-            )
-          ''');
-        }
-      },
+      onUpgrade: (db, oldVersion, newVersion) async { },
     );
   }
 }

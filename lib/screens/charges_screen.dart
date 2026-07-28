@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
@@ -22,6 +24,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
   bool _isAdmin = true;
+  StreamSubscription<String>? _syncSubscription;
 
   @override
   void initState() {
@@ -29,6 +32,16 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
     theme = AppTheme.shoppingManagerTheme;
     _loadRole();
     context.read<ChargeTypesBloc>().add(LoadChargeTypes());
+
+    _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
+      if (!mounted) return;
+      if (table == 'charge_types') {
+        final state = context.read<ChargeTypesBloc>().state;
+        if (state is ChargeTypesLoaded) {
+          context.read<ChargeTypesBloc>().add(LoadChargeTypes());
+        }
+      }
+    });
   }
 
   Future<void> _loadRole() async {
@@ -42,6 +55,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
 
   @override
   void dispose() {
+    _syncSubscription?.cancel();
     _searchController.dispose();
     super.dispose();
   }

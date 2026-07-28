@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:mandiapp/dao/order_payment_dao.dart';
 import 'package:mandiapp/models/order_payment_model.dart';
-import 'package:mandiapp/services/sync_service.dart';
 
 part 'order_payment_event.dart';
 part 'order_payment_state.dart';
@@ -18,12 +17,6 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
     on<DeleteOrderPayment>(_onDeleteOrderPayment);
     on<GetOrderPaymentById>(_onGetOrderPaymentById);
     on<DeleteOrderPaymentsByOrderId>(_onDeleteOrderPaymentsByOrderId);
-
-    SyncService.instance.tableUpdates.listen((table) {
-      if (table == 'order_payments' && !isClosed) {
-        add(const LoadOrderPayments());
-      }
-    });
   }
 
   Future<void> _onLoadOrderPayments(

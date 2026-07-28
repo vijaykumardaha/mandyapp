@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/order_item/order_item_bloc.dart';
 import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/models/order_item_model.dart';
 import 'package:mandiapp/screens/checkout_screen.dart';
@@ -18,6 +20,7 @@ class BillingScreen extends StatefulWidget {
 class _BillingScreenState extends State<BillingScreen> {
   Customer? _selectedCustomer;
   bool _isBuyerMode = true;
+  StreamSubscription<String>? _syncSubscription;
 
   String get _orderFor => _isBuyerMode ? 'buyer' : 'seller';
 
@@ -27,6 +30,24 @@ class _BillingScreenState extends State<BillingScreen> {
     if (_isBuyerMode) {
       context.read<OrderItemBloc>().add(const LoadAllUnlinkedOrderItems());
     }
+
+    _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
+      if (!mounted) return;
+      if (table == 'order_items') {
+        final state = context.read<OrderItemBloc>().state;
+        if (state is OrderItemsLoaded) {
+          if (_isBuyerMode) {
+            context.read<OrderItemBloc>().add(const LoadAllUnlinkedOrderItems());
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _syncSubscription?.cancel();
+    super.dispose();
   }
 
   String _formatCustomer(Customer? customer) {

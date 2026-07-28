@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/customer/customer_bloc.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
@@ -22,6 +24,7 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
   late ThemeData theme;
   bool _isAdmin = true;
   CustomerBloc get _customerBloc => context.read<CustomerBloc>();
+  StreamSubscription<String>? _syncSubscription;
 
   @override
   void initState() {
@@ -29,6 +32,16 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
     theme = AppTheme.shoppingManagerTheme;
     _loadRole();
     _customerBloc.add(const FetchCustomer(query: ''));
+
+    _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
+      if (!mounted) return;
+      if (table == 'customers') {
+        final state = context.read<CustomerBloc>().state;
+        if (state is CustomerLoaded) {
+          context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
+        }
+      }
+    });
   }
 
   Future<void> _loadRole() async {
@@ -42,6 +55,7 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
 
   @override
   void dispose() {
+    _syncSubscription?.cancel();
     _searchController.dispose();
     super.dispose();
   }

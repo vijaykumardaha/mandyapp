@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import 'package:mandiapp/dao/order_dao.dart';
 import 'package:mandiapp/models/order_item_model.dart';
 import 'package:mandiapp/models/order_model.dart';
-import 'package:mandiapp/services/sync_service.dart';
 
 part 'order_event.dart';
 part 'order_state.dart';
@@ -180,12 +179,6 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         }
       } catch (error) {
         emit(OrderError('Failed to clear order: ${error.toString()}'));
-      }
-    });
-
-    SyncService.instance.tableUpdates.listen((table) {
-      if (table == 'orders' && !isClosed) {
-        add(LoadOrders());
       }
     });
   }

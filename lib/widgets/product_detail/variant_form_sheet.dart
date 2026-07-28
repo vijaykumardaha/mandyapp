@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/helpers/extensions/string.dart';
+import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/models/product_variant_model.dart';
@@ -51,6 +53,7 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
   late TextEditingController quantityController;
   String selectedUnit = 'Kilogram';
   String imagePath = '';
+  StreamSubscription<String>? _syncSubscription;
 
   @override
   void initState() {
@@ -63,14 +66,26 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
         text: v != null ? v.quantity.toString() : '');
     selectedUnit = v?.unit ?? 'Kilogram';
     imagePath = v?.imagePath ?? '';
+
+    _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
+      if (!mounted) return;
+      if (table == 'vegetables') {
+        final state = context.read<VegetableBloc>().state;
+        if (state is VegetableLoaded) {
+          context.read<VegetableBloc>().add(const FetchVegetables());
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
+    _syncSubscription?.cancel();
     nameController.dispose();
     sellingPriceController.dispose();
     quantityController.dispose();
     super.dispose();
+  }
   }
 
   @override

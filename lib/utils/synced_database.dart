@@ -13,6 +13,8 @@ const _syncedTables = {
   'charge_types',
   'customers',
   'customer_payments',
+  'stocks',
+  'stock_transactions',
 };
 
 class SyncedDatabase {

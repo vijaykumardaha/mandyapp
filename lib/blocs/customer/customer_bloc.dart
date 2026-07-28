@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/dao/customer_dao.dart';
 import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/services/sync_service.dart';
 
 part 'customer_event.dart';
 part 'customer_state.dart';
@@ -68,12 +67,6 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
         emit(CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
       } catch (error) {
         emit(SyncCustomerError(errorMsg: error.toString()));
-      }
-    });
-
-    SyncService.instance.tableUpdates.listen((table) {
-      if (table == 'customers' && !isClosed) {
-        add(const FetchCustomer(query: ''));
       }
     });
   }

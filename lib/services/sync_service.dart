@@ -13,6 +13,7 @@ import 'package:mandiapp/dao/product_dao.dart';
 import 'package:mandiapp/dao/product_variant_dao.dart';
 import 'package:mandiapp/dao/user_dao.dart';
 import 'package:mandiapp/dao/vegetable_dao.dart';
+import 'package:mandiapp/dao/stock_dao.dart';
 import 'package:mandiapp/models/charge_type_model.dart';
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/customer_payment_model.dart';
@@ -25,6 +26,7 @@ import 'package:mandiapp/models/product_model.dart';
 import 'package:mandiapp/models/product_variant_model.dart';
 import 'package:mandiapp/models/user_model.dart';
 import 'package:mandiapp/models/vegetable_model.dart';
+import 'package:mandiapp/models/stock_model.dart';
 import 'package:mandiapp/services/socket_service.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 
@@ -52,6 +54,7 @@ class SyncService {
   final UserDAO _userDAO = UserDAO();
   final CustomerPaymentDAO _customerPaymentDAO = CustomerPaymentDAO();
   final VegetableDAO _vegetableDAO = VegetableDAO();
+  final StockDAO _stockDAO = StockDAO();
 
   bool get isSyncing => _syncing;
 
@@ -265,6 +268,16 @@ class SyncService {
       tables['vegetables'] = vegetables.map((m) => Vegetable.fromJson(m).toJson()).toList();
     }
 
+    final stocks = await db.query('stocks', where: 'sync_status = ?', whereArgs: [0]);
+    if (stocks.isNotEmpty) {
+      tables['stocks'] = stocks.map((m) => Stock.fromJson(m).toJson()).toList();
+    }
+
+    final stockTransactions = await db.query('stock_transactions', where: 'sync_status = ?', whereArgs: [0]);
+    if (stockTransactions.isNotEmpty) {
+      tables['stock_transactions'] = stockTransactions.map((m) => StockTransaction.fromJson(m).toJson()).toList();
+    }
+
     return tables;
   }
 
@@ -309,6 +322,8 @@ class SyncService {
       'users',
       'customer_payments',
       'vegetables',
+      'stocks',
+      'stock_transactions',
     ];
     for (final table in tables) {
       await db.update(table, {'sync_status': 1}, where: 'sync_status = ?', whereArgs: [0]);
@@ -384,6 +399,12 @@ class SyncService {
         break;
       case 'vegetables':
         await _vegetableDAO.bulkUpsertVegetables([Vegetable.fromJson(record)]);
+        break;
+      case 'stocks':
+        await _stockDAO.bulkUpsertStocks([Stock.fromJson(record)]);
+        break;
+      case 'stock_transactions':
+        await _stockDAO.bulkUpsertStockTransactions([StockTransaction.fromJson(record)]);
         break;
       default:
         log('SyncService: unknown table "$table", skipping');

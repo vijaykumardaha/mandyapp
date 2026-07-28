@@ -64,6 +64,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () => context.push('/charges'),
             ),
             SettingsTile(
+              icon: Icons.inventory,
+              title: 'Stock Management',
+              theme: theme,
+              onTap: () => context.push('/stock'),
+            ),
+            SettingsTile(
               icon: Icons.print_outlined,
               title: 'Printer',
               theme: theme,

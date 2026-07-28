@@ -19,6 +19,7 @@ import 'package:mandiapp/blocs/user/user_bloc.dart';
 import 'package:mandiapp/blocs/order_payment/order_payment_bloc.dart';
 import 'package:mandiapp/blocs/order_expense/order_expense_bloc.dart';
 import 'package:mandiapp/blocs/vegetable/vegetable_bloc.dart';
+import 'package:mandiapp/blocs/stock/stock_bloc.dart';
 import 'package:mandiapp/dao/order_charge_dao.dart';
 import 'package:mandiapp/dao/order_payment_dao.dart';
 import 'package:mandiapp/dao/order_item_dao.dart';
@@ -122,6 +123,9 @@ class MyApp extends StatelessWidget {
               orderPaymentDAO: OrderPaymentDAO(),
               orderItemDAO: OrderItemDAO(),
             ),
+          ),
+          BlocProvider<StockBloc>(
+            create: (context) => StockBloc(),
           ),
         ],
         child: Consumer<AppNotifier>(

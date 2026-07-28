@@ -20,6 +20,8 @@ import 'package:mandiapp/services/printer_service.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 import 'package:mandiapp/dao/customer_payment_dao.dart';
 import 'package:mandiapp/models/customer_payment_model.dart';
+import 'package:mandiapp/dao/stock_dao.dart';
+import 'package:mandiapp/models/stock_model.dart';
 import 'package:mandiapp/widgets/checkout/checkout_content.dart';
 import 'package:mandiapp/widgets/checkout/payment_method_selector.dart';
 import 'package:mandiapp/utils/app_helper.dart';
@@ -254,6 +256,34 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           note: 'Bill #$orderId',
           paymentDate: DateTime.now().millisecondsSinceEpoch,
         ));
+      }
+
+      if (widget.orderFor == 'buyer') {
+        final stockDAO = StockDAO();
+        for (final item in widget.cartItems ?? []) {
+          final stocks = await stockDAO.getStocksByProduct(item.productId);
+          if (stocks.isEmpty) continue;
+          final stock = stocks.firstWhere(
+            (s) => s.productVariantId == item.variantId,
+            orElse: () => stocks.first,
+          );
+          final available = stock.quantity - stock.soldQuantity - stock.lossQuantity;
+          if (available < item.quantity) continue;
+          final totalAmount = item.sellingPrice * item.quantity;
+          await stockDAO.insertStockTransaction(StockTransaction(
+            stockId: stock.id!,
+            productId: item.productId,
+            productVariantId: item.variantId,
+            buyerId: widget.customerId ?? 0,
+            billId: orderId,
+            buyQuantity: item.quantity,
+            totalAmount: totalAmount,
+          ));
+          stock.quantity = stock.quantity - item.quantity;
+          stock.soldQuantity = stock.soldQuantity + item.quantity;
+          stock.soldAmount = stock.soldAmount + totalAmount;
+          await stockDAO.updateStock(stock);
+        }
       }
 
       if (_autoPrint) {

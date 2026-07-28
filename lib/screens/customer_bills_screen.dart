@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/order/order_bloc.dart';
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/order_model.dart';
+import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/customer_bills/bill_card.dart';
 
@@ -19,10 +21,28 @@ class CustomerBillsScreen extends StatefulWidget {
 }
 
 class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
+  StreamSubscription<String>? _syncSubscription;
+
   @override
   void initState() {
     super.initState();
     context.read<OrderBloc>().add(LoadOrdersByCustomer(widget.customer.id!));
+
+    _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
+      if (!mounted) return;
+      if (table == 'orders') {
+        final state = context.read<OrderBloc>().state;
+        if (state is OrdersLoaded) {
+          context.read<OrderBloc>().add(LoadOrdersByCustomer(widget.customer.id!));
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _syncSubscription?.cancel();
+    super.dispose();
   }
 
   @override

@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mandiapp/blocs/reports/reports_bloc.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/models/user_model.dart';
 import 'package:mandiapp/services/socket_config.dart';
@@ -26,6 +28,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   bool _hasLoadedData = false;
   DashboardDataLoaded? _cachedData;
   String _userName = 'Dashboard';
+  StreamSubscription<String>? _syncSubscription;
 
   @override
   void initState() {
@@ -35,6 +38,17 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadUserName();
       _loadDashboardData();
+    });
+
+    final _relevantTables = {'orders', 'order_items', 'order_payments', 'order_charges', 'order_expenses', 'customer_payments', 'customers'};
+    _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
+      if (!mounted) return;
+      if (_relevantTables.contains(table)) {
+        final state = context.read<ReportsBloc>().state;
+        if (state is DashboardDataLoaded) {
+          context.read<ReportsBloc>().add(const LoadDashboardData());
+        }
+      }
     });
   }
 
@@ -57,6 +71,12 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     } else {
       print('Skipping dashboard data load - using cached data');
     }
+  }
+
+  @override
+  void dispose() {
+    _syncSubscription?.cancel();
+    super.dispose();
   }
 
   @override

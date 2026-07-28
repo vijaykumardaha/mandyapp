@@ -9,7 +9,6 @@ import 'package:mandiapp/dao/order_item_dao.dart';
 import 'package:mandiapp/dao/order_expense_dao.dart';
 import 'package:mandiapp/models/bill_summary_model.dart';
 import 'package:mandiapp/models/order_model.dart';
-import 'package:mandiapp/services/sync_service.dart';
 
 part 'bill_list_event.dart';
 part 'bill_list_state.dart';
@@ -33,13 +32,6 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
   }) : super(BillListInitial()) {
     on<LoadBillSummaries>(_onLoadBillSummaries);
     on<DeleteBillRequested>(_onDeleteBillRequested);
-
-    final _relevantTables = {'orders', 'order_payments', 'order_charges', 'order_expenses', 'order_items'};
-    SyncService.instance.tableUpdates.listen((table) {
-      if (_relevantTables.contains(table) && !isClosed) {
-        add(const LoadBillSummaries(forceRefresh: true));
-      }
-    });
   }
 
   Future<void> _onLoadBillSummaries(

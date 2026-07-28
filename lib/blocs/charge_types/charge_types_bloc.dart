@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:mandiapp/dao/charge_type_dao.dart';
 import 'package:mandiapp/models/charge_type_model.dart';
-import 'package:mandiapp/services/sync_service.dart';
 
 part 'charge_types_event.dart';
 part 'charge_types_state.dart';
@@ -19,12 +18,6 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
     on<ToggleChargeTypeStatus>(_onToggleChargeTypeStatus);
     on<LoadChargeTypesByType>(_onLoadChargeTypesByType);
     on<GetChargeTypeById>(_onGetChargeTypeById);
-
-    SyncService.instance.tableUpdates.listen((table) {
-      if (table == 'charge_types' && !isClosed) {
-        add(LoadChargeTypes());
-      }
-    });
   }
 
   Future<void> _onLoadChargeTypes(

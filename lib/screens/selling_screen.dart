@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/order_item/order_item_bloc.dart';
 import 'package:mandiapp/blocs/product/product_bloc.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/models/customer_model.dart';
@@ -28,6 +30,7 @@ class SellingScreenState extends State<SellingScreen> {
   Customer? buyerCustomer;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  final List<StreamSubscription<String>> _syncSubscriptions = [];
 
   @override
   void initState() {
@@ -35,6 +38,37 @@ class SellingScreenState extends State<SellingScreen> {
     theme = AppTheme.shoppingManagerTheme;
     context.read<ProductBloc>().add(LoadProducts());
     context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
+
+    _syncSubscriptions.add(SyncService.instance.tableUpdates.listen((table) {
+      if (!mounted) return;
+      if (table == 'products' || table == 'product_variants') {
+        final state = context.read<ProductBloc>().state;
+        if (state is ProductLoaded) {
+          context.read<ProductBloc>().add(LoadProducts());
+        }
+      }
+      if (table == 'customers') {
+        final state = context.read<CustomerBloc>().state;
+        if (state is CustomerLoaded) {
+          context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
+        }
+      }
+      if (table == 'order_items') {
+        final state = context.read<OrderItemBloc>().state;
+        if (state is OrderItemsLoaded) {
+          context.read<OrderItemBloc>().add(const LoadAllUnlinkedOrderItems());
+        }
+      }
+    }));
+  }
+
+  @override
+  void dispose() {
+    for (final sub in _syncSubscriptions) {
+      sub.cancel();
+    }
+    _searchController.dispose();
+    super.dispose();
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {

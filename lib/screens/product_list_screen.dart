@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/product/product_bloc.dart';
 import 'package:mandiapp/helpers/extensions/string.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
@@ -25,9 +26,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
   final _searchController = TextEditingController();
   Timer? _debounce;
   bool _isAdmin = true;
+  StreamSubscription<String>? _syncSubscription;
 
   @override
   void dispose() {
+    _syncSubscription?.cancel();
     _searchController.dispose();
     _debounce?.cancel();
     super.dispose();
@@ -46,6 +49,16 @@ class _ProductListScreenState extends State<ProductListScreen> {
     theme = AppTheme.shoppingManagerTheme;
     _loadRole();
     context.read<ProductBloc>().add(LoadProducts());
+
+    _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
+      if (!mounted) return;
+      if (table == 'products' || table == 'product_variants') {
+        final state = context.read<ProductBloc>().state;
+        if (state is ProductLoaded) {
+          context.read<ProductBloc>().add(LoadProducts());
+        }
+      }
+    });
   }
 
   Future<void> _loadRole() async {
