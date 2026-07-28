@@ -1,6 +1,6 @@
 class ProductVariant {
   int? id;
-  int? mandyId;
+  int? mandiId;
   int productId;
   String variantName;
   double sellingPrice;
@@ -13,7 +13,7 @@ class ProductVariant {
 
   ProductVariant({
     this.id,
-    this.mandyId,
+    this.mandiId,
     required this.productId,
     required this.variantName,
     required this.sellingPrice,
@@ -28,7 +28,7 @@ class ProductVariant {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'mandy_id': mandyId,
+      'mandi_id': mandiId,
       'product_id': productId,
       'variant_name': variantName,
       'selling_price': sellingPrice,
@@ -43,7 +43,7 @@ class ProductVariant {
 
   ProductVariant copyWith({
     int? id,
-    int? mandyId,
+    int? mandiId,
     int? productId,
     String? variantName,
     double? sellingPrice,
@@ -56,7 +56,7 @@ class ProductVariant {
   }) {
     return ProductVariant(
       id: id ?? this.id,
-      mandyId: mandyId ?? this.mandyId,
+      mandiId: mandiId ?? this.mandiId,
       productId: productId ?? this.productId,
       variantName: variantName ?? this.variantName,
       sellingPrice: sellingPrice ?? this.sellingPrice,
@@ -72,7 +72,7 @@ class ProductVariant {
   factory ProductVariant.fromJson(Map<String, dynamic> json) {
     return ProductVariant(
       id: json['id'] as int?,
-      mandyId: json['mandy_id'] as int?,
+      mandiId: json['mandi_id'] as int?,
       productId: json['product_id'] as int,
       variantName: json['variant_name'] as String,
       sellingPrice: (json['selling_price'] as num).toDouble(),

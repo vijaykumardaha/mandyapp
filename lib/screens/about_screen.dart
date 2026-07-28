@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/widgets/common/common_app_bar.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/widgets/about/feature_item.dart';
-import 'package:mandyapp/widgets/about/contact_item.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/widgets/about/feature_item.dart';
+import 'package:mandiapp/widgets/about/contact_item.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -55,7 +55,7 @@ class _AboutScreenState extends State<AboutScreen> {
             
             // App Name
             MyText.headlineSmall(
-              'My Mandy',
+              'My Mandi',
               fontWeight: 700,
               textAlign: TextAlign.center,
             ),
@@ -79,7 +79,7 @@ class _AboutScreenState extends State<AboutScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: MyText.bodyMedium(
-                'My Mandy is a comprehensive business management application designed to help you manage your customers, suppliers, and transactions efficiently.',
+                'My Mandi is a comprehensive business management application designed to help you manage your customers, suppliers, and transactions efficiently.',
                 textAlign: TextAlign.center,
                 color: theme.colorScheme.onBackground.withOpacity(0.8),
                 height: 1.5,
@@ -134,7 +134,7 @@ class _AboutScreenState extends State<AboutScreen> {
             
             ContactItem(
               icon: Icons.email,
-              text: 'support@mymandy.com',
+              text: 'support@mymandi.com',
               theme: theme,
             ),
             
@@ -146,7 +146,7 @@ class _AboutScreenState extends State<AboutScreen> {
             
             ContactItem(
               icon: Icons.language,
-              text: 'www.mymandy.com',
+              text: 'www.mymandi.com',
               theme: theme,
             ),
             
@@ -170,7 +170,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                   MySpacing.height(8),
                   MyText.bodyMedium(
-                    'Mandy Team',
+                    'Mandi Team',
                     fontWeight: 600,
                   ),
                 ],
@@ -181,7 +181,7 @@ class _AboutScreenState extends State<AboutScreen> {
             
             // Copyright
             MyText.bodySmall(
-              '© 2025 My Mandy. All rights reserved.',
+              '© 2025 My Mandi. All rights reserved.',
               color: theme.colorScheme.onBackground.withOpacity(0.4),
               textAlign: TextAlign.center,
             ),

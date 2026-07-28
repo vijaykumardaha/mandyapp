@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mandyapp/models/customer_payment_model.dart';
+import 'package:mandiapp/models/customer_payment_model.dart';
 
 class PaymentItem extends StatelessWidget {
   final CustomerPayment payment;

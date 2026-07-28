@@ -1,17 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandyapp/blocs/login/login_bloc.dart';
-import 'package:mandyapp/controllers/login_controller.dart';
-import 'package:mandyapp/services/sync_service.dart';
+import 'package:mandiapp/blocs/login/login_bloc.dart';
+import 'package:mandiapp/controllers/login_controller.dart';
+import 'package:mandiapp/services/sync_service.dart';
 
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/widgets/common/my_button.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/widgets/common/my_button.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:flutter/material.dart';
-import 'package:mandyapp/utils/info_controller.dart';
-import 'package:mandyapp/widgets/auth/mobile_field.dart';
-import 'package:mandyapp/widgets/auth/password_field.dart';
+import 'package:mandiapp/utils/info_controller.dart';
+import 'package:mandiapp/widgets/auth/mobile_field.dart';
+import 'package:mandiapp/widgets/auth/password_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

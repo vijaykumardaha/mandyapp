@@ -1,7 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:mandyapp/dao/order_expense_dao.dart';
-import 'package:mandyapp/models/order_expense_model.dart';
+import 'package:mandiapp/dao/order_expense_dao.dart';
+import 'package:mandiapp/models/order_expense_model.dart';
+import 'package:mandiapp/services/sync_service.dart';
 
 part 'order_expense_event.dart';
 part 'order_expense_state.dart';
@@ -18,6 +19,12 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
     on<LoadOrderExpensesByOrderId>(_onLoadOrderExpensesByOrderId);
     on<LoadOrderExpensesByOrderIdOrNull>(_onLoadOrderExpensesByOrderIdOrNull);
     on<GetOrderExpenseById>(_onGetOrderExpenseById);
+
+    SyncService.instance.tableUpdates.listen((table) {
+      if (table == 'order_expenses' && !isClosed) {
+        add(LoadOrderExpenses());
+      }
+    });
   }
 
   Future<void> _onCreateOrderExpense(

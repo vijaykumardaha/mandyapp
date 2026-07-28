@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/utils/info_controller.dart';
+import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/order_item/order_item_bloc.dart';
-import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/widgets/common/common_app_bar.dart';
-import 'package:mandyapp/models/order_item_model.dart';
-import 'package:mandyapp/screens/checkout_screen.dart';
-import 'package:mandyapp/widgets/selling/cart_item_list.dart';
+import 'package:mandiapp/blocs/order_item/order_item_bloc.dart';
+import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/models/order_item_model.dart';
+import 'package:mandiapp/screens/checkout_screen.dart';
+import 'package:mandiapp/widgets/selling/cart_item_list.dart';
 
 class BillingScreen extends StatefulWidget {
   const BillingScreen({super.key});

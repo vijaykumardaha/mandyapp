@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:mandyapp/helpers/localizations/language.dart';
+import 'package:mandiapp/helpers/localizations/language.dart';
 import 'package:flutter/services.dart';
 
 class Translator {

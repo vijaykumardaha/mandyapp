@@ -1,4 +1,4 @@
-import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandiapp/utils/db_helper.dart';
 
 class ReportDAO {
   final dbHelper = DBHelper.instance;

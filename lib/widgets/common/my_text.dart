@@ -1,5 +1,5 @@
 // ignore_for_file: annotate_overrides, overridden_fields
-import 'package:mandyapp/widgets/common/my_text_style.dart';
+import 'package:mandiapp/widgets/common/my_text_style.dart';
 import 'package:flutter/material.dart';
 
 class MyText extends StatelessWidget {

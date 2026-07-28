@@ -1,4 +1,4 @@
-# mandyapp
+# mandiapp
 
 A new Flutter project.
 

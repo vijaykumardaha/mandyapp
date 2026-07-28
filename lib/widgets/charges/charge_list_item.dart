@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/models/charge_type_model.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/models/charge_type_model.dart';
 
 class ChargeListItem extends StatelessWidget {
   final ChargeType charge;

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:mandyapp/blocs/reports/reports_bloc.dart';
-import 'package:mandyapp/services/report_pdf_service.dart';
-import 'package:mandyapp/widgets/common/common_app_bar.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/widgets/reports/report_types.dart';
-import 'package:mandyapp/widgets/reports/daily_sales_report.dart';
-import 'package:mandyapp/widgets/reports/daily_purchase_report.dart';
-import 'package:mandyapp/widgets/reports/mandi_profit_report.dart';
-import 'package:mandyapp/widgets/reports/pending_payment_report.dart';
-import 'package:mandyapp/widgets/reports/customer_ledger_report.dart';
+import 'package:mandiapp/blocs/reports/reports_bloc.dart';
+import 'package:mandiapp/services/report_pdf_service.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/widgets/reports/report_types.dart';
+import 'package:mandiapp/widgets/reports/daily_sales_report.dart';
+import 'package:mandiapp/widgets/reports/daily_purchase_report.dart';
+import 'package:mandiapp/widgets/reports/mandi_profit_report.dart';
+import 'package:mandiapp/widgets/reports/pending_payment_report.dart';
+import 'package:mandiapp/widgets/reports/customer_ledger_report.dart';
 import 'package:open_file/open_file.dart';
 
 

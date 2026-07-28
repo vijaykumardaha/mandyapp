@@ -1,31 +1,31 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:mandyapp/dao/charge_type_dao.dart';
-import 'package:mandyapp/dao/customer_dao.dart';
-import 'package:mandyapp/dao/customer_payment_dao.dart';
-import 'package:mandyapp/dao/order_charge_dao.dart';
-import 'package:mandyapp/dao/order_dao.dart';
-import 'package:mandyapp/dao/order_expense_dao.dart';
-import 'package:mandyapp/dao/order_item_dao.dart';
-import 'package:mandyapp/dao/order_payment_dao.dart';
-import 'package:mandyapp/dao/product_dao.dart';
-import 'package:mandyapp/dao/product_variant_dao.dart';
-import 'package:mandyapp/dao/user_dao.dart';
-import 'package:mandyapp/dao/vegetable_dao.dart';
-import 'package:mandyapp/models/charge_type_model.dart';
-import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/models/customer_payment_model.dart';
-import 'package:mandyapp/models/order_charge_model.dart';
-import 'package:mandyapp/models/order_expense_model.dart';
-import 'package:mandyapp/models/order_item_model.dart';
-import 'package:mandyapp/models/order_model.dart';
-import 'package:mandyapp/models/order_payment_model.dart';
-import 'package:mandyapp/models/product_model.dart';
-import 'package:mandyapp/models/product_variant_model.dart';
-import 'package:mandyapp/models/user_model.dart';
-import 'package:mandyapp/models/vegetable_model.dart';
-import 'package:mandyapp/services/socket_service.dart';
+import 'package:mandiapp/dao/charge_type_dao.dart';
+import 'package:mandiapp/dao/customer_dao.dart';
+import 'package:mandiapp/dao/customer_payment_dao.dart';
+import 'package:mandiapp/dao/order_charge_dao.dart';
+import 'package:mandiapp/dao/order_dao.dart';
+import 'package:mandiapp/dao/order_expense_dao.dart';
+import 'package:mandiapp/dao/order_item_dao.dart';
+import 'package:mandiapp/dao/order_payment_dao.dart';
+import 'package:mandiapp/dao/product_dao.dart';
+import 'package:mandiapp/dao/product_variant_dao.dart';
+import 'package:mandiapp/dao/user_dao.dart';
+import 'package:mandiapp/dao/vegetable_dao.dart';
+import 'package:mandiapp/models/charge_type_model.dart';
+import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/models/customer_payment_model.dart';
+import 'package:mandiapp/models/order_charge_model.dart';
+import 'package:mandiapp/models/order_expense_model.dart';
+import 'package:mandiapp/models/order_item_model.dart';
+import 'package:mandiapp/models/order_model.dart';
+import 'package:mandiapp/models/order_payment_model.dart';
+import 'package:mandiapp/models/product_model.dart';
+import 'package:mandiapp/models/product_variant_model.dart';
+import 'package:mandiapp/models/user_model.dart';
+import 'package:mandiapp/models/vegetable_model.dart';
+import 'package:mandiapp/services/socket_service.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 
 class SyncService {
@@ -36,6 +36,9 @@ class SyncService {
   StreamSubscription? _messageSubscription;
   bool _listening = false;
   bool _syncing = false;
+
+  final _tableUpdateController = StreamController<String>.broadcast();
+  Stream<String> get tableUpdates => _tableUpdateController.stream;
 
   final CustomerDAO _customerDAO = CustomerDAO();
   final ProductDAO _productDAO = ProductDAO();
@@ -385,5 +388,6 @@ class SyncService {
       default:
         log('SyncService: unknown table "$table", skipping');
     }
+    _tableUpdateController.add(table);
   }
 }

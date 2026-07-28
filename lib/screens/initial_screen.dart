@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandyapp/blocs/login/login_bloc.dart';
-import 'package:mandyapp/services/sync_service.dart';
+import 'package:mandiapp/blocs/login/login_bloc.dart';
+import 'package:mandiapp/services/sync_service.dart';
 
 class InitialScreen extends StatefulWidget {
   const InitialScreen({super.key});

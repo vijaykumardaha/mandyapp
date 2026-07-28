@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:mandyapp/helpers/localizations/translator.dart';
+import 'package:mandiapp/helpers/localizations/translator.dart';
 
 extension StringUtil on String {
   Color get toColor {

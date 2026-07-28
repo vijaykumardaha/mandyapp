@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/utils/app_helper.dart';
-import 'package:mandyapp/utils/info_controller.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/widgets/common/common_app_bar.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/models/charge_type_model.dart';
-import 'package:mandyapp/widgets/charges/charge_list_item.dart';
+import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/models/charge_type_model.dart';
+import 'package:mandiapp/widgets/charges/charge_list_item.dart';
 
 class ChargeTypesScreen extends StatefulWidget {
   const ChargeTypesScreen({super.key});
@@ -225,7 +225,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
 
                           final newChargeType = ChargeType(
                             id: charge?.id,
-                            mandyId: charge?.mandyId,
+                            mandiId: charge?.mandiId,
                             chargeName: nameController.text,
                             chargeType: selectedType,
                             chargeAmount: chargeAmount,

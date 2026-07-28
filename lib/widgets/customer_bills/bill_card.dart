@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mandyapp/models/order_model.dart';
-import 'package:mandyapp/screens/bill_details_screen.dart';
-import 'package:mandyapp/widgets/customer_bills/info_chip.dart';
+import 'package:mandiapp/models/order_model.dart';
+import 'package:mandiapp/screens/bill_details_screen.dart';
+import 'package:mandiapp/widgets/customer_bills/info_chip.dart';
 
 class BillCard extends StatelessWidget {
   final Order order;

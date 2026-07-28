@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandyapp/blocs/login/login_bloc.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/widgets/settings/settings_tile.dart';
+import 'package:mandiapp/blocs/login/login_bloc.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/widgets/settings/settings_tile.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

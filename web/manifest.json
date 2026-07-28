@@ -1,6 +1,6 @@
 {
-    "name": "mandyapp",
-    "short_name": "mandyapp",
+    "name": "mandiapp",
+    "short_name": "mandiapp",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,4 +1,4 @@
-import 'package:mandyapp/helpers/theme/theme_type.dart';
+import 'package:mandiapp/helpers/theme/theme_type.dart';
 
 extension ThemeExtension on ThemeType {
   String get toText {

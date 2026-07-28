@@ -1,6 +1,6 @@
 class User {
   int? id;
-  int? mandyId;
+  int? mandiId;
   String? name;
   String? mobile;
   String? password;
@@ -12,7 +12,7 @@ class User {
 
   User({
     this.id,
-    this.mandyId,
+    this.mandiId,
     this.name,
     this.mobile,
     this.password,
@@ -29,7 +29,7 @@ class User {
 
   User.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    mandyId = json['mandy_id'];
+    mandiId = json['mandi_id'];
     mobile = json['mobile'];
     password = json['password'];
     name = json['name'];
@@ -43,7 +43,7 @@ class User {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
-    data['mandy_id'] = mandyId;
+    data['mandi_id'] = mandiId;
     data['name'] = name;
     data['mobile'] = mobile;
     data['password'] = password;

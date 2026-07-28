@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/widgets/common/common_app_bar.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 
 class TermsConditionsScreen extends StatefulWidget {
   const TermsConditionsScreen({super.key});
@@ -49,7 +49,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
             _buildSectionTitle('1. Agreement to Terms'),
             MySpacing.height(12),
             _buildParagraph(
-              'By accessing and using My Mandy application, you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to these terms, please do not use this application.',
+              'By accessing and using My Mandi application, you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to these terms, please do not use this application.',
             ),
             
             MySpacing.height(24),
@@ -58,7 +58,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
             _buildSectionTitle('2. License to Use'),
             MySpacing.height(12),
             _buildParagraph(
-              'We grant you a limited, non-exclusive, non-transferable license to use My Mandy for your personal or business purposes, subject to these terms and conditions.',
+              'We grant you a limited, non-exclusive, non-transferable license to use My Mandi for your personal or business purposes, subject to these terms and conditions.',
             ),
             MySpacing.height(12),
             _buildParagraph('You agree NOT to:'),
@@ -89,7 +89,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
             _buildSectionTitle('4. Acceptable Use Policy'),
             MySpacing.height(12),
             _buildParagraph(
-              'You agree to use My Mandy only for lawful purposes and in accordance with these terms. You agree not to:',
+              'You agree to use My Mandi only for lawful purposes and in accordance with these terms. You agree not to:',
             ),
             MySpacing.height(8),
             _buildBulletPoint('Violate any applicable laws or regulations'),
@@ -104,7 +104,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
             _buildSectionTitle('5. Data and Privacy'),
             MySpacing.height(12),
             _buildParagraph(
-              'Your use of My Mandy is also governed by our Privacy Policy. By using the application, you consent to the collection and use of your information as described in the Privacy Policy.',
+              'Your use of My Mandi is also governed by our Privacy Policy. By using the application, you consent to the collection and use of your information as described in the Privacy Policy.',
             ),
             MySpacing.height(12),
             _buildParagraph(
@@ -117,7 +117,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
             _buildSectionTitle('6. Intellectual Property Rights'),
             MySpacing.height(12),
             _buildParagraph(
-              'The application and its original content, features, and functionality are owned by My Mandy and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.',
+              'The application and its original content, features, and functionality are owned by My Mandi and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.',
             ),
             
             MySpacing.height(24),
@@ -126,7 +126,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
             _buildSectionTitle('7. Disclaimer of Warranties'),
             MySpacing.height(12),
             _buildParagraph(
-              'My Mandy is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, either express or implied, including but not limited to:',
+              'My Mandi is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, either express or implied, including but not limited to:',
             ),
             MySpacing.height(8),
             _buildBulletPoint('Merchantability or fitness for a particular purpose'),
@@ -140,7 +140,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
             _buildSectionTitle('8. Limitation of Liability'),
             MySpacing.height(12),
             _buildParagraph(
-              'To the maximum extent permitted by law, My Mandy shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, or business opportunities.',
+              'To the maximum extent permitted by law, My Mandi shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, or business opportunities.',
             ),
             
             MySpacing.height(24),
@@ -149,7 +149,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
             _buildSectionTitle('9. Indemnification'),
             MySpacing.height(12),
             _buildParagraph(
-              'You agree to indemnify and hold harmless My Mandy and its affiliates from any claims, damages, losses, liabilities, and expenses arising from your use of the application or violation of these terms.',
+              'You agree to indemnify and hold harmless My Mandi and its affiliates from any claims, damages, losses, liabilities, and expenses arising from your use of the application or violation of these terms.',
             ),
             
             MySpacing.height(24),
@@ -229,11 +229,11 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildContactRow(Icons.email, 'support@mymandy.com'),
+                  _buildContactRow(Icons.email, 'support@mymandi.com'),
                   MySpacing.height(8),
                   _buildContactRow(Icons.phone, '+91 1234567890'),
                   MySpacing.height(8),
-                  _buildContactRow(Icons.language, 'www.mymandy.com'),
+                  _buildContactRow(Icons.language, 'www.mymandi.com'),
                 ],
               ),
             ),
@@ -262,7 +262,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
                   MySpacing.width(12),
                   Expanded(
                     child: MyText.bodySmall(
-                      'By using My Mandy, you acknowledge that you have read, understood, and agree to be bound by these Terms & Conditions.',
+                      'By using My Mandi, you acknowledge that you have read, understood, and agree to be bound by these Terms & Conditions.',
                       color: theme.colorScheme.onBackground.withOpacity(0.8),
                       height: 1.5,
                     ),

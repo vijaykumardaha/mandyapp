@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 
 class FinancialMetric extends StatelessWidget {
   final String title;

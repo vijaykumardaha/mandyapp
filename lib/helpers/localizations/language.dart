@@ -1,5 +1,5 @@
-import 'package:mandyapp/helpers/localizations/translator.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/helpers/localizations/translator.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

@@ -1,6 +1,6 @@
 class OrderPayment {
   int id;
-  int? mandyId;
+  int? mandiId;
   int orderId;
   String source; // 'cash', 'upi', 'card', 'credit'
   double amount;
@@ -10,7 +10,7 @@ class OrderPayment {
 
   OrderPayment({
     required this.id,
-    this.mandyId,
+    this.mandiId,
     required this.orderId,
     required this.source,
     required this.amount,
@@ -22,7 +22,7 @@ class OrderPayment {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'mandy_id': mandyId,
+      'mandi_id': mandiId,
       'order_id': orderId,
       'source': source,
       'amount': amount,
@@ -35,7 +35,7 @@ class OrderPayment {
   factory OrderPayment.fromJson(Map<String, dynamic> json) {
     return OrderPayment(
       id: json['id'] as int,
-      mandyId: json['mandy_id'] as int?,
+      mandiId: json['mandi_id'] as int?,
       orderId: json['order_id'] as int,
       source: json['source'] as String,
       amount: (json['amount'] as num).toDouble(),
@@ -47,7 +47,7 @@ class OrderPayment {
 
   OrderPayment copyWith({
     int? id,
-    int? mandyId,
+    int? mandiId,
     int? orderId,
     String? source,
     double? amount,
@@ -57,7 +57,7 @@ class OrderPayment {
   }) {
     return OrderPayment(
       id: id ?? this.id,
-      mandyId: mandyId ?? this.mandyId,
+      mandiId: mandiId ?? this.mandiId,
       orderId: orderId ?? this.orderId,
       source: source ?? this.source,
       amount: amount ?? this.amount,
@@ -69,7 +69,7 @@ class OrderPayment {
 
   @override
   String toString() {
-    return 'OrderPayment{id: $id, mandyId: $mandyId, orderId: $orderId, source: $source, amount: $amount, updatedAt: $updatedAt}';
+    return 'OrderPayment{id: $id, mandiId: $mandiId, orderId: $orderId, source: $source, amount: $amount, updatedAt: $updatedAt}';
   }
 
   @override
@@ -77,7 +77,7 @@ class OrderPayment {
     if (identical(this, other)) return true;
     return other is OrderPayment &&
         other.id == id &&
-        other.mandyId == mandyId &&
+        other.mandiId == mandiId &&
         other.orderId == orderId &&
         other.source == source &&
         other.amount == amount &&
@@ -87,7 +87,7 @@ class OrderPayment {
   @override
   int get hashCode {
     return id.hashCode ^
-        mandyId.hashCode ^
+        mandiId.hashCode ^
         orderId.hashCode ^
         source.hashCode ^
         amount.hashCode ^

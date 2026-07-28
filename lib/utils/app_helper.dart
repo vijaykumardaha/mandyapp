@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:mandyapp/models/user_model.dart';
+import 'package:mandiapp/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppHelper {
@@ -23,10 +23,10 @@ class AppHelper {
     sharedPreferences.remove(key);
   }
 
-  static Future<int?> getCurrentMandyId() async {
+  static Future<int?> getCurrentMandiId() async {
     final userData = await getPreferences('user');
     if (userData == null) return null;
-    return userData['mandy_id'] as int?;
+    return userData['mandi_id'] as int?;
   }
 
   static Future<User?> getCurrentUser() async {

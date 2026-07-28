@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
-import 'package:mandyapp/models/order_item_model.dart';
+import 'package:mandiapp/models/order_item_model.dart';
 
 class Order {
   int? id;
-  int? mandyId;
+  int? mandiId;
   int customerId;
   String orderFor; // 'seller' or 'buyer'
   int? updatedAt;
@@ -13,7 +13,7 @@ class Order {
 
   Order({
     this.id,
-    this.mandyId,
+    this.mandiId,
     required this.customerId,
     this.orderFor = 'buyer',
     this.updatedAt,
@@ -25,7 +25,7 @@ class Order {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'mandy_id': mandyId,
+      'mandi_id': mandiId,
       'customer_id': customerId,
       'order_for': orderFor,
       'updated_at': updatedAt ?? DateTime.now().millisecondsSinceEpoch,
@@ -37,7 +37,7 @@ class Order {
   factory Order.fromJson(Map<String, dynamic> json, {List<OrderItem>? items}) {
     return Order(
       id: json['id'] as int?,
-      mandyId: json['mandy_id'] as int?,
+      mandiId: json['mandi_id'] as int?,
       customerId: json['customer_id'] as int,
       orderFor: (json['order_for'] as String?)?.trim().toLowerCase() == 'seller' ? 'seller' : 'buyer',
       updatedAt: json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,

@@ -1,6 +1,6 @@
 class Customer {
   int? id;
-  int? mandyId;
+  int? mandiId;
   String? name;
   String? phone;
   String? productIds;
@@ -10,7 +10,7 @@ class Customer {
 
   Customer({
     this.id,
-    this.mandyId,
+    this.mandiId,
     this.name,
     this.phone,
     this.productIds,
@@ -30,7 +30,7 @@ class Customer {
 
   Customer.fromJson(Map<String, dynamic> json)
       : id = json['id'],
-        mandyId = json['mandy_id'] as int?,
+        mandiId = json['mandi_id'] as int?,
         name = json['name'],
         phone = json['phone'],
         productIds = json['product_ids'] as String?,
@@ -41,7 +41,7 @@ class Customer {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
-    data['mandy_id'] = mandyId;
+    data['mandi_id'] = mandiId;
     data['name'] = name;
     data['phone'] = phone;
     data['product_ids'] = productIds;
@@ -53,7 +53,7 @@ class Customer {
 
   Customer copyWith({
     int? id,
-    int? mandyId,
+    int? mandiId,
     String? name,
     String? phone,
     String? productIds,
@@ -63,7 +63,7 @@ class Customer {
   }) {
     return Customer(
       id: id ?? this.id,
-      mandyId: mandyId ?? this.mandyId,
+      mandiId: mandiId ?? this.mandiId,
       name: name ?? this.name,
       phone: phone ?? this.phone,
       productIds: productIds ?? this.productIds,

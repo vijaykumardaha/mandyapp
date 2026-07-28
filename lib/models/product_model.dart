@@ -1,8 +1,8 @@
-import 'package:mandyapp/models/product_variant_model.dart';
+import 'package:mandiapp/models/product_variant_model.dart';
 
 class Product {
   int? id;
-  int? mandyId;
+  int? mandiId;
   int defaultVariant;
   int? updatedAt;
   int? isDeleted;
@@ -11,7 +11,7 @@ class Product {
 
   Product({
     this.id,
-    this.mandyId,
+    this.mandiId,
     required this.defaultVariant,
     this.updatedAt,
     this.isDeleted = 0,
@@ -22,7 +22,7 @@ class Product {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'mandy_id': mandyId,
+      'mandi_id': mandiId,
       'default_variant': defaultVariant,
       'updated_at': updatedAt ?? DateTime.now().millisecondsSinceEpoch,
       'is_deleted': isDeleted ?? 0,
@@ -33,7 +33,7 @@ class Product {
   factory Product.fromJson(Map<String, dynamic> json, {List<ProductVariant>? variants}) {
     return Product(
       id: json['id'] as int?,
-      mandyId: json['mandy_id'] as int?,
+      mandiId: json['mandi_id'] as int?,
       defaultVariant: (json['default_variant'] as int?) ?? 0,
       updatedAt: json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
       isDeleted: json['is_deleted'] as int? ?? 0,

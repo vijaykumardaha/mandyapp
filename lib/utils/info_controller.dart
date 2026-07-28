@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:flutter/material.dart';
 
 class Info {

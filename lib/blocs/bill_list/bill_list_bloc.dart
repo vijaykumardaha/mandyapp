@@ -1,14 +1,15 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:mandyapp/blocs/order/order_bloc.dart';
-import 'package:mandyapp/blocs/order_payment/order_payment_bloc.dart';
-import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
-import 'package:mandyapp/dao/order_charge_dao.dart';
-import 'package:mandyapp/dao/order_payment_dao.dart';
-import 'package:mandyapp/dao/order_item_dao.dart';
-import 'package:mandyapp/dao/order_expense_dao.dart';
-import 'package:mandyapp/models/bill_summary_model.dart';
-import 'package:mandyapp/models/order_model.dart';
+import 'package:mandiapp/blocs/order/order_bloc.dart';
+import 'package:mandiapp/blocs/order_payment/order_payment_bloc.dart';
+import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
+import 'package:mandiapp/dao/order_charge_dao.dart';
+import 'package:mandiapp/dao/order_payment_dao.dart';
+import 'package:mandiapp/dao/order_item_dao.dart';
+import 'package:mandiapp/dao/order_expense_dao.dart';
+import 'package:mandiapp/models/bill_summary_model.dart';
+import 'package:mandiapp/models/order_model.dart';
+import 'package:mandiapp/services/sync_service.dart';
 
 part 'bill_list_event.dart';
 part 'bill_list_state.dart';
@@ -32,6 +33,13 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
   }) : super(BillListInitial()) {
     on<LoadBillSummaries>(_onLoadBillSummaries);
     on<DeleteBillRequested>(_onDeleteBillRequested);
+
+    final _relevantTables = {'orders', 'order_payments', 'order_charges', 'order_expenses', 'order_items'};
+    SyncService.instance.tableUpdates.listen((table) {
+      if (_relevantTables.contains(table) && !isClosed) {
+        add(const LoadBillSummaries(forceRefresh: true));
+      }
+    });
   }
 
   Future<void> _onLoadBillSummaries(

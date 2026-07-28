@@ -1,6 +1,6 @@
 class CustomerPayment {
   int? id;
-  int? mandyId;
+  int? mandiId;
   int customerId;
   double amount;
   String type; // 'paid' or 'received'
@@ -13,7 +13,7 @@ class CustomerPayment {
 
   CustomerPayment({
     this.id,
-    this.mandyId,
+    this.mandiId,
     required this.customerId,
     required this.amount,
     required this.type,
@@ -27,7 +27,7 @@ class CustomerPayment {
 
   CustomerPayment.fromJson(Map<String, dynamic> json)
       : id = json['id'] as int?,
-        mandyId = json['mandy_id'] as int?,
+        mandiId = json['mandi_id'] as int?,
         customerId = json['customer_id'] as int,
         amount = (json['amount'] as num).toDouble(),
         type = json['type'] as String,
@@ -41,7 +41,7 @@ class CustomerPayment {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
-    data['mandy_id'] = mandyId;
+    data['mandi_id'] = mandiId;
     data['customer_id'] = customerId;
     data['amount'] = amount;
     data['type'] = type;
@@ -56,7 +56,7 @@ class CustomerPayment {
 
   CustomerPayment copyWith({
     int? id,
-    int? mandyId,
+    int? mandiId,
     int? customerId,
     double? amount,
     String? type,
@@ -69,7 +69,7 @@ class CustomerPayment {
   }) {
     return CustomerPayment(
       id: id ?? this.id,
-      mandyId: mandyId ?? this.mandyId,
+      mandiId: mandiId ?? this.mandiId,
       customerId: customerId ?? this.customerId,
       amount: amount ?? this.amount,
       type: type ?? this.type,

@@ -1,6 +1,6 @@
 // ignore_for_file: prefer_generic_function_type_aliases
 
-import 'package:mandyapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 

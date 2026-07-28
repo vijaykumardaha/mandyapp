@@ -1,15 +1,15 @@
 
 
-import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/utils/app_helper.dart';
-import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/db_helper.dart';
 
 class CustomerDAO {
   final dbHelper = DBHelper.instance;
 
   Future<void> bulkInsert(List<Customer> customers) async {
     final db = await dbHelper.database;
-    final mandyId = await AppHelper.getCurrentMandyId();
+    final mandiId = await AppHelper.getCurrentMandiId();
     await db.update('customers', {
       'is_deleted': 1,
       'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -17,7 +17,7 @@ class CustomerDAO {
     await db.transaction((txn) async {
       for (var customer in customers) {
         customer.id = DBHelper.generateUuidInt();
-        customer.mandyId = mandyId;
+        customer.mandiId = mandiId;
         customer.updatedAt = DateTime.now().millisecondsSinceEpoch;
         customer.isDeleted = 0;
         customer.syncStatus = 0;
@@ -37,7 +37,7 @@ class CustomerDAO {
   Future<Customer> insertCustomer(Customer customer) async {
     final db = await dbHelper.database;
     customer.id = DBHelper.generateUuidInt();
-    customer.mandyId = await AppHelper.getCurrentMandyId();
+    customer.mandiId = await AppHelper.getCurrentMandiId();
     customer.updatedAt = DateTime.now().millisecondsSinceEpoch;
     customer.isDeleted = 0;
     customer.syncStatus = 0;
@@ -117,13 +117,13 @@ class CustomerDAO {
       for (final customer in customers) {
           batch.rawInsert('''
           INSERT INTO customers (
-            id, mandy_id, name, phone,
+            id, mandi_id, name, phone,
             updated_at, is_deleted, sync_status
           )
           VALUES (?, ?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(id) DO UPDATE SET
-            mandy_id = excluded.mandy_id,
+            mandi_id = excluded.mandi_id,
             name = excluded.name,
             phone = excluded.phone,
             updated_at = excluded.updated_at,
@@ -133,7 +133,7 @@ class CustomerDAO {
           WHERE excluded.updated_at > customers.updated_at;
         ''', [
           customer.id,
-          customer.mandyId,
+          customer.mandiId,
           customer.name,
           customer.phone,
           customer.updatedAt ?? DateTime.now().millisecondsSinceEpoch,

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/customer_payment/customer_payment_bloc.dart';
-import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/models/customer_payment_model.dart';
-import 'package:mandyapp/widgets/common/common_app_bar.dart';
-import 'package:mandyapp/widgets/payment_histories/payment_item.dart';
-import 'package:mandyapp/widgets/payment_histories/summary_bar.dart';
-import 'package:mandyapp/widgets/payment_histories/type_tab.dart';
+import 'package:mandiapp/blocs/customer_payment/customer_payment_bloc.dart';
+import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/models/customer_payment_model.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/payment_histories/payment_item.dart';
+import 'package:mandiapp/widgets/payment_histories/summary_bar.dart';
+import 'package:mandiapp/widgets/payment_histories/type_tab.dart';
 
 class PaymentHistoriesScreen extends StatefulWidget {
   final Customer customer;

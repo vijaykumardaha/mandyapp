@@ -1,6 +1,6 @@
 class Vegetable {
   int? id;
-  int? mandyId;
+  int? mandiId;
   String key;
   String name;
   String path;
@@ -13,7 +13,7 @@ class Vegetable {
 
   Vegetable({
     this.id,
-    this.mandyId,
+    this.mandiId,
     required this.key,
     required this.name,
     required this.path,
@@ -28,7 +28,7 @@ class Vegetable {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
-    data['mandy_id'] = mandyId;
+    data['mandi_id'] = mandiId;
     data['key'] = key;
     data['name'] = name;
     data['path'] = path;
@@ -44,7 +44,7 @@ class Vegetable {
   factory Vegetable.fromJson(Map<String, dynamic> json) {
     return Vegetable(
       id: json['id'] as int?,
-      mandyId: json['mandy_id'] as int?,
+      mandiId: json['mandi_id'] as int?,
       key: json['key'] as String,
       name: json['name'] as String,
       path: json['path'] as String,

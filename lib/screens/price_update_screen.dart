@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/dao/product_variant_dao.dart';
-import 'package:mandyapp/widgets/common/common_app_bar.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/utils/info_controller.dart';
-import 'package:mandyapp/models/product_variant_model.dart';
-import 'package:mandyapp/widgets/common/vertical_stepper.dart';
+import 'package:mandiapp/dao/product_variant_dao.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/utils/info_controller.dart';
+import 'package:mandiapp/models/product_variant_model.dart';
+import 'package:mandiapp/widgets/common/vertical_stepper.dart';
 
 class PriceUpdateScreen extends StatefulWidget {
   const PriceUpdateScreen({super.key});

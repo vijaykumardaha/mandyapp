@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/dao/order_dao.dart';
-import 'package:mandyapp/dao/order_payment_dao.dart';
-import 'package:mandyapp/screens/customer_bills_screen.dart';
-import 'package:mandyapp/screens/payment_histories_screen.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/dao/order_dao.dart';
+import 'package:mandiapp/dao/order_payment_dao.dart';
+import 'package:mandiapp/screens/customer_bills_screen.dart';
+import 'package:mandiapp/screens/payment_histories_screen.dart';
 
 class CustomerTile extends StatefulWidget {
   final Customer customer;
@@ -70,9 +70,7 @@ class _CustomerTileState extends State<CustomerTile> {
   Widget build(BuildContext context) {
     final customer = widget.customer;
     final hasName = customer.name?.trim().isNotEmpty == true;
-    final hasPhone = customer.phone?.trim().isNotEmpty == true;
     final displayName = hasName ? customer.name!.trim() : 'Unnamed Customer';
-    final displayPhone = hasPhone ? customer.phone!.trim() : null;
 
     final nameParts = displayName.split(RegExp(r'\s+'));
     final initials = nameParts.length >= 2
@@ -107,40 +105,33 @@ class _CustomerTileState extends State<CustomerTile> {
                     displayName,
                     fontWeight: 600,
                   ),
-                  if (displayPhone != null) ...[
+                  if (_loaded && _billCount > 0) ...[
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        MyText.bodySmall(
-                          displayPhone,
-                          color: theme.colorScheme.onSurface.withOpacity(0.5),
+                        _StatChip(
+                          label: 'Bills',
+                          value: '$_billCount',
+                          color: theme.colorScheme.primary,
+                          theme: theme,
                         ),
-                        if (_loaded && _billCount > 0) ...[
-                          const SizedBox(width: 8),
+                        if (_totalReceived > 0) ...[
+                          const SizedBox(width: 4),
                           _StatChip(
-                            label: 'Bills',
-                            value: '$_billCount',
-                            color: theme.colorScheme.primary,
+                            label: 'Received',
+                            value: '₹${_totalReceived.toStringAsFixed(0)}',
+                            color: Colors.green,
                             theme: theme,
                           ),
-                          if (_totalReceived > 0) ...[
-                            const SizedBox(width: 4),
-                            _StatChip(
-                              label: 'Received',
-                              value: '₹${_totalReceived.toStringAsFixed(0)}',
-                              color: Colors.green,
-                              theme: theme,
-                            ),
-                          ],
-                          if (_totalPaid > 0) ...[
-                            const SizedBox(width: 4),
-                            _StatChip(
-                              label: 'Paid',
-                              value: '₹${_totalPaid.toStringAsFixed(0)}',
-                              color: Colors.orange,
-                              theme: theme,
-                            ),
-                          ],
+                        ],
+                        if (_totalPaid > 0) ...[
+                          const SizedBox(width: 4),
+                          _StatChip(
+                            label: 'Paid',
+                            value: '₹${_totalPaid.toStringAsFixed(0)}',
+                            color: Colors.orange,
+                            theme: theme,
+                          ),
                         ],
                       ],
                     ),

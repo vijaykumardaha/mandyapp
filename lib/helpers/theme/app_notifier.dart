@@ -3,10 +3,10 @@
 * Version : 1.0.0
 * */
 
-import 'package:mandyapp/helpers/extensions/theme_extension.dart';
-import 'package:mandyapp/helpers/localizations/language.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/helpers/theme/theme_type.dart';
+import 'package:mandiapp/helpers/extensions/theme_extension.dart';
+import 'package:mandiapp/helpers/localizations/language.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/helpers/theme/theme_type.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

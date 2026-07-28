@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/helpers/theme/theme_type.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/helpers/theme/theme_type.dart';
 
 @Deprecated('message')
 class MaterialTheme {

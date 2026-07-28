@@ -3,8 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:mandyapp/blocs/reports/reports_bloc.dart';
-import 'package:mandyapp/widgets/reports/report_types.dart';
+import 'package:mandiapp/blocs/reports/reports_bloc.dart';
+import 'package:mandiapp/widgets/reports/report_types.dart';
 
 class ReportPdfService {
   static final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: 'Rs. ');
@@ -51,7 +51,7 @@ class ReportPdfService {
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text(
-                    'Mandy App',
+                    'Mandi App',
                     style: pw.TextStyle(
                       fontSize: 22,
                       fontWeight: pw.FontWeight.bold,
@@ -108,7 +108,7 @@ class ReportPdfService {
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
           pw.Text(
-            'Mandy App - Report',
+            'Mandi App - Report',
             style: pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
           ),
           pw.Text(

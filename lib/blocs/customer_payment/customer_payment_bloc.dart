@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:mandyapp/dao/customer_payment_dao.dart';
-import 'package:mandyapp/models/customer_payment_model.dart';
+import 'package:mandiapp/dao/customer_payment_dao.dart';
+import 'package:mandiapp/models/customer_payment_model.dart';
 
 part 'customer_payment_event.dart';
 part 'customer_payment_state.dart';

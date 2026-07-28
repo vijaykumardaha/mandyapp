@@ -1,7 +1,7 @@
-import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/models/order_item_model.dart';
-import 'package:mandyapp/models/product_model.dart';
-import 'package:mandyapp/models/product_variant_model.dart';
+import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/models/order_item_model.dart';
+import 'package:mandiapp/models/product_model.dart';
+import 'package:mandiapp/models/product_variant_model.dart';
 
 class BillLineItem {
   final OrderItem sale;

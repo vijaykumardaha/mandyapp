@@ -1,15 +1,15 @@
-import 'package:mandyapp/models/product_model.dart';
-import 'package:mandyapp/models/product_variant_model.dart';
-import 'package:mandyapp/utils/app_helper.dart';
-import 'package:mandyapp/utils/db_helper.dart';
-import 'package:mandyapp/utils/sync_vegetable.dart';
+import 'package:mandiapp/models/product_model.dart';
+import 'package:mandiapp/models/product_variant_model.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/db_helper.dart';
+import 'package:mandiapp/utils/sync_vegetable.dart';
 
 class ProductDAO {
   final dbHelper = DBHelper.instance;
 
   Future<int> insertProduct(Product product) async {
     product.id = DBHelper.generateUuidInt();
-    product.mandyId = await AppHelper.getCurrentMandyId();
+    product.mandiId = await AppHelper.getCurrentMandiId();
     product.updatedAt = DateTime.now().millisecondsSinceEpoch;
     product.isDeleted = 0;
     product.syncStatus = 0;
@@ -93,12 +93,12 @@ class ProductDAO {
       for (final product in products) {
         batch.rawInsert('''
           INSERT INTO products (
-            id, mandy_id, default_variant, updated_at, is_deleted, sync_status
+            id, mandi_id, default_variant, updated_at, is_deleted, sync_status
           )
           VALUES (?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(id) DO UPDATE SET
-            mandy_id = excluded.mandy_id,
+            mandi_id = excluded.mandi_id,
             default_variant = excluded.default_variant,
             updated_at = excluded.updated_at,
             is_deleted = excluded.is_deleted,
@@ -107,7 +107,7 @@ class ProductDAO {
           WHERE excluded.updated_at > products.updated_at;
         ''', [
           product.id,
-          product.mandyId,
+          product.mandiId,
           product.defaultVariant,
           product.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           product.isDeleted ?? 0,
@@ -121,12 +121,12 @@ class ProductDAO {
 
   Future<void> productsSync() async {
     final db = await dbHelper.database;
-    final mandyId = await AppHelper.getCurrentMandyId();
+    final mandiId = await AppHelper.getCurrentMandiId();
 
     final existing = await db.query(
       'products',
-      where: 'mandy_id = ? AND is_deleted = ?',
-      whereArgs: [mandyId, 0],
+      where: 'mandi_id = ? AND is_deleted = ?',
+      whereArgs: [mandiId, 0],
       limit: 1,
     );
 
@@ -139,7 +139,7 @@ class ProductDAO {
       final productId = DBHelper.generateUuidInt();
       await db.insert('products', {
         'id': productId,
-        'mandy_id': mandyId,
+        'mandi_id': mandiId,
         'default_variant': 0,
         'updated_at': now,
         'is_deleted': 0,
@@ -149,7 +149,7 @@ class ProductDAO {
       final variantId = DBHelper.generateUuidInt();
       await db.insert('product_variants', {
         'id': variantId,
-        'mandy_id': mandyId,
+        'mandi_id': mandiId,
         'product_id': productId,
         'variant_name': veg['name'],
         'selling_price': double.tryParse(veg['price'] ?? '0.0') ?? 0.0,
@@ -176,8 +176,8 @@ class ProductDAO {
     if (commonProductIds.isNotEmpty) {
       final customers = await db.query(
         'customers',
-        where: 'mandy_id = ? AND is_deleted = ?',
-        whereArgs: [mandyId, 0],
+        where: 'mandi_id = ? AND is_deleted = ?',
+        whereArgs: [mandiId, 0],
       );
 
       for (final customer in customers) {

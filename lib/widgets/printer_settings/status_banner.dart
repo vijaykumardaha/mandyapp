@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/services/printer_service.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/services/printer_service.dart';
 
 class StatusBanner extends StatelessWidget {
   final String message;

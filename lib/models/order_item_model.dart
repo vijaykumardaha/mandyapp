@@ -1,6 +1,6 @@
 class OrderItem {
   int? id;
-  int? mandyId;
+  int? mandiId;
   int sellerId;
   int? buyerOrderId;
   int? sellerOrderId;
@@ -20,7 +20,7 @@ class OrderItem {
 
   OrderItem({
     this.id,
-    this.mandyId,
+    this.mandiId,
     required this.sellerId,
     this.buyerOrderId,
     this.sellerOrderId,
@@ -42,7 +42,7 @@ class OrderItem {
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     return OrderItem(
       id: json['id'] as int?,
-      mandyId: json['mandy_id'] as int?,
+      mandiId: json['mandi_id'] as int?,
       sellerId: json['seller_id'] as int,
       buyerOrderId: json['buyer_order_id'] as int?,
       sellerOrderId: json['seller_order_id'] as int?,
@@ -65,7 +65,7 @@ class OrderItem {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'mandy_id': mandyId,
+      'mandi_id': mandiId,
       'seller_id': sellerId,
       'buyer_order_id': buyerOrderId,
       'seller_order_id': sellerOrderId,
@@ -87,7 +87,7 @@ class OrderItem {
 
   OrderItem copyWith({
     int? id,
-    int? mandyId,
+    int? mandiId,
     int? sellerId,
     int? buyerOrderId,
     int? sellerOrderId,
@@ -107,7 +107,7 @@ class OrderItem {
   }) {
     return OrderItem(
       id: id ?? this.id,
-      mandyId: mandyId ?? this.mandyId,
+      mandiId: mandiId ?? this.mandiId,
       sellerId: sellerId ?? this.sellerId,
       buyerOrderId: buyerOrderId ?? this.buyerOrderId,
       sellerOrderId: sellerOrderId ?? this.sellerOrderId,
@@ -129,7 +129,7 @@ class OrderItem {
 
   @override
   String toString() {
-    return 'OrderItem(id: $id, mandyId: $mandyId, sellerId: $sellerId, buyerOrderId: $buyerOrderId, sellerOrderId: $sellerOrderId, buyerId: $buyerId, productId: $productId, variantId: $variantId, sellingPrice: $sellingPrice, quantity: $quantity, unit: $unit, updatedAt: $updatedAt, isDeleted: $isDeleted, syncStatus: $syncStatus, productName: $productName, imagePath: $imagePath, sellerName: $sellerName, buyerName: $buyerName)';
+    return 'OrderItem(id: $id, mandiId: $mandiId, sellerId: $sellerId, buyerOrderId: $buyerOrderId, sellerOrderId: $sellerOrderId, buyerId: $buyerId, productId: $productId, variantId: $variantId, sellingPrice: $sellingPrice, quantity: $quantity, unit: $unit, updatedAt: $updatedAt, isDeleted: $isDeleted, syncStatus: $syncStatus, productName: $productName, imagePath: $imagePath, sellerName: $sellerName, buyerName: $buyerName)';
   }
 
   @override
@@ -138,7 +138,7 @@ class OrderItem {
 
     return other is OrderItem &&
       other.id == id &&
-      other.mandyId == mandyId &&
+      other.mandiId == mandiId &&
       other.sellerId == sellerId &&
       other.buyerOrderId == buyerOrderId &&
       other.sellerOrderId == sellerOrderId &&
@@ -161,7 +161,7 @@ class OrderItem {
   int get hashCode {
     return Object.hash(
       id,
-      mandyId,
+      mandiId,
       sellerId,
       buyerOrderId,
       sellerOrderId,

@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandyapp/utils/info_controller.dart';
+import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/charge_types/charge_types_bloc.dart';
-import 'package:mandyapp/dao/customer_dao.dart';
-import 'package:mandyapp/dao/order_charge_dao.dart';
-import 'package:mandyapp/dao/order_dao.dart';
-import 'package:mandyapp/dao/order_expense_dao.dart';
-import 'package:mandyapp/dao/order_payment_dao.dart';
-import 'package:mandyapp/widgets/common/common_app_bar.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/models/charge_type_model.dart';
-import 'package:mandyapp/models/order_charge_model.dart';
-import 'package:mandyapp/models/order_expense_model.dart';
-import 'package:mandyapp/models/order_item_model.dart';
-import 'package:mandyapp/models/order_model.dart';
-import 'package:mandyapp/models/order_payment_model.dart';
-import 'package:mandyapp/services/printer_service.dart';
-import 'package:mandyapp/utils/db_helper.dart';
-import 'package:mandyapp/dao/customer_payment_dao.dart';
-import 'package:mandyapp/models/customer_payment_model.dart';
-import 'package:mandyapp/widgets/checkout/checkout_content.dart';
-import 'package:mandyapp/widgets/checkout/payment_method_selector.dart';
+import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
+import 'package:mandiapp/dao/customer_dao.dart';
+import 'package:mandiapp/dao/order_charge_dao.dart';
+import 'package:mandiapp/dao/order_dao.dart';
+import 'package:mandiapp/dao/order_expense_dao.dart';
+import 'package:mandiapp/dao/order_payment_dao.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/models/charge_type_model.dart';
+import 'package:mandiapp/models/order_charge_model.dart';
+import 'package:mandiapp/models/order_expense_model.dart';
+import 'package:mandiapp/models/order_item_model.dart';
+import 'package:mandiapp/models/order_model.dart';
+import 'package:mandiapp/models/order_payment_model.dart';
+import 'package:mandiapp/services/printer_service.dart';
+import 'package:mandiapp/utils/db_helper.dart';
+import 'package:mandiapp/dao/customer_payment_dao.dart';
+import 'package:mandiapp/models/customer_payment_model.dart';
+import 'package:mandiapp/widgets/checkout/checkout_content.dart';
+import 'package:mandiapp/widgets/checkout/payment_method_selector.dart';
+import 'package:mandiapp/utils/app_helper.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final List<OrderItem>? cartItems;
@@ -49,6 +50,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _isPlacingOrder = false;
   bool _autoPrint = true;
   String? _customerName;
+  bool _isStaff = false;
 
   final _orderChargeDAO = OrderChargeDAO();
   final _orderExpenseDAO = OrderExpenseDao();
@@ -58,11 +60,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   void initState() {
     super.initState();
     _loadCustomerName();
+    _checkStaffRole();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<ChargeTypesBloc>().add(LoadChargeTypes());
       }
     });
+  }
+
+  Future<void> _checkStaffRole() async {
+    final user = await AppHelper.getCurrentUser();
+    if (user != null && user.isStaff && mounted) {
+      setState(() => _isStaff = true);
+    }
   }
 
   Future<void> _loadCustomerName() async {
@@ -404,7 +414,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               child: SizedBox(
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: (_isPlacingOrder || isOverpaid)
+                  onPressed: (_isPlacingOrder || isOverpaid || _isStaff)
                       ? null
                       : () => _placeOrder(chargeTypes),
                   style: ElevatedButton.styleFrom(

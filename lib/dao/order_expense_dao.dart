@@ -1,6 +1,6 @@
-import 'package:mandyapp/models/order_expense_model.dart';
-import 'package:mandyapp/utils/app_helper.dart';
-import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandiapp/models/order_expense_model.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/db_helper.dart';
 import 'package:sqflite/sqflite.dart';
 
 class OrderExpenseDao {
@@ -10,7 +10,7 @@ class OrderExpenseDao {
 
   Future<int> insert(OrderExpense orderExpense) async {
     final db = await dbHelper.database;
-    orderExpense.mandyId = await AppHelper.getCurrentMandyId();
+    orderExpense.mandiId = await AppHelper.getCurrentMandiId();
     orderExpense.updatedAt = DateTime.now().millisecondsSinceEpoch;
     orderExpense.isDeleted = 0;
     orderExpense.syncStatus = 0;
@@ -124,13 +124,13 @@ class OrderExpenseDao {
       for (final orderExpense in orderExpenses) {
         batch.rawInsert('''
           INSERT INTO order_expenses (
-            id, mandy_id, order_id, expense_name, expense_amount,
+            id, mandi_id, order_id, expense_name, expense_amount,
             expense_note, updated_at, is_deleted, sync_status
           )
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(id) DO UPDATE SET
-            mandy_id = excluded.mandy_id,
+            mandi_id = excluded.mandi_id,
             order_id = excluded.order_id,
             expense_name = excluded.expense_name,
             expense_amount = excluded.expense_amount,
@@ -142,7 +142,7 @@ class OrderExpenseDao {
           WHERE excluded.updated_at > order_expenses.updated_at;
         ''', [
           orderExpense.id,
-          orderExpense.mandyId,
+          orderExpense.mandiId,
           orderExpense.orderId,
           orderExpense.expenseName,
           orderExpense.expenseAmount,

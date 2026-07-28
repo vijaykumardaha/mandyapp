@@ -5,18 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "mandyapp",
+            "name": "mandiapp",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "mandyapp (profile mode)",
+            "name": "mandiapp (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "mandyapp (release mode)",
+            "name": "mandiapp (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

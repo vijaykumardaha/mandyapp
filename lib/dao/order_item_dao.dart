@@ -1,6 +1,6 @@
-import 'package:mandyapp/models/order_item_model.dart';
-import 'package:mandyapp/utils/app_helper.dart';
-import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandiapp/models/order_item_model.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/db_helper.dart';
 
 class OrderItemDAO {
   final dbHelper = DBHelper.instance;
@@ -8,7 +8,7 @@ class OrderItemDAO {
   Future<int> insertOrderItem(OrderItem orderItem) async {
     final db = await dbHelper.database;
     orderItem.id = DBHelper.generateUuidInt();
-    orderItem.mandyId = await AppHelper.getCurrentMandyId();
+    orderItem.mandiId = await AppHelper.getCurrentMandiId();
     orderItem.updatedAt = DateTime.now().millisecondsSinceEpoch;
     orderItem.isDeleted = 0;
     orderItem.syncStatus = 0;
@@ -188,14 +188,14 @@ class OrderItemDAO {
       for (final orderItem in orderItems) {
         batch.rawInsert('''
           INSERT INTO order_items (
-            id, mandy_id, seller_id, buyer_order_id, seller_order_id, buyer_id,
+            id, mandi_id, seller_id, buyer_order_id, seller_order_id, buyer_id,
             product_id, variant_id, selling_price, quantity,
             unit, product_name, image_path, seller_name, buyer_name, updated_at, is_deleted, sync_status
           )
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(id) DO UPDATE SET
-            mandy_id = excluded.mandy_id,
+            mandi_id = excluded.mandi_id,
             seller_id = excluded.seller_id,
             buyer_order_id = excluded.buyer_order_id,
             seller_order_id = excluded.seller_order_id,
@@ -216,7 +216,7 @@ class OrderItemDAO {
           WHERE excluded.updated_at > order_items.updated_at;
         ''', [
           orderItem.id,
-          orderItem.mandyId,
+          orderItem.mandiId,
           orderItem.sellerId,
           orderItem.buyerOrderId,
           orderItem.sellerOrderId,

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/utils/info_controller.dart';
+import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/product/product_bloc.dart';
-import 'package:mandyapp/helpers/extensions/string.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/widgets/common/common_app_bar.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/models/product_model.dart';
-import 'package:mandyapp/models/product_variant_model.dart';
-import 'package:mandyapp/dao/product_variant_dao.dart';
-import 'package:mandyapp/dao/product_dao.dart';
-import 'package:mandyapp/widgets/product_detail/variant_form_sheet.dart';
-import 'package:mandyapp/widgets/product_detail/variant_list_item.dart';
+import 'package:mandiapp/blocs/product/product_bloc.dart';
+import 'package:mandiapp/helpers/extensions/string.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/models/product_model.dart';
+import 'package:mandiapp/models/product_variant_model.dart';
+import 'package:mandiapp/dao/product_variant_dao.dart';
+import 'package:mandiapp/dao/product_dao.dart';
+import 'package:mandiapp/widgets/product_detail/variant_form_sheet.dart';
+import 'package:mandiapp/widgets/product_detail/variant_list_item.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product? product;
@@ -134,7 +134,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     final product = Product(
       id: widget.product?.id,
-      mandyId: widget.product?.mandyId,
+      mandiId: widget.product?.mandiId,
       defaultVariant: defaultVariant.id ?? widget.product?.defaultVariant ?? 0,
     );
 

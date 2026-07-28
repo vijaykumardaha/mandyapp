@@ -10,7 +10,7 @@
 
 
     <application
-        android:label="mandyapp"
+        android:label="mandiapp"
         android:name="${applicationName}"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/launcher_icon">

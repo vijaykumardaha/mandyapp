@@ -1,6 +1,6 @@
 class OrderExpense {
   int? id;
-  int? mandyId;
+  int? mandiId;
   String expenseName;
   double expenseAmount;
   String? expenseNote;
@@ -11,7 +11,7 @@ class OrderExpense {
 
   OrderExpense({
     this.id,
-    this.mandyId,
+    this.mandiId,
     required this.expenseName,
     required this.expenseAmount,
     this.expenseNote,
@@ -24,7 +24,7 @@ class OrderExpense {
   factory OrderExpense.fromMap(Map<String, dynamic> map) {
     return OrderExpense(
       id: map['id']?.toInt(),
-      mandyId: map['mandy_id']?.toInt(),
+      mandiId: map['mandi_id']?.toInt(),
       expenseName: map['expense_name'] ?? '',
       expenseAmount: (map['expense_amount'] ?? 0.0).toDouble(),
       expenseNote: map['expense_note'],
@@ -38,7 +38,7 @@ class OrderExpense {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'mandy_id': mandyId,
+      'mandi_id': mandiId,
       'expense_name': expenseName,
       'expense_amount': expenseAmount,
       'expense_note': expenseNote,
@@ -51,7 +51,7 @@ class OrderExpense {
 
   OrderExpense copyWith({
     int? id,
-    int? mandyId,
+    int? mandiId,
     String? expenseName,
     double? expenseAmount,
     String? expenseNote,
@@ -62,7 +62,7 @@ class OrderExpense {
   }) {
     return OrderExpense(
       id: id ?? this.id,
-      mandyId: mandyId ?? this.mandyId,
+      mandiId: mandiId ?? this.mandiId,
       expenseName: expenseName ?? this.expenseName,
       expenseAmount: expenseAmount ?? this.expenseAmount,
       expenseNote: expenseNote ?? this.expenseNote,
@@ -75,7 +75,7 @@ class OrderExpense {
 
   @override
   String toString() {
-    return 'OrderExpense(id: $id, mandyId: $mandyId, expenseName: $expenseName, expenseAmount: $expenseAmount, expenseNote: $expenseNote, orderId: $orderId, updatedAt: $updatedAt)';
+    return 'OrderExpense(id: $id, mandiId: $mandiId, expenseName: $expenseName, expenseAmount: $expenseAmount, expenseNote: $expenseNote, orderId: $orderId, updatedAt: $updatedAt)';
   }
 
   @override
@@ -84,7 +84,7 @@ class OrderExpense {
 
     return other is OrderExpense &&
       other.id == id &&
-      other.mandyId == mandyId &&
+      other.mandiId == mandiId &&
       other.expenseName == expenseName &&
       other.expenseAmount == expenseAmount &&
       other.expenseNote == expenseNote &&
@@ -95,7 +95,7 @@ class OrderExpense {
   @override
   int get hashCode {
     return id.hashCode ^
-      mandyId.hashCode ^
+      mandiId.hashCode ^
       expenseName.hashCode ^
       expenseAmount.hashCode ^
       expenseNote.hashCode ^

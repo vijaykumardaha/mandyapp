@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/utils/my_string_utils.dart';
+import 'package:mandiapp/utils/my_string_utils.dart';
 
 class UserController {
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mandyapp/widgets/bill_details/bill_details_data.dart';
-import 'package:mandyapp/widgets/bill_details/info_row.dart';
+import 'package:mandiapp/widgets/bill_details/bill_details_data.dart';
+import 'package:mandiapp/widgets/bill_details/info_row.dart';
 
 class ReceiptPayment extends StatelessWidget {
   final BillDetailsData data;

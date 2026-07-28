@@ -1,7 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:mandyapp/dao/order_item_dao.dart';
-import 'package:mandyapp/models/order_item_model.dart';
+import 'package:mandiapp/dao/order_item_dao.dart';
+import 'package:mandiapp/models/order_item_model.dart';
+import 'package:mandiapp/services/sync_service.dart';
 
 part 'order_item_event.dart';
 part 'order_item_state.dart';
@@ -19,6 +20,12 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
     on<DeleteOrderItemEvent>(_onDeleteOrderItem);
     on<ClearOrderItems>(_onClearOrderItems);
     on<LoadAllUnlinkedOrderItems>(_onLoadAllUnlinkedOrderItems);
+
+    SyncService.instance.tableUpdates.listen((table) {
+      if (table == 'order_items' && !isClosed) {
+        add(const LoadAllUnlinkedOrderItems());
+      }
+    });
   }
 
   Future<void> _onLoadOrderItems(LoadOrderItems event, Emitter<OrderItemState> emit) async {

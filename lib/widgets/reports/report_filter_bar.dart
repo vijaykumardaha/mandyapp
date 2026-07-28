@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/widgets/reports/report_types.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/widgets/reports/report_types.dart';
 
 class ReportFilterBar extends StatefulWidget {
   final ReportRangePreset selectedPreset;

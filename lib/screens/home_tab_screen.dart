@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:mandyapp/blocs/reports/reports_bloc.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/models/user_model.dart';
-import 'package:mandyapp/services/socket_config.dart';
-import 'package:mandyapp/utils/app_helper.dart';
-import 'package:mandyapp/widgets/common/connection_status_indicator.dart';
-import 'package:mandyapp/widgets/home_tab/financial_metric.dart';
-import 'package:mandyapp/widgets/home_tab/dashboard_overview_card.dart';
+import 'package:mandiapp/blocs/reports/reports_bloc.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/models/user_model.dart';
+import 'package:mandiapp/services/socket_config.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/widgets/common/connection_status_indicator.dart';
+import 'package:mandiapp/widgets/home_tab/financial_metric.dart';
+import 'package:mandiapp/widgets/home_tab/dashboard_overview_card.dart';
 
 class HomeTabScreen extends StatefulWidget {
   const HomeTabScreen({super.key});
@@ -304,11 +304,11 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             children: [
               Expanded(
                 child: _QuickActionCard(
-                  icon: Icons.receipt_long_outlined,
-                  label: 'See Bills',
-                  color: Colors.orange,
+                  icon: Icons.people_outline,
+                  label: 'Customers',
+                  color: Colors.blue,
                   theme: theme,
-                  onTap: () => context.push('/search-bills'),
+                  onTap: () => context.push('/customers'),
                 ),
               ),
               const SizedBox(width: 12),

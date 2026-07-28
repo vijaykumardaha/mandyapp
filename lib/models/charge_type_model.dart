@@ -1,6 +1,6 @@
 class ChargeType {
   int? id;
-  int? mandyId;
+  int? mandiId;
   String chargeName;
   String chargeType;
   double chargeAmount;
@@ -13,7 +13,7 @@ class ChargeType {
 
   ChargeType({
     this.id,
-    this.mandyId,
+    this.mandiId,
     required this.chargeName,
     this.chargeType = 'fixed',
     required this.chargeAmount,
@@ -28,7 +28,7 @@ class ChargeType {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'mandy_id': mandyId,
+      'mandi_id': mandiId,
       'charge_name': chargeName,
       'charge_type': chargeType,
       'charge_amount': chargeAmount,
@@ -44,7 +44,7 @@ class ChargeType {
   factory ChargeType.fromJson(Map<String, dynamic> json) {
     return ChargeType(
       id: json['id'] as int?,
-      mandyId: json['mandy_id'] as int?,
+      mandiId: json['mandi_id'] as int?,
       chargeName: json['charge_name'] as String,
       chargeType: (json['charge_type'] as String?) ?? 'fixed',
       chargeAmount: (json['charge_amount'] as num).toDouble(),

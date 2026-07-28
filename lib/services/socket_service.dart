@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:mandyapp/models/user_model.dart';
-import 'package:mandyapp/services/socket_config.dart';
-import 'package:mandyapp/utils/app_helper.dart';
+import 'package:mandiapp/models/user_model.dart';
+import 'package:mandiapp/services/socket_config.dart';
+import 'package:mandiapp/utils/app_helper.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 
 class SocketService {
@@ -15,7 +15,7 @@ class SocketService {
   PhoenixChannel? _channel;
   bool _isConnecting = false;
   bool _isConnected = false;
-  int? _mandyId;
+  int? _mandiId;
   final _connectionController = StreamController<bool>.broadcast();
 
   PhoenixSocket? get socket => _socket;
@@ -40,9 +40,9 @@ class SocketService {
       }
 
       final user = User.fromJson(userData);
-      _mandyId = user.mandyId;
-      if (_mandyId == null) {
-        log('No mandy_id found, skipping socket connect');
+      _mandiId = user.mandiId;
+      if (_mandiId == null) {
+        log('No mandi_id found, skipping socket connect');
         _isConnecting = false;
         _connectionController.add(false);
         return;
@@ -52,7 +52,7 @@ class SocketService {
         SocketConfig.wsUrl,
         socketOptions: PhoenixSocketOptions(
           params: {
-            'mandy_id': '$_mandyId'
+            'mandi_id': '$_mandiId'
           },
         ),
       );
@@ -68,7 +68,7 @@ class SocketService {
       }
 
       _channel = _socket!.addChannel(
-        topic: '${SocketConfig.channelPrefix}$_mandyId',
+        topic: '${SocketConfig.channelPrefix}$_mandiId',
       );
 
       final joinPush = _channel!.join();
@@ -77,7 +77,7 @@ class SocketService {
       _isConnected = true;
       _isConnecting = false;
       _connectionController.add(true);
-      log('Socket connected and channel joined for mandy_id=$_mandyId');
+      log('Socket connected and channel joined for mandi_id=$_mandiId');
     } catch (e, st) {
       log('Socket connect failed: $e', stackTrace: st);
       _isConnecting = false;

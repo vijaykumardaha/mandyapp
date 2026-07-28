@@ -1,6 +1,6 @@
-import 'package:mandyapp/models/order_charge_model.dart';
-import 'package:mandyapp/utils/app_helper.dart';
-import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandiapp/models/order_charge_model.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/db_helper.dart';
 
 class OrderChargeDAO {
   final dbHelper = DBHelper.instance;
@@ -8,7 +8,7 @@ class OrderChargeDAO {
   // Insert multiple order charges for an order (replaces existing ones)
   Future<void> bulkInsertForOrder(String orderId, List<OrderCharge> charges) async {
     final db = await dbHelper.database;
-    final mandyId = await AppHelper.getCurrentMandyId();
+    final mandiId = await AppHelper.getCurrentMandiId();
 
     // Start transaction
     await db.transaction((txn) async {
@@ -18,7 +18,7 @@ class OrderChargeDAO {
       // Insert new charges
       for (var charge in charges) {
         charge.id = DBHelper.generateUuidInt();
-        charge.mandyId = mandyId;
+        charge.mandiId = mandiId;
         charge.updatedAt = DateTime.now().millisecondsSinceEpoch;
         charge.isDeleted = 0;
         charge.syncStatus = 0;
@@ -45,7 +45,7 @@ class OrderChargeDAO {
   // Insert a single order charge
   Future<int> insertOrderCharge(OrderCharge charge) async {
     charge.id = DBHelper.generateUuidInt();
-    charge.mandyId = await AppHelper.getCurrentMandyId();
+    charge.mandiId = await AppHelper.getCurrentMandiId();
     charge.updatedAt = DateTime.now().millisecondsSinceEpoch;
     charge.isDeleted = 0;
     charge.syncStatus = 0;
@@ -120,13 +120,13 @@ class OrderChargeDAO {
       for (final orderCharge in orderCharges) {
         batch.rawInsert('''
           INSERT INTO order_charges (
-            id, mandy_id, order_id, charge_name, charge_amount,
+            id, mandi_id, order_id, charge_name, charge_amount,
             updated_at, is_deleted, sync_status
           )
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(id) DO UPDATE SET
-            mandy_id = excluded.mandy_id,
+            mandi_id = excluded.mandi_id,
             order_id = excluded.order_id,
             charge_name = excluded.charge_name,
             charge_amount = excluded.charge_amount,
@@ -137,7 +137,7 @@ class OrderChargeDAO {
           WHERE excluded.updated_at > order_charges.updated_at;
         ''', [
           orderCharge.id,
-          orderCharge.mandyId,
+          orderCharge.mandiId,
           orderCharge.orderId,
           orderCharge.chargeName,
           orderCharge.chargeAmount,

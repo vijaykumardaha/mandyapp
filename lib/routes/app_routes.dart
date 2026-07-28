@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandyapp/screens/about_screen.dart';
-import 'package:mandyapp/screens/home_screen.dart';
-import 'package:mandyapp/screens/login_screen.dart';
-import 'package:mandyapp/screens/profile_screen.dart';
-import 'package:mandyapp/screens/signup_screen.dart';
-import 'package:mandyapp/screens/charges_screen.dart';
-import 'package:mandyapp/screens/staff_screen.dart';
-import 'package:mandyapp/screens/initial_screen.dart';
-import 'package:mandyapp/screens/product_list_screen.dart';
-import 'package:mandyapp/screens/privacy_policy_screen.dart';
-import 'package:mandyapp/screens/printer_settings_screen.dart';
-import 'package:mandyapp/screens/terms_conditions_screen.dart';
-import 'package:mandyapp/screens/customer_management_screen.dart';
-import 'package:mandyapp/screens/reports_screen.dart';
-import 'package:mandyapp/screens/bills_screen.dart';
-import 'package:mandyapp/screens/bill_details_screen.dart';
-import 'package:mandyapp/screens/price_update_screen.dart';
+import 'package:mandiapp/screens/about_screen.dart';
+import 'package:mandiapp/screens/home_screen.dart';
+import 'package:mandiapp/screens/login_screen.dart';
+import 'package:mandiapp/screens/profile_screen.dart';
+import 'package:mandiapp/screens/signup_screen.dart';
+import 'package:mandiapp/screens/charges_screen.dart';
+import 'package:mandiapp/screens/staff_screen.dart';
+import 'package:mandiapp/screens/initial_screen.dart';
+import 'package:mandiapp/screens/product_list_screen.dart';
+import 'package:mandiapp/screens/privacy_policy_screen.dart';
+import 'package:mandiapp/screens/printer_settings_screen.dart';
+import 'package:mandiapp/screens/terms_conditions_screen.dart';
+import 'package:mandiapp/screens/customer_management_screen.dart';
+import 'package:mandiapp/screens/reports_screen.dart';
+import 'package:mandiapp/screens/bills_screen.dart';
+import 'package:mandiapp/screens/bill_details_screen.dart';
+import 'package:mandiapp/screens/price_update_screen.dart';
 
 class AppRoutes {
   static final GoRouter router = GoRouter(

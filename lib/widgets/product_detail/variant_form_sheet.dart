@@ -2,12 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/helpers/extensions/string.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/models/product_variant_model.dart';
-import 'package:mandyapp/blocs/vegetable/vegetable_bloc.dart';
-import 'package:mandyapp/utils/info_controller.dart';
+import 'package:mandiapp/helpers/extensions/string.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/models/product_variant_model.dart';
+import 'package:mandiapp/blocs/vegetable/vegetable_bloc.dart';
+import 'package:mandiapp/utils/info_controller.dart';
 
 class VariantFormSheet extends StatefulWidget {
   final int productId;

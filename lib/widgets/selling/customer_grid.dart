@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/customer/customer_bloc.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/models/customer_model.dart';
+import 'package:mandiapp/blocs/customer/customer_bloc.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/models/customer_model.dart';
 
 class CustomerGrid extends StatelessWidget {
-  final String? selectedAlphabet;
+  final String searchQuery;
   final ValueChanged<Customer> onCustomerSelected;
 
   const CustomerGrid({
     super.key,
-    this.selectedAlphabet,
+    this.searchQuery = '',
     required this.onCustomerSelected,
   });
 
@@ -24,10 +24,12 @@ class CustomerGrid extends StatelessWidget {
         final isLoading = customerState is CustomerLoading;
 
         List<Customer> customers = allCustomers;
-        if (selectedAlphabet != null) {
+        if (searchQuery.isNotEmpty) {
+          final query = searchQuery.toLowerCase();
           customers = allCustomers.where((customer) {
-            final name = customer.name?.trim().toUpperCase() ?? '';
-            return name.startsWith(selectedAlphabet!);
+            final name = (customer.name?.trim() ?? '').toLowerCase();
+            final phone = (customer.phone?.trim() ?? '').toLowerCase();
+            return name.contains(query) || phone.contains(query);
           }).toList();
         }
 

@@ -1,7 +1,7 @@
-import 'package:mandyapp/models/order_item_model.dart';
-import 'package:mandyapp/models/order_model.dart';
-import 'package:mandyapp/utils/app_helper.dart';
-import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandiapp/models/order_item_model.dart';
+import 'package:mandiapp/models/order_model.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/db_helper.dart';
 import 'package:sqflite/sqflite.dart';
 
 class OrderDAO {
@@ -11,7 +11,7 @@ class OrderDAO {
   Future<int> insertOrder(Order order) async {
     final db = await dbHelper.database;
     order.id = DBHelper.generateUuidInt();
-    order.mandyId = await AppHelper.getCurrentMandyId();
+    order.mandiId = await AppHelper.getCurrentMandiId();
     order.updatedAt = DateTime.now().millisecondsSinceEpoch;
     order.isDeleted = 0;
     order.syncStatus = 0;
@@ -146,10 +146,10 @@ class OrderDAO {
   // Insert an order item sale
   Future<int> insertOrderItem(OrderItem item) async {
     final db = await dbHelper.database;
-    final mandyId = await AppHelper.getCurrentMandyId();
+    final mandiId = await AppHelper.getCurrentMandiId();
     final prepared = item.copyWith(
       id: item.id ?? DBHelper.generateUuidInt(),
-      mandyId: mandyId,
+      mandiId: mandiId,
       updatedAt: DateTime.now().millisecondsSinceEpoch,
       isDeleted: 0,
       syncStatus: 0,
@@ -223,7 +223,7 @@ class OrderDAO {
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT
         oi.id,
-        oi.mandy_id,
+        oi.mandi_id,
         oi.seller_id,
         oi.buyer_order_id,
         oi.seller_order_id,
@@ -314,13 +314,13 @@ class OrderDAO {
       for (final order in orders) {
         batch.rawInsert('''
           INSERT INTO orders (
-            id, mandy_id, customer_id, order_for,
+            id, mandi_id, customer_id, order_for,
             updated_at, is_deleted, sync_status
           )
           VALUES (?, ?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(id) DO UPDATE SET
-            mandy_id = excluded.mandy_id,
+            mandi_id = excluded.mandi_id,
             customer_id = excluded.customer_id,
             order_for = excluded.order_for,
             updated_at = excluded.updated_at,
@@ -330,7 +330,7 @@ class OrderDAO {
           WHERE excluded.updated_at > orders.updated_at;
         ''', [
           order.id,
-          order.mandyId,
+          order.mandiId,
           order.customerId,
           order.orderFor,
           order.updatedAt ?? DateTime.now().millisecondsSinceEpoch,

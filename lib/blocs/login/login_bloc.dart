@@ -2,16 +2,16 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:mandyapp/dao/customer_dao.dart';
-import 'package:mandyapp/dao/product_dao.dart';
-import 'package:mandyapp/dao/vegetable_dao.dart';
-import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/models/user_model.dart';
-import 'package:mandyapp/services/auth_api.dart';
-import 'package:mandyapp/services/socket_service.dart';
-import 'package:mandyapp/services/sync_service.dart';
-import 'package:mandyapp/utils/app_helper.dart';
-import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandiapp/dao/customer_dao.dart';
+import 'package:mandiapp/dao/product_dao.dart';
+import 'package:mandiapp/dao/vegetable_dao.dart';
+import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/models/user_model.dart';
+import 'package:mandiapp/services/auth_api.dart';
+import 'package:mandiapp/services/socket_service.dart';
+import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/db_helper.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';

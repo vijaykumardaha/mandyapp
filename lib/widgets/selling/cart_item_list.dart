@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/customer/customer_bloc.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/models/order_item_model.dart';
+import 'package:mandiapp/blocs/customer/customer_bloc.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/models/order_item_model.dart';
 
 typedef SaleSelectionFormatCustomer = String Function(Customer? customer);
 typedef SaleSelectionSellerLookup = String? Function(OrderItem sale);
@@ -52,7 +52,8 @@ class _CartItemListState extends State<CartItemList> {
   List<OrderItem> _saleList = [];
   Customer? _buyerCustomer;
   bool _showCustomerList = true;
-  String? _selectedAlphabet;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -82,57 +83,52 @@ class _CartItemListState extends State<CartItemList> {
     }
   }
 
-  Widget _buildAlphabetTag(String alphabet, bool isSelected) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedAlphabet =
-              isSelected ? null : (alphabet == 'All' ? null : alphabet);
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+  Widget _buildSearchField() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: 'Search ${widget.buyerMode ? 'buyer' : 'seller'}...',
+          prefixIcon: const Icon(Icons.search, size: 20),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, size: 18),
+                  onPressed: () {
+                    setState(() {
+                      _searchQuery = '';
+                      _searchController.clear();
+                    });
+                  },
+                )
+              : null,
+          filled: true,
+          fillColor: Theme.of(context).colorScheme.surface,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+            ),
           ),
-        ),
-        child: Text(
-          alphabet,
-          style: TextStyle(
-            color: isSelected
-                ? Theme.of(context).colorScheme.onPrimary
-                : Theme.of(context).colorScheme.onSurface,
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+            ),
           ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
-      ),
-    );
-  }
-
-  Widget _buildAlphabetFilter() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16),
-      child: Row(
-        children: [
-          _buildAlphabetTag('All', _selectedAlphabet == null),
-          const SizedBox(width: 8),
-          ...List.generate(26, (index) {
-            final alphabet = String.fromCharCode(65 + index);
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: _buildAlphabetTag(alphabet, _selectedAlphabet == alphabet),
-            );
-          }),
-        ],
+        onChanged: (value) {
+          setState(() {
+            _searchQuery = value;
+          });
+        },
       ),
     );
   }
@@ -154,12 +150,14 @@ class _CartItemListState extends State<CartItemList> {
         final isLoading = customerState is CustomerLoading;
         final hasError = customerState is SyncCustomerError;
 
-        // Filter customers by selected alphabet
+        // Filter customers by search query
         List<Customer> customers = allCustomers;
-        if (_selectedAlphabet != null) {
+        if (_searchQuery.isNotEmpty) {
+          final query = _searchQuery.toLowerCase();
           customers = allCustomers.where((customer) {
-            final name = customer.name?.trim().toUpperCase() ?? '';
-            return name.startsWith(_selectedAlphabet!);
+            final name = (customer.name?.trim() ?? '').toLowerCase();
+            final phone = (customer.phone?.trim() ?? '').toLowerCase();
+            return name.contains(query) || phone.contains(query);
           }).toList();
         }
 
@@ -215,26 +213,27 @@ class _CartItemListState extends State<CartItemList> {
                 ),
                 const SizedBox(height: 16),
                 MyText.bodyMedium(
-                  _selectedAlphabet != null 
-                      ? 'No customers found starting with "${_selectedAlphabet}"'
+                  _searchQuery.isNotEmpty
+                      ? 'No customers found matching "${_searchQuery}"'
                       : 'No customers found',
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
-                if (_selectedAlphabet != null) ...[
+                if (_searchQuery.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () {
                       setState(() {
-                        _selectedAlphabet = null;
+                        _searchQuery = '';
+                        _searchController.clear();
                       });
                     },
                     child: MyText.bodySmall(
-                      'Show all customers',
+                      'Clear search',
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ],
-                if (_selectedAlphabet == null && allCustomers.isEmpty) ...[
+                if (_searchQuery.isEmpty && allCustomers.isEmpty) ...[
                   const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: () {
@@ -343,12 +342,9 @@ class _CartItemListState extends State<CartItemList> {
       bottom: false,
       child: Column(
         children: [
-          // Sticky alphabet filter
+          // Sticky search field
           if (_showCustomerList)
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: _buildAlphabetFilter(),
-            ),
+            _buildSearchField(),
           // Scrollable content area
           Expanded(
             child: Padding(

@@ -1,5 +1,5 @@
-import 'package:mandyapp/helpers/localizations/language.dart';
-import 'package:mandyapp/helpers/theme/app_notifier.dart';
+import 'package:mandiapp/helpers/localizations/language.dart';
+import 'package:mandiapp/helpers/theme/app_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

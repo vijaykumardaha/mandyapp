@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/helpers/extensions/string.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/models/product_variant_model.dart';
-import 'package:mandyapp/widgets/product_detail/variant_thumbnail.dart';
+import 'package:mandiapp/helpers/extensions/string.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/models/product_variant_model.dart';
+import 'package:mandiapp/widgets/product_detail/variant_thumbnail.dart';
 
 class VariantListItem extends StatelessWidget {
   final ProductVariant variant;

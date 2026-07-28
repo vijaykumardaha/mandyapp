@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/utils/info_controller.dart';
+import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/order_item/order_item_bloc.dart';
-import 'package:mandyapp/blocs/product/product_bloc.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/widgets/common/common_app_bar.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/models/customer_model.dart';
-import 'package:mandyapp/models/order_item_model.dart';
-import 'package:mandyapp/models/product_model.dart';
-import 'package:mandyapp/models/product_variant_model.dart';
-import 'package:mandyapp/blocs/customer/customer_bloc.dart';
-import 'package:mandyapp/widgets/selling/add_to_sale_bottom_sheet.dart';
-import 'package:mandyapp/widgets/selling/alphabet_filter.dart' as extracted;
-import 'package:mandyapp/widgets/selling/customer_grid.dart';
-import 'package:mandyapp/widgets/selling/product_card.dart';
+import 'package:mandiapp/blocs/order_item/order_item_bloc.dart';
+import 'package:mandiapp/blocs/product/product_bloc.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/models/order_item_model.dart';
+import 'package:mandiapp/models/product_model.dart';
+import 'package:mandiapp/models/product_variant_model.dart';
+import 'package:mandiapp/blocs/customer/customer_bloc.dart';
+import 'package:mandiapp/widgets/selling/add_to_sale_bottom_sheet.dart';
+import 'package:mandiapp/widgets/selling/customer_grid.dart';
+import 'package:mandiapp/widgets/selling/product_card.dart';
 
 class SellingScreen extends StatefulWidget {
   const SellingScreen({super.key});
@@ -27,7 +26,8 @@ class SellingScreenState extends State<SellingScreen> {
   late ThemeData theme;
   Customer? sellerCustomer;
   Customer? buyerCustomer;
-  String? _selectedAlphabet;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -39,7 +39,57 @@ class SellingScreenState extends State<SellingScreen> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return CommonAppBar(
-      title: sellerCustomer != null ? 'Selling to ${sellerCustomer!.name}' : 'Select Seller',
+      titleWidget: sellerCustomer != null
+          ? Text(
+              'Selling to ${sellerCustomer!.name}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            )
+          : Expanded(
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                decoration: InputDecoration(
+                  hintText: 'Search seller...',
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 18),
+                          onPressed: () {
+                            setState(() {
+                              _searchQuery = '';
+                              _searchController.clear();
+                            });
+                          },
+                        )
+                      : null,
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                },
+              ),
+            ),
       actions: [
         if (sellerCustomer != null)
           Padding(
@@ -60,7 +110,7 @@ class SellingScreenState extends State<SellingScreen> {
 
   Widget _buildCustomerGrid() {
     return CustomerGrid(
-      selectedAlphabet: _selectedAlphabet,
+      searchQuery: _searchQuery,
       onCustomerSelected: (customer) {
         setState(() {
           sellerCustomer = customer;
@@ -149,19 +199,7 @@ class SellingScreenState extends State<SellingScreen> {
           }
         },
         child: sellerCustomer == null
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  extracted.AlphabetFilter(
-                    onAlphabetSelected: (alphabet) {
-                      setState(() {
-                        _selectedAlphabet = alphabet;
-                      });
-                    },
-                  ),
-                  Expanded(child: _buildCustomerGrid()),
-                ],
-              )
+            ? _buildCustomerGrid()
             : BlocBuilder<ProductBloc, ProductState>(
                 builder: (context, productState) {
                   if (productState is ProductLoading) {

@@ -1,13 +1,13 @@
-import 'package:mandyapp/models/charge_type_model.dart';
-import 'package:mandyapp/utils/app_helper.dart';
-import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandiapp/models/charge_type_model.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/db_helper.dart';
 
 class ChargeTypeDAO {
   final dbHelper = DBHelper.instance;
 
   Future<int> insertChargeType(ChargeType chargeType) async {
     chargeType.id = DBHelper.generateUuidInt();
-    chargeType.mandyId = await AppHelper.getCurrentMandyId();
+    chargeType.mandiId = await AppHelper.getCurrentMandiId();
     chargeType.updatedAt = DateTime.now().millisecondsSinceEpoch;
     chargeType.isDeleted = 0;
     chargeType.syncStatus = 0;
@@ -180,13 +180,13 @@ class ChargeTypeDAO {
       for (final chargeType in chargeTypes) {
         batch.rawInsert('''
           INSERT INTO charge_types (
-            id, mandy_id, charge_name, charge_type, charge_amount, charge_for,
+            id, mandi_id, charge_name, charge_type, charge_amount, charge_for,
             is_default, is_active, updated_at, is_deleted, sync_status
           )
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(id) DO UPDATE SET
-            mandy_id = excluded.mandy_id,
+            mandi_id = excluded.mandi_id,
             charge_name = excluded.charge_name,
             charge_type = excluded.charge_type,
             charge_amount = excluded.charge_amount,
@@ -200,7 +200,7 @@ class ChargeTypeDAO {
           WHERE excluded.updated_at > charge_types.updated_at;
         ''', [
           chargeType.id,
-          chargeType.mandyId,
+          chargeType.mandiId,
           chargeType.chargeName,
           chargeType.chargeType,
           chargeType.chargeAmount,

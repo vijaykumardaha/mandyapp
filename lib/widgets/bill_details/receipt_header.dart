@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/widgets/bill_details/bill_details_data.dart';
+import 'package:mandiapp/widgets/bill_details/bill_details_data.dart';
 
 class ReceiptHeader extends StatelessWidget {
   final BillDetailsData data;

@@ -1,10 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/dao/user_dao.dart';
-import 'package:mandyapp/models/user_model.dart';
-import 'package:mandyapp/services/auth_api.dart';
-import 'package:mandyapp/utils/app_helper.dart';
+import 'package:mandiapp/dao/user_dao.dart';
+import 'package:mandiapp/models/user_model.dart';
+import 'package:mandiapp/services/auth_api.dart';
+import 'package:mandiapp/utils/app_helper.dart';
 
 part 'user_event.dart';
 part 'user_state.dart';
@@ -125,10 +125,10 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       try {
         emit(UserLoading());
         
-        final mandyId = await AppHelper.getCurrentMandyId();
+        final mandiId = await AppHelper.getCurrentMandiId();
         
         final newUser = await _authApi.addStaff(
-          mandyId: mandyId ?? 0,
+          mandiId: mandiId ?? 0,
           name: event.name,
           mobile: event.mobile,
           password: event.password,
@@ -136,7 +136,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
         newUser.role = event.role;
         newUser.password = event.password;
-        newUser.mandyId = mandyId ?? newUser.mandyId;
+        newUser.mandiId = mandiId ?? newUser.mandiId;
         await userDAO.registerUser(newUser);
 
         emit(UserUpdated(user: newUser));

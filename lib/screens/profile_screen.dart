@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/utils/info_controller.dart';
+import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandyapp/blocs/user/user_bloc.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/widgets/common/my_button.dart';
-import 'package:mandyapp/widgets/common/common_app_bar.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/widgets/common/my_text_style.dart';
+import 'package:mandiapp/blocs/user/user_bloc.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/widgets/common/my_button.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/widgets/common/my_text_style.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -101,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     MySpacing.height(32),
 
                     // Name Field
-                    MyText.bodyMedium('Mandy Name', fontWeight: 600),
+                    MyText.bodyMedium('Mandi Name', fontWeight: 600),
                     MySpacing.height(8),
                     TextFormField(
                       controller: _nameController,

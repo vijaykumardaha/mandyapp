@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandyapp/blocs/product/product_bloc.dart';
-import 'package:mandyapp/helpers/extensions/string.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/utils/app_helper.dart';
-import 'package:mandyapp/widgets/common/common_app_bar.dart';
-import 'package:mandyapp/widgets/common/my_spacing.dart';
-import 'package:mandyapp/widgets/common/my_text.dart';
-import 'package:mandyapp/models/product_model.dart';
-import 'package:mandyapp/screens/product_detail_screen.dart';
-import 'package:mandyapp/widgets/product_list/product_card_widget.dart';
+import 'package:mandiapp/blocs/product/product_bloc.dart';
+import 'package:mandiapp/helpers/extensions/string.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/models/product_model.dart';
+import 'package:mandiapp/screens/product_detail_screen.dart';
+import 'package:mandiapp/widgets/product_list/product_card_widget.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});

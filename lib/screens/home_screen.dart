@@ -6,15 +6,15 @@ import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandyapp/blocs/login/login_bloc.dart';
-import 'package:mandyapp/helpers/theme/app_theme.dart';
-import 'package:mandyapp/screens/billing_screen.dart';
-import 'package:mandyapp/screens/home_tab_screen.dart';
-import 'package:mandyapp/screens/selling_screen.dart';
-import 'package:mandyapp/screens/settings_screen.dart';
-import 'package:mandyapp/screens/customer_management_screen.dart';
-import 'package:mandyapp/services/socket_service.dart';
-import 'package:mandyapp/services/sync_service.dart';
+import 'package:mandiapp/blocs/login/login_bloc.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/screens/billing_screen.dart';
+import 'package:mandiapp/screens/home_tab_screen.dart';
+import 'package:mandiapp/screens/selling_screen.dart';
+import 'package:mandiapp/screens/settings_screen.dart';
+import 'package:mandiapp/screens/bills_screen.dart';
+import 'package:mandiapp/services/socket_service.dart';
+import 'package:mandiapp/services/sync_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final int activeTab;
@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const HomeTabScreen(),
         const BillingScreen(),
         const SellingScreen(),
-        const CustomerManagementScreen(),
+        const BillsScreen(),
         const SettingsScreen(),
       ];
 
@@ -84,9 +84,9 @@ class _HomeScreenState extends State<HomeScreen> {
         activeIcon: Icons.point_of_sale_outlined,
         title: "Selling"),
     const TabItem(
-        icon: Icons.people_outline,
-        activeIcon: Icons.people,
-        title: "Customers"),
+        icon: Icons.receipt_long_outlined,
+        activeIcon: Icons.receipt_long,
+        title: "Bills"),
     const TabItem(
         icon: Icons.settings,
         activeIcon: Icons.settings_outlined,

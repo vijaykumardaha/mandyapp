@@ -1,13 +1,13 @@
-import 'package:mandyapp/models/product_variant_model.dart';
-import 'package:mandyapp/utils/app_helper.dart';
-import 'package:mandyapp/utils/db_helper.dart';
+import 'package:mandiapp/models/product_variant_model.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/db_helper.dart';
 
 class ProductVariantDAO {
   final dbHelper = DBHelper.instance;
 
   Future<int> insertVariant(ProductVariant variant) async {
     variant.id = DBHelper.generateUuidInt();
-    variant.mandyId = await AppHelper.getCurrentMandyId();
+    variant.mandiId = await AppHelper.getCurrentMandiId();
     variant.updatedAt = DateTime.now().millisecondsSinceEpoch;
     variant.isDeleted = 0;
     variant.syncStatus = 0;
@@ -109,13 +109,13 @@ class ProductVariantDAO {
       for (final variant in variants) {
         batch.rawInsert('''
           INSERT INTO product_variants (
-            id, mandy_id, product_id, variant_name, selling_price,
+            id, mandi_id, product_id, variant_name, selling_price,
             quantity, unit, image_path, updated_at, is_deleted, sync_status
           )
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(id) DO UPDATE SET
-            mandy_id = excluded.mandy_id,
+            mandi_id = excluded.mandi_id,
             product_id = excluded.product_id,
             variant_name = excluded.variant_name,
             selling_price = excluded.selling_price,
@@ -129,7 +129,7 @@ class ProductVariantDAO {
           WHERE excluded.updated_at > product_variants.updated_at;
         ''', [
           variant.id,
-          variant.mandyId,
+          variant.mandiId,
           variant.productId,
           variant.variantName,
           variant.sellingPrice,

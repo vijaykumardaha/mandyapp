@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/widgets/common/stepper_button.dart';
+import 'package:mandiapp/widgets/common/stepper_button.dart';
 
 class VerticalStepper extends StatelessWidget {
   final TextEditingController controller;

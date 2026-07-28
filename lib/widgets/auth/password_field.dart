@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mandyapp/widgets/common/my_text_style.dart';
+import 'package:mandiapp/widgets/common/my_text_style.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 
 class AuthPasswordField extends StatefulWidget {

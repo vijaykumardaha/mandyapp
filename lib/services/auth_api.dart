@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:mandyapp/models/user_model.dart';
-import 'package:mandyapp/services/api_service.dart';
+import 'package:mandiapp/models/user_model.dart';
+import 'package:mandiapp/services/api_service.dart';
 
 class AuthApi {
   final _dio = ApiService.instance.dio;
@@ -51,7 +51,7 @@ class AuthApi {
 
   /// POST /api/add_staff
   Future<User> addStaff({
-    required int mandyId,
+    required int mandiId,
     required String name,
     required String mobile,
     String? password,
@@ -59,7 +59,7 @@ class AuthApi {
     try {
       final data = <String, dynamic>{
         'staff': {
-          'mandy_id': mandyId,
+          'mandi_id': mandiId,
           'name': name,
           'mobile': mobile,
         },

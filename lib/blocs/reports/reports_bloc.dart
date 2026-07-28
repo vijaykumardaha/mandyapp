@@ -1,7 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:mandyapp/dao/report_dao.dart';
-import 'package:mandyapp/models/report_models.dart';
+import 'package:mandiapp/dao/report_dao.dart';
+import 'package:mandiapp/models/report_models.dart';
+import 'package:mandiapp/services/sync_service.dart';
 
 part 'reports_event.dart';
 part 'reports_state.dart';
@@ -22,6 +23,13 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     on<LoadPaymentSummary>(_onLoadPaymentSummary);
     on<LoadTodayOrders>(_onLoadTodayOrders);
     on<LoadNetBalance>(_onLoadNetBalance);
+
+    final _relevantTables = {'orders', 'order_items', 'order_payments', 'order_charges', 'order_expenses', 'customer_payments', 'customers'};
+    SyncService.instance.tableUpdates.listen((table) {
+      if (_relevantTables.contains(table) && !isClosed) {
+        add(const LoadDashboardData());
+      }
+    });
   }
 
   Future<void> _onLoadDailySalesReport(
