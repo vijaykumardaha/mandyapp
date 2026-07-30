@@ -103,7 +103,6 @@ class _VariantItemCardState extends State<VariantItemCard> {
                                 child: TextField(
                                   controller: widget.rateController,
                                   enabled: widget.variant.id != null,
-                                  readOnly: true,
                                   keyboardType:
                                       const TextInputType.numberWithOptions(
                                           decimal: true),
@@ -135,7 +134,6 @@ class _VariantItemCardState extends State<VariantItemCard> {
                                 child: TextField(
                                   controller: widget.qtyController,
                                   enabled: widget.variant.id != null,
-                                  readOnly: true,
                                   keyboardType:
                                       const TextInputType.numberWithOptions(
                                           decimal: true),

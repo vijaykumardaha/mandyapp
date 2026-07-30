@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mandiapp/blocs/login/login_bloc.dart';
 import 'package:mandiapp/controllers/login_controller.dart';
-import 'package:mandiapp/services/sync_service.dart';
 
 import 'package:mandiapp/helpers/theme/app_theme.dart';
 import 'package:mandiapp/widgets/common/my_button.dart';
@@ -42,20 +41,32 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocConsumer<LoginBloc, LoginState>(
-        listener: (context, state) async {
+        listener: (context, state) {
           if (state is LoginFailure) {
             Info.error(state.error, context: context);
           }
 
           if (state is LoginSuccess) {
-            await SyncService.instance.connectAndSync();
             context.go('/home');
           }
         },
         builder: (context, state) {
-          if (state is LoginLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
+          if (state is LoginLoading || state is SyncLoading) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(),
+                  if (state is SyncLoading)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Text(
+                        'Syncing your data...',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                ],
+              ),
             );
           }
           return SafeArea(

@@ -38,6 +38,7 @@ class SyncService {
   StreamSubscription? _messageSubscription;
   bool _listening = false;
   bool _syncing = false;
+  bool _paused = false;
 
   final _tableUpdateController = StreamController<String>.broadcast();
   Stream<String> get tableUpdates => _tableUpdateController.stream;
@@ -57,6 +58,21 @@ class SyncService {
   final StockDAO _stockDAO = StockDAO();
 
   bool get isSyncing => _syncing;
+  bool get isPaused => _paused;
+
+  /// Pause all sync activity (syncRecord + bulkSync).
+  /// Use during critical write sequences like checkout.
+  void pause() {
+    _paused = true;
+    log('SyncService: paused');
+  }
+
+  /// Resume sync activity and trigger a bulk sync to push pending records.
+  Future<void> resume() async {
+    _paused = false;
+    log('SyncService: resumed');
+    await bulkSync();
+  }
 
   // ──────────────────────────────────────────────
   //  Broadcast listeners
@@ -108,6 +124,7 @@ class SyncService {
     required String table,
     required Map<String, dynamic> record,
   }) {
+    if (_paused) return;
     if (!SocketService.instance.isConnected) return;
     entitySync(table: table, record: record);
   }
@@ -154,6 +171,7 @@ class SyncService {
   /// then upserts the full server response.
   /// Returns the response tables map on success, null on failure.
   Future<Map<String, dynamic>?> bulkSync() async {
+    if (_paused) return null;
     if (_syncing) {
       log('SyncService: bulkSync already in progress, skipping');
       return null;

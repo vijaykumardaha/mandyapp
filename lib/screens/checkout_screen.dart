@@ -16,6 +16,7 @@ import 'package:mandiapp/models/order_item_model.dart';
 import 'package:mandiapp/models/order_model.dart';
 import 'package:mandiapp/models/order_payment_model.dart';
 import 'package:mandiapp/services/printer_service.dart';
+import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 import 'package:mandiapp/dao/customer_payment_dao.dart';
 import 'package:mandiapp/models/customer_payment_model.dart';
@@ -146,6 +147,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _placeOrder(List<ChargeType> chargeTypes) async {
     if (_isPlacingOrder) return;
     setState(() => _isPlacingOrder = true);
+    SyncService.instance.pause();
 
     try {
       final now = DateTime.now().millisecondsSinceEpoch;
@@ -164,6 +166,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           final linkedItem = item.copyWith(
             buyerOrderId: widget.orderFor == 'buyer' ? orderId : null,
             sellerOrderId: widget.orderFor == 'seller' ? orderId : null,
+            buyerId: widget.orderFor == 'buyer' ? widget.customerId : null,
+            buyerName: widget.orderFor == 'buyer' ? _customerName : null,
           );
           await OrderDAO().updateOrderItem(linkedItem);
         }
@@ -242,7 +246,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         }
       }
 
-      final transactionType = widget.orderFor == 'buyer' ? 'received' : 'paid';
+      final transactionType = widget.orderFor == 'buyer' ? 'paid' : 'received';
       final totalReceived = paymentAmountsToSave.entries.fold<double>(0.0, (sum, e) => sum + e.value);
       if (widget.customerId != null && totalReceived > 0) {
         final source = paymentAmountsToSave.entries
@@ -300,6 +304,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         Info.error('Failed to place order: $e', context: context);
         setState(() => _isPlacingOrder = false);
       }
+    } finally {
+      SyncService.instance.resume();
     }
   }
 

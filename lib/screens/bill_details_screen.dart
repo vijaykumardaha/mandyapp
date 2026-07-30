@@ -640,7 +640,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
           final isSellerOrder = data.order.orderFor == 'seller';
           final partnerLabel = isSellerOrder ? 'Buyer' : 'Seller';
           final partnerName = isSellerOrder
-              ? item.sale.buyerName
+              ? data.customerById[item.sale.buyerId]?.name
               : item.sellerLabel;
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),

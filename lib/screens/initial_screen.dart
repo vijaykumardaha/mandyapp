@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mandiapp/blocs/login/login_bloc.dart';
-import 'package:mandiapp/services/sync_service.dart';
 
 class InitialScreen extends StatefulWidget {
   const InitialScreen({super.key});
@@ -23,19 +22,32 @@ class _InitialScreenState extends State<InitialScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<LoginBloc, LoginState>(
-      listener: (context, state) async {
+      listener: (context, state) {
         if (state is LoginSuccess) {
-          await SyncService.instance.connectAndSync();
           context.go('/home');
         } else if (state is CheckingFailed) {
           context.go('/login');
         }
       },
       builder: (context, state) {
-        return const Scaffold(
+        return Scaffold(
           body: SafeArea(
             child: Center(
-              child: Text('Checking login status...'),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Text(
+                      state is SyncLoading
+                          ? 'Syncing your data...'
+                          : 'Checking login status...',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );

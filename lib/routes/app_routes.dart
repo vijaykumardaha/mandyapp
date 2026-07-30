@@ -15,7 +15,6 @@ import 'package:mandiapp/screens/customer_management_screen.dart';
 import 'package:mandiapp/screens/reports_screen.dart';
 import 'package:mandiapp/screens/bills_screen.dart';
 import 'package:mandiapp/screens/bill_details_screen.dart';
-import 'package:mandiapp/screens/price_update_screen.dart';
 import 'package:mandiapp/screens/stock_screen.dart';
 
 class AppRoutes {
@@ -113,12 +112,6 @@ class AppRoutes {
         builder: (context, state) {
           final id = int.parse(state.pathParameters['id']!);
           return BillDetailsScreen(orderId: id);
-        },
-      ),
-      GoRoute(
-        path: '/price-update',
-        builder: (context, state) {
-          return const PriceUpdateScreen();
         },
       ),
       GoRoute(

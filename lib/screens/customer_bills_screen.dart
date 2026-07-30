@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/order/order_bloc.dart';
+import 'package:mandiapp/dao/order_charge_dao.dart';
+import 'package:mandiapp/dao/order_expense_dao.dart';
+import 'package:mandiapp/dao/order_payment_dao.dart';
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/order_model.dart';
 import 'package:mandiapp/services/sync_service.dart';
@@ -22,6 +25,10 @@ class CustomerBillsScreen extends StatefulWidget {
 
 class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
   StreamSubscription<String>? _syncSubscription;
+  final OrderChargeDAO _chargeDAO = OrderChargeDAO();
+  final OrderExpenseDao _expenseDAO = OrderExpenseDao();
+  final OrderPaymentDAO _paymentDAO = OrderPaymentDAO();
+  final Map<int, _OrderFinancialSummary> _financialData = {};
 
   @override
   void initState() {
@@ -44,6 +51,40 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
     _syncSubscription?.cancel();
     super.dispose();
   }
+
+  Future<void> _loadFinancialData(List<Order> orders) async {
+    final data = <int, _OrderFinancialSummary>{};
+    for (final order in orders) {
+      if (order.id == null) continue;
+      final charges = await _chargeDAO.getOrderCharges(order.id.toString());
+      final expenses = await _expenseDAO.getByOrderId(order.id!);
+      final payments = await _paymentDAO.getOrderPaymentsByOrderId(order.id!);
+
+      final itemTotal = order.totalPrice;
+      final chargesTotal = charges.fold<double>(0.0, (sum, c) => sum + c.chargeAmount);
+      final expensesTotal = expenses.fold<double>(0.0, (sum, e) => sum + e.expenseAmount);
+      final received = payments.fold<double>(0.0, (sum, p) => sum + p.amount);
+
+      double total;
+      if (order.orderFor == 'seller') {
+        total = itemTotal - chargesTotal - expensesTotal;
+      } else {
+        total = itemTotal + chargesTotal + expensesTotal;
+      }
+
+      data[order.id!] = _OrderFinancialSummary(
+        grandTotal: total,
+        receivedAmount: received,
+      );
+    }
+    if (mounted) {
+      setState(() {
+        _financialData.clear();
+        _financialData.addAll(data);
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +127,10 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
                 return _buildEmptyState(theme);
               }
 
+              if (_financialData.isEmpty) {
+                _loadFinancialData(customerOrders);
+              }
+
               return _buildBillsList(customerOrders);
             }
 
@@ -105,7 +150,13 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: orders.length,
       itemBuilder: (context, index) {
-        return BillCard(order: orders[index]);
+        final order = orders[index];
+        final financial = order.id != null ? _financialData[order.id] : null;
+        return BillCard(
+          order: order,
+          grandTotal: financial?.grandTotal,
+          receivedAmount: financial?.receivedAmount,
+        );
       },
     );
   }
@@ -150,4 +201,14 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
       ),
     );
   }
+}
+
+class _OrderFinancialSummary {
+  final double grandTotal;
+  final double receivedAmount;
+
+  const _OrderFinancialSummary({
+    required this.grandTotal,
+    required this.receivedAmount,
+  });
 }

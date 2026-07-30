@@ -78,51 +78,49 @@ class SellingScreenState extends State<SellingScreen> {
               'Selling to ${sellerCustomer!.name}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             )
-          : Expanded(
-              child: TextField(
-                controller: _searchController,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                decoration: InputDecoration(
-                  hintText: 'Search seller...',
-                  prefixIcon: const Icon(Icons.search, size: 20),
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                    ),
+          : TextField(
+              controller: _searchController,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              decoration: InputDecoration(
+                hintText: 'Search seller...',
+                prefixIcon: const Icon(Icons.search, size: 20),
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear, size: 18),
-                          onPressed: () {
-                            setState(() {
-                              _searchQuery = '';
-                              _searchController.clear();
-                            });
-                          },
-                        )
-                      : null,
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                  });
-                },
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, size: 18),
+                        onPressed: () {
+                          setState(() {
+                            _searchQuery = '';
+                            _searchController.clear();
+                          });
+                        },
+                      )
+                    : null,
               ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
             ),
       actions: [
         if (sellerCustomer != null)

@@ -5,7 +5,6 @@ import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/customer_payment_model.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/payment_histories/payment_item.dart';
-import 'package:mandiapp/widgets/payment_histories/summary_bar.dart';
 import 'package:mandiapp/widgets/payment_histories/type_tab.dart';
 
 class PaymentHistoriesScreen extends StatefulWidget {
@@ -72,25 +71,13 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
             }
 
             if (state is CustomerPaymentsLoaded) {
-              if (state.payments.isEmpty) {
-                return _buildEmptyState(theme);
-              }
-
-              return Column(
+              return ListView(
                 children: [
-                  PaymentSummaryBar(
-                    totalReceived: state.totalReceived,
-                    totalPaid: state.totalPaid,
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: state.payments.length,
-                      itemBuilder: (context, index) {
-                        return PaymentItem(payment: state.payments[index]);
-                      },
-                    ),
-                  ),
+                  _buildHeader(theme, state.totalReceived, state.totalPaid),
+                  if (state.payments.isEmpty)
+                    _buildEmptyState(theme)
+                  else
+                    ...state.payments.map((p) => PaymentItem(payment: p)),
                 ],
               );
             }
@@ -102,18 +89,112 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
     );
   }
 
-  Widget _buildEmptyState(ThemeData theme) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildHeader(ThemeData theme, double totalReceived, double totalPaid) {
+    final netBalance = totalReceived - totalPaid;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Row(
         children: [
-          Icon(Icons.receipt_long_outlined, size: 64, color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3)),
-          const SizedBox(height: 16),
-          Text(
-            'No payments yet',
-            style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant.withOpacity(0.6)),
+          Expanded(
+            child: _buildStatCard(
+              theme: theme,
+              icon: netBalance >= 0 ? Icons.account_balance_wallet_rounded : Icons.trending_down_rounded,
+              label: 'Balance',
+              amount: netBalance,
+              color: netBalance >= 0 ? Colors.green : Colors.red,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildStatCard(
+              theme: theme,
+              icon: Icons.arrow_downward_rounded,
+              label: 'Received',
+              amount: totalReceived,
+              color: Colors.green,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildStatCard(
+              theme: theme,
+              icon: Icons.arrow_upward_rounded,
+              label: 'Paid',
+              amount: totalPaid,
+              color: Colors.red,
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required ThemeData theme,
+    required IconData icon,
+    required String label,
+    required double amount,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 12, color: color),
+              const SizedBox(width: 3),
+              Text(
+                label,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '₹${amount.toStringAsFixed(2)}',
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(ThemeData theme) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.3,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.receipt_long_outlined,
+              size: 64,
+              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No payments yet',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -296,5 +377,4 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
       },
     );
   }
-
 }

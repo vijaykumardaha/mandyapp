@@ -29,6 +29,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         
         if (userData != null) {
           final user = User.fromJson(userData);
+          emit(SyncLoading());
+          await SyncService.instance.connectAndSync();
           emit(LoginSuccess(user: user));
         } else {
           emit(CheckingFailed());
@@ -48,6 +50,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         );
 
         await AppHelper.savePreferences('user', user.toJson());
+        emit(SyncLoading());
+        await SyncService.instance.connectAndSync();
         emit(LoginSuccess(user: user));
 
       } catch (e) {
@@ -93,6 +97,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         await ProductDAO().productsSync();
         await ChargeTypeDAO().insertDefaultCharges();
 
+        emit(SyncLoading());
+        await SyncService.instance.connectAndSync();
         emit(LoginSuccess(user: user));
       } catch (e) {
         emit(LoginFailure(error: e.toString().replaceFirst('Exception: ', '')));

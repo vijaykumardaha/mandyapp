@@ -236,6 +236,8 @@ class OrderDAO {
         oi.updated_at,
         oi.is_deleted,
         oi.sync_status,
+        oi.buyer_name,
+        oi.seller_name,
         pv.variant_name AS product_name,
         pv.image_path
       FROM order_items oi
