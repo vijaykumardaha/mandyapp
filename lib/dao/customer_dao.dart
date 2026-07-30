@@ -54,6 +54,7 @@ class CustomerDAO {
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [customerId],
@@ -67,6 +68,7 @@ class CustomerDAO {
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [customerId],
@@ -78,6 +80,7 @@ class CustomerDAO {
       throw ArgumentError('Customer ID is required for update');
     }
     customer.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    customer.isDeleted = 0;
     customer.syncStatus = 0;
     final db = await dbHelper.database;
     await db.update(

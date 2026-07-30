@@ -60,6 +60,9 @@ class OrderExpenseDao {
   }
 
   Future<int> update(OrderExpense orderExpense) async {
+    orderExpense.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    orderExpense.isDeleted = 0;
+    orderExpense.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
       'order_expenses',
@@ -71,8 +74,13 @@ class OrderExpenseDao {
 
   Future<int> delete(int id) async {
     final db = await dbHelper.database;
-    return await db.delete(
+    return await db.update(
       'order_expenses',
+      {
+        'is_deleted': 1,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
+      },
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -80,8 +88,13 @@ class OrderExpenseDao {
 
   Future<int> deleteByOrderId(int orderId) async {
     final db = await dbHelper.database;
-    return await db.delete(
+    return await db.update(
       'order_expenses',
+      {
+        'is_deleted': 1,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
+      },
       where: 'order_id = ?',
       whereArgs: [orderId],
     );

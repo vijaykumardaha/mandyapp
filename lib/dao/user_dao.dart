@@ -62,6 +62,7 @@ class UserDAO {
   Future<int> updateUser(User user) async {
     user.mandiId = await AppHelper.getCurrentMandiId();
     user.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    user.isDeleted = 0;
     user.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
@@ -79,6 +80,7 @@ class UserDAO {
       {
         'is_active': active ? 1 : 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [userId],
@@ -92,6 +94,7 @@ class UserDAO {
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [id],
@@ -105,6 +108,7 @@ class UserDAO {
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [id],

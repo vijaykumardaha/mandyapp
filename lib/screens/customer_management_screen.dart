@@ -72,6 +72,7 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonAppBar(
+        showBackButton: false,
         titleWidget: TextField(
           controller: _searchController,
           onChanged: _onSearchChanged,

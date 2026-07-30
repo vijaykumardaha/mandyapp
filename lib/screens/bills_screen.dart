@@ -171,6 +171,7 @@ class _BillsScreenState extends State<BillsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonAppBar(
+        showBackButton: false,
         titleWidget: TextField(
           controller: _searchController,
           onChanged: (q) => _search(q),

@@ -6,7 +6,7 @@ class SignupSync {
       "path": "assets/vegetables/01.jpeg",
       "price": "15.00",
       "unit": "Kilogram",
-      "common": 0,
+      "common": 1,
     },
     {
       "key": "chukundar",
@@ -14,7 +14,7 @@ class SignupSync {
       "path": "assets/vegetables/02.jpeg",
       "price": "15.00",
       "unit": "Kilogram",
-      "common": 0,
+      "common": 1,
     },
     {
       "key": "mashroom",
@@ -22,7 +22,7 @@ class SignupSync {
       "path": "assets/vegetables/03.jpeg",
       "price": "15.00",
       "unit": "Kilogram",
-      "common": 0,
+      "common": 1,
     },
     {
       "key": "simla_mirch",
@@ -30,7 +30,7 @@ class SignupSync {
       "path": "assets/vegetables/04.jpeg",
       "price": "15.00",
       "unit": "Kilogram",
-      "common": 0,
+      "common": 1,
     },
     {
       "key": "sahjan",
@@ -38,7 +38,7 @@ class SignupSync {
       "path": "assets/vegetables/05.jpeg",
       "price": "15.00",
       "unit": "Kilogram",
-      "common": 0,
+      "common": 1,
     },
     {
       "key": "bhindi",
@@ -54,7 +54,7 @@ class SignupSync {
       "path": "assets/vegetables/07.jpeg",
       "price": "15.00",
       "unit": "Kilogram",
-      "common": 0,
+      "common": 1,
     },
     {
       "key": "nimbu",
@@ -62,7 +62,7 @@ class SignupSync {
       "path": "assets/vegetables/08.jpeg",
       "price": "15.00",
       "unit": "Kilogram",
-      "common": 0,
+      "common": 1,
     },
     {
       "key": "parval",
@@ -110,7 +110,7 @@ class SignupSync {
       "path": "assets/vegetables/14.jpeg",
       "price": "15.00",
       "unit": "Kilogram",
-      "common":1,
+      "common": 1,
     },
     {
       "key": "lahsun",
@@ -118,7 +118,7 @@ class SignupSync {
       "path": "assets/vegetables/15.jpeg",
       "price": "15.00",
       "unit": "Kilogram",
-      "common": 0,
+      "common": 1,
     },
     {
       "key": "aadi",
@@ -126,7 +126,7 @@ class SignupSync {
       "path": "assets/vegetables/16.jpeg",
       "price": "15.00",
       "unit": "Kilogram",
-      "common": 0,
+      "common": 1,
     },
     {
       "key": "karela",
@@ -174,7 +174,7 @@ class SignupSync {
       "path": "assets/vegetables/25.jpeg",
       "price": "15.00",
       "unit": "Kilogram",
-      "common": 0,
+      "common": 1,
     },
     {
       "key": "bins",
@@ -182,7 +182,7 @@ class SignupSync {
       "path": "assets/vegetables/27.jpeg",
       "price": "15.00",
       "unit": "Kilogram",
-      "common": 0,
+      "common": 1,
     },
     {
       "key": "shakarakand",
@@ -190,7 +190,7 @@ class SignupSync {
       "path": "assets/vegetables/28.jpeg",
       "price": "15.00",
       "unit": "Kilogram",
-      "common": 0,
+      "common": 1,
     },
   ];
 

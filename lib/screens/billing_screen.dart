@@ -91,7 +91,8 @@ class _BillingScreenState extends State<BillingScreen> {
   }
 
   Future<void> _createNewCart(List<OrderItem> selectedSales) async {
-    if (_selectedCustomer == null || _selectedCustomer!.id == null) {
+    final customer = _selectedCustomer;
+    if (customer == null || customer.id == null) {
       Info.error('Please select a ${_isBuyerMode ? 'buyer' : 'seller'} name before checkout.', context: context);
       return;
     }
@@ -100,13 +101,18 @@ class _BillingScreenState extends State<BillingScreen> {
       MaterialPageRoute(
         builder: (_) => CheckoutScreen(
           cartItems: selectedSales,
-          customerId: _selectedCustomer!.id,
+          customerId: customer.id,
           orderFor: _orderFor,
         ),
       ),
     );
 
     if (mounted) {
+      _searchController?.clear();
+      setState(() {
+        _selectedCustomer = null;
+      });
+
       if (result != null && result['orderId'] != null) {
         context.push('/bill-details/${result['orderId']}');
       }
@@ -283,6 +289,7 @@ class _BillingScreenState extends State<BillingScreen> {
 
     return Scaffold(
       appBar: CommonAppBar(
+        showBackButton: false,
         centerTitle: false,
         titleWidget: _buildAppBarTitle(),
         actions: [

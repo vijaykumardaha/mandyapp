@@ -66,6 +66,7 @@ class ChargeTypeDAO {
 
   Future<int> updateChargeType(ChargeType chargeType) async {
     chargeType.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    chargeType.isDeleted = 0;
     chargeType.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
@@ -83,6 +84,7 @@ class ChargeTypeDAO {
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [id],
@@ -96,6 +98,7 @@ class ChargeTypeDAO {
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [id],
@@ -106,7 +109,11 @@ class ChargeTypeDAO {
     final db = await dbHelper.database;
     return await db.update(
       'charge_types',
-      {'is_active': 1},
+      {
+        'is_active': 1,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
+      },
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -116,7 +123,11 @@ class ChargeTypeDAO {
     final db = await dbHelper.database;
     return await db.update(
       'charge_types',
-      {'is_active': 0},
+      {
+        'is_active': 0,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
+      },
       where: 'id = ?',
       whereArgs: [id],
     );

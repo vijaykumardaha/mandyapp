@@ -27,6 +27,7 @@ class ProductVariantDAO {
 
   Future<int> updateVariant(ProductVariant variant) async {
     variant.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    variant.isDeleted = 0;
     variant.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
@@ -44,6 +45,7 @@ class ProductVariantDAO {
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [variantId],
@@ -81,6 +83,7 @@ class ProductVariantDAO {
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [id],
@@ -94,6 +97,7 @@ class ProductVariantDAO {
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'product_id = ?',
       whereArgs: [productId],

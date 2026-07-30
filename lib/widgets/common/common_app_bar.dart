@@ -42,7 +42,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? Padding(
               padding: const EdgeInsets.only(left: 12, top: 8, bottom: 8, right: 0),
               child: GestureDetector(
-                onTap: () => context.pop(),
+                onTap: () => Navigator.of(context).maybePop(),
                 child: Container(
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerHighest,

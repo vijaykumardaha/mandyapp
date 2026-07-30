@@ -73,6 +73,7 @@ class SellingScreenState extends State<SellingScreen> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return CommonAppBar(
+      showBackButton: false,
       titleWidget: sellerCustomer != null
           ? Text(
               'Selling to ${sellerCustomer!.name}',

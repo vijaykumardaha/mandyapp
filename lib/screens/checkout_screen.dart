@@ -222,7 +222,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       final paymentAmountsToSave = Map<PaymentMethod, double>.from(_paymentAmounts);
       if (paymentAmountsToSave.isEmpty || paymentAmountsToSave.values.every((a) => a <= 0)) {
-        paymentAmountsToSave[PaymentMethod.cash] = grandTotal;
+        if (paymentAmountsToSave.containsKey(PaymentMethod.credit)) {
+          paymentAmountsToSave[PaymentMethod.credit] = 0;
+        } else {
+          paymentAmountsToSave[PaymentMethod.cash] = grandTotal;
+        }
       }
 
       final totalPaid = paymentAmountsToSave.entries.fold<double>(0.0, (sum, e) => sum + e.value);
@@ -329,7 +333,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final pendingAmount = grandTotal - receivedAmount;
 
     final paymentMethods = _paymentAmounts.entries
-        .where((e) => e.value > 0)
         .map((e) => _paymentMethodToLabel(e.key))
         .join(', ');
 

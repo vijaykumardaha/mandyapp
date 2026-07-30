@@ -180,6 +180,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
 
       if (method == PaymentMethod.credit) {
       _controllers[method]?.text = '0';
+      updatedAmounts[method] = 0;
       setState(() {
         _selectedPaymentMethods = updatedSelected;
       });

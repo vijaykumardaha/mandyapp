@@ -67,35 +67,35 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Widget> get _screens => [
         const HomeTabScreen(),
-        const BillingScreen(),
-        const BillsScreen(),
         const SellingScreen(),
+        const BillingScreen(),
         const CustomerManagementScreen(),
+        const BillsScreen(),
         const ReportsScreen(),
         const SettingsScreen(),
       ];
 
   final _navLabels = const [
-    "Home", "Billing", "Bills", "Selling",
-    "Customers", "Reports", "Settings",
+    "Home", "Selling", "Billing", "Customers",
+    "Bills", "Reports", "Settings",
   ];
 
   final _unselectedIcons = const [
     Icons.home_outlined,
-    Icons.shopping_cart_outlined,
-    Icons.receipt_long_outlined,
     Icons.qr_code,
+    Icons.shopping_cart_outlined,
     Icons.people_outline,
+    Icons.receipt_long_outlined,
     Icons.bar_chart_outlined,
     Icons.settings_outlined,
   ];
 
   final _selectedIcons = const [
     Icons.home,
-    Icons.shopping_cart,
-    Icons.receipt_long,
     Icons.qr_code,
+    Icons.shopping_cart,
     Icons.people,
+    Icons.receipt_long,
     Icons.bar_chart,
     Icons.settings,
   ];

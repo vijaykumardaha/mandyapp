@@ -312,7 +312,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       ));
 
       // 2. Insert into customer_payments (keeps customer ledger consistent)
-      final transactionType = data.order.orderFor == 'buyer' ? 'received' : 'paid';
+      final transactionType = data.order.orderFor == 'buyer' ? 'paid' : 'received';
       await customerPaymentDAO.insertPayment(CustomerPayment(
         customerId: data.order.customerId,
         amount: amount,

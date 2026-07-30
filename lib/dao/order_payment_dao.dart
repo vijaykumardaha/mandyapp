@@ -17,6 +17,9 @@ class OrderPaymentDAO {
   }
 
   Future<int> updateOrderPayment(OrderPayment payment) async {
+    payment.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    payment.isDeleted = 0;
+    payment.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
       'order_payments',
@@ -28,7 +31,16 @@ class OrderPaymentDAO {
 
   Future<int> deleteOrderPayment(int id) async {
     final db = await dbHelper.database;
-    return await db.delete('order_payments', where: 'id = ?', whereArgs: [id]);
+    return await db.update(
+      'order_payments',
+      {
+        'is_deleted': 1,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<OrderPayment?> getOrderPaymentById(int id) async {
@@ -47,8 +59,13 @@ class OrderPaymentDAO {
 
   Future<int> deleteOrderPayments(int orderId) async {
     final db = await dbHelper.database;
-    return await db.delete(
+    return await db.update(
       'order_payments',
+      {
+        'is_deleted': 1,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
+      },
       where: 'order_id = ?',
       whereArgs: [orderId],
     );

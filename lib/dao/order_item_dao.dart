@@ -19,6 +19,7 @@ class OrderItemDAO {
     final db = await dbHelper.database;
     final updatedOrderItem = orderItem.copyWith(
       updatedAt: DateTime.now().millisecondsSinceEpoch,
+      isDeleted: 0,
       syncStatus: 0,
     );
     return db.update(
@@ -36,6 +37,7 @@ class OrderItemDAO {
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [id],
@@ -49,6 +51,7 @@ class OrderItemDAO {
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [id],

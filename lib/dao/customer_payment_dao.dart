@@ -19,6 +19,7 @@ class CustomerPaymentDAO {
   Future<int> updatePayment(CustomerPayment payment) async {
     final db = await dbHelper.database;
     payment.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    payment.isDeleted = 0;
     payment.syncStatus = 0;
     return await db.update(
       'customer_payments',
@@ -35,6 +36,7 @@ class CustomerPaymentDAO {
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [paymentId],

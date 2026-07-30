@@ -38,6 +38,7 @@ class ProductDAO {
 
   Future<int> updateProduct(Product product) async {
     product.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    product.isDeleted = 0;
     product.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
@@ -52,7 +53,11 @@ class ProductDAO {
     final db = await dbHelper.database;
     return await db.update(
       'products',
-      {'default_variant': variantId},
+      {
+        'default_variant': variantId,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
+      },
       where: 'id = ?',
       whereArgs: [productId],
     );
@@ -65,6 +70,7 @@ class ProductDAO {
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [id],
@@ -78,6 +84,7 @@ class ProductDAO {
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [id],

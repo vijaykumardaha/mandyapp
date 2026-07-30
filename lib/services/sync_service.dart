@@ -36,7 +36,6 @@ class SyncService {
   static final SyncService instance = SyncService._();
 
   StreamSubscription? _messageSubscription;
-  bool _listening = false;
   bool _syncing = false;
   bool _paused = false;
 
@@ -70,6 +69,8 @@ class SyncService {
   /// Resume sync activity and trigger a bulk sync to push pending records.
   Future<void> resume() async {
     _paused = false;
+    await SocketService.instance.ensureConnected();
+    startListening();
     log('SyncService: resumed');
     await bulkSync();
   }
@@ -79,8 +80,8 @@ class SyncService {
   // ──────────────────────────────────────────────
 
   void startListening() {
-    if (_listening) return;
-    _listening = true;
+    _messageSubscription?.cancel();
+    _messageSubscription = null;
 
     _messageSubscription = SocketService.instance.messages?.listen(
       _onMessage,
@@ -91,7 +92,6 @@ class SyncService {
   void stopListening() {
     _messageSubscription?.cancel();
     _messageSubscription = null;
-    _listening = false;
     log('SyncService: stopped listening');
   }
 
@@ -134,6 +134,7 @@ class SyncService {
     required String table,
     required Map<String, dynamic> record,
   }) async {
+    if (_paused) return null;
     final response = await SocketService.instance.push(
       'entity_sync',
       {

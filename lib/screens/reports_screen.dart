@@ -602,6 +602,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonAppBar(
+        showBackButton: false,
         titleWidget: Row(
           children: [
             Container(

@@ -63,6 +63,7 @@ class StockDAO {
 
   Future<int> updateStock(Stock stock) async {
     stock.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    stock.isDeleted = 0;
     stock.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
@@ -80,6 +81,7 @@ class StockDAO {
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [id],
@@ -93,6 +95,7 @@ class StockDAO {
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [id],
@@ -222,6 +225,7 @@ class StockDAO {
 
   Future<int> updateStockTransaction(StockTransaction transaction) async {
     transaction.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    transaction.isDeleted = 0;
     transaction.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
@@ -239,6 +243,7 @@ class StockDAO {
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
       },
       where: 'id = ?',
       whereArgs: [id],

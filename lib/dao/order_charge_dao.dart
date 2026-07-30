@@ -56,6 +56,7 @@ class OrderChargeDAO {
   // Update an existing order charge
   Future<int> updateOrderCharge(OrderCharge charge) async {
     charge.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    charge.isDeleted = 0;
     charge.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
@@ -69,8 +70,13 @@ class OrderChargeDAO {
   // Delete an order charge by ID
   Future<int> deleteOrderCharge(int chargeId) async {
     final db = await dbHelper.database;
-    return await db.delete(
+    return await db.update(
       'order_charges',
+      {
+        'is_deleted': 1,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
+      },
       where: 'id = ?',
       whereArgs: [chargeId],
     );
@@ -79,8 +85,13 @@ class OrderChargeDAO {
   // Delete all charges for a specific order
   Future<int> deleteOrderCharges(int orderId) async {
     final db = await dbHelper.database;
-    return await db.delete(
+    return await db.update(
       'order_charges',
+      {
+        'is_deleted': 1,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'sync_status': 0,
+      },
       where: 'order_id = ?',
       whereArgs: [orderId],
     );
