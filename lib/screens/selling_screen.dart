@@ -225,90 +225,92 @@ class SellingScreenState extends State<SellingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(context),
-      body: BlocListener<OrderItemBloc, OrderItemState>(
-        listenWhen: (previous, current) => current is OrderItemError,
-        listener: (context, saleState) {
-          if (saleState is OrderItemError) {
-            Info.error(saleState.message, context: context);
-          }
-        },
-        child: sellerCustomer == null
-            ? _buildCustomerGrid()
-            : BlocBuilder<ProductBloc, ProductState>(
-                builder: (context, productState) {
-                  if (productState is ProductLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (productState is ProductLoaded) {
-                    var products = productState.products;
-                    final customerProductIds = sellerCustomer!.selectedProductIds;
-                    if (customerProductIds.isNotEmpty) {
-                      products = products
-                          .where((p) => customerProductIds.contains(p.id))
-                          .toList();
+      body: SafeArea(
+        child: BlocListener<OrderItemBloc, OrderItemState>(
+          listenWhen: (previous, current) => current is OrderItemError,
+          listener: (context, saleState) {
+            if (saleState is OrderItemError) {
+              Info.error(saleState.message, context: context);
+            }
+          },
+          child: sellerCustomer == null
+              ? _buildCustomerGrid()
+              : BlocBuilder<ProductBloc, ProductState>(
+                  builder: (context, productState) {
+                    if (productState is ProductLoading) {
+                      return const Center(child: CircularProgressIndicator());
                     }
-
-                    if (products.isEmpty) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 60),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.inventory_2_outlined,
-                                size: 56,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
-                              ),
-                              const SizedBox(height: 16),
-                              MyText.bodyMedium(
-                                'No products found',
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                              const SizedBox(height: 6),
-                              MyText.bodySmall(
-                                'Add products to start selling',
-                                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
-                              ),
-                            ],
+  
+                    if (productState is ProductLoaded) {
+                      var products = productState.products;
+                      final customerProductIds = sellerCustomer!.selectedProductIds;
+                      if (customerProductIds.isNotEmpty) {
+                        products = products
+                            .where((p) => customerProductIds.contains(p.id))
+                            .toList();
+                      }
+  
+                      if (products.isEmpty) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 60),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.inventory_2_outlined,
+                                  size: 56,
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                                ),
+                                const SizedBox(height: 16),
+                                MyText.bodyMedium(
+                                  'No products found',
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                                const SizedBox(height: 6),
+                                MyText.bodySmall(
+                                  'Add products to start selling',
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                ),
+                              ],
+                            ),
                           ),
+                        );
+                      }
+  
+                      return GridView.builder(
+                        padding: const EdgeInsets.all(16),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          childAspectRatio: 1,
+                          crossAxisSpacing: 5,
+                          mainAxisSpacing: 5,
+                        ),
+                        itemCount: products.length,
+                        itemBuilder: (context, index) {
+                          final product = products[index];
+                          return ProductCard(
+                            product: product,
+                            theme: Theme.of(context),
+                            onAddTapped: () => _showAddToSaleBottomSheet(product),
+                          );
+                        },
+                      );
+                    }
+  
+                    if (productState is ProductError) {
+                      return Center(
+                        child: Text(
+                          productState.message,
+                          style: TextStyle(color: Theme.of(context).colorScheme.error),
                         ),
                       );
                     }
-
-                    return GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 4,
-                        childAspectRatio: 1,
-                        crossAxisSpacing: 5,
-                        mainAxisSpacing: 5,
-                      ),
-                      itemCount: products.length,
-                      itemBuilder: (context, index) {
-                        final product = products[index];
-                        return ProductCard(
-                          product: product,
-                          theme: Theme.of(context),
-                          onAddTapped: () => _showAddToSaleBottomSheet(product),
-                        );
-                      },
-                    );
-                  }
-
-                  if (productState is ProductError) {
-                    return Center(
-                      child: Text(
-                        productState.message,
-                        style: TextStyle(color: Theme.of(context).colorScheme.error),
-                      ),
-                    );
-                  }
-
-                  return const SizedBox.shrink();
-                },
-              ),
+  
+                    return const SizedBox.shrink();
+                  },
+                ),
+        ),
       ),
     );
   }

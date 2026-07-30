@@ -3,7 +3,7 @@ class Stock {
   int? mandiId;
   int sellerId;
   int productId;
-  int? productVariantId;
+  int productVariantId;
   double initialQuantity;
   double quantity;
   double soldQuantity;
@@ -19,7 +19,7 @@ class Stock {
     this.mandiId,
     required this.sellerId,
     required this.productId,
-    this.productVariantId,
+    required this.productVariantId,
     required this.initialQuantity,
     required this.quantity,
     this.soldQuantity = 0,
@@ -56,7 +56,7 @@ class Stock {
       mandiId: json['mandi_id'] as int?,
       sellerId: json['seller_id'] as int,
       productId: json['product_id'] as int,
-      productVariantId: json['product_variant_id'] as int?,
+      productVariantId: json['product_variant_id'] as int,
       initialQuantity: (json['initial_quantity'] as num).toDouble(),
       quantity: (json['quantity'] as num).toDouble(),
       soldQuantity: (json['sold_quantity'] as num?)?.toDouble() ?? 0,
@@ -109,7 +109,7 @@ class StockTransaction {
   int stockId;
   int? mandiId;
   int productId;
-  int? productVariantId;
+  int productVariantId;
   int buyerId;
   int? billId;
   double buyQuantity;
@@ -123,7 +123,7 @@ class StockTransaction {
     required this.stockId,
     this.mandiId,
     required this.productId,
-    this.productVariantId,
+    required this.productVariantId,
     required this.buyerId,
     this.billId,
     required this.buyQuantity,
@@ -156,7 +156,7 @@ class StockTransaction {
       stockId: json['stock_id'] as int,
       mandiId: json['mandi_id'] as int?,
       productId: json['product_id'] as int,
-      productVariantId: json['product_variant_id'] as int?,
+      productVariantId: json['product_variant_id'] as int,
       buyerId: json['buyer_id'] as int,
       billId: json['bill_id'] as int?,
       buyQuantity: (json['buy_quantity'] as num).toDouble(),

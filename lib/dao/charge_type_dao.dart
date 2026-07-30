@@ -1,6 +1,7 @@
 import 'package:mandiapp/models/charge_type_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/utils/db_helper.dart';
+import 'package:mandiapp/utils/signup_sync.dart';
 
 class ChargeTypeDAO {
   final dbHelper = DBHelper.instance;
@@ -215,5 +216,25 @@ class ChargeTypeDAO {
 
       await batch.commit(noResult: true);
     });
+  }
+
+  Future<void> insertDefaultCharges() async {
+    final db = await dbHelper.database;
+    for (final charge in SignupSync.defaultCharges) {
+      final existing = await db.query(
+        'charge_types',
+        where: 'charge_name = ? AND charge_for = ? AND is_deleted = ?',
+        whereArgs: [charge['charge_name'], charge['charge_for'], 0],
+      );
+      if (existing.isEmpty) {
+        await insertChargeType(ChargeType(
+          chargeName: charge['charge_name'],
+          chargeType: charge['charge_type'],
+          chargeAmount: charge['charge_amount'],
+          chargeFor: charge['charge_for'],
+          isDefault: charge['is_default'] ?? 1,
+        ));
+      }
+    }
   }
 }

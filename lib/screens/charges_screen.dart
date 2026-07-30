@@ -340,67 +340,69 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
           ),
         ),
       ),
-      body: BlocConsumer<ChargeTypesBloc, ChargeTypesState>(
-        listener: (context, state) {
-          if (state is ChargeTypesError) {
-            Info.error(state.message, context: context);
-          } else if (state is ChargeTypesOperationSuccess) {
-            Info.message(state.message, context: context);
-            // Reload the charge types after successful operation
-            context.read<ChargeTypesBloc>().add(LoadChargeTypes());
-          }
-        },
-        builder: (context, state) {
-          if (state is ChargeTypesLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is ChargeTypesLoaded) {
-            final charges = _filterCharges(state.chargeTypes);
-            if (charges.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.account_balance_wallet_outlined,
-                      size: 64,
-                      color: theme.colorScheme.outline,
-                    ),
-                    MySpacing.height(16),
-                    MyText.bodyLarge(
-                      'No charges found',
-                      color: theme.colorScheme.outline,
-                    ),
-                    MySpacing.height(8),
-                    MyText.bodyMedium(
-                      'Tap the + button to add your first charge',
-                      color: theme.colorScheme.outline,
-                    ),
-                  ],
-                ),
+      body: SafeArea(
+        child: BlocConsumer<ChargeTypesBloc, ChargeTypesState>(
+          listener: (context, state) {
+            if (state is ChargeTypesError) {
+              Info.error(state.message, context: context);
+            } else if (state is ChargeTypesOperationSuccess) {
+              Info.message(state.message, context: context);
+              // Reload the charge types after successful operation
+              context.read<ChargeTypesBloc>().add(LoadChargeTypes());
+            }
+          },
+          builder: (context, state) {
+            if (state is ChargeTypesLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+  
+            if (state is ChargeTypesLoaded) {
+              final charges = _filterCharges(state.chargeTypes);
+              if (charges.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.account_balance_wallet_outlined,
+                        size: 64,
+                        color: theme.colorScheme.outline,
+                      ),
+                      MySpacing.height(16),
+                      MyText.bodyLarge(
+                        'No charges found',
+                        color: theme.colorScheme.outline,
+                      ),
+                      MySpacing.height(8),
+                      MyText.bodyMedium(
+                        'Tap the + button to add your first charge',
+                        color: theme.colorScheme.outline,
+                      ),
+                    ],
+                  ),
+                );
+              }
+  
+              return ListView.builder(
+                padding: MySpacing.all(16),
+                itemCount: charges.length,
+                itemBuilder: (context, index) {
+                  final charge = charges[index];
+                  return ChargeListItem(
+                    charge: charge,
+                    theme: theme,
+                    isAdmin: _isAdmin,
+                    onEdit: () => _showChargeTypeDialog(charge),
+                    onToggle: () => _toggleChargeTypeStatus(charge),
+                    onDelete: () => _deleteChargeType(charge),
+                  );
+                },
               );
             }
-
-            return ListView.builder(
-              padding: MySpacing.all(16),
-              itemCount: charges.length,
-              itemBuilder: (context, index) {
-                final charge = charges[index];
-                return ChargeListItem(
-                  charge: charge,
-                  theme: theme,
-                  isAdmin: _isAdmin,
-                  onEdit: () => _showChargeTypeDialog(charge),
-                  onToggle: () => _toggleChargeTypeStatus(charge),
-                  onDelete: () => _deleteChargeType(charge),
-                );
-              },
-            );
-          }
-
-          return const Center(child: CircularProgressIndicator());
-        },
+  
+            return const Center(child: CircularProgressIndicator());
+          },
+        ),
       ),
     );
   }

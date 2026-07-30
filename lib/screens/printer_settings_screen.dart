@@ -35,102 +35,104 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
       appBar: CommonAppBar(
         titleWidget: MyText.titleMedium('Printer', fontWeight: 600),
       ),
-      body: AnimatedBuilder(
-        animation: Listenable.merge([
-          _printerService.bluetoothEnabled,
-          _printerService.permissionGranted,
-          _printerService.connectionStatus,
-          _printerService.connectedDeviceMac,
-          _printerService.pairedDevices,
-          _printerService.statusMessage,
-          _printerService.isScanning,
-          _printerService.connectingMac,
-        ]),
-        builder: (context, _) {
-          final permissionGranted = _printerService.permissionGranted.value;
-          final bluetoothEnabled = _printerService.bluetoothEnabled.value;
-          final isConnected = _printerService.connectionStatus.value;
-          final connectingMac = _printerService.connectingMac.value;
-          final devices = _printerService.pairedDevices.value;
-          final connectedMac = _printerService.connectedDeviceMac.value;
-          final isScanning = _printerService.isScanning.value;
-          final statusMessage = _printerService.statusMessage.value;
+      body: SafeArea(
+        child: AnimatedBuilder(
+          animation: Listenable.merge([
+            _printerService.bluetoothEnabled,
+            _printerService.permissionGranted,
+            _printerService.connectionStatus,
+            _printerService.connectedDeviceMac,
+            _printerService.pairedDevices,
+            _printerService.statusMessage,
+            _printerService.isScanning,
+            _printerService.connectingMac,
+          ]),
+          builder: (context, _) {
+            final permissionGranted = _printerService.permissionGranted.value;
+            final bluetoothEnabled = _printerService.bluetoothEnabled.value;
+            final isConnected = _printerService.connectionStatus.value;
+            final connectingMac = _printerService.connectingMac.value;
+            final devices = _printerService.pairedDevices.value;
+            final connectedMac = _printerService.connectedDeviceMac.value;
+            final isScanning = _printerService.isScanning.value;
+            final statusMessage = _printerService.statusMessage.value;
 
-          final connectedDevice = devices.firstWhere(
-            (device) => device.macAdress == connectedMac,
-            orElse: () => BluetoothInfo(name: connectedMac ?? 'Unknown', macAdress: connectedMac ?? ''),
-          );
+            final connectedDevice = devices.firstWhere(
+              (device) => device.macAdress == connectedMac,
+              orElse: () => BluetoothInfo(name: connectedMac ?? 'Unknown', macAdress: connectedMac ?? ''),
+            );
 
-          final availableDevices = devices.where((device) => device.macAdress != connectedMac).toList();
+            final availableDevices = devices.where((device) => device.macAdress != connectedMac).toList();
 
-          return SingleChildScrollView(
-            padding: MySpacing.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (statusMessage != null) ...[
-                  StatusBanner(message: statusMessage),
-                  MySpacing.height(12),
-                ],
-                BluetoothStatusCard(
-                  permissionGranted: permissionGranted,
-                  bluetoothEnabled: bluetoothEnabled,
-                  isConnected: isConnected,
-                ),
-                if (!permissionGranted) ...[
-                  MySpacing.height(12),
-                  const PermissionPrompt(),
-                ],
-                MySpacing.height(24),
-                ConnectedPrinterCard(
-                  bluetoothEnabled: bluetoothEnabled,
-                  connected: isConnected,
-                  connectedDevice: connectedDevice,
-                  connectedMac: connectedMac,
-                ),
-                MySpacing.height(24),
-                PrinterSizeSelector(
-                  onSizeChanged: (_) {},
-                ),
-                MySpacing.height(24),
-                if (permissionGranted) ...[
-                  BluetoothDeviceList(
-                    title: 'Paired Devices',
-                    devices: availableDevices,
-                    connectingMac: connectingMac,
-                    onConnect: (mac) => _printerService.connect(mac),
+            return SingleChildScrollView(
+              padding: MySpacing.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (statusMessage != null) ...[
+                    StatusBanner(message: statusMessage),
+                    MySpacing.height(12),
+                  ],
+                  BluetoothStatusCard(
+                    permissionGranted: permissionGranted,
+                    bluetoothEnabled: bluetoothEnabled,
+                    isConnected: isConnected,
+                  ),
+                  if (!permissionGranted) ...[
+                    MySpacing.height(12),
+                    const PermissionPrompt(),
+                  ],
+                  MySpacing.height(24),
+                  ConnectedPrinterCard(
+                    bluetoothEnabled: bluetoothEnabled,
+                    connected: isConnected,
+                    connectedDevice: connectedDevice,
+                    connectedMac: connectedMac,
                   ),
                   MySpacing.height(24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: bluetoothEnabled
-                          ? () {
-                              _printerService.loadPairedDevices();
-                            }
-                          : null,
-                      icon: isScanning
-                          ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation(theme.colorScheme.onPrimary),
-                              ),
-                            )
-                          : const Icon(Icons.bluetooth_searching),
-                      label: MyText.bodyLarge(isScanning ? 'Scanning...' : 'Scan Bluetooth', fontWeight: 600),
-                      style: ElevatedButton.styleFrom(
-                        padding: MySpacing.xy(16, 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  PrinterSizeSelector(
+                    onSizeChanged: (_) {},
+                  ),
+                  MySpacing.height(24),
+                  if (permissionGranted) ...[
+                    BluetoothDeviceList(
+                      title: 'Paired Devices',
+                      devices: availableDevices,
+                      connectingMac: connectingMac,
+                      onConnect: (mac) => _printerService.connect(mac),
+                    ),
+                    MySpacing.height(24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: bluetoothEnabled
+                            ? () {
+                                _printerService.loadPairedDevices();
+                              }
+                            : null,
+                        icon: isScanning
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation(theme.colorScheme.onPrimary),
+                                ),
+                              )
+                            : const Icon(Icons.bluetooth_searching),
+                        label: MyText.bodyLarge(isScanning ? 'Scanning...' : 'Scan Bluetooth', fontWeight: 600),
+                        style: ElevatedButton.styleFrom(
+                          padding: MySpacing.xy(16, 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
-            ),
-          );
-        },
+              ),
+            );
+          },
+        ),
       ),
     );
   }

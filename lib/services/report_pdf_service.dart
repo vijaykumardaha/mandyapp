@@ -132,6 +132,10 @@ class ReportPdfService {
         return _buildPendingPaymentContent(state as PendingPaymentReportLoaded);
       case ReportType.customerLedger:
         return _buildCustomerLedgerContent(state as CustomerLedgerReportLoaded);
+      case ReportType.stockTransaction:
+        return _buildStockTransactionContent(state as StockTransactionReportLoaded);
+      case ReportType.stockSummary:
+        return _buildStockSummaryContent(state as StockSummaryReportLoaded);
     }
   }
 
@@ -206,7 +210,7 @@ class ReportPdfService {
   static List<pw.Widget> _buildDailySalesContent(DailySalesReportLoaded state) {
     return [
       _buildSummaryRow([
-        _summaryCard('Total Revenue', currencyFormat.format(state.totalRevenue), PdfColor.fromHex('#1565C0')),
+        _summaryCard('Total Sales', currencyFormat.format(state.totalRevenue), PdfColor.fromHex('#1565C0')),
         _summaryCard('Total Quantity', '${state.totalQuantity.toStringAsFixed(2)} units', PdfColor.fromHex('#2E7D32')),
         _summaryCard('Transactions', '${state.totalTransactions}', PdfColor.fromHex('#E65100')),
       ]),
@@ -214,7 +218,7 @@ class ReportPdfService {
       pw.Text('Sales Details', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
-        ['Product', 'Unit', 'Quantity', 'Revenue'],
+        ['Product', 'Unit', 'Quantity', 'Sales'],
         state.data.map((item) => [
           item.productName,
           item.unit,
@@ -253,14 +257,14 @@ class ReportPdfService {
     return [
       _buildSummaryRow([
         _summaryCard('Total Profit', currencyFormat.format(state.totalProfit), PdfColor.fromHex('#2E7D32')),
-        _summaryCard('Total Revenue', currencyFormat.format(state.totalRevenue), PdfColor.fromHex('#1565C0')),
+        _summaryCard('Total Sales', currencyFormat.format(state.totalRevenue), PdfColor.fromHex('#1565C0')),
         _summaryCard('Total Cost', currencyFormat.format(state.totalCost), PdfColor.fromHex('#C62828')),
       ]),
       pw.SizedBox(height: 16),
       pw.Text('Daily Breakdown', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
-        ['Date', 'Revenue', 'Cost', 'Profit'],
+        ['Date', 'Sales', 'Cost', 'Profit'],
         state.data.map((item) => [
           item.date,
           currencyFormat.format(item.dailyRevenue),
@@ -307,6 +311,55 @@ class ReportPdfService {
           currencyFormat.format(item.totalPurchases),
           currencyFormat.format(item.totalSales),
           currencyFormat.format(item.netBalance),
+        ]).toList(),
+      ),
+    ];
+  }
+
+  // ── Stock Transaction ────────────────────────────────────────
+  static List<pw.Widget> _buildStockTransactionContent(StockTransactionReportLoaded state) {
+    return [
+      _summaryCard('Total Amount', currencyFormat.format(state.totalAmount), PdfColor.fromHex('#1565C0')),
+      pw.SizedBox(height: 8),
+      _summaryCard('Total Quantity', '${state.totalQuantity.toStringAsFixed(2)} units', PdfColor.fromHex('#6A1B9A')),
+      pw.SizedBox(height: 16),
+      pw.Text('Stock Transactions', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+      pw.SizedBox(height: 8),
+      _buildTable(
+        ['Date', 'Product', 'Buyer', 'Qty', 'Amount'],
+        state.data.map((item) => [
+          item.date,
+          item.productName,
+          item.buyerName,
+          '${item.buyQuantity.toStringAsFixed(2)}',
+          currencyFormat.format(item.totalAmount),
+        ]).toList(),
+      ),
+    ];
+  }
+
+  // ── Stock Summary ────────────────────────────────────────────
+  static List<pw.Widget> _buildStockSummaryContent(StockSummaryReportLoaded state) {
+    return [
+      _summaryCard('Purchased', currencyFormat.format(state.totalPurchaseAmount), PdfColor.fromHex('#1565C0')),
+      pw.SizedBox(height: 8),
+      _summaryCard('Sold', currencyFormat.format(state.totalSoldAmount), PdfColor.fromHex('#6A1B9A')),
+      pw.SizedBox(height: 8),
+      _summaryCard('Profit', currencyFormat.format(state.totalProfit),
+          state.totalProfit >= 0 ? PdfColor.fromHex('#2E7D32') : PdfColor.fromHex('#C62828')),
+      pw.SizedBox(height: 8),
+      _summaryCard('Remaining Qty', '${state.totalStockQuantity.toStringAsFixed(2)} units', PdfColor.fromHex('#E65100')),
+      pw.SizedBox(height: 16),
+      pw.Text('Stock Details', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+      pw.SizedBox(height: 8),
+      _buildTable(
+        ['Product', 'Initial', 'Sold', 'Remaining', 'Profit'],
+        state.data.map((item) => [
+          item.productName,
+          '${item.initialQuantity.toStringAsFixed(2)}',
+          '${item.soldQuantity.toStringAsFixed(2)}',
+          '${item.quantity.toStringAsFixed(2)}',
+          currencyFormat.format(item.profit),
         ]).toList(),
       ),
     ];

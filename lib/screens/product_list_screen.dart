@@ -145,58 +145,60 @@ class _ProductListScreenState extends State<ProductListScreen> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: BlocBuilder<ProductBloc, ProductState>(
-              builder: (context, productState) {
-                if (productState is ProductLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (productState is ProductLoaded) {
-                  if (productState.products.isEmpty) {
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: BlocBuilder<ProductBloc, ProductState>(
+                builder: (context, productState) {
+                  if (productState is ProductLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (productState is ProductLoaded) {
+                    if (productState.products.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.inventory_2_outlined,
+                              size: 64,
+                              color: theme.colorScheme.onBackground.withOpacity(0.3),
+                            ),
+                            MySpacing.height(16),
+                            MyText.bodyLarge(
+                              'no_products_found'.tr(),
+                              color: theme.colorScheme.onBackground.withOpacity(0.6),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+  
+                    return ListView.builder(
+                      padding: MySpacing.all(16),
+                      itemCount: productState.products.length,
+                      itemBuilder: (context, index) {
+                        final product = productState.products[index];
+                        return ProductCardWidget(
+                          product: product,
+                          theme: theme,
+                          isAdmin: _isAdmin,
+                          onEdit: () => _navigateToProductDetail(product),
+                          onDelete: () => _deleteProduct(product),
+                        );
+                      },
+                    );
+                  } else if (productState is ProductError) {
                     return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.inventory_2_outlined,
-                            size: 64,
-                            color: theme.colorScheme.onBackground.withOpacity(0.3),
-                          ),
-                          MySpacing.height(16),
-                          MyText.bodyLarge(
-                            'no_products_found'.tr(),
-                            color: theme.colorScheme.onBackground.withOpacity(0.6),
-                          ),
-                        ],
-                      ),
+                      child: MyText.bodyMedium(productState.message),
                     );
                   }
-
-                  return ListView.builder(
-                    padding: MySpacing.all(16),
-                    itemCount: productState.products.length,
-                    itemBuilder: (context, index) {
-                      final product = productState.products[index];
-                      return ProductCardWidget(
-                        product: product,
-                        theme: theme,
-                        isAdmin: _isAdmin,
-                        onEdit: () => _navigateToProductDetail(product),
-                        onDelete: () => _deleteProduct(product),
-                      );
-                    },
-                  );
-                } else if (productState is ProductError) {
-                  return Center(
-                    child: MyText.bodyMedium(productState.message),
-                  );
-                }
-                return const Center(child: CircularProgressIndicator());
-              },
+                  return const Center(child: CircularProgressIndicator());
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

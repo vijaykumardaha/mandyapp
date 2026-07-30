@@ -2,6 +2,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:mandiapp/dao/charge_type_dao.dart';
 import 'package:mandiapp/dao/customer_dao.dart';
 import 'package:mandiapp/dao/product_dao.dart';
 import 'package:mandiapp/dao/vegetable_dao.dart';
@@ -90,6 +91,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
         await VegetableDAO().syncVegetables();
         await ProductDAO().productsSync();
+        await ChargeTypeDAO().insertDefaultCharges();
 
         emit(LoginSuccess(user: user));
       } catch (e) {

@@ -33,8 +33,10 @@ class _InitialScreenState extends State<InitialScreen> {
       },
       builder: (context, state) {
         return const Scaffold(
-          body: Center(
-            child: Text('Checking login status...'),
+          body: SafeArea(
+            child: Center(
+              child: Text('Checking login status...'),
+            ),
           ),
         );
       },

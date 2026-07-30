@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandiapp/screens/about_screen.dart';
 import 'package:mandiapp/screens/home_screen.dart';
 import 'package:mandiapp/screens/login_screen.dart';
 import 'package:mandiapp/screens/profile_screen.dart';
@@ -53,12 +52,6 @@ class AppRoutes {
         path: '/profile',
         builder: (context, state) {
           return const ProfileScreen();
-        },
-      ),
-      GoRoute(
-        path: '/about',
-        builder: (context, state) {
-          return const AboutScreen();
         },
       ),
       GoRoute(

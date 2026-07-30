@@ -233,3 +233,110 @@ class ReportsSummaryData {
 
   double get profitMargin => totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0.0;
 }
+
+class StockTransactionReportData {
+  final String date;
+  final int stockId;
+  final int productId;
+  final int? productVariantId;
+  final String productName;
+  final String? variantName;
+  final String? unit;
+  final int buyerId;
+  final String buyerName;
+  final double buyQuantity;
+  final double totalAmount;
+  final double avgPrice;
+
+  const StockTransactionReportData({
+    required this.date,
+    required this.stockId,
+    required this.productId,
+    this.productVariantId,
+    required this.productName,
+    this.variantName,
+    this.unit,
+    required this.buyerId,
+    required this.buyerName,
+    required this.buyQuantity,
+    required this.totalAmount,
+    required this.avgPrice,
+  });
+
+  factory StockTransactionReportData.fromJson(Map<String, dynamic> json) {
+    return StockTransactionReportData(
+      date: json['date'] as String,
+      stockId: json['stock_id'] as int,
+      productId: json['product_id'] as int,
+      productVariantId: json['product_variant_id'] as int?,
+      productName: json['product_name'] as String? ?? 'Product ${json['product_id']}',
+      variantName: json['variant_name'] as String?,
+      unit: json['unit'] as String?,
+      buyerId: json['buyer_id'] as int,
+      buyerName: json['buyer_name'] as String? ?? 'Unknown',
+      buyQuantity: (json['buy_quantity'] as num?)?.toDouble() ?? 0.0,
+      totalAmount: (json['total_amount'] as num?)?.toDouble() ?? 0.0,
+      avgPrice: (json['avg_price'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+}
+
+class StockSummaryData {
+  final int stockId;
+  final int productId;
+  final int? productVariantId;
+  final String productName;
+  final String? variantName;
+  final String? unit;
+  final double initialQuantity;
+  final double quantity;
+  final double soldQuantity;
+  final double lossQuantity;
+  final double purchaseAmount;
+  final double soldAmount;
+  final double remainingValue;
+  final double profit;
+
+  const StockSummaryData({
+    required this.stockId,
+    required this.productId,
+    this.productVariantId,
+    required this.productName,
+    this.variantName,
+    this.unit,
+    required this.initialQuantity,
+    required this.quantity,
+    required this.soldQuantity,
+    required this.lossQuantity,
+    required this.purchaseAmount,
+    required this.soldAmount,
+    required this.remainingValue,
+    required this.profit,
+  });
+
+  factory StockSummaryData.fromJson(Map<String, dynamic> json) {
+    final soldQty = (json['sold_quantity'] as num?)?.toDouble() ?? 0.0;
+    final initialQty = (json['initial_quantity'] as num?)?.toDouble() ?? 0.0;
+    final purchaseAmt = (json['purchase_amount'] as num?)?.toDouble() ?? 0.0;
+    final soldAmt = (json['sold_amount'] as num?)?.toDouble() ?? 0.0;
+    final remainingQty = initialQty - soldQty;
+    final costPerUnit = initialQty > 0 ? purchaseAmt / initialQty : 0.0;
+
+    return StockSummaryData(
+      stockId: json['stock_id'] as int,
+      productId: json['product_id'] as int,
+      productVariantId: json['product_variant_id'] as int?,
+      productName: json['product_name'] as String? ?? 'Product ${json['product_id']}',
+      variantName: json['variant_name'] as String?,
+      unit: json['unit'] as String?,
+      initialQuantity: initialQty,
+      quantity: (json['quantity'] as num?)?.toDouble() ?? 0.0,
+      soldQuantity: soldQty,
+      lossQuantity: (json['loss_quantity'] as num?)?.toDouble() ?? 0.0,
+      purchaseAmount: purchaseAmt,
+      soldAmount: soldAmt,
+      remainingValue: remainingQty * costPerUnit,
+      profit: soldAmt - (soldQty * costPerUnit),
+    );
+  }
+}

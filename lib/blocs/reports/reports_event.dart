@@ -100,3 +100,29 @@ class LoadTodayOrders extends ReportsEvent {
 class LoadNetBalance extends ReportsEvent {
   const LoadNetBalance();
 }
+
+class LoadStockTransactionReport extends ReportsEvent {
+  final DateTime fromDate;
+  final DateTime toDate;
+
+  const LoadStockTransactionReport({
+    required this.fromDate,
+    required this.toDate,
+  });
+
+  @override
+  List<Object?> get props => [fromDate, toDate];
+}
+
+class LoadStockSummaryReport extends ReportsEvent {
+  final DateTime fromDate;
+  final DateTime toDate;
+
+  const LoadStockSummaryReport({
+    required this.fromDate,
+    required this.toDate,
+  });
+
+  @override
+  List<Object?> get props => [fromDate, toDate];
+}

@@ -106,41 +106,43 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
           ),
         ),
       ),
-      body: BlocBuilder<CustomerBloc, CustomerState>(
-        builder: (context, state) {
-          if (state is CustomerLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is SyncCustomerError) {
-            return _buildErrorState(state.errorMsg);
-          }
-
-          if (state is CustomerLoaded) {
-            if (state.customers.isEmpty) {
-              return _buildEmptyState();
+      body: SafeArea(
+        child: BlocBuilder<CustomerBloc, CustomerState>(
+          builder: (context, state) {
+            if (state is CustomerLoading) {
+              return const Center(child: CircularProgressIndicator());
             }
 
-              return RefreshIndicator(
-              onRefresh: _onRefresh,
-              child: ListView.builder(
-                padding: MySpacing.xy(16, 8),
-                itemCount: state.customers.length,
-                itemBuilder: (context, index) {
-                  final customer = state.customers[index];
-                  return CustomerTile(
-                    customer: customer,
-                    theme: theme,
-                    isAdmin: _isAdmin,
-                    onEdit: () => _showAddCustomerSheet(customer: customer),
-                  );
-                },
-              ),
-            );
-          }
+            if (state is SyncCustomerError) {
+              return _buildErrorState(state.errorMsg);
+            }
 
-          return _buildEmptyState();
-        },
+            if (state is CustomerLoaded) {
+              if (state.customers.isEmpty) {
+                return _buildEmptyState();
+              }
+
+                return RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: ListView.builder(
+                  padding: MySpacing.xy(16, 8),
+                  itemCount: state.customers.length,
+                  itemBuilder: (context, index) {
+                    final customer = state.customers[index];
+                    return CustomerTile(
+                      customer: customer,
+                      theme: theme,
+                      isAdmin: _isAdmin,
+                      onEdit: () => _showAddCustomerSheet(customer: customer),
+                    );
+                  },
+                ),
+              );
+            }
+
+            return _buildEmptyState();
+          },
+        ),
       ),
     );
   }

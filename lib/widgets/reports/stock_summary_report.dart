@@ -6,12 +6,12 @@ import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/reports/report_data_table.dart';
 import 'package:mandiapp/widgets/reports/report_summary_card.dart';
 
-class DailySalesReportWidget extends StatelessWidget {
-  final DailySalesReportLoaded state;
+class StockSummaryReportWidget extends StatelessWidget {
+  final StockSummaryReportLoaded state;
   final ThemeData theme;
   final NumberFormat currencyFormat;
 
-  const DailySalesReportWidget({
+  const StockSummaryReportWidget({
     super.key,
     required this.state,
     required this.theme,
@@ -27,17 +27,37 @@ class DailySalesReportWidget extends StatelessWidget {
           children: [
             Expanded(
               child: ReportSummaryCard(
-                title: 'Total Sales',
-                value: currencyFormat.format(state.totalRevenue),
+                title: 'Total Purchased',
+                value: currencyFormat.format(state.totalPurchaseAmount),
                 color: theme.colorScheme.primary,
               ),
             ),
             MySpacing.width(12),
             Expanded(
               child: ReportSummaryCard(
-                title: 'Total Quantity',
-                value: '${state.totalQuantity.toStringAsFixed(2)} units',
+                title: 'Total Sold',
+                value: currencyFormat.format(state.totalSoldAmount),
                 color: theme.colorScheme.secondary,
+              ),
+            ),
+          ],
+        ),
+        MySpacing.height(12),
+        Row(
+          children: [
+            Expanded(
+              child: ReportSummaryCard(
+                title: 'Profit',
+                value: currencyFormat.format(state.totalProfit),
+                color: state.totalProfit >= 0 ? Colors.green : Colors.red,
+              ),
+            ),
+            MySpacing.width(12),
+            Expanded(
+              child: ReportSummaryCard(
+                title: 'Remaining Qty',
+                value: '${state.totalStockQuantity.toStringAsFixed(2)} units',
+                color: theme.colorScheme.tertiary,
               ),
             ),
           ],
@@ -46,8 +66,10 @@ class DailySalesReportWidget extends StatelessWidget {
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Product', flex: 2),
-            ReportTableHeader(label: 'Qty', flex: 1, textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Sales', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Initial', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Sold', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Remaining', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Profit', flex: 1, textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(
@@ -60,24 +82,39 @@ class DailySalesReportWidget extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         MyText.bodySmall(item.productName, fontWeight: 600),
-                        MyText.bodySmall(item.unit, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                        if (item.variantName != null)
+                          MyText.bodySmall(item.variantName!, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                       ],
                     ),
                   ),
                   Expanded(
                     flex: 1,
                     child: MyText.bodySmall(
-                      '${item.totalQuantity.toStringAsFixed(2)}',
+                      '${item.initialQuantity.toStringAsFixed(2)}',
                       textAlign: TextAlign.center,
                     ),
                   ),
                   Expanded(
                     flex: 1,
                     child: MyText.bodySmall(
-                      currencyFormat.format(item.totalRevenue),
+                      '${item.soldQuantity.toStringAsFixed(2)}',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: MyText.bodySmall(
+                      '${item.quantity.toStringAsFixed(2)}',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: MyText.bodySmall(
+                      currencyFormat.format(item.profit),
                       textAlign: TextAlign.center,
                       fontWeight: 600,
-                      color: theme.colorScheme.primary,
+                      color: item.profit >= 0 ? Colors.green : Colors.red,
                     ),
                   ),
                 ],

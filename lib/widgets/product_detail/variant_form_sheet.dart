@@ -86,7 +86,6 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
     quantityController.dispose();
     super.dispose();
   }
-  }
 
   @override
   Widget build(BuildContext context) {

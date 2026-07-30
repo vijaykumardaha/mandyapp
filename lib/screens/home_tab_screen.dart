@@ -324,31 +324,11 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             children: [
               Expanded(
                 child: _QuickActionCard(
-                  icon: Icons.people_outline,
-                  label: 'Customers',
-                  color: Colors.blue,
-                  theme: theme,
-                  onTap: () => context.push('/customers'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionCard(
                   icon: Icons.refresh_rounded,
                   label: 'Update Price',
                   color: Colors.teal,
                   theme: theme,
                   onTap: () => context.push('/price-update'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionCard(
-                  icon: Icons.receipt_long,
-                  label: 'See Report',
-                  color: Colors.purple,
-                  theme: theme,
-                  onTap: () => context.push('/bills'),
                 ),
               ),
             ],

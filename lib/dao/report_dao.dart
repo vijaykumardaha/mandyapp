@@ -194,10 +194,16 @@ class ReportDAO {
         )
     ''';
 
-    // Get pending payments from buyers: (itemTotal + charges + expenses) - payments
+    // Get pending payments from buyers: cart items not checked out + bill pending
     const pendingPaymentsSql = '''
       SELECT COALESCE(SUM(pending_amount), 0) as total_pending
       FROM (
+        SELECT SUM(quantity * selling_price) as pending_amount
+        FROM order_items
+        WHERE buyer_order_id IS NULL
+          AND buyer_id IS NOT NULL
+          AND (is_deleted IS NULL OR is_deleted = 0)
+        UNION ALL
         SELECT
           item_totals.item_total
           + COALESCE(charge_totals.total_charges, 0)
@@ -239,10 +245,16 @@ class ReportDAO {
         )
     ''';
 
-    // Get pending payments to sellers: (itemTotal - charges - expenses) - payments
+    // Get pending payments to sellers: cart items not yet checked out + bill pending
     const pendingToSellersSql = '''
       SELECT COALESCE(SUM(pending_amount), 0) as total_pending_to_sellers
       FROM (
+        SELECT SUM(quantity * selling_price) as pending_amount
+        FROM order_items
+        WHERE seller_order_id IS NULL
+          AND seller_id IS NOT NULL
+          AND (is_deleted IS NULL OR is_deleted = 0)
+        UNION ALL
         SELECT
           item_totals.item_total
           - COALESCE(charge_totals.total_charges, 0)
@@ -329,5 +341,77 @@ class ReportDAO {
     final totalPayables = (payablesResult.first['total_payables'] as num?)?.toDouble() ?? 0.0;
 
     return totalReceived - totalPayables;
+  }
+
+  // Stock Transaction Report
+  Future<List<Map<String, dynamic>>> getStockTransactionReport({
+    required DateTime fromDate,
+    required DateTime toDate,
+  }) async {
+    final db = await dbHelper.database;
+    const sql = '''
+      SELECT
+        date(st.updated_at / 1000, 'unixepoch', 'localtime') as date,
+        st.stock_id,
+        st.product_id,
+        st.product_variant_id,
+        pv.variant_name,
+        pv.unit,
+        COALESCE(pv.variant_name, 'Product ' || st.product_id) as product_name,
+        st.buyer_id,
+        c.name as buyer_name,
+        SUM(st.buy_quantity) as buy_quantity,
+        SUM(st.total_amount) as total_amount,
+        AVG(st.total_amount / st.buy_quantity) as avg_price
+      FROM stock_transactions st
+      LEFT JOIN product_variants pv ON st.product_variant_id = pv.id
+      LEFT JOIN customers c ON st.buyer_id = c.id
+      WHERE date(st.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(st.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
+        AND st.is_deleted = 0
+      GROUP BY date(st.updated_at / 1000, 'unixepoch', 'localtime'),
+        st.stock_id, st.product_id, st.product_variant_id,
+        st.buyer_id, c.name, pv.variant_name, pv.unit
+      ORDER BY date DESC, total_amount DESC
+    ''';
+
+    return db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      toDate.toIso8601String().split('T')[0],
+    ]);
+  }
+
+  // Stock Summary Report
+  Future<List<Map<String, dynamic>>> getStockSummaryReport({
+    required DateTime fromDate,
+    required DateTime toDate,
+  }) async {
+    final db = await dbHelper.database;
+    const sql = '''
+      SELECT
+        s.id as stock_id,
+        s.product_id,
+        s.product_variant_id,
+        COALESCE(pv.variant_name, 'Product ' || s.product_id) as product_name,
+        pv.variant_name,
+        pv.unit,
+        s.initial_quantity,
+        s.quantity,
+        s.sold_quantity,
+        s.loss_quantity,
+        s.purchase_amount,
+        s.sold_amount
+      FROM stocks s
+      LEFT JOIN product_variants pv ON s.product_variant_id = pv.id
+      WHERE date(s.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(s.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
+        AND s.is_deleted = 0
+      ORDER BY s.updated_at DESC
+    ''';
+
+    return db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      toDate.toIso8601String().split('T')[0],
+    ]);
   }
 }

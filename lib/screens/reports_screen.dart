@@ -12,6 +12,8 @@ import 'package:mandiapp/widgets/reports/daily_purchase_report.dart';
 import 'package:mandiapp/widgets/reports/mandi_profit_report.dart';
 import 'package:mandiapp/widgets/reports/pending_payment_report.dart';
 import 'package:mandiapp/widgets/reports/customer_ledger_report.dart';
+import 'package:mandiapp/widgets/reports/stock_transaction_report.dart';
+import 'package:mandiapp/widgets/reports/stock_summary_report.dart';
 import 'package:open_file/open_file.dart';
 
 
@@ -62,6 +64,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
       case ReportType.customerLedger:
         if (state is CustomerLedgerReportLoaded) {
           return CustomerLedgerReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
+        }
+        break;
+      case ReportType.stockTransaction:
+        if (state is StockTransactionReportLoaded) {
+          return StockTransactionReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
+        }
+        break;
+      case ReportType.stockSummary:
+        if (state is StockSummaryReportLoaded) {
+          return StockSummaryReportWidget(state: state, theme: theme, currencyFormat: currencyFormat);
         }
         break;
     }
@@ -168,6 +180,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
         break;
       case ReportType.customerLedger:
         reportsBloc.add(LoadCustomerLedgerReport(
+          fromDate: _getStartDate(),
+          toDate: _getEndDate(),
+        ));
+        break;
+      case ReportType.stockTransaction:
+        reportsBloc.add(LoadStockTransactionReport(
+          fromDate: _getStartDate(),
+          toDate: _getEndDate(),
+        ));
+        break;
+      case ReportType.stockSummary:
+        reportsBloc.add(LoadStockSummaryReport(
           fromDate: _getStartDate(),
           toDate: _getEndDate(),
         ));
@@ -682,15 +706,17 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: MySpacing.xy(16, 12),
-        child: BlocBuilder<ReportsBloc, ReportsState>(
-          builder: (context, state) {
-            if (state is ReportsLoading) return _buildLoadingState();
-            if (state is ReportsError) return _buildErrorState(state.message);
-            if (state is ReportsEmpty) return _buildEmptyState();
-            return _buildReportContent(state, Theme.of(context));
-          },
+      body: SafeArea(
+        child: Padding(
+          padding: MySpacing.xy(16, 12),
+          child: BlocBuilder<ReportsBloc, ReportsState>(
+            builder: (context, state) {
+              if (state is ReportsLoading) return _buildLoadingState();
+              if (state is ReportsError) return _buildErrorState(state.message);
+              if (state is ReportsEmpty) return _buildEmptyState();
+              return _buildReportContent(state, Theme.of(context));
+            },
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(

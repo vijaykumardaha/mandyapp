@@ -6,12 +6,12 @@ import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/reports/report_data_table.dart';
 import 'package:mandiapp/widgets/reports/report_summary_card.dart';
 
-class MandiProfitReportWidget extends StatelessWidget {
-  final MandiProfitReportLoaded state;
+class StockTransactionReportWidget extends StatelessWidget {
+  final StockTransactionReportLoaded state;
   final ThemeData theme;
   final NumberFormat currencyFormat;
 
-  const MandiProfitReportWidget({
+  const StockTransactionReportWidget({
     super.key,
     required this.state,
     required this.theme,
@@ -27,16 +27,16 @@ class MandiProfitReportWidget extends StatelessWidget {
           children: [
             Expanded(
               child: ReportSummaryCard(
-                title: 'Total Profit',
-                value: currencyFormat.format(state.totalProfit),
+                title: 'Total Amount',
+                value: currencyFormat.format(state.totalAmount),
                 color: theme.colorScheme.primary,
               ),
             ),
             MySpacing.width(12),
             Expanded(
               child: ReportSummaryCard(
-                title: 'Total Sales',
-                value: currencyFormat.format(state.totalRevenue),
+                title: 'Total Quantity',
+                value: '${state.totalQuantity.toStringAsFixed(2)} units',
                 color: theme.colorScheme.secondary,
               ),
             ),
@@ -45,10 +45,10 @@ class MandiProfitReportWidget extends StatelessWidget {
         MySpacing.height(16),
         ReportDataTable(
           headers: const [
-            ReportTableHeader(label: 'Date', flex: 1),
-            ReportTableHeader(label: 'Sales', flex: 1, textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Cost', flex: 1, textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Profit', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Product', flex: 2),
+            ReportTableHeader(label: 'Buyer', flex: 1),
+            ReportTableHeader(label: 'Qty', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Amount', flex: 1, textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(
@@ -56,32 +56,34 @@ class MandiProfitReportWidget extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        MyText.bodySmall(item.productName, fontWeight: 600),
+                        if (item.variantName != null)
+                          MyText.bodySmall(item.variantName!, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                      ],
+                    ),
+                  ),
+                  Expanded(
                     flex: 1,
-                    child: MyText.bodySmall(item.date, fontWeight: 600),
+                    child: MyText.bodySmall(item.buyerName),
                   ),
                   Expanded(
                     flex: 1,
                     child: MyText.bodySmall(
-                      currencyFormat.format(item.dailyRevenue),
+                      '${item.buyQuantity.toStringAsFixed(2)}',
                       textAlign: TextAlign.center,
-                      color: Colors.green,
                     ),
                   ),
                   Expanded(
                     flex: 1,
                     child: MyText.bodySmall(
-                      currencyFormat.format(item.dailyCost),
-                      textAlign: TextAlign.center,
-                      color: Colors.red,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: MyText.bodySmall(
-                      currencyFormat.format(item.dailyProfit),
+                      currencyFormat.format(item.totalAmount),
                       textAlign: TextAlign.center,
                       fontWeight: 600,
-                      color: item.dailyProfit >= 0 ? Colors.green : Colors.red,
+                      color: theme.colorScheme.primary,
                     ),
                   ),
                 ],

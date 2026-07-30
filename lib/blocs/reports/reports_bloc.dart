@@ -22,6 +22,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     on<LoadPaymentSummary>(_onLoadPaymentSummary);
     on<LoadTodayOrders>(_onLoadTodayOrders);
     on<LoadNetBalance>(_onLoadNetBalance);
+    on<LoadStockTransactionReport>(_onLoadStockTransactionReport);
+    on<LoadStockSummaryReport>(_onLoadStockSummaryReport);
   }
 
   Future<void> _onLoadDailySalesReport(
@@ -310,6 +312,72 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       emit(NetBalanceLoaded(netBalance));
     } catch (error) {
       emit(ReportsError('Failed to load net balance: ${error.toString()}'));
+    }
+  }
+
+  Future<void> _onLoadStockTransactionReport(
+    LoadStockTransactionReport event,
+    Emitter<ReportsState> emit,
+  ) async {
+    emit(ReportsLoading());
+
+    try {
+      final rawData = await reportDAO.getStockTransactionReport(
+        fromDate: event.fromDate,
+        toDate: event.toDate,
+      );
+
+      if (rawData.isEmpty) {
+        emit(ReportsEmpty());
+        return;
+      }
+
+      final data = rawData.map(StockTransactionReportData.fromJson).toList();
+      final totalQuantity = data.fold(0.0, (sum, item) => sum + item.buyQuantity);
+      final totalAmount = data.fold(0.0, (sum, item) => sum + item.totalAmount);
+
+      emit(StockTransactionReportLoaded(
+        data: data,
+        totalQuantity: totalQuantity,
+        totalAmount: totalAmount,
+      ));
+    } catch (error) {
+      emit(ReportsError('Failed to load stock transaction report: ${error.toString()}'));
+    }
+  }
+
+  Future<void> _onLoadStockSummaryReport(
+    LoadStockSummaryReport event,
+    Emitter<ReportsState> emit,
+  ) async {
+    emit(ReportsLoading());
+
+    try {
+      final rawData = await reportDAO.getStockSummaryReport(
+        fromDate: event.fromDate,
+        toDate: event.toDate,
+      );
+
+      if (rawData.isEmpty) {
+        emit(ReportsEmpty());
+        return;
+      }
+
+      final data = rawData.map(StockSummaryData.fromJson).toList();
+      final totalPurchaseAmount = data.fold(0.0, (sum, item) => sum + item.purchaseAmount);
+      final totalSoldAmount = data.fold(0.0, (sum, item) => sum + item.soldAmount);
+      final totalProfit = data.fold(0.0, (sum, item) => sum + item.profit);
+      final totalStockQuantity = data.fold(0.0, (sum, item) => sum + item.quantity);
+
+      emit(StockSummaryReportLoaded(
+        data: data,
+        totalPurchaseAmount: totalPurchaseAmount,
+        totalSoldAmount: totalSoldAmount,
+        totalProfit: totalProfit,
+        totalStockQuantity: totalStockQuantity,
+      ));
+    } catch (error) {
+      emit(ReportsError('Failed to load stock summary report: ${error.toString()}'));
     }
   }
 }

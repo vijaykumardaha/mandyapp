@@ -125,6 +125,7 @@ class _CheckoutContentState extends State<CheckoutContent> {
                 ),
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Column(
@@ -135,20 +136,35 @@ class _CheckoutContentState extends State<CheckoutContent> {
                           fontWeight: 500,
                         ),
                         MySpacing.height(4),
-                        MyText.bodySmall(
-                          '${item.quantity} × ₹${item.sellingPrice.toStringAsFixed(2)} each',
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withOpacity(0.7),
-                        ),
+                        if (item.sellerName != null)
+                          MyText.bodySmall(
+                            'Seller: ${item.sellerName}',
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          )
+                        else
+                          MyText.bodySmall(
+                            '${item.quantity} × ₹${item.sellingPrice.toStringAsFixed(2)} each',
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          ),
                       ],
                     ),
                   ),
-                  MyText.bodyMedium(
-                    '₹${(item.quantity * item.sellingPrice).toStringAsFixed(2)}',
-                    fontWeight: 600,
-                    color: Theme.of(context).colorScheme.primary,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      MyText.bodyMedium(
+                        '₹${(item.quantity * item.sellingPrice).toStringAsFixed(2)}',
+                        fontWeight: 600,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      if (item.sellerName != null) ...[
+                        MySpacing.height(4),
+                        MyText.bodySmall(
+                          '${item.quantity} × ₹${item.sellingPrice.toStringAsFixed(2)}',
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),

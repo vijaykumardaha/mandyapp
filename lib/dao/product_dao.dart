@@ -2,7 +2,7 @@ import 'package:mandiapp/models/product_model.dart';
 import 'package:mandiapp/models/product_variant_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/utils/db_helper.dart';
-import 'package:mandiapp/utils/sync_vegetable.dart';
+import 'package:mandiapp/utils/signup_sync.dart';
 
 class ProductDAO {
   final dbHelper = DBHelper.instance;
@@ -135,7 +135,7 @@ class ProductDAO {
     final now = DateTime.now().millisecondsSinceEpoch;
     final commonProductIds = <int>[];
 
-    for (final veg in SyncVegetable.vegetables) {
+    for (final veg in SignupSync.vegetables) {
       final productId = DBHelper.generateUuidInt();
       await db.insert('products', {
         'id': productId,

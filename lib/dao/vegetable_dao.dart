@@ -1,7 +1,7 @@
 import 'package:mandiapp/models/vegetable_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/utils/db_helper.dart';
-import 'package:mandiapp/utils/sync_vegetable.dart';
+import 'package:mandiapp/utils/signup_sync.dart';
 
 class VegetableDAO {
   final dbHelper = DBHelper.instance;
@@ -20,7 +20,7 @@ class VegetableDAO {
     final now = DateTime.now().millisecondsSinceEpoch;
 
     if (existing.isNotEmpty) {
-      for (final veg in SyncVegetable.vegetables) {
+      for (final veg in SignupSync.vegetables) {
         await db.update(
           'vegetables',
           {
@@ -37,7 +37,7 @@ class VegetableDAO {
 
     final batch = db.batch();
 
-    for (final veg in SyncVegetable.vegetables) {
+    for (final veg in SignupSync.vegetables) {
       batch.rawInsert('''
         INSERT INTO vegetables (mandi_id, key, name, path, price, unit, common, updated_at, is_deleted, sync_status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0)

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +12,8 @@ import 'package:mandiapp/screens/home_tab_screen.dart';
 import 'package:mandiapp/screens/selling_screen.dart';
 import 'package:mandiapp/screens/settings_screen.dart';
 import 'package:mandiapp/screens/bills_screen.dart';
+import 'package:mandiapp/screens/customer_management_screen.dart';
+import 'package:mandiapp/screens/reports_screen.dart';
 import 'package:mandiapp/services/socket_service.dart';
 import 'package:mandiapp/services/sync_service.dart';
 
@@ -67,30 +68,36 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Widget> get _screens => [
         const HomeTabScreen(),
         const BillingScreen(),
-        const SellingScreen(),
         const BillsScreen(),
+        const SellingScreen(),
+        const CustomerManagementScreen(),
+        const ReportsScreen(),
         const SettingsScreen(),
       ];
 
-  List<TabItem> tabItems = [
-    const TabItem(
-        icon: Icons.qr_code, activeIcon: Icons.qr_code_outlined, title: "Home"),
-    const TabItem(
-        icon: Icons.shopping_basket,
-        activeIcon: Icons.shopping_basket_outlined,
-        title: "Billing"),
-    const TabItem(
-        icon: Icons.point_of_sale,
-        activeIcon: Icons.point_of_sale_outlined,
-        title: "Selling"),
-    const TabItem(
-        icon: Icons.receipt_long_outlined,
-        activeIcon: Icons.receipt_long,
-        title: "Bills"),
-    const TabItem(
-        icon: Icons.settings,
-        activeIcon: Icons.settings_outlined,
-        title: "Settings")
+  final _navLabels = const [
+    "Home", "Billing", "Bills", "Selling",
+    "Customers", "Reports", "Settings",
+  ];
+
+  final _unselectedIcons = const [
+    Icons.home_outlined,
+    Icons.shopping_cart_outlined,
+    Icons.receipt_long_outlined,
+    Icons.qr_code,
+    Icons.people_outline,
+    Icons.bar_chart_outlined,
+    Icons.settings_outlined,
+  ];
+
+  final _selectedIcons = const [
+    Icons.home,
+    Icons.shopping_cart,
+    Icons.receipt_long,
+    Icons.qr_code,
+    Icons.people,
+    Icons.bar_chart,
+    Icons.settings,
   ];
 
   @override
@@ -103,18 +110,40 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: Scaffold(
         appBar: null,
-        body: _screens[initialIndex],
-        bottomNavigationBar: ConvexAppBar(
-            initialActiveIndex: initialIndex,
-            backgroundColor: theme.cardTheme.surfaceTintColor,
-            items: tabItems,
-            style: TabStyle.fixed,
-            onTap: (int i) {
-              setState(() {
-                initialIndex = i;
-              });
-            },
-            elevation: 0),
+        body: SafeArea(child: _screens[initialIndex]),
+        bottomNavigationBar: ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+            child: BottomNavigationBar(
+              currentIndex: initialIndex,
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: theme.cardTheme.surfaceTintColor,
+              selectedItemColor: theme.primaryColor,
+              unselectedItemColor: theme.colorScheme.onSurface.withOpacity(0.6),
+              showSelectedLabels: true,
+              showUnselectedLabels: false,
+              selectedFontSize: 13,
+              unselectedFontSize: 13,
+              elevation: 12,
+              onTap: (int i) {
+                setState(() {
+                  initialIndex = i;
+                });
+              },
+              items: List.generate(_navLabels.length, (i) => BottomNavigationBarItem(
+                icon: Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Icon(_unselectedIcons[i], size: 22),
+                ),
+                activeIcon: Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Icon(_selectedIcons[i], size: 26),
+                ),
+                label: _navLabels[i],
+              )),
+            )),
       ),
     );
   }

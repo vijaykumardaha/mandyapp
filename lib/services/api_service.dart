@@ -6,7 +6,10 @@ class ApiService {
 
   late final Dio _dio;
 
-  static const String baseUrl = 'http://192.168.1.4:4000';
+  // static const String baseUrl = 'http://192.168.1.4:4000';
+  static const String baseUrl = 'http://169.58.87.214:4000';
+
+  
 
   ApiService._() {
     _dio = Dio(BaseOptions(

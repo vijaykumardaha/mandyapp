@@ -60,42 +60,44 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
           ),
         ],
       ),
-      body: BlocBuilder<CustomerPaymentBloc, CustomerPaymentState>(
-        builder: (context, state) {
-          if (state is CustomerPaymentLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is CustomerPaymentError) {
-            return Center(child: Text(state.message));
-          }
-
-          if (state is CustomerPaymentsLoaded) {
-            if (state.payments.isEmpty) {
-              return _buildEmptyState(theme);
+      body: SafeArea(
+        child: BlocBuilder<CustomerPaymentBloc, CustomerPaymentState>(
+          builder: (context, state) {
+            if (state is CustomerPaymentLoading) {
+              return const Center(child: CircularProgressIndicator());
             }
 
-            return Column(
-              children: [
-                PaymentSummaryBar(
-                  totalReceived: state.totalReceived,
-                  totalPaid: state.totalPaid,
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: state.payments.length,
-                    itemBuilder: (context, index) {
-                      return PaymentItem(payment: state.payments[index]);
-                    },
-                  ),
-                ),
-              ],
-            );
-          }
+            if (state is CustomerPaymentError) {
+              return Center(child: Text(state.message));
+            }
 
-          return const SizedBox.shrink();
-        },
+            if (state is CustomerPaymentsLoaded) {
+              if (state.payments.isEmpty) {
+                return _buildEmptyState(theme);
+              }
+
+              return Column(
+                children: [
+                  PaymentSummaryBar(
+                    totalReceived: state.totalReceived,
+                    totalPaid: state.totalPaid,
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: state.payments.length,
+                      itemBuilder: (context, index) {
+                        return PaymentItem(payment: state.payments[index]);
+                      },
+                    ),
+                  ),
+                ],
+              );
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }

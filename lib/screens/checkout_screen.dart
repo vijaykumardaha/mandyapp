@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
@@ -188,6 +187,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             orderId: orderId.toString(),
             chargeName: charge.chargeName,
             chargeAmount: amount,
+            updatedAt: now,
+            syncStatus: 0,
           ));
         }
       }
@@ -292,7 +293,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       if (mounted) {
         Info.message('Order placed successfully', context: context);
-        context.push('/bill-details/$orderId');
+        Navigator.of(context).pop({'orderId': orderId});
       }
     } catch (e) {
       if (mounted) {
@@ -326,12 +327,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         .map((e) => _paymentMethodToLabel(e.key))
         .join(', ');
 
+    final isSellerOrder = widget.orderFor == 'seller';
     final items = (widget.cartItems ?? []).map((item) => InvoiceItem(
       productName: item.productName ?? 'Unknown',
       quantity: item.quantity.toDouble(),
       unit: 'pc',
       price: item.sellingPrice,
       total: item.sellingPrice * item.quantity,
+      partnerName: isSellerOrder ? item.buyerName : item.sellerName,
+      partnerType: isSellerOrder ? 'Buyer' : 'Seller',
     )).toList();
 
     await printerService.printInvoice(

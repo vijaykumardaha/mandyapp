@@ -121,8 +121,8 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
     emit(const OrderItemLoading());
     try {
       final orderItems = await _orderItemDAO.getOrderItems(
-        excludeBuyerOrderLinked: true,
-        excludeSellerOrderLinked: true,
+        excludeBuyerOrderLinked: event.excludeBuyerOrderLinked,
+        excludeSellerOrderLinked: event.excludeSellerOrderLinked,
       );
       emit(OrderItemsLoaded(orderItems));
     } catch (error) {

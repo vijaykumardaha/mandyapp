@@ -17,7 +17,6 @@ import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/customer_payment_model.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 import 'package:mandiapp/services/printer_service.dart' as printer_service;
-import 'package:mandiapp/widgets/billing/invoice_item.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/billing/bill_line_item.dart';
 
@@ -60,12 +59,15 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       Info.message('Printing bills...', context: context, duration: Duration(seconds: 2));
     }
 
-    final invoiceItems = data.lineItems.map((item) => InvoiceItem(
+    final isSellerOrder = data.order.orderFor == 'seller';
+    final invoiceItems = data.lineItems.map((item) => printer_service.InvoiceItem(
       productName: item.productName,
       quantity: item.sale.quantity,
       unit: item.unitLabel.isNotEmpty ? item.unitLabel : 'pc',
       price: item.sellingPrice,
       total: item.totalPrice,
+      partnerName: isSellerOrder ? item.sale.buyerName : item.sellerLabel,
+      partnerType: isSellerOrder ? 'Buyer' : 'Seller',
     )).toList();
 
     final success = await printerService.printInvoice(
@@ -369,204 +371,206 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
         actions: [
         ],
       ),
-      body: FutureBuilder<_BillDetailsData>(
-        future: _billFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: SafeArea(
+        child: FutureBuilder<_BillDetailsData>(
+          future: _billFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (snapshot.hasError || !snapshot.hasData) {
+            if (snapshot.hasError || !snapshot.hasData) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.error.withOpacity(0.06),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.receipt_long_outlined,
+                          size: 48,
+                          color: theme.colorScheme.error.withOpacity(0.5),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Failed to load bill',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Please try again later',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: _retry,
+                        icon: const Icon(Icons.refresh, size: 18),
+                        label: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            final data = snapshot.data!;
+            final currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
+            final createdAt = DateTime.fromMillisecondsSinceEpoch(data.order.updatedAt ?? DateTime.now().millisecondsSinceEpoch);
+
             return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(20),
+                      constraints: const BoxConstraints(maxWidth: 360),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.error.withOpacity(0.06),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.receipt_long_outlined,
-                        size: 48,
-                        color: theme.colorScheme.error.withOpacity(0.5),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Failed to load bill',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Please try again later',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton.icon(
-                      onPressed: _retry,
-                      icon: const Icon(Icons.refresh, size: 18),
-                      label: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          final data = snapshot.data!;
-          final currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
-          final createdAt = DateTime.fromMillisecondsSinceEpoch(data.order.updatedAt ?? DateTime.now().millisecondsSinceEpoch);
-
-          return Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: Column(
-                children: [
-                  Container(
-                    constraints: const BoxConstraints(maxWidth: 360),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: theme.colorScheme.outline.withOpacity(0.2),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.shadowColor.withOpacity(0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: theme.colorScheme.outline.withOpacity(0.2),
                         ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _buildReceiptInfo(data, createdAt, theme),
-                          const SizedBox(height: 12),
-                          const Divider(thickness: 1),
-                          _buildReceiptItems(data, currency, theme),
-                          const Divider(thickness: 1),
-                          _buildReceiptSummary(data, currency, theme),
-                          const Divider(thickness: 1),
-                          _buildReceiptPayment(data, currency, theme),
-                          const SizedBox(height: 16),
-                          const Divider(thickness: 1),
-                          Center(
-                            child: Text(
-                              'Thank you!',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.shadowColor.withOpacity(0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      GestureDetector(
-                        onTap: () async {
-                          final confirmed = await showDialog<bool>(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Print Bill'),
-                              content: const Text('Do you really want to print this bill?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, false),
-                                  child: const Text('Cancel'),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildReceiptInfo(data, createdAt, theme),
+                            const SizedBox(height: 12),
+                            const Divider(thickness: 1),
+                            _buildReceiptItems(data, currency, theme),
+                            const Divider(thickness: 1),
+                            _buildReceiptSummary(data, currency, theme),
+                            const Divider(thickness: 1),
+                            _buildReceiptPayment(data, currency, theme),
+                            const SizedBox(height: 16),
+                            const Divider(thickness: 1),
+                            Center(
+                              child: Text(
+                                'Thank you!',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                  color: theme.colorScheme.onSurfaceVariant,
                                 ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, true),
-                                  child: const Text('Print'),
-                                ),
-                              ],
+                              ),
                             ),
-                          );
-                          if (confirmed == true) {
-                            _handlePrint(data);
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primaryContainer,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.print_outlined,
-                                size: 18,
-                                color: theme.colorScheme.onPrimaryContainer,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Print Bill',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.onPrimaryContainer,
-                                ),
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
                       ),
-                      if (data.pendingPayment > 0) ...[
-                        const SizedBox(width: 10),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
                         GestureDetector(
-                          onTap: () => _showReceivePaymentSheet(data),
+                          onTap: () async {
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Print Bill'),
+                                content: const Text('Do you really want to print this bill?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    child: const Text('Print'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirmed == true) {
+                              _handlePrint(data);
+                            }
+                          },
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                             decoration: BoxDecoration(
-                              color: Colors.red,
+                              color: theme.colorScheme.primaryContainer,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
-                                  Icons.account_balance_wallet,
+                                Icon(
+                                  Icons.print_outlined,
                                   size: 18,
-                                  color: Colors.white,
+                                  color: theme.colorScheme.onPrimaryContainer,
                                 ),
                                 const SizedBox(width: 6),
-                                const Text(
-                                  'Pay Due Amount',
+                                Text(
+                                  'Print Bill',
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.white,
+                                    color: theme.colorScheme.onPrimaryContainer,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                         ),
+                        if (data.pendingPayment > 0) ...[
+                          const SizedBox(width: 10),
+                          GestureDetector(
+                            onTap: () => _showReceivePaymentSheet(data),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.account_balance_wallet,
+                                    size: 18,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Text(
+                                    'Pay Due Amount',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -633,22 +637,39 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
           ),
         ),
         ...data.lineItems.map((item) {
+          final isSellerOrder = data.order.orderFor == 'seller';
+          final partnerLabel = isSellerOrder ? 'Buyer' : 'Seller';
+          final partnerName = isSellerOrder
+              ? item.sale.buyerName
+              : item.sellerLabel;
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    item.productName,
-                    style: theme.textTheme.bodyMedium,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.productName,
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ),
+                    Text(
+                      '${item.quantityLabel} × ${currency.format(item.sellingPrice)} = ${currency.format(item.totalPrice)}',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  '${item.quantityLabel} × ${currency.format(item.sellingPrice)} = ${currency.format(item.totalPrice)}',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
+                if (partnerName != null && partnerName.isNotEmpty)
+                  Text(
+                    '$partnerLabel: $partnerName',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
               ],
             ),
           );

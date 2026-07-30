@@ -68,32 +68,34 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
           ],
         ),
       ),
-      body: BlocBuilder<OrderBloc, OrderState>(
-        builder: (context, state) {
-          if (state is OrderLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: SafeArea(
+        child: BlocBuilder<OrderBloc, OrderState>(
+          builder: (context, state) {
+            if (state is OrderLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (state is OrderError) {
-            return Center(child: Text(state.message));
-          }
+            if (state is OrderError) {
+              return Center(child: Text(state.message));
+            }
 
-          if (state is OrdersLoaded) {
-            final customerOrders = state.orders;
+            if (state is OrdersLoaded) {
+              final customerOrders = state.orders;
 
-            if (customerOrders.isEmpty) {
+              if (customerOrders.isEmpty) {
+                return _buildEmptyState(theme);
+              }
+
+              return _buildBillsList(customerOrders);
+            }
+
+            if (state is OrderEmpty) {
               return _buildEmptyState(theme);
             }
 
-            return _buildBillsList(customerOrders);
-          }
-
-          if (state is OrderEmpty) {
-            return _buildEmptyState(theme);
-          }
-
-          return const SizedBox.shrink();
-        },
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }

@@ -236,6 +236,9 @@ class PrinterService {
         final amount = '${item.total.toStringAsFixed(2)}';
 
         invoiceText.writeln('${productName.padRight(12)} ${qty} x ${item.price.toStringAsFixed(2)}   ${amount}');
+        if (item.partnerName != null && item.partnerName!.isNotEmpty) {
+          invoiceText.writeln('${item.partnerType}: ${item.partnerName}'.padLeft(20));
+        }
       }
       invoiceText.writeln('-' * 32);
 
@@ -297,6 +300,8 @@ class InvoiceItem {
   final String unit;
   final double price;
   final double total;
+  final String? partnerName;
+  final String partnerType;
 
   const InvoiceItem({
     required this.productName,
@@ -304,5 +309,7 @@ class InvoiceItem {
     required this.unit,
     required this.price,
     required this.total,
+    this.partnerName,
+    this.partnerType = 'Seller',
   });
 }

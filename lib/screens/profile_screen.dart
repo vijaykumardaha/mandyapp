@@ -47,193 +47,195 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: CommonAppBar(
         titleWidget: MyText.titleMedium('Profile', fontWeight: 600),
       ),
-      body: BlocConsumer<UserBloc, UserState>(
-        listener: (context, state) {
-          if (state is UserUpdated) {
-            Info.message('Profile updated successfully', context: context);
-          } else if (state is UserError) {
-            Info.error(state.errorMsg, context: context);
-          }
-        },
-        builder: (context, state) {
-          if (state is UserLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (state is UserLoaded || state is UserUpdated) {
-            final user = state is UserLoaded 
-                ? state.user 
-                : (state as UserUpdated).user;
-
-            // Set initial values only if controllers are empty
-            if (_nameController.text.isEmpty) {
-              _nameController.text = user.name ?? '';
+      body: SafeArea(
+        child: BlocConsumer<UserBloc, UserState>(
+          listener: (context, state) {
+            if (state is UserUpdated) {
+              Info.message('Profile updated successfully', context: context);
+            } else if (state is UserError) {
+              Info.error(state.errorMsg, context: context);
             }
-            if (_mobileController.text.isEmpty) {
-              _mobileController.text = user.mobile ?? '';
+          },
+          builder: (context, state) {
+            if (state is UserLoading) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
             }
-
-            return SingleChildScrollView(
-              padding: MySpacing.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Profile Header
-                    Center(
-                      child: Column(
-                        children: [
-                          MyText.titleLarge(
-                            user.name ?? 'User',
-                            fontWeight: 600,
+  
+            if (state is UserLoaded || state is UserUpdated) {
+              final user = state is UserLoaded 
+                  ? state.user 
+                  : (state as UserUpdated).user;
+  
+              // Set initial values only if controllers are empty
+              if (_nameController.text.isEmpty) {
+                _nameController.text = user.name ?? '';
+              }
+              if (_mobileController.text.isEmpty) {
+                _mobileController.text = user.mobile ?? '';
+              }
+  
+              return SingleChildScrollView(
+                padding: MySpacing.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Profile Header
+                      Center(
+                        child: Column(
+                          children: [
+                            MyText.titleLarge(
+                              user.name ?? 'User',
+                              fontWeight: 600,
+                            ),
+                            MySpacing.height(4),
+                            MyText.bodyMedium(
+                              user.mobile ?? '',
+                              color: theme.colorScheme.onBackground.withOpacity(0.6),
+                            ),
+                          ],
+                        ),
+                      ),
+                      MySpacing.height(32),
+  
+                      // Name Field
+                      MyText.bodyMedium('Mandi Name', fontWeight: 600),
+                      MySpacing.height(8),
+                      TextFormField(
+                        controller: _nameController,
+                        enabled: false,
+                        style: MyTextStyle.bodyMedium(),
+                        decoration: InputDecoration(
+                          hintText: 'Enter your name',
+                          hintStyle: MyTextStyle.bodyMedium(),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          MySpacing.height(4),
-                          MyText.bodyMedium(
-                            user.mobile ?? '',
-                            color: theme.colorScheme.onBackground.withOpacity(0.6),
-                          ),
-                        ],
-                      ),
-                    ),
-                    MySpacing.height(32),
-
-                    // Name Field
-                    MyText.bodyMedium('Mandi Name', fontWeight: 600),
-                    MySpacing.height(8),
-                    TextFormField(
-                      controller: _nameController,
-                      enabled: false,
-                      style: MyTextStyle.bodyMedium(),
-                      decoration: InputDecoration(
-                        hintText: 'Enter your name',
-                        hintStyle: MyTextStyle.bodyMedium(),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        prefixIcon: Icon(
-                          Icons.person_outline,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
-                        }
-                        return null;
-                      },
-                    ),
-                    MySpacing.height(20),
-
-                    // Mobile Field
-                    MyText.bodyMedium('Mobile Number', fontWeight: 600),
-                    MySpacing.height(8),
-                    TextFormField(
-                      controller: _mobileController,
-                      enabled: false,
-                      style: MyTextStyle.bodyMedium(),
-                      decoration: InputDecoration(
-                        hintText: 'Enter mobile number',
-                        hintStyle: MyTextStyle.bodyMedium(),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        prefixIcon: Icon(
-                          Icons.phone_outlined,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter mobile number';
-                        }
-                        if (value.length < 10) {
-                          return 'Mobile number must be at least 10 digits';
-                        }
-                        return null;
-                      },
-                    ),
-                    MySpacing.height(20),
-
-                    // Password Field (Optional)
-                    MyText.bodyMedium('New Password (Optional)', fontWeight: 600),
-                    MySpacing.height(8),
-                    TextFormField(
-                      controller: _passwordController,
-                      style: MyTextStyle.bodyMedium(),
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        hintText: 'Leave blank to keep current password',
-                        hintStyle: MyTextStyle.bodyMedium(),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        prefixIcon: Icon(
-                          Icons.lock_outline,
-                          color: theme.colorScheme.primary,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
+                          prefixIcon: Icon(
+                            Icons.person_outline,
                             color: theme.colorScheme.primary,
                           ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your name';
+                          }
+                          return null;
+                        },
+                      ),
+                      MySpacing.height(20),
+  
+                      // Mobile Field
+                      MyText.bodyMedium('Mobile Number', fontWeight: 600),
+                      MySpacing.height(8),
+                      TextFormField(
+                        controller: _mobileController,
+                        enabled: false,
+                        style: MyTextStyle.bodyMedium(),
+                        decoration: InputDecoration(
+                          hintText: 'Enter mobile number',
+                          hintStyle: MyTextStyle.bodyMedium(),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          prefixIcon: Icon(
+                            Icons.phone_outlined,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                        keyboardType: TextInputType.phone,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter mobile number';
+                          }
+                          if (value.length < 10) {
+                            return 'Mobile number must be at least 10 digits';
+                          }
+                          return null;
+                        },
+                      ),
+                      MySpacing.height(20),
+  
+                      // Password Field (Optional)
+                      MyText.bodyMedium('New Password (Optional)', fontWeight: 600),
+                      MySpacing.height(8),
+                      TextFormField(
+                        controller: _passwordController,
+                        style: MyTextStyle.bodyMedium(),
+                        obscureText: _obscurePassword,
+                        decoration: InputDecoration(
+                          hintText: 'Leave blank to keep current password',
+                          hintStyle: MyTextStyle.bodyMedium(),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          prefixIcon: Icon(
+                            Icons.lock_outline,
+                            color: theme.colorScheme.primary,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: theme.colorScheme.primary,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    MySpacing.height(32),
-
-                    // Update Button
-                    MyButton.block(
-                      padding: MySpacing.y(16),
-                      onPressed: () {
-                        if (_passwordController.text.isEmpty) {
-                          Info.error('Please enter a new password', context: context);
-                          return;
-                        }
-                        context.read<UserBloc>().add(
-                          UpdateUserProfile(
-                            name: _nameController.text,
-                            mobile: _mobileController.text,
-                            password: _passwordController.text,
-                          ),
-                        );
-                      },
-                      backgroundColor: theme.colorScheme.primary,
-                      elevation: 0,
-                      borderRadiusAll: 8,
-                      child: MyText.bodyMedium(
-                        'Update Profile',
-                        fontWeight: 600,
-                        color: theme.colorScheme.onPrimary,
+                      MySpacing.height(32),
+  
+                      // Update Button
+                      MyButton.block(
+                        padding: MySpacing.y(16),
+                        onPressed: () {
+                          if (_passwordController.text.isEmpty) {
+                            Info.error('Please enter a new password', context: context);
+                            return;
+                          }
+                          context.read<UserBloc>().add(
+                            UpdateUserProfile(
+                              name: _nameController.text,
+                              mobile: _mobileController.text,
+                              password: _passwordController.text,
+                            ),
+                          );
+                        },
+                        backgroundColor: theme.colorScheme.primary,
+                        elevation: 0,
+                        borderRadiusAll: 8,
+                        child: MyText.bodyMedium(
+                          'Update Profile',
+                          fontWeight: 600,
+                          color: theme.colorScheme.onPrimary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+              );
+            }
+  
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 48),
+                  MySpacing.height(16),
+                  MyText.bodyLarge('No user data available'),
+                ],
               ),
             );
-          }
-
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 48),
-                MySpacing.height(16),
-                MyText.bodyLarge('No user data available'),
-              ],
-            ),
-          );
-        },
+          },
+        ),
       ),
     );
   }

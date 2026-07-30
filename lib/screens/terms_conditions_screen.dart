@@ -27,7 +27,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
 
   Future<void> _fetchContent() async {
     try {
-      final response = await ApiService.instance.dio.get('/terms');
+      final response = await ApiService.instance.dio.get('/terms', options: Options(headers: {'Accept': 'text/html'}));
       if (mounted) {
         setState(() {
           _htmlContent = response.data.toString();
@@ -57,42 +57,44 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
       appBar: CommonAppBar(
         titleWidget: const Text('Terms & Conditions'),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text(_error!, textAlign: TextAlign.center),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _isLoading = true;
-                            _error = null;
-                          });
-                          _fetchContent();
-                        },
-                        child: const Text('Retry'),
-                      ),
-                    ],
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text(_error!, textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _isLoading = true;
+                              _error = null;
+                            });
+                            _fetchContent();
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  )
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Html(
+                      data: _htmlContent ?? '',
+                      style: {
+                        'body': Style(
+                          fontSize: FontSize(14),
+                          lineHeight: LineHeight(1.6),
+                        ),
+                      },
+                    ),
                   ),
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Html(
-                    data: _htmlContent ?? '',
-                    style: {
-                      'body': Style(
-                        fontSize: FontSize(14),
-                        lineHeight: LineHeight(1.6),
-                      ),
-                    },
-                  ),
-                ),
+      ),
     );
   }
 }

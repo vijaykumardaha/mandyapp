@@ -1,4 +1,4 @@
-class SyncVegetable {
+class SignupSync {
   static List<Map<String, dynamic>> vegetables = [
     {
       "key": "gajar",
@@ -211,4 +211,21 @@ class SyncVegetable {
     final veg = getVegetableByKey(key);
     return veg?['name'];
   }
+
+  static List<Map<String, dynamic>> defaultCharges = [
+    {
+      "charge_name": "Commission",
+      "charge_type": "percentage",
+      "charge_amount": 10.0,
+      "charge_for": "buyer",
+      "is_default": 1,
+    },
+    {
+      "charge_name": "Commission",
+      "charge_type": "percentage",
+      "charge_amount": 10.0,
+      "charge_for": "seller",
+      "is_default": 1,
+    },
+  ];
 }

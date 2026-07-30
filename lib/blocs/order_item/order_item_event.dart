@@ -67,8 +67,14 @@ class ClearOrderItems extends OrderItemEvent {
 }
 
 class LoadAllUnlinkedOrderItems extends OrderItemEvent {
-  const LoadAllUnlinkedOrderItems();
+  final bool excludeBuyerOrderLinked;
+  final bool excludeSellerOrderLinked;
+
+  const LoadAllUnlinkedOrderItems({
+    this.excludeBuyerOrderLinked = true,
+    this.excludeSellerOrderLinked = true,
+  });
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [excludeBuyerOrderLinked, excludeSellerOrderLinked];
 }

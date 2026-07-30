@@ -175,7 +175,7 @@ class _BillsScreenState extends State<BillsScreen> {
           controller: _searchController,
           onChanged: (q) => _search(q),
           style: theme.textTheme.bodyMedium,
-          autofocus: true,
+          autofocus: false,
           decoration: InputDecoration(
             hintText: 'Search by bill ID, name or mobile...',
             filled: true,
@@ -205,7 +205,7 @@ class _BillsScreenState extends State<BillsScreen> {
           ),
         ),
       ),
-      body: _buildBody(),
+      body: SafeArea(child: _buildBody()),
     );
   }
 

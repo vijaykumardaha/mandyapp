@@ -69,30 +69,27 @@ class StockListItem extends StatelessWidget {
                     },
                     itemBuilder: (context) => [
                       const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Text('Delete', style: TextStyle(color: Colors.red)),
-                      ),
+                      if (stock.soldQuantity <= 0)
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Text('Delete', style: TextStyle(color: Colors.red)),
+                        ),
                     ],
                   ),
               ],
             ),
-            MySpacing.height(12),
-            Divider(height: 1, color: theme.dividerColor.withOpacity(0.2)),
-            MySpacing.height(12),
+            MySpacing.height(10),
+            Divider(height: 1, color: theme.dividerColor.withOpacity(0.15)),
+            MySpacing.height(10),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStat('Initial', stock.initialQuantity.toStringAsFixed(1), theme),
-                _buildStat('Current', stock.quantity.toStringAsFixed(1), theme),
-                _buildStat('Sold', stock.soldQuantity.toStringAsFixed(1), theme),
-                _buildStat('Loss', stock.lossQuantity.toStringAsFixed(1), theme),
-              ],
-            ),
-            MySpacing.height(8),
-            Row(
-              children: [
-                _buildStat('Purchase', '₹${stock.purchaseAmount.toStringAsFixed(2)}', theme),
-                _buildStat('Sold Amt', '₹${stock.soldAmount.toStringAsFixed(2)}', theme),
+                _buildStat('Initial', stock.initialQuantity.toStringAsFixed(1)),
+                _buildStat('Current', stock.quantity.toStringAsFixed(1)),
+                _buildStat('Sold', stock.soldQuantity.toStringAsFixed(1)),
+                _buildStat('Loss', stock.lossQuantity.toStringAsFixed(1)),
+                _buildStat('Purchase', '₹${stock.purchaseAmount.toStringAsFixed(0)}'),
+                _buildStat('Sold Amt', '₹${stock.soldAmount.toStringAsFixed(0)}'),
               ],
             ),
           ],
@@ -101,19 +98,18 @@ class StockListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildStat(String label, String value, ThemeData theme) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          MyText.bodySmall(
-            label,
-            color: theme.colorScheme.onSurface.withOpacity(0.5),
-            fontSize: 11,
-          ),
-          MyText.bodyMedium(value, fontWeight: 600),
-        ],
-      ),
+  Widget _buildStat(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        MyText.bodySmall(
+          label,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
+          fontSize: 10,
+        ),
+        const SizedBox(height: 2),
+        MyText.bodyMedium(value, fontWeight: 600, fontSize: 13),
+      ],
     );
   }
 }

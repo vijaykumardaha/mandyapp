@@ -8,6 +8,8 @@ enum ReportType {
   mandiProfit,
   pendingPayment,
   customerLedger,
+  stockTransaction,
+  stockSummary,
 }
 
 class ReportHelpers {
@@ -38,6 +40,10 @@ class ReportHelpers {
         return 'Pending Payment';
       case ReportType.customerLedger:
         return 'Customer Ledger';
+      case ReportType.stockTransaction:
+        return 'Stock Transaction';
+      case ReportType.stockSummary:
+        return 'Stock Summary';
     }
   }
 
@@ -53,6 +59,10 @@ class ReportHelpers {
         return Icons.pending_actions;
       case ReportType.customerLedger:
         return Icons.account_balance_wallet;
+      case ReportType.stockTransaction:
+        return Icons.receipt_long;
+      case ReportType.stockSummary:
+        return Icons.inventory_2;
     }
   }
 

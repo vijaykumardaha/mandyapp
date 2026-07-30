@@ -4,6 +4,8 @@
  * Version : 13
  * */
 
+import 'dart:io' show Platform;
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:mandiapp/blocs/bill_list/bill_list_bloc.dart';
@@ -33,7 +35,6 @@ import 'package:mandiapp/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
@@ -47,30 +48,14 @@ Future<void> main() async {
   await DBHelper.instance.database;
 
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  await FlutterContacts.requestPermission(readonly: true);
-  await requestBluetoothPermissions();
+  if (!Platform.isMacOS && !Platform.isLinux && !Platform.isWindows) {
+    await FlutterContacts.requestPermission(readonly: true);
+  }
 
   runApp(ChangeNotifierProvider<AppNotifier>(
     create: (context) => AppNotifier(),
     child: MyApp(),
   ));
-}
-
-Future<void> requestBluetoothPermissions() async {
-  final Map<Permission, PermissionStatus> statuses = await <Permission>[
-    Permission.bluetoothScan,
-    Permission.bluetoothConnect,
-    Permission.location,
-  ].request();
-
-  final bool granted = statuses[Permission.bluetoothScan]?.isGranted == true &&
-      statuses[Permission.bluetoothConnect]?.isGranted == true;
-
-  if (!granted) {
-    debugPrint('Bluetooth permissions denied: $statuses');
-  } else {
-    debugPrint('Bluetooth permissions granted');
-  }
 }
 
 class MyApp extends StatelessWidget {

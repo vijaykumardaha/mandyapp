@@ -187,91 +187,94 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             fontWeight: 600,
           ),
         ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: MySpacing.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: RichText(
-                        text: TextSpan(
-                          text: 'product_variants'.tr(),
-                          style: TextStyle(
-                            color: theme.colorScheme.onBackground,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          children: const [
-                            TextSpan(
-                              text: ' *',
-                              style: TextStyle(color: Colors.red),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: MySpacing.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            text: 'product_variants'.tr(),
+                            style: TextStyle(
+                              color: theme.colorScheme.onBackground,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
-                          ],
+                            children: const [
+                              TextSpan(
+                                text: ' *',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    TextButton.icon(
-                      onPressed: _showAddVariantDialog,
-                      icon: const Icon(Icons.add),
-                      label: MyText.bodyMedium('add_variant'.tr()),
-                    ),
-                  ],
-                ),
-                MySpacing.height(12),
-                MySpacing.height(12),
-                if (_variants.isEmpty)
-                  Container(
-                    padding: MySpacing.all(16),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          color: theme.colorScheme.outline.withOpacity(0.3)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: MyText.bodyMedium(
-                        'no_variants_added'.tr(),
-                        color: theme.colorScheme.onBackground.withOpacity(0.6),
+                      TextButton.icon(
+                        onPressed: _showAddVariantDialog,
+                        icon: const Icon(Icons.add),
+                        label: MyText.bodyMedium('add_variant'.tr()),
+                      ),
+                    ],
+                  ),
+                  MySpacing.height(12),
+                  MySpacing.height(12),
+                  if (_variants.isEmpty)
+                    Container(
+                      padding: MySpacing.all(16),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color: theme.colorScheme.outline.withOpacity(0.3)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: MyText.bodyMedium(
+                          'no_variants_added'.tr(),
+                          color: theme.colorScheme.onBackground.withOpacity(0.6),
+                        ),
+                      ),
+                    )
+                  else
+                    ...List.generate(_variants.length, (index) {
+                      final variant = _variants[index];
+                      final variantKeyStr = _variantKey(variant);
+                      return VariantListItem(
+                        variant: variant,
+                        isDefault: variantKeyStr == _defaultVariantKey,
+                        variantKey: variantKeyStr,
+                        onEdit: () => _showAddVariantDialog(variant),
+                        onDelete: () => _deleteVariant(variant),
+                        onDefaultChanged: (value) {
+                          setState(() {
+                            _defaultVariantKey = value;
+                          });
+                        },
+                        theme: theme,
+                      );
+                    }),
+                  MySpacing.height(24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _variants.isEmpty ? null : _saveProduct,
+                      style: ElevatedButton.styleFrom(
+                        padding: MySpacing.y(16),
+                      ),
+                      child: MyText.bodyLarge(
+                        'save_product'.tr(),
+                        fontWeight: 600,
                       ),
                     ),
-                  )
-                else
-                  ...List.generate(_variants.length, (index) {
-                    final variant = _variants[index];
-                    final variantKeyStr = _variantKey(variant);
-                    return VariantListItem(
-                      variant: variant,
-                      isDefault: variantKeyStr == _defaultVariantKey,
-                      variantKey: variantKeyStr,
-                      onEdit: () => _showAddVariantDialog(variant),
-                      onDelete: () => _deleteVariant(variant),
-                      onDefaultChanged: (value) {
-                        setState(() {
-                          _defaultVariantKey = value;
-                        });
-                      },
-                      theme: theme,
-                    );
-                  }),
-                MySpacing.height(24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _variants.isEmpty ? null : _saveProduct,
-                    style: ElevatedButton.styleFrom(
-                      padding: MySpacing.y(16),
-                    ),
-                    child: MyText.bodyLarge(
-                      'save_product'.tr(),
-                      fontWeight: 600,
-                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ));
+        ),
+      );
   }
 }

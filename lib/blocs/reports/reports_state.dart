@@ -176,3 +176,37 @@ class NetBalanceLoaded extends ReportsState {
   @override
   List<Object?> get props => [netBalance];
 }
+
+class StockTransactionReportLoaded extends ReportsState {
+  final List<StockTransactionReportData> data;
+  final double totalQuantity;
+  final double totalAmount;
+
+  const StockTransactionReportLoaded({
+    required this.data,
+    required this.totalQuantity,
+    required this.totalAmount,
+  });
+
+  @override
+  List<Object?> get props => [data, totalQuantity, totalAmount];
+}
+
+class StockSummaryReportLoaded extends ReportsState {
+  final List<StockSummaryData> data;
+  final double totalPurchaseAmount;
+  final double totalSoldAmount;
+  final double totalProfit;
+  final double totalStockQuantity;
+
+  const StockSummaryReportLoaded({
+    required this.data,
+    required this.totalPurchaseAmount,
+    required this.totalSoldAmount,
+    required this.totalProfit,
+    required this.totalStockQuantity,
+  });
+
+  @override
+  List<Object?> get props => [data, totalPurchaseAmount, totalSoldAmount, totalProfit, totalStockQuantity];
+}

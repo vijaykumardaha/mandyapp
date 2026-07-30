@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -31,7 +32,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     final bgColor = backgroundColor ?? theme.scaffoldBackgroundColor;
     final fgColor = foregroundColor ?? theme.colorScheme.onSurface;
 
-    final bool canPop = Navigator.of(context).canPop();
+    final bool canPop = GoRouter.of(context).canPop();
 
     return AppBar(
       backgroundColor: bgColor,
@@ -41,7 +42,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? Padding(
               padding: const EdgeInsets.only(left: 12, top: 8, bottom: 8, right: 0),
               child: GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () => context.pop(),
                 child: Container(
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerHighest,
