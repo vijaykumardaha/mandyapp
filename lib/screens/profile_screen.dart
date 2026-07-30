@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mandiapp/blocs/reports/reports_bloc.dart';
 import 'package:mandiapp/blocs/user/user_bloc.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/services/socket_service.dart';
+import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/widgets/common/my_button.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
@@ -24,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _mobileController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -46,9 +50,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: CommonAppBar(
         titleWidget: MyText.titleMedium('Profile', fontWeight: 600),
+        actions: [
+          StreamBuilder<bool>(
+            stream: SocketService.instance.connectionStream,
+            initialData: SocketService.instance.isConnected,
+            builder: (context, snapshot) {
+              if (snapshot.data != true) return const SizedBox.shrink();
+              return GestureDetector(
+                onTap: _isSyncing
+                    ? null
+                    : () async {
+                        setState(() => _isSyncing = true);
+                        await SyncService.instance.bulkSync();
+                        if (mounted) {
+                          setState(() => _isSyncing = false);
+                          context.read<ReportsBloc>().add(const LoadDashboardData());
+                        }
+                      },
+                child: Container(
+                  margin: const EdgeInsets.only(right: 15),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _isSyncing
+                          ? SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            )
+                          : Icon(Icons.sync_rounded, size: 16, color: theme.colorScheme.onSurfaceVariant),
+                      const SizedBox(width: 4),
+                      Text(
+                        _isSyncing ? 'Data Syncing...' : 'Data Sync',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
-      body: SafeArea(
-        child: BlocConsumer<UserBloc, UserState>(
+      body: Stack(
+        children: [
+          SafeArea(
+            child: BlocConsumer<UserBloc, UserState>(
           listener: (context, state) {
             if (state is UserUpdated) {
               Info.message('Profile updated successfully', context: context);
@@ -236,6 +294,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
           },
         ),
+      ),
+          if (_isSyncing)
+            Container(
+              color: Colors.black26,
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+        ],
       ),
     );
   }
