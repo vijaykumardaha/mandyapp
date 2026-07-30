@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'app_config.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._();
@@ -6,14 +7,9 @@ class ApiService {
 
   late final Dio _dio;
 
-  // static const String baseUrl = 'http://192.168.1.4:4000';
-  static const String baseUrl = 'http://169.58.87.214:4000';
-
-  
-
   ApiService._() {
     _dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
+      baseUrl: AppConfig.baseUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 15),
       headers: {

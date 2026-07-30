@@ -205,10 +205,18 @@ class _StockScreenState extends State<StockScreen> {
                 itemCount: stocks.length,
                 itemBuilder: (context, index) {
                   final stock = stocks[index];
+                  final customerState = context.read<CustomerBloc>().state;
+                  final productState = context.read<ProductBloc>().state;
+                  final customers = customerState is CustomerLoaded ? customerState.customers : <Customer>[];
+                  final products = productState is ProductLoaded ? productState.products : <Product>[];
+                  final seller = customers.where((c) => c.id == stock.sellerId).firstOrNull;
+                  final product = products.where((p) => p.id == stock.productId).firstOrNull;
                   return StockListItem(
                     stock: stock,
                     theme: theme,
                     isAdmin: _isAdmin,
+                    sellerName: seller?.name,
+                    productName: product?.defaultVariantModel?.variantName,
                     onEdit: () => _showStockDialog(stock),
                     onDelete: () => _deleteStock(stock),
                   );

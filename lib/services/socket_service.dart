@@ -17,11 +17,42 @@ class SocketService {
   bool _isConnected = false;
   int? _mandiId;
   final _connectionController = StreamController<bool>.broadcast();
+  StreamSubscription? _closeSub;
+  StreamSubscription? _errorSub;
+  StreamSubscription? _openSub;
 
   PhoenixSocket? get socket => _socket;
   PhoenixChannel? get channel => _channel;
   bool get isConnected => _isConnected;
   Stream<bool> get connectionStream => _connectionController.stream;
+
+  void _onSocketClose(PhoenixSocketCloseEvent event) {
+    log('Socket closed: code=${event.code} reason=${event.reason}');
+    _isConnected = false;
+    _connectionController.add(false);
+  }
+
+  void _onSocketError(PhoenixSocketErrorEvent event) {
+    log('Socket error: ${event.error}');
+    _isConnected = false;
+    _connectionController.add(false);
+  }
+
+  void _onSocketOpen(PhoenixSocketOpenEvent event) {
+    log('Socket reconnected');
+    _isConnected = true;
+    _connectionController.add(true);
+  }
+
+  void _listenToSocket() {
+    _closeSub?.cancel();
+    _errorSub?.cancel();
+    _openSub?.cancel();
+    if (_socket == null) return;
+    _closeSub = _socket!.closeStream.listen(_onSocketClose);
+    _errorSub = _socket!.errorStream.listen(_onSocketError);
+    _openSub = _socket!.openStream.listen(_onSocketOpen);
+  }
 
   Future<void> connect() async {
     if (_isConnecting || _isConnected) {
@@ -67,6 +98,8 @@ class SocketService {
         return;
       }
 
+      _listenToSocket();
+
       _channel = _socket!.addChannel(
         topic: '${SocketConfig.channelPrefix}$_mandiId',
       );
@@ -90,6 +123,9 @@ class SocketService {
   }
 
   Future<void> disconnect() async {
+    _closeSub?.cancel();
+    _errorSub?.cancel();
+    _openSub?.cancel();
     _channel?.leave();
     _channel?.close();
     _channel = null;
@@ -102,6 +138,9 @@ class SocketService {
   }
 
   void dispose() {
+    _closeSub?.cancel();
+    _errorSub?.cancel();
+    _openSub?.cancel();
     _connectionController.close();
   }
 

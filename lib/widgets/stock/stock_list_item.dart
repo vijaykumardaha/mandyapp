@@ -7,6 +7,8 @@ class StockListItem extends StatelessWidget {
   final Stock stock;
   final ThemeData theme;
   final bool isAdmin;
+  final String? sellerName;
+  final String? productName;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
@@ -15,6 +17,8 @@ class StockListItem extends StatelessWidget {
     required this.stock,
     required this.theme,
     this.isAdmin = true,
+    this.sellerName,
+    this.productName,
     this.onEdit,
     this.onDelete,
   });
@@ -50,12 +54,12 @@ class StockListItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       MyText.titleSmall(
-                        'Product #${stock.productId}',
+                        productName ?? 'Product #${stock.productId}',
                         fontWeight: 600,
                       ),
                       MySpacing.height(2),
                       MyText.bodySmall(
-                        'Seller #${stock.sellerId}',
+                        sellerName ?? 'Seller #${stock.sellerId}',
                         color: theme.colorScheme.onSurface.withOpacity(0.6),
                       ),
                     ],

@@ -682,24 +682,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.tune,
-                      size: 18,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Filter',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'Filter',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
             ),
@@ -719,15 +708,22 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _downloadPdf,
-        backgroundColor: Theme.of(context).colorScheme.tertiary,
-        foregroundColor: Theme.of(context).colorScheme.onTertiary,
-        icon: const Icon(Icons.download_rounded, size: 20),
-        label: const Text(
-          'Download',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
+      floatingActionButton: BlocBuilder<ReportsBloc, ReportsState>(
+        builder: (context, state) {
+          if (state is ReportsLoading || state is ReportsError || state is ReportsEmpty || state is ReportsInitial) {
+            return const SizedBox.shrink();
+          }
+          return FloatingActionButton.extended(
+            onPressed: _downloadPdf,
+            backgroundColor: Theme.of(context).colorScheme.tertiary,
+            foregroundColor: Theme.of(context).colorScheme.onTertiary,
+            icon: const Icon(Icons.download_rounded, size: 20),
+            label: const Text(
+              'Download',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          );
+        },
       ),
     );
   }

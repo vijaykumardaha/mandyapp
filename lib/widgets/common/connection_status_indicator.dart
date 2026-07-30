@@ -56,7 +56,7 @@ class _ConnectionStatusIndicatorState extends State<ConnectionStatusIndicator>
   @override
   Widget build(BuildContext context) {
     final color = _isConnected ? Colors.green : Colors.red;
-    final label = _isConnected ? 'Live' : 'Offline';
+    final label = 'Live';
 
     return AnimatedBuilder(
       animation: _pulseAnimation,

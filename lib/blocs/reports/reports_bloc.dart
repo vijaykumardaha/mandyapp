@@ -226,9 +226,9 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       // Get all dashboard data in parallel
       final todaySalesFuture = reportDAO.getDailySalesReport(fromDate: fromDate, toDate: toDate);
       final profitFuture = reportDAO.getMandiProfitReport(fromDate: fromDate, toDate: toDate);
-      final paymentSummaryFuture = reportDAO.getPaymentSummary();
+      final paymentSummaryFuture = reportDAO.getPaymentSummary(fromDate: fromDate, toDate: toDate);
       final ordersFuture = reportDAO.getTodayOrdersCount();
-      final netBalanceFuture = reportDAO.getNetBalance();
+      final netBalanceFuture = reportDAO.getNetBalance(fromDate: fromDate, toDate: toDate);
 
       final results = await Future.wait([
         todaySalesFuture,

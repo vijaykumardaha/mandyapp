@@ -180,14 +180,30 @@ class ReportDAO {
   }
 
   // Payment Summary Methods
-  Future<Map<String, dynamic>> getPaymentSummary() async {
+  Future<Map<String, dynamic>> getPaymentSummary({
+    DateTime? fromDate,
+    DateTime? toDate,
+  }) async {
     final db = await dbHelper.database;
 
+    final bool hasDateFilter = fromDate != null && toDate != null;
+    late final String fDate = fromDate!.toIso8601String().split('T')[0];
+    late final String tDate = toDate!.toIso8601String().split('T')[0];
+
+    String filter(String alias) {
+      if (!hasDateFilter) return '';
+      return "AND date($alias.updated_at / 1000, 'unixepoch', 'localtime') >= date(?) "
+          "AND date($alias.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)";
+    }
+    List<String> args() => hasDateFilter ? [fDate, tDate] : [];
+    List<String> args2() => hasDateFilter ? [fDate, tDate, fDate, tDate] : [];
+
     // Get total received amount from buyers
-    const receivedAmountSql = '''
+    final receivedAmountSql = '''
       SELECT COALESCE(SUM(op.amount), 0) as total_received
       FROM order_payments op
       WHERE op.amount > 0
+        ${filter('op')}
         AND op.order_id IN (
           SELECT DISTINCT buyer_order_id FROM order_items
           WHERE buyer_order_id IS NOT NULL
@@ -195,7 +211,7 @@ class ReportDAO {
     ''';
 
     // Get pending payments from buyers: cart items not checked out + bill pending
-    const pendingPaymentsSql = '''
+    final pendingPaymentsSql = '''
       SELECT COALESCE(SUM(pending_amount), 0) as total_pending
       FROM (
         SELECT SUM(quantity * selling_price) as pending_amount
@@ -203,6 +219,7 @@ class ReportDAO {
         WHERE buyer_order_id IS NULL
           AND buyer_id IS NOT NULL
           AND (is_deleted IS NULL OR is_deleted = 0)
+          ${filter('order_items')}
         UNION ALL
         SELECT
           item_totals.item_total
@@ -213,6 +230,7 @@ class ReportDAO {
           SELECT buyer_order_id as order_id, SUM(quantity * selling_price) as item_total
           FROM order_items
           WHERE buyer_order_id IS NOT NULL
+          ${filter('order_items')}
           GROUP BY buyer_order_id
         ) item_totals
         LEFT JOIN (
@@ -235,10 +253,11 @@ class ReportDAO {
     ''';
 
     // Get total paid to sellers (actual payments made to sellers)
-    const paidToSellersSql = '''
+    final paidToSellersSql = '''
       SELECT COALESCE(SUM(op.amount), 0) as total_paid_to_sellers
       FROM order_payments op
       WHERE op.amount > 0
+        ${filter('op')}
         AND op.order_id IN (
           SELECT DISTINCT seller_order_id FROM order_items
           WHERE seller_order_id IS NOT NULL
@@ -246,7 +265,7 @@ class ReportDAO {
     ''';
 
     // Get pending payments to sellers: cart items not yet checked out + bill pending
-    const pendingToSellersSql = '''
+    final pendingToSellersSql = '''
       SELECT COALESCE(SUM(pending_amount), 0) as total_pending_to_sellers
       FROM (
         SELECT SUM(quantity * selling_price) as pending_amount
@@ -254,6 +273,7 @@ class ReportDAO {
         WHERE seller_order_id IS NULL
           AND seller_id IS NOT NULL
           AND (is_deleted IS NULL OR is_deleted = 0)
+          ${filter('order_items')}
         UNION ALL
         SELECT
           item_totals.item_total
@@ -264,6 +284,7 @@ class ReportDAO {
           SELECT seller_order_id as order_id, SUM(quantity * selling_price) as item_total
           FROM order_items
           WHERE seller_order_id IS NOT NULL
+          ${filter('order_items')}
           GROUP BY seller_order_id
         ) item_totals
         LEFT JOIN (
@@ -285,10 +306,10 @@ class ReportDAO {
       WHERE pending_amount > 0
     ''';
 
-    final receivedResult = await db.rawQuery(receivedAmountSql);
-    final pendingResult = await db.rawQuery(pendingPaymentsSql);
-    final paidToSellersResult = await db.rawQuery(paidToSellersSql);
-    final pendingToSellersResult = await db.rawQuery(pendingToSellersSql);
+    final receivedResult = await db.rawQuery(receivedAmountSql, args());
+    final pendingResult = await db.rawQuery(pendingPaymentsSql, args2());
+    final paidToSellersResult = await db.rawQuery(paidToSellersSql, args());
+    final pendingToSellersResult = await db.rawQuery(pendingToSellersSql, args2());
 
     return {
       'total_received': (receivedResult.first['total_received'] as num?)?.toDouble() ?? 0.0,
@@ -315,27 +336,39 @@ class ReportDAO {
   }
 
    // Get net balance (cash in hand + UPI - payables)
-  Future<double> getNetBalance() async {
+  Future<double> getNetBalance({DateTime? fromDate, DateTime? toDate}) async {
     final db = await dbHelper.database;
+    final bool hasDateFilter = fromDate != null && toDate != null;
+    late final String fDate = fromDate!.toIso8601String().split('T')[0];
+    late final String tDate = toDate!.toIso8601String().split('T')[0];
+    final List<String> args = hasDateFilter ? [fDate, tDate] : [];
+
+    String filter(String alias) {
+      if (!hasDateFilter) return '';
+      return "AND date($alias.updated_at / 1000, 'unixepoch', 'localtime') >= date(?) "
+          "AND date($alias.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)";
+    }
 
     // Get cash in hand + UPI (received payments)
-    const receivedSql = '''
+    final receivedSql = '''
       SELECT COALESCE(SUM(amount), 0) as total_received
       FROM order_payments
       WHERE amount > 0
+        ${filter('order_payments')}
     ''';
 
     // Get total payables (pending payments to sellers)
-    const payablesSql = '''
+    final payablesSql = '''
       SELECT COALESCE(SUM(order_charges.charge_amount), 0) as total_payables
       FROM order_charges
       JOIN order_items oi ON order_charges.order_id = oi.buyer_order_id
       WHERE oi.seller_order_id IS NULL
         AND oi.buyer_order_id IS NOT NULL
+        ${filter('order_charges')}
     ''';
 
-    final receivedResult = await db.rawQuery(receivedSql);
-    final payablesResult = await db.rawQuery(payablesSql);
+    final receivedResult = await db.rawQuery(receivedSql, args);
+    final payablesResult = await db.rawQuery(payablesSql, args);
 
     final totalReceived = (receivedResult.first['total_received'] as num?)?.toDouble() ?? 0.0;
     final totalPayables = (payablesResult.first['total_payables'] as num?)?.toDouble() ?? 0.0;
