@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:mandiapp/dao/report_dao.dart';
+import 'package:mandiapp/helpers/extensions/string.dart';
 import 'package:mandiapp/models/report_models.dart';
 
 part 'reports_event.dart';

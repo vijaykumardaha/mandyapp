@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:intl/intl.dart';
 import 'package:mandiapp/blocs/reports/reports_bloc.dart';
+import 'package:mandiapp/helpers/extensions/string.dart';
 import 'package:mandiapp/widgets/reports/report_types.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -222,9 +223,7 @@ class ReportPdfService {
       _buildSummaryRow([
         _summaryCard('Total Sales', currencyFormat.format(state.totalRevenue),
             PdfColor.fromHex('#1565C0')),
-        _summaryCard(
-            'Total Quantity',
-            '${state.totalQuantity.toStringAsFixed(2)} units',
+        _summaryCard('Total Quantity', state.totalQuantityLabel,
             PdfColor.fromHex('#2E7D32')),
         _summaryCard('Transactions', '${state.totalTransactions}',
             PdfColor.fromHex('#E65100')),
@@ -234,15 +233,16 @@ class ReportPdfService {
           style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
-        ['Product', 'Unit', 'Quantity', 'Sales'],
-        state.data
-            .map((item) => [
-                  item.productName,
-                  item.unit,
-                  item.totalQuantity.toStringAsFixed(2),
-                  currencyFormat.format(item.totalRevenue),
-                ])
-            .toList(),
+        ['Product', 'Rate', 'Quantity', 'Totals'],
+        [
+          ...state.data.map((item) => [
+                '${item.productName}\n'
+                    'Seller: ${item.sellerName ?? (item.sellerId != null ? 'Seller #${item.sellerId}' : 'Unknown Seller')}',
+                currencyFormat.format(item.avgPrice),
+                '${item.totalQuantity.toStringAsFixed(2)}\u00A0${item.unit.unitAbbreviation}',
+                currencyFormat.format(item.totalRevenue),
+              ]),
+        ],
       ),
     ];
   }
@@ -270,7 +270,7 @@ class ReportPdfService {
         state.data
             .map((item) => [
                   item.productName,
-                  item.unit,
+                  item.unit.unitAbbreviation,
                   item.totalQuantity.toStringAsFixed(2),
                   currencyFormat.format(item.totalCost),
                 ])

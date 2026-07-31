@@ -4,6 +4,8 @@ class DailySalesData {
   final int variantId;
   final String productName;
   final String unit;
+  final int? sellerId;
+  final String? sellerName;
   final double totalQuantity;
   final int transactionCount;
   final double totalRevenue;
@@ -15,6 +17,8 @@ class DailySalesData {
     required this.variantId,
     required this.productName,
     required this.unit,
+    required this.sellerId,
+    required this.sellerName,
     required this.totalQuantity,
     required this.transactionCount,
     required this.totalRevenue,
@@ -29,6 +33,8 @@ class DailySalesData {
       productName:
           json['variant_name'] as String? ?? 'Product ${json['product_id']}',
       unit: json['unit'] as String? ?? 'units',
+      sellerId: json['seller_id'] as int?,
+      sellerName: json['seller_name'] as String?,
       totalQuantity: (json['total_quantity'] as num?)?.toDouble() ?? 0.0,
       transactionCount: json['transaction_count'] as int? ?? 0,
       totalRevenue: (json['total_revenue'] as num?)?.toDouble() ?? 0.0,
@@ -43,6 +49,8 @@ class DailySalesData {
       'variant_id': variantId,
       'product_name': productName,
       'unit': unit,
+      'seller_id': sellerId,
+      'seller_name': sellerName,
       'total_quantity': totalQuantity,
       'transaction_count': transactionCount,
       'total_revenue': totalRevenue,

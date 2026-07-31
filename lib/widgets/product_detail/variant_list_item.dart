@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandiapp/helpers/extensions/string.dart';
 import 'package:mandiapp/models/product_variant_model.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
@@ -82,7 +83,7 @@ class VariantListItem extends StatelessWidget {
                 ),
                 MySpacing.height(4),
                 MyText.bodySmall(
-                  'Selling Price: ${variant.sellingPrice.toStringAsFixed(2)} | Quantity: ${variant.quantity.toStringAsFixed(2)} ${variant.unit}',
+                  'Selling Price: ${variant.sellingPrice.toStringAsFixed(2)} | Quantity: ${variant.quantity.toStringAsFixed(2)} ${variant.unit.unitAbbreviation}',
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ],

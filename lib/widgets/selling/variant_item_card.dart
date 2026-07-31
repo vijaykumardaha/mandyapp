@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandiapp/helpers/extensions/string.dart';
 import 'package:mandiapp/models/product_variant_model.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/common/reusable_controls.dart';
@@ -135,7 +136,8 @@ class _VariantItemCardState extends State<VariantItemCard> {
                                     fontWeight: FontWeight.w600,
                                   ),
                                   decoration: InputDecoration(
-                                    labelText: 'Qty (${widget.variant.unit})',
+                                    labelText:
+                                        'Qty (${widget.variant.unit.unitAbbreviation})',
                                     border: const OutlineInputBorder(),
                                     isDense: true,
                                     contentPadding: const EdgeInsets.symmetric(

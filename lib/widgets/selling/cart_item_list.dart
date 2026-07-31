@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandiapp/helpers/extensions/string.dart';
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/order_item_model.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
@@ -135,7 +136,7 @@ class _CartItemListState extends State<CartItemList> {
                           final isChecked = _selectedIndices.contains(index);
                           final sellerName = widget.sellerNameForSale(sale);
                           final quantityLabel =
-                              '${sale.quantity.toStringAsFixed(sale.quantity % 1 == 0 ? 0 : 2)} ${sale.unit}';
+                              '${sale.quantity.toStringAsFixed(sale.quantity % 1 == 0 ? 0 : 2)} ${sale.unit.unitAbbreviation}';
                           final productTitle = widget.productTitleForSale(sale);
                           final titleText = productTitle;
 

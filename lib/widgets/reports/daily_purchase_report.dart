@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mandiapp/blocs/reports/reports_bloc.dart';
+import 'package:mandiapp/helpers/extensions/string.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/reports/report_data_table.dart';
@@ -60,7 +61,7 @@ class DailyPurchaseReportWidget extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         MyText.bodySmall(item.productName, fontWeight: 600),
-                        MyText.bodySmall(item.unit,
+                        MyText.bodySmall(item.unit.unitAbbreviation,
                             color: theme.colorScheme.onSurface
                                 .withValues(alpha: 0.6)),
                       ],

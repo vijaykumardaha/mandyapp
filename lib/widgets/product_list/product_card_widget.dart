@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandiapp/helpers/extensions/string.dart';
 import 'package:mandiapp/models/product_model.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
@@ -99,7 +100,7 @@ class ProductCardWidget extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: MyText.bodySmall(
-                                    '₹${variant.sellingPrice.toStringAsFixed(0)} \\ ${variant.quantity} ${variant.unit}',
+                                    '₹${variant.sellingPrice.toStringAsFixed(0)} \\ ${variant.quantity} ${variant.unit.unitAbbreviation}',
                                     color: theme.colorScheme.primary,
                                     fontSize: 10,
                                   ),

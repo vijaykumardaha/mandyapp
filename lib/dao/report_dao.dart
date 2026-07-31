@@ -15,6 +15,8 @@ class ReportDAO {
         date(order_items.updated_at / 1000, 'unixepoch', 'localtime') as date,
         order_items.product_id,
         order_items.variant_id,
+        order_items.seller_id,
+        c.name as seller_name,
         pv.variant_name,
         pv.unit,
         SUM(order_items.quantity) as total_quantity,
@@ -23,9 +25,10 @@ class ReportDAO {
         AVG(order_items.selling_price) as avg_price
       FROM order_items
       LEFT JOIN product_variants pv ON order_items.variant_id = pv.id
+      LEFT JOIN customers c ON order_items.seller_id = c.id
       WHERE date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
         AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
-      GROUP BY date(order_items.updated_at / 1000, 'unixepoch', 'localtime'), order_items.product_id, order_items.variant_id, pv.variant_name, pv.unit
+      GROUP BY date(order_items.updated_at / 1000, 'unixepoch', 'localtime'), order_items.product_id, order_items.variant_id, order_items.seller_id, c.name, pv.variant_name, pv.unit
       ORDER BY date DESC, total_revenue DESC
     ''';
 

@@ -35,6 +35,19 @@ class DailySalesReportLoaded extends ReportsState {
     required this.totalTransactions,
   });
 
+  String get totalQuantityLabel {
+    if (data.isEmpty) {
+      return '${totalQuantity.toStringAsFixed(2)} units';
+    }
+    final byUnit = <String, double>{};
+    for (final item in data) {
+      byUnit[item.unit] = (byUnit[item.unit] ?? 0) + item.totalQuantity;
+    }
+    final dominant =
+        byUnit.entries.reduce((a, b) => a.value >= b.value ? a : b);
+    return '${totalQuantity.toStringAsFixed(2)} ${dominant.key.unitAbbreviation}';
+  }
+
   @override
   List<Object?> get props =>
       [data, totalRevenue, totalQuantity, totalTransactions];

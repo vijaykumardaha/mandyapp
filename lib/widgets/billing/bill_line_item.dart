@@ -1,3 +1,4 @@
+import 'package:mandiapp/helpers/extensions/string.dart';
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/order_item_model.dart';
 import 'package:mandiapp/models/product_model.dart';
@@ -36,7 +37,7 @@ class BillLineItem {
     if (variantName.isNotEmpty && variantName != productName) {
       return variantName;
     }
-    return '${variant!.quantity.toStringAsFixed(0)} ${variant!.unit}';
+    return '${variant!.quantity.toStringAsFixed(0)} ${variant!.unit.unitAbbreviation}';
   }
 
   String get quantityLabel {
@@ -54,11 +55,11 @@ class BillLineItem {
   String get unitLabel {
     final saleUnit = sale.unit.trim();
     if (saleUnit.isNotEmpty) {
-      return saleUnit;
+      return saleUnit.unitAbbreviation;
     }
     final variantUnit = variant?.unit.trim();
     if (variantUnit != null && variantUnit.isNotEmpty) {
-      return variantUnit;
+      return variantUnit.unitAbbreviation;
     }
     return '';
   }

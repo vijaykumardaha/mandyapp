@@ -1,6 +1,24 @@
 import 'dart:ui';
 
 extension StringUtil on String {
+  static const Map<String, String> _unitAbbreviations = {
+    'gram': 'g',
+    'kilogram': 'Kg',
+    'quintal': 'Qtl',
+    'metric ton': 'MT',
+    'piece': 'pc',
+    'dozen': 'dz',
+    'box': 'bx',
+    'bag': 'bg',
+    'crate': 'crt',
+    'bundle': 'bdl',
+    'tray': 'tray',
+  };
+
+  String get unitAbbreviation {
+    return _unitAbbreviations[trim().toLowerCase()] ?? this;
+  }
+
   Color get toColor {
     String data = replaceAll('#', '');
     if (data.length == 6) {
