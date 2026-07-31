@@ -35,4 +35,24 @@ final class LoginFailure extends LoginState {
   List<Object> get props => [error];
 }
 
+final class LoginCustomerLoading extends LoginState {}
+
+final class LoginCustomerSuccess extends LoginState {
+  final User user;
+
+  const LoginCustomerSuccess({required this.user});
+
+  @override
+  List<Object> get props => [user];
+}
+
+final class LoginCustomerFailure extends LoginState {
+  final String error;
+
+  const LoginCustomerFailure({required this.error});
+
+  @override
+  List<Object> get props => [error];
+}
+
 final class LogoutSuccess extends LoginState {}

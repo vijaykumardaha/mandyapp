@@ -2,32 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mandiapp/blocs/login/login_bloc.dart';
-import 'package:mandiapp/controllers/login_controller.dart';
+import 'package:mandiapp/controllers/customer_login_controller.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
 import 'package:mandiapp/utils/info_controller.dart';
+import 'package:mandiapp/widgets/auth/mandi_id_field.dart';
 import 'package:mandiapp/widgets/auth/mobile_field.dart';
-import 'package:mandiapp/widgets/auth/password_field.dart';
 import 'package:mandiapp/widgets/common/my_button.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class CustomerLoginScreen extends StatefulWidget {
+  const CustomerLoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<CustomerLoginScreen> createState() => _CustomerLoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
   late ThemeData theme;
-  late LoginController controller;
+  late CustomerLoginController controller;
   late OutlineInputBorder outlineInputBorder;
 
   @override
   void initState() {
     super.initState();
     theme = AppTheme.shoppingManagerTheme;
-    controller = LoginController();
+    controller = CustomerLoginController();
     outlineInputBorder = OutlineInputBorder(
       borderSide: BorderSide(
         color: theme.dividerColor,
@@ -36,35 +36,28 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocConsumer<LoginBloc, LoginState>(
         listener: (context, state) {
-          if (state is LoginFailure) {
+          if (state is LoginCustomerFailure) {
             Info.error(state.error, context: context);
           }
 
-          if (state is LoginSuccess) {
-            context.go('/home');
+          if (state is LoginCustomerSuccess) {
+            context.go('/customer-home');
           }
         },
         builder: (context, state) {
-          if (state is LoginLoading || state is SyncLoading) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CircularProgressIndicator(),
-                  if (state is SyncLoading)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Text(
-                        'Syncing your data...',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ),
-                ],
-              ),
+          if (state is LoginCustomerLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
             );
           }
           return SafeArea(
@@ -77,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Align(
                     alignment: Alignment.centerLeft,
                     child: MyText.headlineMedium(
-                      'Login',
+                      'Customer Login',
                       fontWeight: 700,
                     ),
                   ),
@@ -85,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: MyText.bodyMedium(
-                      'Welcome back! Please login to continue',
+                      'Login with your mandi id and mobile number',
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
@@ -94,18 +87,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     key: controller.formKey,
                     child: Column(
                       children: [
+                        AuthMandiIdField(
+                          controller: controller.mandiIdController,
+                          outlineInputBorder: outlineInputBorder,
+                          theme: theme,
+                          validator: controller.validateMandiId,
+                        ),
+                        MySpacing.height(20),
                         AuthMobileField(
                           controller: controller.mobileController,
                           outlineInputBorder: outlineInputBorder,
                           theme: theme,
                           validator: controller.validateMobileNumber,
-                        ),
-                        MySpacing.height(20),
-                        AuthPasswordField(
-                          controller: controller.passwordController,
-                          outlineInputBorder: outlineInputBorder,
-                          theme: theme,
-                          validator: controller.validatePassword,
                         ),
                       ],
                     ),
@@ -116,9 +109,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       if (controller.formKey.currentState!.validate()) {
                         context.read<LoginBloc>().add(
-                              LoginSubmit(
+                              CustomerLoginSubmit(
+                                mandiId: int.parse(
+                                    controller.mandiIdController.text),
                                 mobile: controller.mobileController.text,
-                                password: controller.passwordController.text,
                               ),
                             );
                       }
@@ -141,33 +135,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       MyText.bodyMedium(
-                        "Don't have an account? ",
+                        'Login as admin or staff? ',
                         color:
                             theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                       InkWell(
-                        onTap: () => context.go('/signup'),
+                        onTap: () => context.go('/login'),
                         child: MyText.bodyMedium(
-                          'Sign Up',
-                          fontWeight: 600,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  MySpacing.height(16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      MyText.bodyMedium(
-                        'Login as customer? ',
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                      InkWell(
-                        onTap: () => context.go('/customer-login'),
-                        child: MyText.bodyMedium(
-                          'Customer Login',
+                          'Login',
                           fontWeight: 600,
                           color: theme.colorScheme.primary,
                         ),

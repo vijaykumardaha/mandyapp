@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:mandiapp/screens/bill_details_screen.dart';
 import 'package:mandiapp/screens/bills_screen.dart';
 import 'package:mandiapp/screens/charges_screen.dart';
+import 'package:mandiapp/screens/customer_home_screen.dart';
+import 'package:mandiapp/screens/customer_login_screen.dart';
 import 'package:mandiapp/screens/customer_management_screen.dart';
 import 'package:mandiapp/screens/home_screen.dart';
 import 'package:mandiapp/screens/initial_screen.dart';
@@ -31,6 +33,18 @@ class AppRoutes {
         path: '/login',
         builder: (context, state) {
           return const LoginScreen();
+        },
+      ),
+      GoRoute(
+        path: '/customer-login',
+        builder: (context, state) {
+          return const CustomerLoginScreen();
+        },
+      ),
+      GoRoute(
+        path: '/customer-home',
+        builder: (context, state) {
+          return const CustomerHomeScreen();
         },
       ),
       GoRoute(

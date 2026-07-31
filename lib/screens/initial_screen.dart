@@ -25,6 +25,8 @@ class _InitialScreenState extends State<InitialScreen> {
       listener: (context, state) {
         if (state is LoginSuccess) {
           context.go('/home');
+        } else if (state is LoginCustomerSuccess) {
+          context.go('/customer-home');
         } else if (state is CheckingFailed) {
           context.go('/login');
         }

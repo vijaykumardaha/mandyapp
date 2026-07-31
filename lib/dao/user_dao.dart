@@ -34,6 +34,15 @@ class UserDAO {
     return result.isNotEmpty ? User.fromJson(result.first) : null;
   }
 
+  Future<User?> customerLogin(String mobile) async {
+    final db = await dbHelper.database;
+    final result = await db.query(DbTables.users,
+        where: 'mobile = ? AND is_deleted = ? AND is_active = ? AND role = ?',
+        whereArgs: [mobile, 0, 1, 'customer']);
+
+    return result.isNotEmpty ? User.fromJson(result.first) : null;
+  }
+
   Future<User?> getUserByMobile(String mobile) async {
     final db = await dbHelper.database;
     final result = await db.query(DbTables.users,

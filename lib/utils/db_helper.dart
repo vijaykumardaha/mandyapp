@@ -53,7 +53,7 @@ class DBHelper {
               name TEXT NOT NULL,
               mobile TEXT NOT NULL,
               password TEXT NOT NULL,
-              role TEXT NOT NULL DEFAULT 'admin' CHECK(role IN ('admin', 'staff')),
+              role TEXT NOT NULL DEFAULT 'admin' CHECK(role IN ('admin', 'staff', 'customer')),
               is_active INTEGER NOT NULL DEFAULT 1,
               updated_at INTEGER NOT NULL,
               is_deleted INTEGER DEFAULT 0,

@@ -18,6 +18,16 @@ class LoginSubmit extends LoginEvent {
   List<Object> get props => [mobile, password];
 }
 
+class CustomerLoginSubmit extends LoginEvent {
+  final int mandiId;
+  final String mobile;
+
+  const CustomerLoginSubmit({required this.mandiId, required this.mobile});
+
+  @override
+  List<Object> get props => [mandiId, mobile];
+}
+
 class RegisterUser extends LoginEvent {
   final String name, mobile, password;
 

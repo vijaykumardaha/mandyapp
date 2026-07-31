@@ -26,12 +26,15 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<CheckLoginStatus>((event, emit) async {
       try {
         final userData = await AppHelper.getPreferences(PrefsKeys.user);
-
         if (userData != null) {
           final user = User.fromJson(userData);
-          emit(SyncLoading());
-          await SyncService.instance.connectAndSync();
-          emit(LoginSuccess(user: user));
+          if (user.role == 'customer') {
+            emit(LoginCustomerSuccess(user: user));
+          } else {
+            emit(SyncLoading());
+            await SyncService.instance.connectAndSync();
+            emit(LoginSuccess(user: user));
+          }
         } else {
           emit(CheckingFailed());
         }
@@ -55,6 +58,23 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         emit(LoginSuccess(user: user));
       } catch (e) {
         emit(LoginFailure(error: e.toString().replaceFirst('Exception: ', '')));
+      }
+    });
+
+    on<CustomerLoginSubmit>((event, emit) async {
+      try {
+        emit(LoginCustomerLoading());
+
+        final user = await _authApi.customerLogin(
+          mandiId: event.mandiId,
+          mobile: event.mobile,
+        );
+
+        await AppHelper.savePreferences(PrefsKeys.user, user.toJson());
+        emit(LoginCustomerSuccess(user: user));
+      } catch (e) {
+        emit(LoginCustomerFailure(
+            error: e.toString().replaceFirst('Exception: ', '')));
       }
     });
 

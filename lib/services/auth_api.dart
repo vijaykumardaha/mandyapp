@@ -47,6 +47,24 @@ class AuthApi {
     }
   }
 
+  /// POST /api/customer_login
+  Future<User> customerLogin({
+    required int mandiId,
+    required String mobile,
+  }) async {
+    try {
+      final response = await _dio.post('/api/customer_login', data: {
+        'mandi_id': mandiId,
+        'mobile': mobile,
+      });
+
+      return User.fromJson(_userMap(response));
+    } on DioException catch (e) {
+      final message = _errorMessage(e) ?? e.message ?? 'Customer login failed';
+      throw Exception(message);
+    }
+  }
+
   /// POST /api/add_staff
   Future<User> addStaff({
     required int mandiId,
