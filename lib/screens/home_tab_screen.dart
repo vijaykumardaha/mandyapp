@@ -1,17 +1,19 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:mandiapp/blocs/reports/reports_bloc.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/services/sync_service.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/models/user_model.dart';
 import 'package:mandiapp/services/socket_config.dart';
+import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/widgets/common/connection_status_indicator.dart';
-import 'package:mandiapp/widgets/home_tab/financial_metric.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/home_tab/dashboard_overview_card.dart';
+import 'package:mandiapp/widgets/home_tab/financial_metric.dart';
 
 class HomeTabScreen extends StatefulWidget {
   const HomeTabScreen({super.key});
@@ -23,7 +25,8 @@ class HomeTabScreen extends StatefulWidget {
 class _HomeTabScreenState extends State<HomeTabScreen> {
   late ThemeData theme;
   final DateFormat _dateFormat = DateFormat('dd MMM yyyy');
-  final NumberFormat _currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
+  final NumberFormat _currencyFormat =
+      NumberFormat.currency(locale: 'en_IN', symbol: '₹');
   bool _hasLoadedData = false;
   DashboardDataLoaded? _cachedData;
   String _userName = 'Dashboard';
@@ -39,10 +42,18 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       _loadDashboardData();
     });
 
-    final _relevantTables = {'orders', 'order_items', 'order_payments', 'order_charges', 'order_expenses', 'customer_payments', 'customers'};
+    final relevantTables = {
+      DbTables.orders,
+      DbTables.orderItems,
+      DbTables.orderPayments,
+      DbTables.orderCharges,
+      DbTables.orderExpenses,
+      DbTables.customerPayments,
+      DbTables.customers,
+    };
     _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
       if (!mounted) return;
-      if (_relevantTables.contains(table)) {
+      if (relevantTables.contains(table)) {
         final state = context.read<ReportsBloc>().state;
         if (state is DashboardDataLoaded) {
           context.read<ReportsBloc>().add(const LoadDashboardData());
@@ -60,15 +71,16 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   }
 
   void _loadDashboardData({bool forceRefresh = false}) {
-    print('_loadDashboardData called: forceRefresh=$forceRefresh, _hasLoadedData=$_hasLoadedData, _cachedData=${_cachedData != null}');
-    
+    debugPrint(
+        '_loadDashboardData called: forceRefresh=$forceRefresh, _hasLoadedData=$_hasLoadedData, _cachedData=${_cachedData != null}');
+
     // Only load if we explicitly force refresh OR we have no data at all
     if (forceRefresh || (_cachedData == null && !_hasLoadedData)) {
-      print('Loading dashboard data...');
+      debugPrint('Loading dashboard data...');
       context.read<ReportsBloc>().add(const LoadDashboardData());
       _hasLoadedData = true;
     } else {
-      print('Skipping dashboard data load - using cached data');
+      debugPrint('Skipping dashboard data load - using cached data');
     }
   }
 
@@ -94,8 +106,9 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             },
             builder: (context, state) {
               // Debug: Print current state to understand what's happening
-              print('Current state: ${state.runtimeType}, _hasLoadedData: $_hasLoadedData, _cachedData: ${_cachedData != null}');
-              
+              debugPrint(
+                  'Current state: ${state.runtimeType}, _hasLoadedData: $_hasLoadedData, _cachedData: ${_cachedData != null}');
+
               // Always show cached data if available, regardless of current state
               if (_cachedData != null) {
                 return _buildDashboard(_cachedData!);
@@ -128,12 +141,12 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       children: [
         Icon(Icons.error_outline, color: theme.colorScheme.error, size: 48),
         const SizedBox(height: 12),
-        MyText.titleMedium('Failed to load dashboard', fontWeight: 600),
+        const MyText.titleMedium('Failed to load dashboard', fontWeight: 600),
         const SizedBox(height: 8),
         MyText.bodyMedium(
           message,
           textAlign: TextAlign.center,
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         const SizedBox(height: 16),
         ElevatedButton(
@@ -148,14 +161,15 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.dashboard, size: 64, color: theme.primaryColor.withOpacity(0.4)),
+        Icon(Icons.dashboard,
+            size: 64, color: theme.primaryColor.withValues(alpha: 0.4)),
         const SizedBox(height: 12),
-        MyText.titleMedium('Loading Dashboard...', fontWeight: 600),
+        const MyText.titleMedium('Loading Dashboard...', fontWeight: 600),
         const SizedBox(height: 8),
         MyText.bodyMedium(
           'Please wait while we load your business summary.',
           textAlign: TextAlign.center,
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
       ],
     );
@@ -177,7 +191,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                   MyText.titleLarge(_userName, fontWeight: 700),
                   MyText.bodyMedium(
                     _dateFormat.format(DateTime.now()),
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ],
               ),
@@ -188,14 +202,14 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
 
           // Financial Overview Card (Single unified card)
           DashboardOverviewCard(
-            title: "Financial Overview",
+            title: 'Financial Overview',
             theme: theme,
             children: [
               Row(
                 children: [
                   Expanded(
                     child: FinancialMetric(
-                      title: "Profit Today",
+                      title: 'Profit Today',
                       value: _currencyFormat.format(data.grossProfit),
                       icon: Icons.trending_up,
                       color: data.grossProfit >= 0 ? Colors.green : Colors.red,
@@ -226,25 +240,25 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: theme.shadowColor.withOpacity(0.1),
+                  color: theme.shadowColor.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ],
               border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.1),
+                color: theme.colorScheme.outline.withValues(alpha: 0.1),
               ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                MyText.titleMedium("Buyer Overview", fontWeight: 600),
+                const MyText.titleMedium('Buyer Overview', fontWeight: 600),
                 const SizedBox(height: 20),
                 Row(
                   children: [
                     Expanded(
                       child: FinancialMetric(
-                        title: "Total Received",
+                        title: 'Total Received',
                         value: _currencyFormat.format(data.totalReceived),
                         icon: Icons.account_balance_wallet,
                         color: Colors.green,
@@ -254,7 +268,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                     const SizedBox(width: 16),
                     Expanded(
                       child: FinancialMetric(
-                        title: "Pending Payments",
+                        title: 'Pending Payments',
                         value: _currencyFormat.format(data.totalPending),
                         icon: Icons.pending,
                         color: Colors.orange,
@@ -276,25 +290,25 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: theme.shadowColor.withOpacity(0.1),
+                  color: theme.shadowColor.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ],
               border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.1),
+                color: theme.colorScheme.outline.withValues(alpha: 0.1),
               ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                MyText.titleMedium("Seller Overview", fontWeight: 600),
+                const MyText.titleMedium('Seller Overview', fontWeight: 600),
                 const SizedBox(height: 20),
                 Row(
                   children: [
                     Expanded(
                       child: FinancialMetric(
-                        title: "Paid to Sellers",
+                        title: 'Paid to Sellers',
                         value: _currencyFormat.format(data.paidToSellers),
                         icon: Icons.payments,
                         color: Colors.teal,
@@ -304,7 +318,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                     const SizedBox(width: 16),
                     Expanded(
                       child: FinancialMetric(
-                        title: "Pending to Sellers",
+                        title: 'Pending to Sellers',
                         value: _currencyFormat.format(data.pendingToSellers),
                         icon: Icons.schedule,
                         color: Colors.red,
@@ -317,11 +331,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
-
         ],
       ),
     );
   }
 }
-

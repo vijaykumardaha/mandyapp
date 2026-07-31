@@ -1,7 +1,7 @@
 // ignore_for_file: curly_braces_in_flow_control_structures
 
-import 'package:mandiapp/utils/constant_data.dart';
 import 'package:flutter/material.dart';
+import 'package:mandiapp/utils/constant_data.dart';
 
 enum MyButtonType { elevated, outlined, text }
 
@@ -43,8 +43,9 @@ class MyButton extends StatelessWidget {
 
   final Widget child;
 
-  MyButton(
-      {this.onPressed,
+  const MyButton(
+      {super.key,
+      this.onPressed,
       required this.child,
       this.msPadding,
       this.padding,
@@ -69,8 +70,9 @@ class MyButton extends StatelessWidget {
       this.tapTargetSize = MaterialTapTargetSize.padded,
       this.splashColor});
 
-  MyButton.rounded(
-      {required this.onPressed,
+  const MyButton.rounded(
+      {super.key,
+      required this.onPressed,
       required this.child,
       this.msPadding,
       this.padding,
@@ -95,8 +97,9 @@ class MyButton extends StatelessWidget {
       this.tapTargetSize = MaterialTapTargetSize.padded,
       this.splashColor});
 
-  MyButton.small(
-      {required this.onPressed,
+  const MyButton.small(
+      {super.key,
+      required this.onPressed,
       required this.child,
       this.msPadding,
       this.padding = const EdgeInsets.fromLTRB(8, 4, 8, 4),
@@ -121,8 +124,9 @@ class MyButton extends StatelessWidget {
       this.tapTargetSize = MaterialTapTargetSize.padded,
       this.splashColor});
 
-  MyButton.medium(
-      {required this.onPressed,
+  const MyButton.medium(
+      {super.key,
+      required this.onPressed,
       required this.child,
       this.msPadding,
       this.padding = const EdgeInsets.fromLTRB(24, 16, 24, 16),
@@ -147,8 +151,9 @@ class MyButton extends StatelessWidget {
       this.tapTargetSize = MaterialTapTargetSize.padded,
       this.splashColor});
 
-  MyButton.text(
-      {required this.onPressed,
+  const MyButton.text(
+      {super.key,
+      required this.onPressed,
       required this.child,
       this.msPadding,
       this.padding = const EdgeInsets.all(0),
@@ -173,8 +178,9 @@ class MyButton extends StatelessWidget {
       this.tapTargetSize = MaterialTapTargetSize.padded,
       this.splashColor});
 
-  MyButton.block(
-      {required this.onPressed,
+  const MyButton.block(
+      {super.key,
+      required this.onPressed,
       required this.child,
       this.msPadding,
       this.padding = const EdgeInsets.fromLTRB(24, 16, 24, 16),
@@ -199,8 +205,9 @@ class MyButton extends StatelessWidget {
       this.tapTargetSize = MaterialTapTargetSize.padded,
       this.splashColor});
 
-  MyButton.outlined(
-      {required this.onPressed,
+  const MyButton.outlined(
+      {super.key,
+      required this.onPressed,
       required this.child,
       this.msPadding,
       this.padding = const EdgeInsets.fromLTRB(24, 16, 24, 16),
@@ -225,8 +232,9 @@ class MyButton extends StatelessWidget {
       this.tapTargetSize = MaterialTapTargetSize.padded,
       this.splashColor});
 
-  MyButton.large(
-      {required this.onPressed,
+  const MyButton.large(
+      {super.key,
+      required this.onPressed,
       required this.child,
       this.msPadding,
       this.padding = const EdgeInsets.fromLTRB(36, 20, 36, 20),
@@ -254,7 +262,8 @@ class MyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget button;
-    Color bgColor = backgroundColor ?? Theme.of(context).colorScheme.primary;
+    final Color bgColor =
+        backgroundColor ?? Theme.of(context).colorScheme.primary;
 
     if (buttonType == MyButtonType.outlined) {
       button = OutlinedButton(
@@ -265,17 +274,24 @@ class MyButton extends StatelessWidget {
                 side: msSide ??
                     WidgetStateProperty.all(side ??
                         BorderSide(
-                          color: soft ? borderColor.withAlpha(100) : borderColor,
+                          color:
+                              soft ? borderColor.withAlpha(100) : borderColor,
                           width: soft ? 0.8 : 1,
                         )),
-                overlayColor: WidgetStateProperty.all(splashColor ?? (bgColor.withAlpha(40))),
-                backgroundColor: soft ? WidgetStateProperty.all(borderColor.withAlpha(40)) : null,
-                foregroundColor: WidgetStateProperty.all(borderColor.withAlpha(40)),
-                shadowColor: msShadowColor ?? WidgetStateProperty.all(shadowColor),
+                overlayColor: WidgetStateProperty.all(
+                    splashColor ?? (bgColor.withAlpha(40))),
+                backgroundColor: soft
+                    ? WidgetStateProperty.all(borderColor.withAlpha(40))
+                    : null,
+                foregroundColor:
+                    WidgetStateProperty.all(borderColor.withAlpha(40)),
+                shadowColor:
+                    msShadowColor ?? WidgetStateProperty.all(shadowColor),
                 padding: msPadding ?? WidgetStateProperty.all(padding),
                 shape: WidgetStateProperty.all(shape ??
                     RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(borderRadiusAll ?? MyConstant.constant.buttonRadius),
+                      borderRadius: BorderRadius.circular(
+                          borderRadiusAll ?? MyConstant.constant.buttonRadius),
                     ))),
         child: child,
       );
@@ -292,30 +308,36 @@ class MyButton extends StatelessWidget {
                             return 0;
                           } else if (states.contains(WidgetState.pressed))
                             return elevation! * 2;
-                          else if (states.contains(WidgetState.hovered)) return elevation! * 1.5;
+                          else if (states.contains(WidgetState.hovered))
+                            return elevation! * 1.5;
                           return elevation!;
                         },
                       ),
                   backgroundColor: msBackgroundColor ??
                       WidgetStateProperty.resolveWith<Color>(
                         (Set<WidgetState> states) {
-                          if (states.contains(WidgetState.disabled)) return bgColor.withAlpha(100);
+                          if (states.contains(WidgetState.disabled))
+                            return bgColor.withAlpha(100);
                           return bgColor;
                         },
                       ),
-                  shadowColor: msShadowColor ?? WidgetStateProperty.all(shadowColor ?? bgColor),
+                  shadowColor: msShadowColor ??
+                      WidgetStateProperty.all(shadowColor ?? bgColor),
                   padding: msPadding ?? WidgetStateProperty.all(padding),
-                  overlayColor: WidgetStateProperty.all(splashColor ?? (Theme.of(context).colorScheme.onPrimary.withAlpha(36))),
+                  overlayColor: WidgetStateProperty.all(splashColor ??
+                      (Theme.of(context).colorScheme.onPrimary.withAlpha(36))),
                   shape: WidgetStateProperty.all(shape ??
                       RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(borderRadiusAll ?? MyConstant.constant.buttonRadius),
+                        borderRadius: BorderRadius.circular(borderRadiusAll ??
+                            MyConstant.constant.buttonRadius),
                       ))),
           onPressed: onPressed,
           child: child);
     } else {
       button = TextButton(
         style: ButtonStyle(
-            overlayColor: WidgetStateProperty.all(splashColor ?? (bgColor.withAlpha(40))),
+            overlayColor:
+                WidgetStateProperty.all(splashColor ?? (bgColor.withAlpha(40))),
             padding: msPadding ?? WidgetStateProperty.all(padding),
             // visualDensity: VisualDensity.standard,
 

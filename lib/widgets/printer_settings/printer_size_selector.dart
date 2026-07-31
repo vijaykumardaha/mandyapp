@@ -34,12 +34,13 @@ class _PrinterSizeSelectorState extends State<PrinterSizeSelector> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.12)),
+        border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MyText.bodyLarge('Printer Size:', fontWeight: 600),
+          const MyText.bodyLarge('Printer Size:', fontWeight: 600),
           MySpacing.height(12),
           Row(
             children: [
@@ -67,10 +68,14 @@ class _PrinterSizeSelectorState extends State<PrinterSizeSelector> {
         child: Container(
           padding: MySpacing.xy(16, 14),
           decoration: BoxDecoration(
-            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surface,
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outline.withOpacity(0.2),
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.outline.withValues(alpha: 0.2),
             ),
           ),
           alignment: Alignment.center,

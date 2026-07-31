@@ -66,10 +66,10 @@ class StockSummaryReportWidget extends StatelessWidget {
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Product', flex: 2),
-            ReportTableHeader(label: 'Initial', flex: 1, textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Sold', flex: 1, textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Remaining', flex: 1, textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Profit', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Initial', textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Sold', textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Remaining', textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Profit', textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(
@@ -83,33 +83,31 @@ class StockSummaryReportWidget extends StatelessWidget {
                       children: [
                         MyText.bodySmall(item.productName, fontWeight: 600),
                         if (item.variantName != null)
-                          MyText.bodySmall(item.variantName!, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                          MyText.bodySmall(item.variantName!,
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6)),
                       ],
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(
-                      '${item.initialQuantity.toStringAsFixed(2)}',
+                      item.initialQuantity.toStringAsFixed(2),
                       textAlign: TextAlign.center,
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(
-                      '${item.soldQuantity.toStringAsFixed(2)}',
+                      item.soldQuantity.toStringAsFixed(2),
                       textAlign: TextAlign.center,
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(
-                      '${item.quantity.toStringAsFixed(2)}',
+                      item.quantity.toStringAsFixed(2),
                       textAlign: TextAlign.center,
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(
                       currencyFormat.format(item.profit),
                       textAlign: TextAlign.center,

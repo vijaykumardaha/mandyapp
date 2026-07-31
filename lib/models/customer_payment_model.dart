@@ -34,7 +34,8 @@ class CustomerPayment {
         source = json['source'] as String? ?? 'cash',
         note = json['note'] as String? ?? '',
         paymentDate = json['payment_date'] as int,
-        updatedAt = json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+        updatedAt =
+            json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
         isDeleted = json['is_deleted'] as int? ?? 0,
         syncStatus = json['sync_status'] as int? ?? 0;
 

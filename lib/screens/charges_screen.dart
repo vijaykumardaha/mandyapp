@@ -1,16 +1,18 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:mandiapp/utils/app_helper.dart';
-import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/models/charge_type_model.dart';
 import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
+import 'package:mandiapp/utils/info_controller.dart';
+import 'package:mandiapp/widgets/charges/charge_list_item.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/models/charge_type_model.dart';
-import 'package:mandiapp/widgets/charges/charge_list_item.dart';
 
 class ChargeTypesScreen extends StatefulWidget {
   const ChargeTypesScreen({super.key});
@@ -35,7 +37,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
 
     _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
       if (!mounted) return;
-      if (table == 'charge_types') {
+      if (table == DbTables.chargeTypes) {
         final state = context.read<ChargeTypesBloc>().state;
         if (state is ChargeTypesLoaded) {
           context.read<ChargeTypesBloc>().add(LoadChargeTypes());
@@ -62,16 +64,18 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
 
   List<ChargeType> _filterCharges(List<ChargeType> charges) {
     if (_searchQuery.isEmpty) return charges;
-    return charges.where((c) =>
-      c.chargeName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-      c.chargeType.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-      c.chargeFor.toLowerCase().contains(_searchQuery.toLowerCase())
-    ).toList();
+    return charges
+        .where((c) =>
+            c.chargeName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            c.chargeType.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            c.chargeFor.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
   }
 
   void _showChargeTypeDialog([ChargeType? charge]) {
     final isEditing = charge != null;
-    final nameController = TextEditingController(text: charge?.chargeName ?? '');
+    final nameController =
+        TextEditingController(text: charge?.chargeName ?? '');
     final amountController = TextEditingController(
       text: charge?.chargeAmount.toString() ?? '',
     );
@@ -99,14 +103,14 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 MyText.titleMedium(
-                  isEditing ? 'Edit ChargeType' : 'Add ChargeType',
+                  isEditing ? 'Edit Charge Type' : 'Add Charge Type',
                   fontWeight: 600,
                 ),
                 MySpacing.height(16),
                 TextField(
                   controller: nameController,
                   decoration: const InputDecoration(
-                    labelText: 'ChargeType Name',
+                    labelText: 'Charge Type Name',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -115,7 +119,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                   value: selectedType,
                   dropdownColor: Theme.of(context).colorScheme.surface,
                   decoration: const InputDecoration(
-                    labelText: 'ChargeType Type',
+                    labelText: 'Charge Type Type',
                     border: OutlineInputBorder(),
                     helperText: 'Choose how the charge amount is calculated',
                   ),
@@ -153,7 +157,9 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                 TextField(
                   controller: amountController,
                   decoration: InputDecoration(
-                    labelText: selectedType == 'percentage' ? 'Percentage (%)' : 'Fixed Amount (₹)',
+                    labelText: selectedType == 'percentage'
+                        ? 'Percentage (%)'
+                        : 'Fixed Amount (₹)',
                     border: const OutlineInputBorder(),
                     helperText: selectedType == 'percentage'
                         ? 'Enter percentage value (e.g., 5.5 for 5.5%)'
@@ -186,7 +192,8 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                   borderRadius: BorderRadius.circular(12),
                   onTap: () => setSheetState(() => isDefault = !isDefault),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: isDefault
@@ -196,7 +203,10 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                       ),
                       borderRadius: BorderRadius.circular(12),
                       color: isDefault
-                          ? Theme.of(context).colorScheme.primary.withOpacity(0.08)
+                          ? Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withValues(alpha: 0.08)
                           : Colors.transparent,
                     ),
                     child: Row(
@@ -213,7 +223,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                           ),
                         ),
                         MySpacing.width(4),
-                        MyText.bodyMedium('Set as default charge'),
+                        const MyText.bodyMedium('Set as default charge'),
                       ],
                     ),
                   ),
@@ -224,16 +234,18 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                     Expanded(
                       child: TextButton(
                         onPressed: () => Navigator.pop(sheetContext),
-                        child: MyText.bodyMedium('Cancel'),
+                        child: const MyText.bodyMedium('Cancel'),
                       ),
                     ),
                     MySpacing.width(12),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () async {
-                          final chargeAmount = double.tryParse(amountController.text);
+                          final chargeAmount =
+                              double.tryParse(amountController.text);
                           if (chargeAmount == null || chargeAmount < 0) {
-                            Info.message('Please enter a valid amount', context: sheetContext);
+                            Info.message('Please enter a valid amount',
+                                context: sheetContext);
                             return;
                           }
 
@@ -249,9 +261,13 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                           );
 
                           if (isEditing) {
-                            context.read<ChargeTypesBloc>().add(UpdateChargeType(newChargeType));
+                            context
+                                .read<ChargeTypesBloc>()
+                                .add(UpdateChargeType(newChargeType));
                           } else {
-                            context.read<ChargeTypesBloc>().add(CreateChargeType(newChargeType));
+                            context
+                                .read<ChargeTypesBloc>()
+                                .add(CreateChargeType(newChargeType));
                           }
                           Navigator.pop(sheetContext);
                         },
@@ -273,14 +289,14 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: MyText.titleMedium('Delete ChargeType', fontWeight: 600),
+        title: const MyText.titleMedium('Delete Charge Type', fontWeight: 600),
         content: MyText.bodyMedium(
           'Are you sure you want to delete "${charge.chargeName}"?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: MyText.bodyMedium('Cancel'),
+            child: const MyText.bodyMedium('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -288,7 +304,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: MyText.bodyMedium('Delete'),
+            child: const MyText.bodyMedium('Delete'),
           ),
         ],
       ),
@@ -297,9 +313,9 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
 
   void _toggleChargeTypeStatus(ChargeType charge) {
     context.read<ChargeTypesBloc>().add(ToggleChargeTypeStatus(
-      chargeTypeId: charge.id!,
-      activate: charge.isActive == 0, // Activate if currently inactive
-    ));
+          chargeTypeId: charge.id!,
+          activate: charge.isActive == 0, // Activate if currently inactive
+        ));
   }
 
   @override
@@ -313,26 +329,32 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
           decoration: InputDecoration(
             hintText: 'Search charges...',
             filled: true,
-            fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            fillColor: theme.colorScheme.surfaceContainerHighest
+                .withValues(alpha: 0.5),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+              borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+              borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(color: theme.colorScheme.primary),
             ),
-            prefixIcon: Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
+            prefixIcon: Icon(Icons.search,
+                size: 20, color: theme.colorScheme.onSurfaceVariant),
             prefixIconConstraints: const BoxConstraints(minWidth: 36),
             suffixIcon: _isAdmin
                 ? IconButton(
-                    icon: Icon(Icons.add, size: 20, color: theme.colorScheme.onSurfaceVariant),
-                    tooltip: 'Add charge',
+                    icon: Icon(Icons.add,
+                        size: 20, color: theme.colorScheme.onSurfaceVariant),
+                    tooltip: 'Add Charge',
                     onPressed: () => _showChargeTypeDialog(),
                   )
                 : null,
@@ -355,7 +377,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
             if (state is ChargeTypesLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-  
+
             if (state is ChargeTypesLoaded) {
               final charges = _filterCharges(state.chargeTypes);
               if (charges.isEmpty) {
@@ -382,7 +404,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                   ),
                 );
               }
-  
+
               return ListView.builder(
                 padding: MySpacing.all(16),
                 itemCount: charges.length,
@@ -399,7 +421,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                 },
               );
             }
-  
+
             return const Center(child: CircularProgressIndicator());
           },
         ),

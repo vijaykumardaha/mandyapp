@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandiapp/dao/customer_dao.dart';
+import 'package:mandiapp/dao/customer_payment_dao.dart';
 import 'package:mandiapp/dao/order_charge_dao.dart';
 import 'package:mandiapp/dao/order_dao.dart';
 import 'package:mandiapp/dao/order_expense_dao.dart';
 import 'package:mandiapp/dao/order_payment_dao.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:mandiapp/dao/stock_dao.dart';
 import 'package:mandiapp/models/charge_type_model.dart';
+import 'package:mandiapp/models/customer_payment_model.dart';
 import 'package:mandiapp/models/order_charge_model.dart';
 import 'package:mandiapp/models/order_expense_model.dart';
 import 'package:mandiapp/models/order_item_model.dart';
 import 'package:mandiapp/models/order_model.dart';
 import 'package:mandiapp/models/order_payment_model.dart';
+import 'package:mandiapp/models/stock_model.dart';
 import 'package:mandiapp/services/printer_service.dart';
 import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/utils/db_helper.dart';
-import 'package:mandiapp/dao/customer_payment_dao.dart';
-import 'package:mandiapp/models/customer_payment_model.dart';
-import 'package:mandiapp/dao/stock_dao.dart';
-import 'package:mandiapp/models/stock_model.dart';
+import 'package:mandiapp/utils/info_controller.dart';
 import 'package:mandiapp/widgets/checkout/checkout_content.dart';
 import 'package:mandiapp/widgets/checkout/payment_method_selector.dart';
-import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final List<OrderItem>? cartItems;
@@ -162,7 +162,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         );
         orderId = await OrderDAO().insertOrder(order);
 
-        for (final item in widget.cartItems ?? []) {
+        for (final item in widget.cartItems ?? const <OrderItem>[]) {
           final linkedItem = item.copyWith(
             buyerOrderId: widget.orderFor == 'buyer' ? orderId : null,
             sellerOrderId: widget.orderFor == 'seller' ? orderId : null,
@@ -192,12 +192,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             chargeName: charge.chargeName,
             chargeAmount: amount,
             updatedAt: now,
-            syncStatus: 0,
           ));
         }
       }
       if (selectedCharges.isNotEmpty) {
-        await _orderChargeDAO.bulkInsertForOrder(orderId.toString(), selectedCharges);
+        await _orderChargeDAO.bulkInsertForOrder(
+            orderId.toString(), selectedCharges);
       }
 
       for (final expense in _expenses) {
@@ -220,8 +220,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ? subtotal - chargesTotal - expensesTotal
           : subtotal + chargesTotal + expensesTotal;
 
-      final paymentAmountsToSave = Map<PaymentMethod, double>.from(_paymentAmounts);
-      if (paymentAmountsToSave.isEmpty || paymentAmountsToSave.values.every((a) => a <= 0)) {
+      final paymentAmountsToSave =
+          Map<PaymentMethod, double>.from(_paymentAmounts);
+      if (paymentAmountsToSave.isEmpty ||
+          paymentAmountsToSave.values.every((a) => a <= 0)) {
         if (paymentAmountsToSave.containsKey(PaymentMethod.credit)) {
           paymentAmountsToSave[PaymentMethod.credit] = 0;
         } else {
@@ -229,10 +231,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         }
       }
 
-      final totalPaid = paymentAmountsToSave.entries.fold<double>(0.0, (sum, e) => sum + e.value);
+      final totalPaid = paymentAmountsToSave.entries
+          .fold<double>(0.0, (sum, e) => sum + e.value);
       if (totalPaid > grandTotal) {
         if (mounted) {
-          Info.error('Payment amount (₹${totalPaid.toStringAsFixed(2)}) cannot exceed grand total (₹${grandTotal.toStringAsFixed(2)})', context: context);
+          Info.error(
+              'Payment amount (₹${totalPaid.toStringAsFixed(2)}) cannot exceed grand total (₹${grandTotal.toStringAsFixed(2)})',
+              context: context);
           setState(() => _isPlacingOrder = false);
         }
         return;
@@ -251,7 +256,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
 
       final transactionType = widget.orderFor == 'buyer' ? 'paid' : 'received';
-      final totalReceived = paymentAmountsToSave.entries.fold<double>(0.0, (sum, e) => sum + e.value);
+      final totalReceived = paymentAmountsToSave.entries
+          .fold<double>(0.0, (sum, e) => sum + e.value);
       if (widget.customerId != null && totalReceived > 0) {
         final source = paymentAmountsToSave.entries
             .where((e) => e.value > 0)
@@ -269,14 +275,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       if (widget.orderFor == 'buyer') {
         final stockDAO = StockDAO();
-        for (final item in widget.cartItems ?? []) {
+        for (final item in widget.cartItems ?? const <OrderItem>[]) {
           final stocks = await stockDAO.getStocksByProduct(item.productId);
           if (stocks.isEmpty) continue;
           final stock = stocks.firstWhere(
             (s) => s.productVariantId == item.variantId,
             orElse: () => stocks.first,
           );
-          final available = stock.quantity - stock.soldQuantity - stock.lossQuantity;
+          final available =
+              stock.quantity - stock.soldQuantity - stock.lossQuantity;
           if (available < item.quantity) continue;
           final totalAmount = item.sellingPrice * item.quantity;
           await stockDAO.insertStockTransaction(StockTransaction(
@@ -325,11 +332,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         0.0;
     final chargesTotal = _computeChargesTotal(chargeTypes);
     final expensesTotal = _computeExpensesTotal();
-        final grandTotal = widget.orderFor == 'seller'
-            ? subtotal - chargesTotal - expensesTotal
-            : subtotal + chargesTotal + expensesTotal;
+    final grandTotal = widget.orderFor == 'seller'
+        ? subtotal - chargesTotal - expensesTotal
+        : subtotal + chargesTotal + expensesTotal;
 
-    final receivedAmount = _paymentAmounts.values.fold<double>(0.0, (a, b) => a + b);
+    final receivedAmount =
+        _paymentAmounts.values.fold<double>(0.0, (a, b) => a + b);
     final pendingAmount = grandTotal - receivedAmount;
 
     final paymentMethods = _paymentAmounts.entries
@@ -337,15 +345,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         .join(', ');
 
     final isSellerOrder = widget.orderFor == 'seller';
-    final items = (widget.cartItems ?? []).map((item) => InvoiceItem(
-      productName: item.productName ?? 'Unknown',
-      quantity: item.quantity.toDouble(),
-      unit: 'pc',
-      price: item.sellingPrice,
-      total: item.sellingPrice * item.quantity,
-      partnerName: isSellerOrder ? item.buyerName : item.sellerName,
-      partnerType: isSellerOrder ? 'Buyer' : 'Seller',
-    )).toList();
+    final items = (widget.cartItems ?? const <OrderItem>[])
+        .map((item) => InvoiceItem(
+              productName: item.productName ?? 'Unknown',
+              quantity: item.quantity.toDouble(),
+              unit: 'pc',
+              price: item.sellingPrice,
+              total: item.sellingPrice * item.quantity,
+              partnerName: isSellerOrder ? item.buyerName : item.sellerName,
+              partnerType: isSellerOrder ? 'Buyer' : 'Seller',
+            ))
+        .toList();
 
     await printerService.printInvoice(
       cartId: orderId,
@@ -397,7 +407,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ? subtotal - chargesTotal - expensesTotal
             : subtotal + chargesTotal + expensesTotal;
 
-        final totalPaid = _paymentAmounts.entries.fold<double>(0.0, (sum, e) => sum + e.value);
+        final totalPaid = _paymentAmounts.entries
+            .fold<double>(0.0, (sum, e) => sum + e.value);
         final isOverpaid = totalPaid > grandTotal && totalPaid > 0;
 
         return Scaffold(
@@ -414,12 +425,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   child: GestureDetector(
                     onTap: () => setState(() => _autoPrint = !_autoPrint),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       margin: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
                         color: _autoPrint
                             ? Theme.of(context).colorScheme.primaryContainer
-                            : Theme.of(context).colorScheme.surfaceContainerHighest,
+                            : Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -429,8 +443,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             Icons.print,
                             size: 16,
                             color: _autoPrint
-                                ? Theme.of(context).colorScheme.onPrimaryContainer
-                                : Theme.of(context).colorScheme.onSurfaceVariant,
+                                ? Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -439,8 +457,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: _autoPrint
-                                  ? Theme.of(context).colorScheme.onPrimaryContainer
-                                  : Theme.of(context).colorScheme.onSurfaceVariant,
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .onPrimaryContainer
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
                             ),
                           ),
                         ],

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/models/product_variant_model.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/common/reusable_controls.dart';
 
 class VariantItemCard extends StatefulWidget {
@@ -12,27 +12,25 @@ class VariantItemCard extends StatefulWidget {
   final bool isLoading;
   final Future<void> Function()? onAddPressed;
   const VariantItemCard({
-    Key? key,
+    super.key,
     required this.variant,
     required this.qtyController,
     required this.rateController,
     required this.theme,
     this.isLoading = false,
     this.onAddPressed,
-  }) : super(key: key);
+  });
 
   @override
   State<VariantItemCard> createState() => _VariantItemCardState();
 
-   // Helper method to get available stock for the variant
+  // Helper method to get available stock for the variant
   String get stockDisplayText {
     return '${variant.variantName} ';
   }
-
 }
 
 class _VariantItemCardState extends State<VariantItemCard> {
-
   @override
   void initState() {
     super.initState();
@@ -57,20 +55,19 @@ class _VariantItemCardState extends State<VariantItemCard> {
       children: [
         Container(
           decoration: BoxDecoration(
-    color: widget.theme.colorScheme.surface,
-    borderRadius: BorderRadius.circular(5),
-    border: Border.all(
-      color: widget.theme.colorScheme.outline.withOpacity(0.1),
-    ),
-  ),
+            color: widget.theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(5),
+            border: Border.all(
+              color: widget.theme.colorScheme.outline.withValues(alpha: 0.1),
+            ),
+          ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 0, vertical: 5),
+                  padding: const EdgeInsets.symmetric(vertical: 5),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -86,7 +83,6 @@ class _VariantItemCardState extends State<VariantItemCard> {
                 ),
                 const SizedBox(height: 0),
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Input fields section
                     Expanded(
@@ -95,7 +91,6 @@ class _VariantItemCardState extends State<VariantItemCard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               // Rate Field
                               Expanded(
@@ -115,8 +110,6 @@ class _VariantItemCardState extends State<VariantItemCard> {
                                     suffixIcon: VerticalStepper(
                                       controller: widget.rateController,
                                       onChanged: () => setState(() {}),
-                                      step: 1,
-                                      minValue: 0,
                                     ),
                                     suffixIconConstraints: const BoxConstraints(
                                         minWidth: 36, maxWidth: 36),
@@ -125,9 +118,9 @@ class _VariantItemCardState extends State<VariantItemCard> {
                                       ?.copyWith(fontWeight: FontWeight.w600),
                                 ),
                               ),
-          
+
                               const SizedBox(width: 8),
-          
+
                               // Quantity Field
                               Expanded(
                                 flex: 3,
@@ -137,8 +130,8 @@ class _VariantItemCardState extends State<VariantItemCard> {
                                   keyboardType:
                                       const TextInputType.numberWithOptions(
                                           decimal: true),
-                                  style:
-                                      widget.theme.textTheme.bodySmall?.copyWith(
+                                  style: widget.theme.textTheme.bodySmall
+                                      ?.copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
                                   decoration: InputDecoration(
@@ -150,10 +143,8 @@ class _VariantItemCardState extends State<VariantItemCard> {
                                       vertical: 6,
                                     ),
                                     suffixIcon: VerticalStepper(
-                                      controller: widget.qtyController,
-                                      onChanged: _onQuantityChanged,
-                                      step: 1
-                                    ),
+                                        controller: widget.qtyController,
+                                        onChanged: _onQuantityChanged),
                                     suffixIconConstraints: const BoxConstraints(
                                       minWidth: 36,
                                       maxWidth: 36,
@@ -162,7 +153,7 @@ class _VariantItemCardState extends State<VariantItemCard> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-          
+
                               // Add Button
                               Expanded(
                                 flex: 3,
@@ -173,18 +164,20 @@ class _VariantItemCardState extends State<VariantItemCard> {
                                       : () async {
                                           final quantity = double.tryParse(
                                               widget.qtyController.text.trim());
-                                          if (quantity == null || quantity <= 0) {
+                                          if (quantity == null ||
+                                              quantity <= 0) {
                                             // Show error in the UI directly
                                             return;
                                           }
-                                
-                                          final rate = double.tryParse(
-                                              widget.rateController.text.trim());
+
+                                          final rate = double.tryParse(widget
+                                              .rateController.text
+                                              .trim());
                                           if (rate == null || rate <= 0) {
                                             // Show error in the UI directly
                                             return;
                                           }
-                                
+
                                           await widget.onAddPressed?.call();
                                         },
                                   style: OutlinedButton.styleFrom(

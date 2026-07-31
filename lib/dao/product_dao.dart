@@ -1,6 +1,7 @@
 import 'package:mandiapp/models/product_model.dart';
 import 'package:mandiapp/models/product_variant_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 import 'package:mandiapp/utils/signup_sync.dart';
 
@@ -14,19 +15,20 @@ class ProductDAO {
     product.isDeleted = 0;
     product.syncStatus = 0;
     final db = await dbHelper.database;
-    return await db.insert('products', product.toJson());
+    return await db.insert(DbTables.products, product.toJson());
   }
 
   Future<List<Product>> getAllProducts() async {
     final db = await dbHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query('products', where: 'is_deleted = ?', whereArgs: [0]);
+    final List<Map<String, dynamic>> maps = await db
+        .query(DbTables.products, where: 'is_deleted = ?', whereArgs: [0]);
     return List.generate(maps.length, (i) => Product.fromJson(maps[i]));
   }
 
   Future<Product?> getProductById(int id) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'products',
+      DbTables.products,
       where: 'id = ? AND is_deleted = ?',
       whereArgs: [id, 0],
     );
@@ -42,7 +44,7 @@ class ProductDAO {
     product.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
-      'products',
+      DbTables.products,
       product.toJson(),
       where: 'id = ?',
       whereArgs: [product.id],
@@ -52,7 +54,7 @@ class ProductDAO {
   Future<int> updateDefaultVariant(int productId, int? variantId) async {
     final db = await dbHelper.database;
     return await db.update(
-      'products',
+      DbTables.products,
       {
         'default_variant': variantId,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -66,7 +68,7 @@ class ProductDAO {
   Future<int> restoreProduct(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'products',
+      DbTables.products,
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -80,7 +82,7 @@ class ProductDAO {
   Future<int> deleteProduct(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'products',
+      DbTables.products,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -99,7 +101,7 @@ class ProductDAO {
 
       for (final product in products) {
         batch.rawInsert('''
-          INSERT INTO products (
+          INSERT INTO ${DbTables.products} (
             id, mandi_id, default_variant, updated_at, is_deleted, sync_status
           )
           VALUES (?, ?, ?, ?, ?, ?)
@@ -111,7 +113,7 @@ class ProductDAO {
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
 
-          WHERE excluded.updated_at > products.updated_at;
+          WHERE excluded.updated_at > ${DbTables.products}.updated_at;
         ''', [
           product.id,
           product.mandiId,
@@ -131,7 +133,7 @@ class ProductDAO {
     final mandiId = await AppHelper.getCurrentMandiId();
 
     final existing = await db.query(
-      'products',
+      DbTables.products,
       where: 'mandi_id = ? AND is_deleted = ?',
       whereArgs: [mandiId, 0],
       limit: 1,
@@ -144,7 +146,7 @@ class ProductDAO {
 
     for (final veg in SignupSync.vegetables) {
       final productId = DBHelper.generateUuidInt();
-      await db.insert('products', {
+      await db.insert(DbTables.products, {
         'id': productId,
         'mandi_id': mandiId,
         'default_variant': 0,
@@ -154,7 +156,7 @@ class ProductDAO {
       });
 
       final variantId = DBHelper.generateUuidInt();
-      await db.insert('product_variants', {
+      await db.insert(DbTables.productVariants, {
         'id': variantId,
         'mandi_id': mandiId,
         'product_id': productId,
@@ -169,7 +171,7 @@ class ProductDAO {
       });
 
       await db.update(
-        'products',
+        DbTables.products,
         {'default_variant': variantId},
         where: 'id = ?',
         whereArgs: [productId],
@@ -182,7 +184,7 @@ class ProductDAO {
 
     if (commonProductIds.isNotEmpty) {
       final customers = await db.query(
-        'customers',
+        DbTables.customers,
         where: 'mandi_id = ? AND is_deleted = ?',
         whereArgs: [mandiId, 0],
       );
@@ -191,10 +193,14 @@ class ProductDAO {
         final existingIds = (customer['product_ids'] as String?) ?? '';
         final currentIds = existingIds.isEmpty
             ? <int>[]
-            : existingIds.split(',').map((e) => int.tryParse(e) ?? 0).where((id) => id > 0).toList();
+            : existingIds
+                .split(',')
+                .map((e) => int.tryParse(e) ?? 0)
+                .where((id) => id > 0)
+                .toList();
         final merged = {...currentIds, ...commonProductIds}.toList();
         await db.update(
-          'customers',
+          DbTables.customers,
           {'product_ids': merged.join(',')},
           where: 'id = ?',
           whereArgs: [customer['id']],
@@ -205,21 +211,23 @@ class ProductDAO {
 
   Future<List<Product>> getAllProductsWithVariants() async {
     final db = await dbHelper.database;
-    final List<Map<String, dynamic>> productMaps = await db.query('products', where: 'is_deleted = ?', whereArgs: [0]);
+    final List<Map<String, dynamic>> productMaps = await db
+        .query(DbTables.products, where: 'is_deleted = ?', whereArgs: [0]);
 
-    List<Product> products = [];
+    final List<Product> products = [];
     for (var productMap in productMaps) {
       final productId = productMap['id'] as int?;
       List<ProductVariant>? variants;
-      
+
       if (productId != null) {
         final List<Map<String, dynamic>> variantMaps = await db.query(
-          'product_variants',
+          DbTables.productVariants,
           where: 'product_id = ? AND is_deleted = ?',
           whereArgs: [productId, 0],
         );
         if (variantMaps.isNotEmpty) {
-          variants = variantMaps.map((map) => ProductVariant.fromJson(map)).toList();
+          variants =
+              variantMaps.map((map) => ProductVariant.fromJson(map)).toList();
           variants.sort((a, b) => a.variantName.compareTo(b.variantName));
         }
       }
@@ -234,5 +242,4 @@ class ProductDAO {
     });
     return products;
   }
-
-  }
+}

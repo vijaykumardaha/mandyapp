@@ -1,5 +1,5 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/dao/stock_dao.dart';
 import 'package:mandiapp/models/stock_model.dart';
 
@@ -95,10 +95,11 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         return;
       }
       final query = event.query.toLowerCase();
-      final filtered = allStocks.where((s) =>
-        s.productId.toString().contains(query) ||
-        s.sellerId.toString().contains(query)
-      ).toList();
+      final filtered = allStocks
+          .where((s) =>
+              s.productId.toString().contains(query) ||
+              s.sellerId.toString().contains(query))
+          .toList();
       emit(StockLoaded(filtered));
     } catch (e) {
       emit(StockError('Failed to search stocks: $e'));
@@ -126,7 +127,8 @@ class StockBloc extends Bloc<StockEvent, StockState> {
   ) async {
     try {
       emit(StockLoading());
-      final transactions = await _stockDAO.getTransactionsByStock(event.stockId);
+      final transactions =
+          await _stockDAO.getTransactionsByStock(event.stockId);
       emit(StockTransactionsLoaded(transactions));
     } catch (e) {
       emit(StockError('Failed to load transactions: $e'));
@@ -180,7 +182,8 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       await _stockDAO.deleteStockTransaction(event.transactionId);
       final transactions = await _stockDAO.getAllStockTransactions();
       emit(StockTransactionsLoaded(transactions));
-      emit(const StockOperationSuccess('Stock transaction deleted successfully'));
+      emit(const StockOperationSuccess(
+          'Stock transaction deleted successfully'));
     } catch (e) {
       emit(StockError('Failed to delete stock transaction: $e'));
     }

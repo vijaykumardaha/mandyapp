@@ -1,13 +1,15 @@
 import 'dart:io';
+
 import 'package:intl/intl.dart';
+import 'package:mandiapp/blocs/reports/reports_bloc.dart';
+import 'package:mandiapp/widgets/reports/report_types.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:mandiapp/blocs/reports/reports_bloc.dart';
-import 'package:mandiapp/widgets/reports/report_types.dart';
 
 class ReportPdfService {
-  static final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: 'Rs. ');
+  static final currencyFormat =
+      NumberFormat.currency(locale: 'en_IN', symbol: 'Rs. ');
 
   static Future<File> generatePdf({
     required ReportsState state,
@@ -39,7 +41,7 @@ class ReportPdfService {
     return pw.Container(
       padding: const pw.EdgeInsets.only(bottom: 20),
       decoration: const pw.BoxDecoration(
-        border: pw.Border(bottom: pw.BorderSide(width: 1, color: PdfColors.grey300)),
+        border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300)),
       ),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -74,7 +76,8 @@ class ReportPdfService {
                 children: [
                   pw.Text(
                     'Report Period',
-                    style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
+                    style: const pw.TextStyle(
+                        fontSize: 10, color: PdfColors.grey600),
                   ),
                   pw.Text(
                     dateRange,
@@ -87,7 +90,8 @@ class ReportPdfService {
                   pw.SizedBox(height: 4),
                   pw.Text(
                     'Generated: ${DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now())}',
-                    style: pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+                    style: const pw.TextStyle(
+                        fontSize: 9, color: PdfColors.grey600),
                   ),
                 ],
               ),
@@ -102,25 +106,27 @@ class ReportPdfService {
     return pw.Container(
       padding: const pw.EdgeInsets.only(top: 10),
       decoration: const pw.BoxDecoration(
-        border: pw.Border(top: pw.BorderSide(width: 0.5, color: PdfColors.grey300)),
+        border:
+            pw.Border(top: pw.BorderSide(width: 0.5, color: PdfColors.grey300)),
       ),
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
           pw.Text(
             'Mandi App - Report',
-            style: pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
+            style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
           ),
           pw.Text(
             'Page ${context.pageNumber} of ${context.pagesCount}',
-            style: pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
+            style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
           ),
         ],
       ),
     );
   }
 
-  static List<pw.Widget> _buildContent(ReportsState state, ReportType reportType) {
+  static List<pw.Widget> _buildContent(
+      ReportsState state, ReportType reportType) {
     switch (reportType) {
       case ReportType.dailySales:
         return _buildDailySalesContent(state as DailySalesReportLoaded);
@@ -133,7 +139,8 @@ class ReportPdfService {
       case ReportType.customerLedger:
         return _buildCustomerLedgerContent(state as CustomerLedgerReportLoaded);
       case ReportType.stockTransaction:
-        return _buildStockTransactionContent(state as StockTransactionReportLoaded);
+        return _buildStockTransactionContent(
+            state as StockTransactionReportLoaded);
       case ReportType.stockSummary:
         return _buildStockSummaryContent(state as StockSummaryReportLoaded);
     }
@@ -157,11 +164,14 @@ class ReportPdfService {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text(label, style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600)),
+          pw.Text(label,
+              style:
+                  const pw.TextStyle(fontSize: 10, color: PdfColors.grey600)),
           pw.SizedBox(height: 4),
           pw.Text(
             value,
-            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: color),
+            style: pw.TextStyle(
+                fontSize: 14, fontWeight: pw.FontWeight.bold, color: color),
           ),
         ],
       ),
@@ -210,157 +220,219 @@ class ReportPdfService {
   static List<pw.Widget> _buildDailySalesContent(DailySalesReportLoaded state) {
     return [
       _buildSummaryRow([
-        _summaryCard('Total Sales', currencyFormat.format(state.totalRevenue), PdfColor.fromHex('#1565C0')),
-        _summaryCard('Total Quantity', '${state.totalQuantity.toStringAsFixed(2)} units', PdfColor.fromHex('#2E7D32')),
-        _summaryCard('Transactions', '${state.totalTransactions}', PdfColor.fromHex('#E65100')),
+        _summaryCard('Total Sales', currencyFormat.format(state.totalRevenue),
+            PdfColor.fromHex('#1565C0')),
+        _summaryCard(
+            'Total Quantity',
+            '${state.totalQuantity.toStringAsFixed(2)} units',
+            PdfColor.fromHex('#2E7D32')),
+        _summaryCard('Transactions', '${state.totalTransactions}',
+            PdfColor.fromHex('#E65100')),
       ]),
       pw.SizedBox(height: 16),
-      pw.Text('Sales Details', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+      pw.Text('Sales Details',
+          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Product', 'Unit', 'Quantity', 'Sales'],
-        state.data.map((item) => [
-          item.productName,
-          item.unit,
-          item.totalQuantity.toStringAsFixed(2),
-          currencyFormat.format(item.totalRevenue),
-        ]).toList(),
+        state.data
+            .map((item) => [
+                  item.productName,
+                  item.unit,
+                  item.totalQuantity.toStringAsFixed(2),
+                  currencyFormat.format(item.totalRevenue),
+                ])
+            .toList(),
       ),
     ];
   }
 
   // ── Daily Purchase ───────────────────────────────────────────
-  static List<pw.Widget> _buildDailyPurchaseContent(DailyPurchaseReportLoaded state) {
+  static List<pw.Widget> _buildDailyPurchaseContent(
+      DailyPurchaseReportLoaded state) {
     return [
       _buildSummaryRow([
-        _summaryCard('Total Cost', currencyFormat.format(state.totalCost), PdfColor.fromHex('#1565C0')),
-        _summaryCard('Total Quantity', '${state.totalQuantity.toStringAsFixed(2)} units', PdfColor.fromHex('#2E7D32')),
-        _summaryCard('Transactions', '${state.totalTransactions}', PdfColor.fromHex('#E65100')),
+        _summaryCard('Total Cost', currencyFormat.format(state.totalCost),
+            PdfColor.fromHex('#1565C0')),
+        _summaryCard(
+            'Total Quantity',
+            '${state.totalQuantity.toStringAsFixed(2)} units',
+            PdfColor.fromHex('#2E7D32')),
+        _summaryCard('Transactions', '${state.totalTransactions}',
+            PdfColor.fromHex('#E65100')),
       ]),
       pw.SizedBox(height: 16),
-      pw.Text('Purchase Details', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+      pw.Text('Purchase Details',
+          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Product', 'Unit', 'Quantity', 'Cost'],
-        state.data.map((item) => [
-          item.productName,
-          item.unit,
-          item.totalQuantity.toStringAsFixed(2),
-          currencyFormat.format(item.totalCost),
-        ]).toList(),
+        state.data
+            .map((item) => [
+                  item.productName,
+                  item.unit,
+                  item.totalQuantity.toStringAsFixed(2),
+                  currencyFormat.format(item.totalCost),
+                ])
+            .toList(),
       ),
     ];
   }
 
   // ── Mandi Profit ─────────────────────────────────────────────
-  static List<pw.Widget> _buildMandiProfitContent(MandiProfitReportLoaded state) {
+  static List<pw.Widget> _buildMandiProfitContent(
+      MandiProfitReportLoaded state) {
     return [
       _buildSummaryRow([
-        _summaryCard('Total Profit', currencyFormat.format(state.totalProfit), PdfColor.fromHex('#2E7D32')),
-        _summaryCard('Total Sales', currencyFormat.format(state.totalRevenue), PdfColor.fromHex('#1565C0')),
-        _summaryCard('Total Cost', currencyFormat.format(state.totalCost), PdfColor.fromHex('#C62828')),
+        _summaryCard('Total Profit', currencyFormat.format(state.totalProfit),
+            PdfColor.fromHex('#2E7D32')),
+        _summaryCard('Total Sales', currencyFormat.format(state.totalRevenue),
+            PdfColor.fromHex('#1565C0')),
+        _summaryCard('Total Cost', currencyFormat.format(state.totalCost),
+            PdfColor.fromHex('#C62828')),
       ]),
       pw.SizedBox(height: 16),
-      pw.Text('Daily Breakdown', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+      pw.Text('Daily Breakdown',
+          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Date', 'Sales', 'Cost', 'Profit'],
-        state.data.map((item) => [
-          item.date,
-          currencyFormat.format(item.dailyRevenue),
-          currencyFormat.format(item.dailyCost),
-          currencyFormat.format(item.dailyProfit),
-        ]).toList(),
+        state.data
+            .map((item) => [
+                  item.date,
+                  currencyFormat.format(item.dailyRevenue),
+                  currencyFormat.format(item.dailyCost),
+                  currencyFormat.format(item.dailyProfit),
+                ])
+            .toList(),
       ),
     ];
   }
 
   // ── Pending Payment ──────────────────────────────────────────
-  static List<pw.Widget> _buildPendingPaymentContent(PendingPaymentReportLoaded state) {
+  static List<pw.Widget> _buildPendingPaymentContent(
+      PendingPaymentReportLoaded state) {
     return [
-      _summaryCard('Total Pending', currencyFormat.format(state.totalPendingAmount), PdfColor.fromHex('#C62828')),
+      _summaryCard(
+          'Total Pending',
+          currencyFormat.format(state.totalPendingAmount),
+          PdfColor.fromHex('#C62828')),
       pw.SizedBox(height: 16),
-      pw.Text('Pending Details', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+      pw.Text('Pending Details',
+          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Customer', 'Phone', 'Bills', 'Pending Amount', 'Days'],
-        state.data.map((item) => [
-          item.customerName,
-          item.customerPhone,
-          '${item.totalBills}',
-          currencyFormat.format(item.pendingAmount),
-          '${item.daysPending}',
-        ]).toList(),
+        state.data
+            .map((item) => [
+                  item.customerName,
+                  item.customerPhone,
+                  '${item.totalBills}',
+                  currencyFormat.format(item.pendingAmount),
+                  '${item.daysPending}',
+                ])
+            .toList(),
       ),
     ];
   }
 
   // ── Customer Ledger ──────────────────────────────────────────
-  static List<pw.Widget> _buildCustomerLedgerContent(CustomerLedgerReportLoaded state) {
+  static List<pw.Widget> _buildCustomerLedgerContent(
+      CustomerLedgerReportLoaded state) {
     return [
-      _summaryCard('Net Balance', currencyFormat.format(state.totalNetBalance),
-          state.totalNetBalance >= 0 ? PdfColor.fromHex('#2E7D32') : PdfColor.fromHex('#C62828')),
+      _summaryCard(
+          'Net Balance',
+          currencyFormat.format(state.totalNetBalance),
+          state.totalNetBalance >= 0
+              ? PdfColor.fromHex('#2E7D32')
+              : PdfColor.fromHex('#C62828')),
       pw.SizedBox(height: 16),
-      pw.Text('Customer Details', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+      pw.Text('Customer Details',
+          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Customer', 'Phone', 'Purchases', 'Sales', 'Net Balance'],
-        state.data.map((item) => [
-          item.customerName,
-          item.customerPhone,
-          currencyFormat.format(item.totalPurchases),
-          currencyFormat.format(item.totalSales),
-          currencyFormat.format(item.netBalance),
-        ]).toList(),
+        state.data
+            .map((item) => [
+                  item.customerName,
+                  item.customerPhone,
+                  currencyFormat.format(item.totalPurchases),
+                  currencyFormat.format(item.totalSales),
+                  currencyFormat.format(item.netBalance),
+                ])
+            .toList(),
       ),
     ];
   }
 
   // ── Stock Transaction ────────────────────────────────────────
-  static List<pw.Widget> _buildStockTransactionContent(StockTransactionReportLoaded state) {
+  static List<pw.Widget> _buildStockTransactionContent(
+      StockTransactionReportLoaded state) {
     return [
-      _summaryCard('Total Amount', currencyFormat.format(state.totalAmount), PdfColor.fromHex('#1565C0')),
+      _summaryCard('Total Amount', currencyFormat.format(state.totalAmount),
+          PdfColor.fromHex('#1565C0')),
       pw.SizedBox(height: 8),
-      _summaryCard('Total Quantity', '${state.totalQuantity.toStringAsFixed(2)} units', PdfColor.fromHex('#6A1B9A')),
+      _summaryCard(
+          'Total Quantity',
+          '${state.totalQuantity.toStringAsFixed(2)} units',
+          PdfColor.fromHex('#6A1B9A')),
       pw.SizedBox(height: 16),
-      pw.Text('Stock Transactions', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+      pw.Text('Stock Transactions',
+          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Date', 'Product', 'Buyer', 'Qty', 'Amount'],
-        state.data.map((item) => [
-          item.date,
-          item.productName,
-          item.buyerName,
-          '${item.buyQuantity.toStringAsFixed(2)}',
-          currencyFormat.format(item.totalAmount),
-        ]).toList(),
+        state.data
+            .map((item) => [
+                  item.date,
+                  item.productName,
+                  item.buyerName,
+                  (item.buyQuantity.toStringAsFixed(2)),
+                  currencyFormat.format(item.totalAmount),
+                ])
+            .toList(),
       ),
     ];
   }
 
   // ── Stock Summary ────────────────────────────────────────────
-  static List<pw.Widget> _buildStockSummaryContent(StockSummaryReportLoaded state) {
+  static List<pw.Widget> _buildStockSummaryContent(
+      StockSummaryReportLoaded state) {
     return [
-      _summaryCard('Purchased', currencyFormat.format(state.totalPurchaseAmount), PdfColor.fromHex('#1565C0')),
+      _summaryCard(
+          'Purchased',
+          currencyFormat.format(state.totalPurchaseAmount),
+          PdfColor.fromHex('#1565C0')),
       pw.SizedBox(height: 8),
-      _summaryCard('Sold', currencyFormat.format(state.totalSoldAmount), PdfColor.fromHex('#6A1B9A')),
+      _summaryCard('Sold', currencyFormat.format(state.totalSoldAmount),
+          PdfColor.fromHex('#6A1B9A')),
       pw.SizedBox(height: 8),
-      _summaryCard('Profit', currencyFormat.format(state.totalProfit),
-          state.totalProfit >= 0 ? PdfColor.fromHex('#2E7D32') : PdfColor.fromHex('#C62828')),
+      _summaryCard(
+          'Profit',
+          currencyFormat.format(state.totalProfit),
+          state.totalProfit >= 0
+              ? PdfColor.fromHex('#2E7D32')
+              : PdfColor.fromHex('#C62828')),
       pw.SizedBox(height: 8),
-      _summaryCard('Remaining Qty', '${state.totalStockQuantity.toStringAsFixed(2)} units', PdfColor.fromHex('#E65100')),
+      _summaryCard(
+          'Remaining Qty',
+          '${state.totalStockQuantity.toStringAsFixed(2)} units',
+          PdfColor.fromHex('#E65100')),
       pw.SizedBox(height: 16),
-      pw.Text('Stock Details', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+      pw.Text('Stock Details',
+          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Product', 'Initial', 'Sold', 'Remaining', 'Profit'],
-        state.data.map((item) => [
-          item.productName,
-          '${item.initialQuantity.toStringAsFixed(2)}',
-          '${item.soldQuantity.toStringAsFixed(2)}',
-          '${item.quantity.toStringAsFixed(2)}',
-          currencyFormat.format(item.profit),
-        ]).toList(),
+        state.data
+            .map((item) => [
+                  item.productName,
+                  (item.initialQuantity.toStringAsFixed(2)),
+                  (item.soldQuantity.toStringAsFixed(2)),
+                  (item.quantity.toStringAsFixed(2)),
+                  currencyFormat.format(item.profit),
+                ])
+            .toList(),
       ),
     ];
   }

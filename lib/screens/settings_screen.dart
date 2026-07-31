@@ -37,7 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: MySpacing.all(16),
             children: [
               MySpacing.height(40),
-              
+
               // Business Section
               SettingsSectionHeader(title: 'Business', theme: theme),
               SettingsTile(
@@ -76,9 +76,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 theme: theme,
                 onTap: () => context.push('/printer-settings'),
               ),
-              
+
               MySpacing.height(24),
-              
+
               // About Section
               SettingsSectionHeader(title: 'About', theme: theme),
               SettingsTile(
@@ -93,9 +93,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 theme: theme,
                 onTap: () => context.push('/terms-conditions'),
               ),
-              
+
               MySpacing.height(24),
-              
+
               // Logout Section
               SettingsSectionHeader(title: 'Account', theme: theme),
               SettingsTile(
@@ -106,14 +106,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 titleColor: Colors.red,
                 onTap: () => _showLogoutDialog(),
               ),
-              
+
               MySpacing.height(40),
-              
+
               // App Version
               Center(
                 child: MyText.bodySmall(
                   'Version 1.0.0',
-                  color: theme.colorScheme.onBackground.withOpacity(0.4),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                 ),
               ),
             ],
@@ -127,14 +127,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: MyText.titleMedium('Logout', fontWeight: 600),
-        content: MyText.bodyMedium('Are you sure you want to logout?'),
+        title: const MyText.titleMedium('Logout', fontWeight: 600),
+        content: const MyText.bodyMedium('Are you sure you want to logout?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: MyText.bodyMedium(
               'Cancel',
-              color: theme.colorScheme.onBackground.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           TextButton(
@@ -142,7 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pop(context);
               context.read<LoginBloc>().add(LogoutSubmit());
             },
-            child: MyText.bodyMedium(
+            child: const MyText.bodyMedium(
               'Logout',
               color: Colors.red,
               fontWeight: 600,

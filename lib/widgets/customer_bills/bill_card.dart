@@ -40,12 +40,13 @@ class BillCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: theme.shadowColor.withOpacity(0.06),
+              color: theme.shadowColor.withValues(alpha: 0.06),
               blurRadius: 4,
               offset: const Offset(0, 1),
             ),
           ],
-          border: Border.all(color: theme.colorScheme.outline.withOpacity(0.1)),
+          border: Border.all(
+              color: theme.colorScheme.outline.withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
@@ -78,7 +79,7 @@ class BillCard extends StatelessWidget {
                   Text(
                     dateFormat.format(orderDate),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ],

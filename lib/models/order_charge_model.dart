@@ -64,7 +64,8 @@ class OrderCharge {
       orderId: map['order_id'] as String,
       chargeName: map['charge_name'] as String,
       chargeAmount: map['charge_amount'] as double,
-      updatedAt: map['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+      updatedAt:
+          map['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
       isDeleted: map['is_deleted'] as int? ?? 0,
       syncStatus: map['sync_status'] as int? ?? 0,
     );

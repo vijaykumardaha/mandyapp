@@ -14,7 +14,7 @@ class OrderPaymentLoading extends OrderPaymentState {}
 class OrderPaymentsLoaded extends OrderPaymentState {
   final List<OrderPayment> orderPayments;
 
-  OrderPaymentsLoaded(this.orderPayments);
+  const OrderPaymentsLoaded(this.orderPayments);
 
   @override
   List<Object?> get props => [orderPayments];
@@ -23,7 +23,7 @@ class OrderPaymentsLoaded extends OrderPaymentState {
 class OrderPaymentLoaded extends OrderPaymentState {
   final OrderPayment orderPayment;
 
-  OrderPaymentLoaded(this.orderPayment);
+  const OrderPaymentLoaded(this.orderPayment);
 
   @override
   List<Object?> get props => [orderPayment];
@@ -32,7 +32,7 @@ class OrderPaymentLoaded extends OrderPaymentState {
 class OrderPaymentOperationSuccess extends OrderPaymentState {
   final String message;
 
-  OrderPaymentOperationSuccess(this.message);
+  const OrderPaymentOperationSuccess(this.message);
 
   @override
   List<Object?> get props => [message];
@@ -41,7 +41,7 @@ class OrderPaymentOperationSuccess extends OrderPaymentState {
 class OrderPaymentError extends OrderPaymentState {
   final String message;
 
-  OrderPaymentError(this.message);
+  const OrderPaymentError(this.message);
 
   @override
   List<Object?> get props => [message];

@@ -7,7 +7,8 @@ class ReportTableHeader {
   final int flex;
   final TextAlign textAlign;
 
-  const ReportTableHeader({required this.label, this.flex = 1, this.textAlign = TextAlign.left});
+  const ReportTableHeader(
+      {required this.label, this.flex = 1, this.textAlign = TextAlign.left});
 }
 
 class ReportDataTable extends StatelessWidget {
@@ -27,7 +28,8 @@ class ReportDataTable extends StatelessWidget {
     return Expanded(
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
+          border: Border.all(
+              color: theme.colorScheme.outline.withValues(alpha: 0.15)),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -35,15 +37,17 @@ class ReportDataTable extends StatelessWidget {
             Container(
               padding: MySpacing.xy(12, 8),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.1),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(8)),
               ),
               child: Row(
                 children: headers
                     .map(
                       (h) => Expanded(
                         flex: h.flex,
-                        child: MyText.bodySmall(h.label, fontWeight: 600, textAlign: h.textAlign),
+                        child: MyText.bodySmall(h.label,
+                            fontWeight: 600, textAlign: h.textAlign),
                       ),
                     )
                     .toList(),
@@ -55,7 +59,7 @@ class ReportDataTable extends StatelessWidget {
                 itemCount: rows.length,
                 separatorBuilder: (context, index) => Divider(
                   height: 1,
-                  color: theme.colorScheme.outline.withOpacity(0.1),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.1),
                 ),
                 itemBuilder: (context, index) => rows[index],
               ),

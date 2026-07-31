@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mandiapp/services/printer_service.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/services/printer_service.dart';
 
 class PermissionPrompt extends StatelessWidget {
   const PermissionPrompt({super.key});
@@ -15,14 +15,16 @@ class PermissionPrompt extends StatelessWidget {
       width: double.infinity,
       padding: MySpacing.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.error.withOpacity(0.08),
+        color: theme.colorScheme.error.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.error.withOpacity(0.2)),
+        border:
+            Border.all(color: theme.colorScheme.error.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MyText.bodyLarge('Bluetooth permission required', fontWeight: 600, color: theme.colorScheme.error),
+          MyText.bodyLarge('Bluetooth permission required',
+              fontWeight: 600, color: theme.colorScheme.error),
           MySpacing.height(8),
           MyText.bodySmall(
             'Grant Bluetooth permission to discover and connect thermal printers.',
@@ -39,7 +41,8 @@ class PermissionPrompt extends StatelessWidget {
                   await printerService.refreshAll();
                 }
               },
-              child: MyText.bodySmall('Allow Bluetooth Access', fontWeight: 600, color: Colors.white),
+              child: const MyText.bodySmall('Allow Bluetooth Access',
+                  fontWeight: 600, color: Colors.white),
             ),
           ),
         ],

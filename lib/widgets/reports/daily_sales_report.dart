@@ -46,8 +46,8 @@ class DailySalesReportWidget extends StatelessWidget {
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Product', flex: 2),
-            ReportTableHeader(label: 'Qty', flex: 1, textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Sales', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Qty', textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Sales', textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(
@@ -60,19 +60,19 @@ class DailySalesReportWidget extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         MyText.bodySmall(item.productName, fontWeight: 600),
-                        MyText.bodySmall(item.unit, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                        MyText.bodySmall(item.unit,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.6)),
                       ],
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(
-                      '${item.totalQuantity.toStringAsFixed(2)}',
+                      item.totalQuantity.toStringAsFixed(2),
                       textAlign: TextAlign.center,
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(
                       currencyFormat.format(item.totalRevenue),
                       textAlign: TextAlign.center,

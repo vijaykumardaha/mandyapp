@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/product/product_bloc.dart';
-import 'package:mandiapp/helpers/extensions/string.dart';
+import 'package:mandiapp/dao/product_dao.dart';
+import 'package:mandiapp/dao/product_variant_dao.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/models/product_model.dart';
+import 'package:mandiapp/models/product_variant_model.dart';
+import 'package:mandiapp/utils/info_controller.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/models/product_model.dart';
-import 'package:mandiapp/models/product_variant_model.dart';
-import 'package:mandiapp/dao/product_variant_dao.dart';
-import 'package:mandiapp/dao/product_dao.dart';
 import 'package:mandiapp/widgets/product_detail/variant_form_sheet.dart';
 import 'package:mandiapp/widgets/product_detail/variant_list_item.dart';
 
@@ -84,8 +83,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     if (result != null) {
       setState(() {
-        final originalKey =
-            variant != null ? _variantKey(variant) : null;
+        final originalKey = variant != null ? _variantKey(variant) : null;
         if (variant == null) {
           _variants.add(result);
           _defaultVariantKey ??= _variantKey(result);
@@ -118,12 +116,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     _ensureDefaultVariantKey();
 
     if (_variants.isEmpty) {
-      Info.message('please_add_at_least_one_variant'.tr(), context: context);
+      Info.message('Please add at least one variant', context: context);
       return;
     }
 
     if (_defaultVariantKey == null) {
-      Info.message('please_select_default_variant'.tr(), context: context);
+      Info.message('Please select a default variant', context: context);
       return;
     }
 
@@ -144,12 +142,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       await _productDAO.insertProduct(product);
       productId = product.id;
 
-      context.read<ProductBloc>().add(LoadProducts());
+      if (mounted) context.read<ProductBloc>().add(LoadProducts());
     } else {
       await _productDAO.updateProduct(product);
       productId = product.id;
 
-      context.read<ProductBloc>().add(LoadProducts());
+      if (mounted) context.read<ProductBloc>().add(LoadProducts());
     }
 
     if (productId != null && _variants.isNotEmpty) {
@@ -181,100 +179,102 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: CommonAppBar(
-          titleWidget: MyText.titleMedium(
-            widget.product == null ? 'add_product'.tr() : 'edit_product'.tr(),
-            fontWeight: 600,
-          ),
+      appBar: CommonAppBar(
+        titleWidget: MyText.titleMedium(
+          widget.product == null ? 'Add Product' : 'Edit Product',
+          fontWeight: 600,
         ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: MySpacing.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: RichText(
-                          text: TextSpan(
-                            text: 'product_variants'.tr(),
-                            style: TextStyle(
-                              color: theme.colorScheme.onBackground,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            children: const [
-                              TextSpan(
-                                text: ' *',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: MySpacing.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: RichText(
+                        text: TextSpan(
+                          text: 'Product Variants',
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
+                          children: const [
+                            TextSpan(
+                              text: ' *',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
                         ),
-                      ),
-                      TextButton.icon(
-                        onPressed: _showAddVariantDialog,
-                        icon: const Icon(Icons.add),
-                        label: MyText.bodyMedium('add_variant'.tr()),
-                      ),
-                    ],
-                  ),
-                  MySpacing.height(12),
-                  MySpacing.height(12),
-                  if (_variants.isEmpty)
-                    Container(
-                      padding: MySpacing.all(16),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            color: theme.colorScheme.outline.withOpacity(0.3)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: MyText.bodyMedium(
-                          'no_variants_added'.tr(),
-                          color: theme.colorScheme.onBackground.withOpacity(0.6),
-                        ),
-                      ),
-                    )
-                  else
-                    ...List.generate(_variants.length, (index) {
-                      final variant = _variants[index];
-                      final variantKeyStr = _variantKey(variant);
-                      return VariantListItem(
-                        variant: variant,
-                        isDefault: variantKeyStr == _defaultVariantKey,
-                        variantKey: variantKeyStr,
-                        onEdit: () => _showAddVariantDialog(variant),
-                        onDelete: () => _deleteVariant(variant),
-                        onDefaultChanged: (value) {
-                          setState(() {
-                            _defaultVariantKey = value;
-                          });
-                        },
-                        theme: theme,
-                      );
-                    }),
-                  MySpacing.height(24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _variants.isEmpty ? null : _saveProduct,
-                      style: ElevatedButton.styleFrom(
-                        padding: MySpacing.y(16),
-                      ),
-                      child: MyText.bodyLarge(
-                        'save_product'.tr(),
-                        fontWeight: 600,
                       ),
                     ),
+                    TextButton.icon(
+                      onPressed: _showAddVariantDialog,
+                      icon: const Icon(Icons.add),
+                      label: const MyText.bodyMedium('Add Variant'),
+                    ),
+                  ],
+                ),
+                MySpacing.height(12),
+                MySpacing.height(12),
+                if (_variants.isEmpty)
+                  Container(
+                    padding: MySpacing.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          color:
+                              theme.colorScheme.outline.withValues(alpha: 0.3)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: MyText.bodyMedium(
+                        'No variants added yet',
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  )
+                else
+                  ...List.generate(_variants.length, (index) {
+                    final variant = _variants[index];
+                    final variantKeyStr = _variantKey(variant);
+                    return VariantListItem(
+                      variant: variant,
+                      isDefault: variantKeyStr == _defaultVariantKey,
+                      variantKey: variantKeyStr,
+                      onEdit: () => _showAddVariantDialog(variant),
+                      onDelete: () => _deleteVariant(variant),
+                      onDefaultChanged: (value) {
+                        setState(() {
+                          _defaultVariantKey = value;
+                        });
+                      },
+                      theme: theme,
+                    );
+                  }),
+                MySpacing.height(24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _variants.isEmpty ? null : _saveProduct,
+                    style: ElevatedButton.styleFrom(
+                      padding: MySpacing.y(16),
+                    ),
+                    child: const MyText.bodyLarge(
+                      'Save Product',
+                      fontWeight: 600,
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
-      );
+      ),
+    );
   }
 }

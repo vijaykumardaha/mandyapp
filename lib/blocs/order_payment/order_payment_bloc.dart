@@ -1,5 +1,5 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/dao/order_payment_dao.dart';
 import 'package:mandiapp/models/order_payment_model.dart';
 
@@ -38,7 +38,8 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
   ) async {
     try {
       emit(OrderPaymentLoading());
-      final orderPayments = await _orderPaymentDAO.getOrderPaymentsByOrderId(event.orderId);
+      final orderPayments =
+          await _orderPaymentDAO.getOrderPaymentsByOrderId(event.orderId);
       if (orderPayments.isNotEmpty) {
         emit(OrderPaymentsLoaded(orderPayments));
       } else {
@@ -58,7 +59,8 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
       await _orderPaymentDAO.insertOrderPayment(event.orderPayment);
       final orderPayments = await _orderPaymentDAO.getAllOrderPayments();
       emit(OrderPaymentsLoaded(orderPayments));
-      emit(OrderPaymentOperationSuccess('Order payment added successfully'));
+      emit(const OrderPaymentOperationSuccess(
+          'Order payment added successfully'));
     } catch (e) {
       emit(OrderPaymentError('Failed to add order payment: $e'));
     }
@@ -73,7 +75,8 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
       await _orderPaymentDAO.updateOrderPayment(event.orderPayment);
       final orderPayments = await _orderPaymentDAO.getAllOrderPayments();
       emit(OrderPaymentsLoaded(orderPayments));
-      emit(OrderPaymentOperationSuccess('Order payment updated successfully'));
+      emit(const OrderPaymentOperationSuccess(
+          'Order payment updated successfully'));
     } catch (e) {
       emit(OrderPaymentError('Failed to update order payment: $e'));
     }
@@ -88,7 +91,8 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
       await _orderPaymentDAO.deleteOrderPayment(event.paymentId);
       final orderPayments = await _orderPaymentDAO.getAllOrderPayments();
       emit(OrderPaymentsLoaded(orderPayments));
-      emit(OrderPaymentOperationSuccess('Order payment deleted successfully'));
+      emit(const OrderPaymentOperationSuccess(
+          'Order payment deleted successfully'));
     } catch (e) {
       emit(OrderPaymentError('Failed to delete order payment: $e'));
     }
@@ -100,11 +104,12 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
   ) async {
     try {
       emit(OrderPaymentLoading());
-      final orderPayment = await _orderPaymentDAO.getOrderPaymentById(event.paymentId);
+      final orderPayment =
+          await _orderPaymentDAO.getOrderPaymentById(event.paymentId);
       if (orderPayment != null) {
         emit(OrderPaymentLoaded(orderPayment));
       } else {
-        emit(OrderPaymentError('Order payment not found'));
+        emit(const OrderPaymentError('Order payment not found'));
       }
     } catch (e) {
       emit(OrderPaymentError('Failed to get order payment: $e'));
@@ -120,7 +125,8 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
       await _orderPaymentDAO.deleteOrderPayments(event.orderId);
       final orderPayments = await _orderPaymentDAO.getAllOrderPayments();
       emit(OrderPaymentsLoaded(orderPayments));
-      emit(OrderPaymentOperationSuccess('Order payments deleted successfully'));
+      emit(const OrderPaymentOperationSuccess(
+          'Order payments deleted successfully'));
     } catch (e) {
       emit(OrderPaymentError('Failed to delete order payments: $e'));
     }

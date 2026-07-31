@@ -52,7 +52,8 @@ class OrderItem {
       sellingPrice: (json['selling_price'] as num).toDouble(),
       quantity: (json['quantity'] as num).toDouble(),
       unit: json['unit'] as String? ?? 'Kilogram',
-      updatedAt: json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+      updatedAt:
+          json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
       isDeleted: json['is_deleted'] as int? ?? 0,
       syncStatus: json['sync_status'] as int? ?? 0,
       productName: json['product_name'] as String?,
@@ -137,24 +138,24 @@ class OrderItem {
     if (identical(this, other)) return true;
 
     return other is OrderItem &&
-      other.id == id &&
-      other.mandiId == mandiId &&
-      other.sellerId == sellerId &&
-      other.buyerOrderId == buyerOrderId &&
-      other.sellerOrderId == sellerOrderId &&
-      other.buyerId == buyerId &&
-      other.productId == productId &&
-      other.variantId == variantId &&
-      other.sellingPrice == sellingPrice &&
-      other.quantity == quantity &&
-      other.unit == unit &&
-      other.updatedAt == updatedAt &&
-      other.isDeleted == isDeleted &&
-      other.syncStatus == syncStatus &&
-      other.productName == productName &&
-      other.imagePath == imagePath &&
-      other.sellerName == sellerName &&
-      other.buyerName == buyerName;
+        other.id == id &&
+        other.mandiId == mandiId &&
+        other.sellerId == sellerId &&
+        other.buyerOrderId == buyerOrderId &&
+        other.sellerOrderId == sellerOrderId &&
+        other.buyerId == buyerId &&
+        other.productId == productId &&
+        other.variantId == variantId &&
+        other.sellingPrice == sellingPrice &&
+        other.quantity == quantity &&
+        other.unit == unit &&
+        other.updatedAt == updatedAt &&
+        other.isDeleted == isDeleted &&
+        other.syncStatus == syncStatus &&
+        other.productName == productName &&
+        other.imagePath == imagePath &&
+        other.sellerName == sellerName &&
+        other.buyerName == buyerName;
   }
 
   @override

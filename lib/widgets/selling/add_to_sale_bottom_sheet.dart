@@ -70,10 +70,9 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
     return BlocListener<OrderItemBloc, OrderItemState>(
       listener: (context, state) {
         if (state is OrderItemsLoaded) {
-
           // Set success message
           setState(() {
-              _successMessage = 'Successfully added to cart.';
+            _successMessage = 'Successfully added to cart.';
           });
 
           // Clear message after 2 seconds
@@ -99,13 +98,14 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.withOpacity(0.3)),
+                  border:
+                      Border.all(color: Colors.green.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.check_circle,
                       color: Colors.green,
                       size: 20,

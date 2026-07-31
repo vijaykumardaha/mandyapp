@@ -12,6 +12,7 @@ import 'package:mandiapp/models/product_variant_model.dart';
 import 'package:mandiapp/models/stock_model.dart';
 import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/info_controller.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
@@ -43,7 +44,7 @@ class _StockScreenState extends State<StockScreen> {
 
     _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
       if (!mounted) return;
-      if (table == 'stocks') {
+      if (table == DbTables.stocks) {
         final state = context.read<StockBloc>().state;
         if (state is StockLoaded) {
           context.read<StockBloc>().add(LoadStocks());
@@ -70,17 +71,21 @@ class _StockScreenState extends State<StockScreen> {
 
   List<Stock> _filterStocks(List<Stock> stocks) {
     if (_searchQuery.isEmpty) return stocks;
-    return stocks.where((s) =>
-      s.productId.toString().contains(_searchQuery) ||
-      s.sellerId.toString().contains(_searchQuery)
-    ).toList();
+    return stocks
+        .where((s) =>
+            s.productId.toString().contains(_searchQuery) ||
+            s.sellerId.toString().contains(_searchQuery))
+        .toList();
   }
 
   void _showStockDialog([Stock? stock]) {
     final customerState = context.read<CustomerBloc>().state;
     final productState = context.read<ProductBloc>().state;
-    final customers = customerState is CustomerLoaded ? customerState.customers : <Customer>[];
-    final products = productState is ProductLoaded ? productState.products : <Product>[];
+    final customers = customerState is CustomerLoaded
+        ? customerState.customers
+        : <Customer>[];
+    final products =
+        productState is ProductLoaded ? productState.products : <Product>[];
 
     showDialog(
       context: context,
@@ -100,14 +105,14 @@ class _StockScreenState extends State<StockScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: MyText.titleMedium('Delete Stock', fontWeight: 600),
+        title: const MyText.titleMedium('Delete Stock', fontWeight: 600),
         content: MyText.bodyMedium(
           'Are you sure you want to delete stock for Product #${stock.productId}?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: MyText.bodyMedium('Cancel'),
+            child: const MyText.bodyMedium('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -115,7 +120,7 @@ class _StockScreenState extends State<StockScreen> {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: MyText.bodyMedium('Delete'),
+            child: const MyText.bodyMedium('Delete'),
           ),
         ],
       ),
@@ -133,26 +138,32 @@ class _StockScreenState extends State<StockScreen> {
           decoration: InputDecoration(
             hintText: 'Search stocks...',
             filled: true,
-            fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            fillColor: theme.colorScheme.surfaceContainerHighest
+                .withValues(alpha: 0.5),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+              borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+              borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(color: theme.colorScheme.primary),
             ),
-            prefixIcon: Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
+            prefixIcon: Icon(Icons.search,
+                size: 20, color: theme.colorScheme.onSurfaceVariant),
             prefixIconConstraints: const BoxConstraints(minWidth: 36),
             suffixIcon: _isAdmin
                 ? InkWell(
                     onTap: () => _showStockDialog(),
-                    child: Icon(Icons.add_circle_outline, size: 22, color: theme.colorScheme.primary),
+                    child: Icon(Icons.add_circle_outline,
+                        size: 22, color: theme.colorScheme.primary),
                   )
                 : null,
           ),
@@ -172,7 +183,7 @@ class _StockScreenState extends State<StockScreen> {
             if (state is StockLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-  
+
             if (state is StockLoaded) {
               final stocks = _filterStocks(state.stocks);
               if (stocks.isEmpty) {
@@ -199,7 +210,7 @@ class _StockScreenState extends State<StockScreen> {
                   ),
                 );
               }
-  
+
               return ListView.builder(
                 padding: MySpacing.all(16),
                 itemCount: stocks.length,
@@ -207,10 +218,18 @@ class _StockScreenState extends State<StockScreen> {
                   final stock = stocks[index];
                   final customerState = context.read<CustomerBloc>().state;
                   final productState = context.read<ProductBloc>().state;
-                  final customers = customerState is CustomerLoaded ? customerState.customers : <Customer>[];
-                  final products = productState is ProductLoaded ? productState.products : <Product>[];
-                  final seller = customers.where((c) => c.id == stock.sellerId).firstOrNull;
-                  final product = products.where((p) => p.id == stock.productId).firstOrNull;
+                  final customers = customerState is CustomerLoaded
+                      ? customerState.customers
+                      : <Customer>[];
+                  final products = productState is ProductLoaded
+                      ? productState.products
+                      : <Product>[];
+                  final seller = customers
+                      .where((c) => c.id == stock.sellerId)
+                      .firstOrNull;
+                  final product = products
+                      .where((p) => p.id == stock.productId)
+                      .firstOrNull;
                   return StockListItem(
                     stock: stock,
                     theme: theme,
@@ -223,7 +242,7 @@ class _StockScreenState extends State<StockScreen> {
                 },
               );
             }
-  
+
             return const Center(child: CircularProgressIndicator());
           },
         ),
@@ -261,13 +280,20 @@ class _StockFormDialogState extends State<_StockFormDialog> {
     super.initState();
     _isEditing = widget.stock != null;
     _initialQtyController.text = widget.stock?.initialQuantity.toString() ?? '';
-    _purchaseAmountController.text = widget.stock?.purchaseAmount.toString() ?? '';
+    _purchaseAmountController.text =
+        widget.stock?.purchaseAmount.toString() ?? '';
 
     if (_isEditing) {
-      _selectedSeller = widget.customers.where((c) => c.id == widget.stock!.sellerId).firstOrNull;
-      _selectedProduct = widget.products.where((p) => p.id == widget.stock!.productId).firstOrNull;
-      if (_selectedProduct != null && widget.stock!.productVariantId != null) {
-        _selectedVariant = _selectedProduct?.variants?.where((v) => v.id == widget.stock!.productVariantId).firstOrNull;
+      _selectedSeller = widget.customers
+          .where((c) => c.id == widget.stock!.sellerId)
+          .firstOrNull;
+      _selectedProduct = widget.products
+          .where((p) => p.id == widget.stock!.productId)
+          .firstOrNull;
+      if (_selectedProduct != null) {
+        _selectedVariant = _selectedProduct?.variants
+            ?.where((v) => v.id == widget.stock!.productVariantId)
+            .firstOrNull;
       }
     }
   }
@@ -301,129 +327,135 @@ class _StockFormDialogState extends State<_StockFormDialog> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-          left: 16,
-          right: 16,
-          top: 16,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            DropdownButtonFormField<Customer>(
-              value: _selectedSeller,
-              decoration: const InputDecoration(
-                labelText: 'Seller',
-                border: OutlineInputBorder(),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              DropdownButtonFormField<Customer>(
+                value: _selectedSeller,
+                decoration: const InputDecoration(
+                  labelText: 'Seller',
+                  border: OutlineInputBorder(),
+                ),
+                dropdownColor: theme.colorScheme.surface,
+                items: widget.customers
+                    .map((c) => DropdownMenuItem(
+                          value: c,
+                          child: Text(c.name ?? 'Seller #${c.id}'),
+                        ))
+                    .toList(),
+                onChanged: (value) => setState(() => _selectedSeller = value),
               ),
-              dropdownColor: theme.colorScheme.surface,
-              items: widget.customers.map((c) => DropdownMenuItem(
-                value: c,
-                child: Text(c.name ?? 'Seller #${c.id}'),
-              )).toList(),
-              onChanged: (value) => setState(() => _selectedSeller = value),
-            ),
-            MySpacing.height(12),
-            DropdownButtonFormField<Product>(
-              value: _selectedProduct,
-              decoration: const InputDecoration(
-                labelText: 'Product',
-                border: OutlineInputBorder(),
-              ),
-              dropdownColor: theme.colorScheme.surface,
-              items: widget.products.map((p) {
-                final name = p.defaultVariantModel?.variantName ?? 'Product #${p.id}';
-                final img = p.defaultVariantModel?.imagePath;
-                return DropdownMenuItem(
-                  value: p,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: _buildDropdownImage(img, 32),
-                      ),
-                      MySpacing.width(8),
-                      Text(name, overflow: TextOverflow.ellipsis),
-                    ],
-                  ),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedProduct = value;
-                  _selectedVariant = null;
-                });
-              },
-            ),
-            MySpacing.height(12),
-            DropdownButtonFormField<ProductVariant>(
-              value: _selectedVariant,
-              decoration: const InputDecoration(
-                labelText: 'Variant',
-                border: OutlineInputBorder(),
-              ),
-              dropdownColor: theme.colorScheme.surface,
-              items: _getVariants().map((v) => DropdownMenuItem(
-                value: v,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: _buildDropdownImage(v.imagePath, 32),
+              MySpacing.height(12),
+              DropdownButtonFormField<Product>(
+                value: _selectedProduct,
+                decoration: const InputDecoration(
+                  labelText: 'Product',
+                  border: OutlineInputBorder(),
+                ),
+                dropdownColor: theme.colorScheme.surface,
+                items: widget.products.map((p) {
+                  final name =
+                      p.defaultVariantModel?.variantName ?? 'Product #${p.id}';
+                  final img = p.defaultVariantModel?.imagePath;
+                  return DropdownMenuItem(
+                    value: p,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: _buildDropdownImage(img, 32),
+                        ),
+                        MySpacing.width(8),
+                        Text(name, overflow: TextOverflow.ellipsis),
+                      ],
                     ),
-                    MySpacing.width(8),
-                    Text(v.variantName, overflow: TextOverflow.ellipsis),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedProduct = value;
+                    _selectedVariant = null;
+                  });
+                },
+              ),
+              MySpacing.height(12),
+              DropdownButtonFormField<ProductVariant>(
+                value: _selectedVariant,
+                decoration: const InputDecoration(
+                  labelText: 'Variant',
+                  border: OutlineInputBorder(),
+                ),
+                dropdownColor: theme.colorScheme.surface,
+                items: _getVariants()
+                    .map((v) => DropdownMenuItem(
+                          value: v,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: _buildDropdownImage(v.imagePath, 32),
+                              ),
+                              MySpacing.width(8),
+                              Text(v.variantName,
+                                  overflow: TextOverflow.ellipsis),
+                            ],
+                          ),
+                        ))
+                    .toList(),
+                onChanged: (value) => setState(() => _selectedVariant = value),
+              ),
+              MySpacing.height(12),
+              TextField(
+                controller: _initialQtyController,
+                decoration: const InputDecoration(
+                  labelText: 'Initial Quantity',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              MySpacing.height(12),
+              TextField(
+                controller: _purchaseAmountController,
+                decoration: const InputDecoration(
+                  labelText: 'Purchase Amount (₹)',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              MySpacing.height(16),
+              LayoutBuilder(
+                builder: (ctx, constraints) => Row(
+                  children: [
+                    SizedBox(
+                      width: constraints.maxWidth * 0.5 - 6,
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const MyText.bodyMedium('Cancel'),
+                      ),
+                    ),
+                    MySpacing.width(12),
+                    SizedBox(
+                      width: constraints.maxWidth * 0.5 - 6,
+                      child: ElevatedButton(
+                        onPressed: _submit,
+                        child: MyText.bodyMedium(_isEditing ? 'Update' : 'Add'),
+                      ),
+                    ),
                   ],
                 ),
-              )).toList(),
-              onChanged: (value) => setState(() => _selectedVariant = value),
-            ),
-            MySpacing.height(12),
-            TextField(
-              controller: _initialQtyController,
-              decoration: const InputDecoration(
-                labelText: 'Initial Quantity',
-                border: OutlineInputBorder(),
               ),
-              keyboardType: TextInputType.number,
-            ),
-            MySpacing.height(12),
-            TextField(
-              controller: _purchaseAmountController,
-              decoration: const InputDecoration(
-                labelText: 'Purchase Amount (₹)',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            MySpacing.height(16),
-            LayoutBuilder(
-              builder: (ctx, constraints) => Row(
-                children: [
-                  SizedBox(
-                    width: constraints.maxWidth * 0.5 - 6,
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: MyText.bodyMedium('Cancel'),
-                    ),
-                  ),
-                  MySpacing.width(12),
-                  SizedBox(
-                    width: constraints.maxWidth * 0.5 - 6,
-                    child: ElevatedButton(
-                      onPressed: _submit,
-                      child: MyText.bodyMedium(_isEditing ? 'Update' : 'Add'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            MySpacing.height(16),
-          ],
+              MySpacing.height(16),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -480,12 +512,22 @@ class _StockFormDialogState extends State<_StockFormDialog> {
       width: size,
       height: size,
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: Icon(Icons.image, size: size * 0.6, color: Theme.of(context).colorScheme.onSurfaceVariant),
+      child: Icon(Icons.image,
+          size: size * 0.6,
+          color: Theme.of(context).colorScheme.onSurfaceVariant),
     );
     if (path == null || path.isEmpty) return placeholder;
     if (path.startsWith('assets/')) {
-      return Image.asset(path, width: size, height: size, fit: BoxFit.cover, errorBuilder: (_, __, ___) => placeholder);
+      return Image.asset(path,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => placeholder);
     }
-    return Image.file(File(path), width: size, height: size, fit: BoxFit.cover, errorBuilder: (_, __, ___) => placeholder);
+    return Image.file(File(path),
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => placeholder);
   }
 }

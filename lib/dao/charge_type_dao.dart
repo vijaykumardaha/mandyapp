@@ -1,5 +1,6 @@
 import 'package:mandiapp/models/charge_type_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 import 'package:mandiapp/utils/signup_sync.dart';
 
@@ -13,13 +14,13 @@ class ChargeTypeDAO {
     chargeType.isDeleted = 0;
     chargeType.syncStatus = 0;
     final db = await dbHelper.database;
-    return await db.insert('charge_types', chargeType.toJson());
+    return await db.insert(DbTables.chargeTypes, chargeType.toJson());
   }
 
   Future<List<ChargeType>> getAllChargeTypes() async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'charge_types',
+      DbTables.chargeTypes,
       where: 'is_deleted = ?',
       whereArgs: [0],
       orderBy: 'charge_name ASC',
@@ -30,7 +31,7 @@ class ChargeTypeDAO {
   Future<List<ChargeType>> getActiveChargeTypes() async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'charge_types',
+      DbTables.chargeTypes,
       where: 'is_active = ? AND is_deleted = ?',
       whereArgs: [1, 0],
       orderBy: 'charge_name ASC',
@@ -41,7 +42,7 @@ class ChargeTypeDAO {
   Future<ChargeType?> getChargeTypeById(int id) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'charge_types',
+      DbTables.chargeTypes,
       where: 'id = ? AND is_deleted = ?',
       whereArgs: [id, 0],
     );
@@ -54,7 +55,7 @@ class ChargeTypeDAO {
   Future<ChargeType?> getChargeTypeByName(String chargeName) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'charge_types',
+      DbTables.chargeTypes,
       where: 'charge_name = ? AND is_deleted = ?',
       whereArgs: [chargeName, 0],
     );
@@ -70,7 +71,7 @@ class ChargeTypeDAO {
     chargeType.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
-      'charge_types',
+      DbTables.chargeTypes,
       chargeType.toJson(),
       where: 'id = ?',
       whereArgs: [chargeType.id],
@@ -80,7 +81,7 @@ class ChargeTypeDAO {
   Future<int> restoreChargeType(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'charge_types',
+      DbTables.chargeTypes,
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -94,7 +95,7 @@ class ChargeTypeDAO {
   Future<int> deleteChargeType(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'charge_types',
+      DbTables.chargeTypes,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -108,7 +109,7 @@ class ChargeTypeDAO {
   Future<int> activateChargeType(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'charge_types',
+      DbTables.chargeTypes,
       {
         'is_active': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -122,7 +123,7 @@ class ChargeTypeDAO {
   Future<int> deactivateChargeType(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'charge_types',
+      DbTables.chargeTypes,
       {
         'is_active': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -144,7 +145,7 @@ class ChargeTypeDAO {
   Future<List<ChargeType>> getChargeTypesByType(String chargeFor) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'charge_types',
+      DbTables.chargeTypes,
       where: 'charge_for = ? AND is_deleted = ?',
       whereArgs: [chargeFor, 0],
       orderBy: 'charge_name ASC',
@@ -155,7 +156,7 @@ class ChargeTypeDAO {
   Future<List<ChargeType>> getActiveChargeTypesByType(String chargeFor) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'charge_types',
+      DbTables.chargeTypes,
       where: 'charge_for = ? AND is_active = ? AND is_deleted = ?',
       whereArgs: [chargeFor, 1, 0],
       orderBy: 'charge_name ASC',
@@ -166,7 +167,7 @@ class ChargeTypeDAO {
   Future<List<ChargeType>> getDefaultChargeTypes(String chargeFor) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'charge_types',
+      DbTables.chargeTypes,
       where: 'charge_for = ? AND is_default = ? AND is_deleted = ?',
       whereArgs: [chargeFor, 1, 0],
       orderBy: 'charge_name ASC',
@@ -174,10 +175,11 @@ class ChargeTypeDAO {
     return List.generate(maps.length, (i) => ChargeType.fromJson(maps[i]));
   }
 
-  Future<bool> chargeTypeExistsForType(String chargeName, String chargeFor) async {
+  Future<bool> chargeTypeExistsForType(
+      String chargeName, String chargeFor) async {
     final db = await dbHelper.database;
     final result = await db.query(
-      'charge_types',
+      DbTables.chargeTypes,
       where: 'charge_name = ? AND charge_for = ? AND is_deleted = ?',
       whereArgs: [chargeName, chargeFor, 0],
     );
@@ -191,7 +193,7 @@ class ChargeTypeDAO {
 
       for (final chargeType in chargeTypes) {
         batch.rawInsert('''
-          INSERT INTO charge_types (
+          INSERT INTO ${DbTables.chargeTypes} (
             id, mandi_id, charge_name, charge_type, charge_amount, charge_for,
             is_default, is_active, updated_at, is_deleted, sync_status
           )
@@ -209,7 +211,7 @@ class ChargeTypeDAO {
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
 
-          WHERE excluded.updated_at > charge_types.updated_at;
+          WHERE excluded.updated_at > ${DbTables.chargeTypes}.updated_at;
         ''', [
           chargeType.id,
           chargeType.mandiId,
@@ -217,8 +219,8 @@ class ChargeTypeDAO {
           chargeType.chargeType,
           chargeType.chargeAmount,
           chargeType.chargeFor,
-          chargeType.isDefault ?? 0,
-          chargeType.isActive ?? 1,
+          chargeType.isDefault,
+          chargeType.isActive,
           chargeType.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           chargeType.isDeleted ?? 0,
           chargeType.syncStatus ?? 1,
@@ -233,7 +235,7 @@ class ChargeTypeDAO {
     final db = await dbHelper.database;
     for (final charge in SignupSync.defaultCharges) {
       final existing = await db.query(
-        'charge_types',
+        DbTables.chargeTypes,
         where: 'charge_name = ? AND charge_for = ? AND is_deleted = ?',
         whereArgs: [charge['charge_name'], charge['charge_for'], 0],
       );

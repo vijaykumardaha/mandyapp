@@ -99,17 +99,25 @@ class _CartItemListState extends State<CartItemList> {
                               Icon(
                                 Icons.shopping_cart_outlined,
                                 size: 56,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant
+                                    .withValues(alpha: 0.5),
                               ),
                               const SizedBox(height: 16),
                               MyText.bodyMedium(
                                 'No items in cart',
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
                               const SizedBox(height: 6),
                               MyText.bodySmall(
                                 'Add items to start billing',
-                                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant
+                                    .withValues(alpha: 0.7),
                               ),
                             ],
                           ),
@@ -141,7 +149,8 @@ class _CartItemListState extends State<CartItemList> {
                             });
                           }
 
-                          final canSelect = widget.buyerMode || widget.buyerCustomer != null;
+                          final canSelect =
+                              widget.buyerMode || widget.buyerCustomer != null;
 
                           return Opacity(
                             opacity: canSelect ? 1.0 : 0.55,
@@ -149,100 +158,130 @@ class _CartItemListState extends State<CartItemList> {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(12),
-                                onTap: canSelect ? () => toggleSelection(!isChecked) : null,
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                curve: Curves.easeOut,
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: isChecked
-                                      ? Theme.of(context).colorScheme.primary.withOpacity(0.05)
-                                      : Theme.of(context).colorScheme.surface,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
+                                onTap: canSelect
+                                    ? () => toggleSelection(!isChecked)
+                                    : null,
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  curve: Curves.easeOut,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
                                     color: isChecked
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Theme.of(context).colorScheme.outline.withOpacity(0.12),
-                                    width: isChecked ? 1.5 : 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      width: 22,
-                                      height: 22,
-                                      decoration: BoxDecoration(
-                                        color: isChecked
-                                            ? Theme.of(context).colorScheme.primary
-                                            : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(
-                                          color: isChecked
-                                              ? Theme.of(context).colorScheme.primary
-                                              : Theme.of(context).colorScheme.outline.withOpacity(0.4),
-                                        ),
-                                      ),
-                                      child: isChecked
-                                          ? const Icon(Icons.check, size: 16, color: Colors.white)
-                                          : null,
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withValues(alpha: 0.05)
+                                        : Theme.of(context).colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isChecked
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .outline
+                                              .withValues(alpha: 0.12),
+                                      width: isChecked ? 1.5 : 1,
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: MyText.bodyMedium(
-                                                  titleText,
-                                                  fontWeight: 600,
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              MyText.bodyMedium(
-                                                '₹${(sale.quantity * sale.sellingPrice).toStringAsFixed(2)}',
-                                                fontWeight: 600,
-                                                color: Theme.of(context).colorScheme.primary,
-                                              ),
-                                            ],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 22,
+                                        height: 22,
+                                        decoration: BoxDecoration(
+                                          color: isChecked
+                                              ? Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                              : Colors.transparent,
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                          border: Border.all(
+                                            color: isChecked
+                                                ? Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                : Theme.of(context)
+                                                    .colorScheme
+                                                    .outline
+                                                    .withValues(alpha: 0.4),
                                           ),
-                                          if (sellerName != null) ...[
-                                            const SizedBox(height: 2),
+                                        ),
+                                        child: isChecked
+                                            ? const Icon(Icons.check,
+                                                size: 16, color: Colors.white)
+                                            : null,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
                                             Row(
                                               children: [
                                                 Expanded(
-                                                  child: MyText.bodySmall(
-                                                    'Seller: $sellerName',
-                                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                                  child: MyText.bodyMedium(
+                                                    titleText,
+                                                    fontWeight: 600,
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                                 const SizedBox(width: 8),
-                                                MyText.bodySmall(
-                                                  '$quantityLabel × ₹${sale.sellingPrice.toStringAsFixed(2)}',
-                                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                                MyText.bodyMedium(
+                                                  '₹${(sale.quantity * sale.sellingPrice).toStringAsFixed(2)}',
+                                                  fontWeight: 600,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary,
                                                 ),
                                               ],
                                             ),
-                                          ] else ...[
-                                            const SizedBox(height: 4),
-                                            MyText.bodySmall(
-                                              '$quantityLabel × ₹${sale.sellingPrice.toStringAsFixed(2)}',
-                                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                                            ),
+                                            if (sellerName != null) ...[
+                                              const SizedBox(height: 2),
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: MyText.bodySmall(
+                                                      'Seller: $sellerName',
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  MyText.bodySmall(
+                                                    '$quantityLabel × ₹${sale.sellingPrice.toStringAsFixed(2)}',
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurface
+                                                        .withValues(alpha: 0.6),
+                                                  ),
+                                                ],
+                                              ),
+                                            ] else ...[
+                                              const SizedBox(height: 4),
+                                              MyText.bodySmall(
+                                                '$quantityLabel × ₹${sale.sellingPrice.toStringAsFixed(2)}',
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface
+                                                    .withValues(alpha: 0.6),
+                                              ),
+                                            ],
                                           ],
-                                        ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        );
+                          );
                         },
                       ),
                     const SizedBox(height: 100),
@@ -259,7 +298,8 @@ class _CartItemListState extends State<CartItemList> {
                 color: sheetTheme.colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: sheetTheme.colorScheme.shadow.withOpacity(0.08),
+                    color:
+                        sheetTheme.colorScheme.shadow.withValues(alpha: 0.08),
                     blurRadius: 10,
                     offset: const Offset(0, -2),
                   ),
@@ -281,7 +321,6 @@ class _CartItemListState extends State<CartItemList> {
                 ),
               ),
             ),
-
         ],
       ),
     );

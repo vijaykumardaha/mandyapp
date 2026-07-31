@@ -17,15 +17,27 @@ class ReceiptSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isSeller = data.order.orderFor == 'seller';
+    final chargesPrefix = isSeller ? '- ' : '+ ';
+    final expensesPrefix = isSeller ? '- ' : '+ ';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         children: [
-          SummaryRow(label: 'Item Total', value: currency.format(data.itemTotal), theme: theme),
+          SummaryRow(
+              label: 'Item Total',
+              value: currency.format(data.itemTotal),
+              theme: theme),
           const SizedBox(height: 4),
-          SummaryRow(label: 'Total Charges', value: currency.format(data.chargesTotal), theme: theme),
+          SummaryRow(
+              label: 'Total Charges',
+              value: '$chargesPrefix${currency.format(data.chargesTotal)}',
+              theme: theme),
           const SizedBox(height: 4),
-          SummaryRow(label: 'Total Expenses', value: currency.format(data.expensesTotal), theme: theme),
+          SummaryRow(
+              label: 'Total Expenses',
+              value: '$expensesPrefix${currency.format(data.expensesTotal)}',
+              theme: theme),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8),
             child: Divider(thickness: 1),

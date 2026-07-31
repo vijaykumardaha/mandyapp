@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/widgets/common/my_text_style.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:mandiapp/widgets/common/my_text_style.dart';
 
 class AuthConfirmPasswordField extends StatefulWidget {
   final TextEditingController controller;
@@ -32,7 +32,7 @@ class _AuthConfirmPasswordFieldState extends State<AuthConfirmPasswordField> {
       style: MyTextStyle.bodyMedium(),
       obscureText: _obscureText,
       decoration: InputDecoration(
-        hintText: widget.hintText ?? "Confirm Password",
+        hintText: widget.hintText ?? 'Confirm Password',
         hintStyle: MyTextStyle.bodyMedium(),
         border: widget.outlineInputBorder,
         enabledBorder: widget.outlineInputBorder,

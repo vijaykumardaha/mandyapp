@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 
 class BluetoothDeviceList extends StatelessWidget {
   final String title;
@@ -27,7 +27,8 @@ class BluetoothDeviceList extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.12)),
+        border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +38,7 @@ class BluetoothDeviceList extends StatelessWidget {
           if (devices.isEmpty)
             MyText.bodyMedium(
               'No devices found. Tap "Scan Bluetooth".',
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             )
           else
             ListView.separated(
@@ -52,7 +53,9 @@ class BluetoothDeviceList extends StatelessWidget {
                   padding: MySpacing.all(12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: theme.colorScheme.outline.withOpacity(0.1)),
+                    border: Border.all(
+                        color:
+                            theme.colorScheme.outline.withValues(alpha: 0.1)),
                   ),
                   child: Row(
                     children: [
@@ -64,26 +67,33 @@ class BluetoothDeviceList extends StatelessWidget {
                           children: [
                             MyText.bodyMedium(device.name, fontWeight: 600),
                             MySpacing.height(2),
-                            MyText.bodySmall('MAC: ${device.macAdress}', color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                            MyText.bodySmall('MAC: ${device.macAdress}',
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.6)),
                           ],
                         ),
                       ),
                       ElevatedButton(
-                        onPressed: isConnecting ? null : () => onConnect(device.macAdress),
+                        onPressed: isConnecting
+                            ? null
+                            : () => onConnect(device.macAdress),
                         style: ElevatedButton.styleFrom(
                           padding: MySpacing.xy(12, 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
                         ),
                         child: isConnecting
-                            ? SizedBox(
+                            ? const SizedBox(
                                 width: 16,
                                 height: 16,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                                  valueColor:
+                                      AlwaysStoppedAnimation(Colors.white),
                                 ),
                               )
-                            : MyText.bodySmall('Connect', fontWeight: 600),
+                            : const MyText.bodySmall('Connect',
+                                fontWeight: 600),
                       ),
                     ],
                   ),

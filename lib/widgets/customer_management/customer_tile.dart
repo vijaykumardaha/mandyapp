@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/dao/order_dao.dart';
 import 'package:mandiapp/dao/order_payment_dao.dart';
+import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/screens/customer_bills_screen.dart';
 import 'package:mandiapp/screens/payment_histories_screen.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 
 class CustomerTile extends StatefulWidget {
   final Customer customer;
@@ -46,7 +46,8 @@ class _CustomerTileState extends State<CustomerTile> {
     double received = 0;
 
     for (final order in orders) {
-      final payments = await orderPaymentDAO.getOrderPaymentsByOrderId(order.id!);
+      final payments =
+          await orderPaymentDAO.getOrderPaymentsByOrderId(order.id!);
       for (final payment in payments) {
         if (order.orderFor == 'buyer') {
           received += payment.amount;
@@ -87,7 +88,7 @@ class _CustomerTileState extends State<CustomerTile> {
           children: [
             CircleAvatar(
               radius: 22,
-              backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
               child: Text(
                 initials.toUpperCase(),
                 style: theme.textTheme.titleSmall?.copyWith(
@@ -147,14 +148,16 @@ class _CustomerTileState extends State<CustomerTile> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PaymentHistoriesScreen(customer: customer),
+                      builder: (context) =>
+                          PaymentHistoriesScreen(customer: customer),
                     ),
                   );
                 } else if (value == 'bills') {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CustomerBillsScreen(customer: customer),
+                      builder: (context) =>
+                          CustomerBillsScreen(customer: customer),
                     ),
                   );
                 }
@@ -191,7 +194,7 @@ class _StatChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: MyText.bodySmall(

@@ -27,7 +27,8 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
 
   Future<void> _fetchContent() async {
     try {
-      final response = await ApiService.instance.dio.get('/privacy', options: Options(headers: {'Accept': 'text/html'}));
+      final response = await ApiService.instance.dio
+          .get('/privacy', options: Options(headers: {'Accept': 'text/html'}));
       if (mounted) {
         setState(() {
           _htmlContent = response.data.toString();
@@ -54,8 +55,8 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CommonAppBar(
-        titleWidget: const Text('Privacy Policy'),
+      appBar: const CommonAppBar(
+        titleWidget: Text('Privacy Policy'),
       ),
       body: SafeArea(
         child: _isLoading
@@ -65,7 +66,8 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const Icon(Icons.error_outline,
+                            size: 48, color: Colors.red),
                         const SizedBox(height: 16),
                         Text(_error!, textAlign: TextAlign.center),
                         const SizedBox(height: 16),
@@ -89,7 +91,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
                       style: {
                         'body': Style(
                           fontSize: FontSize(14),
-                          lineHeight: LineHeight(1.6),
+                          lineHeight: const LineHeight(1.6),
                         ),
                       },
                     ),

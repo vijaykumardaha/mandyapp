@@ -1,5 +1,5 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/dao/order_expense_dao.dart';
 import 'package:mandiapp/models/order_expense_model.dart';
 
@@ -27,9 +27,11 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
     try {
       emit(OrderExpenseLoading());
       await _orderExpenseDao.insert(event.orderExpense);
-      final orderExpenses = await _orderExpenseDao.getByOrderId(event.orderExpense.orderId!);
+      final orderExpenses =
+          await _orderExpenseDao.getByOrderId(event.orderExpense.orderId!);
       emit(OrderExpensesLoaded(orderExpenses));
-      emit(OrderExpenseOperationSuccess('Order expense added successfully'));
+      emit(const OrderExpenseOperationSuccess(
+          'Order expense added successfully'));
     } catch (e) {
       emit(OrderExpenseError('Failed to add order expense: $e'));
     }
@@ -42,9 +44,11 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
     try {
       emit(OrderExpenseLoading());
       await _orderExpenseDao.update(event.orderExpense);
-      final orderExpenses = await _orderExpenseDao.getByOrderId(event.orderExpense.orderId!);
+      final orderExpenses =
+          await _orderExpenseDao.getByOrderId(event.orderExpense.orderId!);
       emit(OrderExpensesLoaded(orderExpenses));
-      emit(OrderExpenseOperationSuccess('Order expense updated successfully'));
+      emit(const OrderExpenseOperationSuccess(
+          'Order expense updated successfully'));
     } catch (e) {
       emit(OrderExpenseError('Failed to update order expense: $e'));
     }
@@ -59,7 +63,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
       await _orderExpenseDao.delete(event.expenseId);
       // We need to get the order ID to reload the expenses, but we don't have it here
       // For now, emit success and let the UI handle the reload
-      emit(OrderExpenseOperationSuccess('Order expense deleted successfully'));
+      emit(const OrderExpenseOperationSuccess(
+          'Order expense deleted successfully'));
     } catch (e) {
       emit(OrderExpenseError('Failed to delete order expense: $e'));
     }
@@ -72,7 +77,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
     try {
       emit(OrderExpenseLoading());
       await _orderExpenseDao.deleteByOrderId(event.orderId);
-      emit(OrderExpenseOperationSuccess('Order expenses deleted successfully'));
+      emit(const OrderExpenseOperationSuccess(
+          'Order expenses deleted successfully'));
     } catch (e) {
       emit(OrderExpenseError('Failed to delete order expenses: $e'));
     }
@@ -110,7 +116,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
   ) async {
     try {
       emit(OrderExpenseLoading());
-      final orderExpenses = await _orderExpenseDao.getByOrderIdOrNull(event.orderId);
+      final orderExpenses =
+          await _orderExpenseDao.getByOrderIdOrNull(event.orderId);
       emit(OrderExpensesLoaded(orderExpenses));
     } catch (e) {
       emit(OrderExpenseError('Failed to load order expenses: $e'));
@@ -127,7 +134,7 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
       if (orderExpense != null) {
         emit(OrderExpenseLoaded(orderExpense));
       } else {
-        emit(OrderExpenseError('Order expense not found'));
+        emit(const OrderExpenseError('Order expense not found'));
       }
     } catch (e) {
       emit(OrderExpenseError('Failed to get order expense: $e'));

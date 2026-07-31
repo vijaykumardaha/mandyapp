@@ -21,7 +21,11 @@ class Customer {
 
   List<int> get selectedProductIds {
     if (productIds == null || productIds!.isEmpty) return [];
-    return productIds!.split(',').map((e) => int.tryParse(e) ?? 0).where((id) => id > 0).toList();
+    return productIds!
+        .split(',')
+        .map((e) => int.tryParse(e) ?? 0)
+        .where((id) => id > 0)
+        .toList();
   }
 
   set selectedProductIds(List<int> ids) {
@@ -34,7 +38,8 @@ class Customer {
         name = json['name'],
         phone = json['phone'],
         productIds = json['product_ids'] as String?,
-        updatedAt = json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+        updatedAt =
+            json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
         isDeleted = json['is_deleted'] as int? ?? 0,
         syncStatus = json['sync_status'] as int? ?? 0;
 

@@ -45,9 +45,12 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
 
       final data = rawData.map(DailySalesData.fromJson).toList();
 
-      final totalRevenue = data.fold(0.0, (sum, item) => sum + item.totalRevenue);
-      final totalQuantity = data.fold(0.0, (sum, item) => sum + item.totalQuantity);
-      final totalTransactions = data.fold(0, (sum, item) => sum + item.transactionCount);
+      final totalRevenue =
+          data.fold(0.0, (sum, item) => sum + item.totalRevenue);
+      final totalQuantity =
+          data.fold(0.0, (sum, item) => sum + item.totalQuantity);
+      final totalTransactions =
+          data.fold(0, (sum, item) => sum + item.transactionCount);
 
       emit(DailySalesReportLoaded(
         data: data,
@@ -56,7 +59,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         totalTransactions: totalTransactions,
       ));
     } catch (error) {
-      emit(ReportsError('Failed to load daily sales report: ${error.toString()}'));
+      emit(ReportsError(
+          'Failed to load daily sales report: ${error.toString()}'));
     }
   }
 
@@ -80,8 +84,10 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       final data = rawData.map(DailyPurchaseData.fromJson).toList();
 
       final totalCost = data.fold(0.0, (sum, item) => sum + item.totalCost);
-      final totalQuantity = data.fold(0.0, (sum, item) => sum + item.totalQuantity);
-      final totalTransactions = data.fold(0, (sum, item) => sum + item.transactionCount);
+      final totalQuantity =
+          data.fold(0.0, (sum, item) => sum + item.totalQuantity);
+      final totalTransactions =
+          data.fold(0, (sum, item) => sum + item.transactionCount);
 
       emit(DailyPurchaseReportLoaded(
         data: data,
@@ -90,7 +96,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         totalTransactions: totalTransactions,
       ));
     } catch (error) {
-      emit(ReportsError('Failed to load daily purchase report: ${error.toString()}'));
+      emit(ReportsError(
+          'Failed to load daily purchase report: ${error.toString()}'));
     }
   }
 
@@ -114,7 +121,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       final data = rawData.map(MandiProfitData.fromJson).toList();
 
       final totalProfit = data.fold(0.0, (sum, item) => sum + item.dailyProfit);
-      final totalRevenue = data.fold(0.0, (sum, item) => sum + item.dailyRevenue);
+      final totalRevenue =
+          data.fold(0.0, (sum, item) => sum + item.dailyRevenue);
       final totalCost = data.fold(0.0, (sum, item) => sum + item.dailyCost);
 
       emit(MandiProfitReportLoaded(
@@ -124,7 +132,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         totalCost: totalCost,
       ));
     } catch (error) {
-      emit(ReportsError('Failed to load mandi profit report: ${error.toString()}'));
+      emit(ReportsError(
+          'Failed to load mandi profit report: ${error.toString()}'));
     }
   }
 
@@ -146,14 +155,16 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       }
 
       final data = rawData.map(CustomerLedgerData.fromJson).toList();
-      final totalNetBalance = data.fold(0.0, (sum, item) => sum + item.netBalance);
+      final totalNetBalance =
+          data.fold(0.0, (sum, item) => sum + item.netBalance);
 
       emit(CustomerLedgerReportLoaded(
         data: data,
         totalNetBalance: totalNetBalance,
       ));
     } catch (error) {
-      emit(ReportsError('Failed to load customer ledger report: ${error.toString()}'));
+      emit(ReportsError(
+          'Failed to load customer ledger report: ${error.toString()}'));
     }
   }
 
@@ -175,14 +186,16 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       }
 
       final data = rawData.map(PendingPaymentData.fromJson).toList();
-      final totalPendingAmount = data.fold(0.0, (sum, item) => sum + item.pendingAmount);
+      final totalPendingAmount =
+          data.fold(0.0, (sum, item) => sum + item.pendingAmount);
 
       emit(PendingPaymentReportLoaded(
         data: data,
         totalPendingAmount: totalPendingAmount,
       ));
     } catch (error) {
-      emit(ReportsError('Failed to load pending payment report: ${error.toString()}'));
+      emit(ReportsError(
+          'Failed to load pending payment report: ${error.toString()}'));
     }
   }
 
@@ -224,11 +237,15 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       final toDate = DateTime(today.year, today.month, today.day, 23, 59, 59);
 
       // Get all dashboard data in parallel
-      final todaySalesFuture = reportDAO.getDailySalesReport(fromDate: fromDate, toDate: toDate);
-      final profitFuture = reportDAO.getMandiProfitReport(fromDate: fromDate, toDate: toDate);
-      final paymentSummaryFuture = reportDAO.getPaymentSummary(fromDate: fromDate, toDate: toDate);
+      final todaySalesFuture =
+          reportDAO.getDailySalesReport(fromDate: fromDate, toDate: toDate);
+      final profitFuture =
+          reportDAO.getMandiProfitReport(fromDate: fromDate, toDate: toDate);
+      final paymentSummaryFuture =
+          reportDAO.getPaymentSummary(fromDate: fromDate, toDate: toDate);
       final ordersFuture = reportDAO.getTodayOrdersCount();
-      final netBalanceFuture = reportDAO.getNetBalance(fromDate: fromDate, toDate: toDate);
+      final netBalanceFuture =
+          reportDAO.getNetBalance(fromDate: fromDate, toDate: toDate);
 
       final results = await Future.wait([
         todaySalesFuture,
@@ -245,21 +262,22 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       final netBalance = results[4] as double;
 
       // Calculate today's sales
-      final todaySales = todaySalesData.fold(0.0, (sum, item) => sum + (item['total_revenue'] as num).toDouble());
+      final todaySales = todaySalesData.fold(
+          0.0, (sum, item) => sum + (item['total_revenue'] as num).toDouble());
 
       // Calculate today's profit
-      final todayProfit = profitData.fold(0.0, (sum, item) => sum + (item['daily_profit'] as num).toDouble());
+      final todayProfit = profitData.fold(
+          0.0, (sum, item) => sum + (item['daily_profit'] as num).toDouble());
 
       emit(DashboardDataLoaded(
-        todaySales: todaySales,
-        grossProfit: todayProfit,
-        todayOrders: ordersCount,
-        netBalance: netBalance,
-        totalReceived: paymentSummary['total_received'] ?? 0.0,
-        totalPending: paymentSummary['total_pending'] ?? 0.0,
-        paidToSellers: paymentSummary['total_paid_to_sellers'] ?? 0.0,
-        pendingToSellers: paymentSummary['total_pending_to_sellers'] ?? 0.0
-      ));
+          todaySales: todaySales,
+          grossProfit: todayProfit,
+          todayOrders: ordersCount,
+          netBalance: netBalance,
+          totalReceived: paymentSummary['total_received'] ?? 0.0,
+          totalPending: paymentSummary['total_pending'] ?? 0.0,
+          paidToSellers: paymentSummary['total_paid_to_sellers'] ?? 0.0,
+          pendingToSellers: paymentSummary['total_pending_to_sellers'] ?? 0.0));
     } catch (error) {
       emit(ReportsError('Failed to load dashboard data: ${error.toString()}'));
     }
@@ -333,7 +351,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       }
 
       final data = rawData.map(StockTransactionReportData.fromJson).toList();
-      final totalQuantity = data.fold(0.0, (sum, item) => sum + item.buyQuantity);
+      final totalQuantity =
+          data.fold(0.0, (sum, item) => sum + item.buyQuantity);
       final totalAmount = data.fold(0.0, (sum, item) => sum + item.totalAmount);
 
       emit(StockTransactionReportLoaded(
@@ -342,7 +361,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         totalAmount: totalAmount,
       ));
     } catch (error) {
-      emit(ReportsError('Failed to load stock transaction report: ${error.toString()}'));
+      emit(ReportsError(
+          'Failed to load stock transaction report: ${error.toString()}'));
     }
   }
 
@@ -364,10 +384,13 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       }
 
       final data = rawData.map(StockSummaryData.fromJson).toList();
-      final totalPurchaseAmount = data.fold(0.0, (sum, item) => sum + item.purchaseAmount);
-      final totalSoldAmount = data.fold(0.0, (sum, item) => sum + item.soldAmount);
+      final totalPurchaseAmount =
+          data.fold(0.0, (sum, item) => sum + item.purchaseAmount);
+      final totalSoldAmount =
+          data.fold(0.0, (sum, item) => sum + item.soldAmount);
       final totalProfit = data.fold(0.0, (sum, item) => sum + item.profit);
-      final totalStockQuantity = data.fold(0.0, (sum, item) => sum + item.quantity);
+      final totalStockQuantity =
+          data.fold(0.0, (sum, item) => sum + item.quantity);
 
       emit(StockSummaryReportLoaded(
         data: data,
@@ -377,7 +400,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         totalStockQuantity: totalStockQuantity,
       ));
     } catch (error) {
-      emit(ReportsError('Failed to load stock summary report: ${error.toString()}'));
+      emit(ReportsError(
+          'Failed to load stock summary report: ${error.toString()}'));
     }
   }
 }

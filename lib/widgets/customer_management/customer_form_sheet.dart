@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/customer/customer_bloc.dart';
 import 'package:mandiapp/blocs/product/product_bloc.dart';
+import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/utils/info_controller.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/utils/info_controller.dart';
-import 'package:mandiapp/models/customer_model.dart';
 
 class CustomerFormSheet extends StatefulWidget {
   final Customer? customer;
@@ -15,7 +15,8 @@ class CustomerFormSheet extends StatefulWidget {
 
   const CustomerFormSheet({super.key, this.customer, required this.query});
 
-  static void show(BuildContext context, {Customer? customer, required String query}) {
+  static void show(BuildContext context,
+      {Customer? customer, required String query}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -40,7 +41,8 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
     super.initState();
     nameController = TextEditingController(text: widget.customer?.name ?? '');
     phoneController = TextEditingController(text: widget.customer?.phone ?? '');
-    selectedProductIds = Set<int>.from(widget.customer?.selectedProductIds ?? []);
+    selectedProductIds =
+        Set<int>.from(widget.customer?.selectedProductIds ?? []);
   }
 
   @override
@@ -73,7 +75,8 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                MyText.titleMedium(isEditing ? 'Edit customer' : 'Add customer', fontWeight: 600),
+                MyText.titleMedium(isEditing ? 'Edit Customer' : 'Add Customer',
+                    fontWeight: 600),
                 MySpacing.height(16),
                 TextField(
                   controller: nameController,
@@ -92,11 +95,11 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
                   ),
                 ),
                 MySpacing.height(16),
-                MyText.bodyMedium('Customer Products', fontWeight: 600),
+                const MyText.bodyMedium('Customer Products', fontWeight: 600),
                 MySpacing.height(4),
                 MyText.bodySmall(
                   'Select products this customer is selling it.',
-                  color: theme.colorScheme.onBackground.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 11,
                 ),
                 MySpacing.height(8),
@@ -117,7 +120,8 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
                             padding: MySpacing.all(16),
                             child: MyText.bodyMedium(
                               'No products found. Add products first.',
-                              color: theme.colorScheme.onBackground.withOpacity(0.6),
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
                             ),
                           ),
                         );
@@ -125,17 +129,18 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
                       return GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 4,
                           mainAxisSpacing: 8,
                           crossAxisSpacing: 8,
-                          childAspectRatio: 1,
                         ),
                         itemCount: productState.products.length,
                         itemBuilder: (context, index) {
                           final product = productState.products[index];
                           final productId = product.id!;
-                          final isSelected = selectedProductIds.contains(productId);
+                          final isSelected =
+                              selectedProductIds.contains(productId);
                           final defaultVariant = product.defaultVariantModel;
                           return GestureDetector(
                             onTap: () {
@@ -152,12 +157,14 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
                                 border: Border.all(
                                   color: isSelected
                                       ? theme.colorScheme.primary
-                                      : theme.colorScheme.outline.withOpacity(0.3),
+                                      : theme.colorScheme.outline
+                                          .withValues(alpha: 0.3),
                                   width: isSelected ? 2 : 1,
                                 ),
                                 borderRadius: BorderRadius.circular(8),
                                 color: isSelected
-                                    ? theme.colorScheme.primary.withOpacity(0.05)
+                                    ? theme.colorScheme.primary
+                                        .withValues(alpha: 0.05)
                                     : null,
                               ),
                               child: Column(
@@ -168,16 +175,25 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
                                       width: double.infinity,
                                       margin: const EdgeInsets.all(6),
                                       decoration: BoxDecoration(
-                                        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                                        color: theme
+                                            .colorScheme.surfaceContainerHighest
+                                            .withValues(alpha: 0.5),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
-                                      child: defaultVariant != null && defaultVariant.imagePath.isNotEmpty
+                                      child: defaultVariant != null &&
+                                              defaultVariant
+                                                  .imagePath.isNotEmpty
                                           ? ClipRRect(
-                                              borderRadius: BorderRadius.circular(6),
-                                              child: defaultVariant.imagePath.startsWith('assets/')
-                                                  ? Image.asset(defaultVariant.imagePath, fit: BoxFit.cover)
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              child: defaultVariant.imagePath
+                                                      .startsWith('assets/')
+                                                  ? Image.asset(
+                                                      defaultVariant.imagePath,
+                                                      fit: BoxFit.cover)
                                                   : Image.file(
-                                                      File(defaultVariant.imagePath),
+                                                      File(defaultVariant
+                                                          .imagePath),
                                                       fit: BoxFit.cover,
                                                     ),
                                             )
@@ -185,23 +201,28 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
                                               child: Icon(
                                                 Icons.inventory_2,
                                                 size: 24,
-                                                color: theme.colorScheme.primary,
+                                                color:
+                                                    theme.colorScheme.primary,
                                               ),
                                             ),
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 4, vertical: 2),
                                     child: Text(
-                                      defaultVariant?.variantName ?? 'Product #${product.id}',
+                                      defaultVariant?.variantName ??
+                                          'Product #${product.id}',
                                       overflow: TextOverflow.ellipsis,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 10,
-                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.normal,
                                         color: isSelected
                                             ? theme.colorScheme.primary
-                                            : theme.colorScheme.onBackground,
+                                            : theme.colorScheme.onSurface,
                                       ),
                                     ),
                                   ),
@@ -235,7 +256,8 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
                         final name = nameController.text.trim();
                         final phone = phoneController.text.trim();
                         if (name.isEmpty || phone.isEmpty) {
-                          Info.message('Please enter both name and phone.', context: context);
+                          Info.message('Please enter both name and phone.',
+                              context: context);
                           return;
                         }
                         final productIdsStr = selectedProductIds.join(',');
@@ -246,17 +268,19 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
                             productIds: productIdsStr,
                           );
                           context.read<CustomerBloc>().add(
-                            UpdateCustomer(customer: updatedCustomer, query: widget.query),
-                          );
+                                UpdateCustomer(
+                                    customer: updatedCustomer,
+                                    query: widget.query),
+                              );
                         } else {
                           context.read<CustomerBloc>().add(
-                            AddCustomer(
-                              name: name,
-                              phone: phone,
-                              productIds: productIdsStr,
-                              query: widget.query,
-                            ),
-                          );
+                                AddCustomer(
+                                  name: name,
+                                  phone: phone,
+                                  productIds: productIdsStr,
+                                  query: widget.query,
+                                ),
+                              );
                         }
                         Navigator.pop(context);
                       },

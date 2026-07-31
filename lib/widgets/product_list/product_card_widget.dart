@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/helpers/extensions/string.dart';
+import 'package:mandiapp/models/product_model.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/models/product_model.dart';
 import 'package:mandiapp/widgets/product_list/variant_image.dart';
 
 class ProductCardWidget extends StatelessWidget {
@@ -37,10 +36,11 @@ class ProductCardWidget extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.1),
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: defaultVariant != null && defaultVariant.imagePath.isNotEmpty
+              child: defaultVariant != null &&
+                      defaultVariant.imagePath.isNotEmpty
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: VariantImage(imagePath: defaultVariant.imagePath),
@@ -62,7 +62,8 @@ class ProductCardWidget extends StatelessWidget {
                     children: [
                       Expanded(
                         child: MyText.bodyLarge(
-                          defaultVariant?.variantName ?? 'Product #${product.id ?? ''}',
+                          defaultVariant?.variantName ??
+                              'Product #${product.id ?? ''}',
                           fontWeight: 600,
                         ),
                       ),
@@ -73,7 +74,7 @@ class ProductCardWidget extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: MyText.bodySmall(
-                          '$variantCount ${'variants'.tr()}',
+                          '$variantCount variants',
                           fontSize: 11,
                           color: theme.colorScheme.onTertiaryContainer,
                           fontWeight: 600,
@@ -90,27 +91,32 @@ class ProductCardWidget extends StatelessWidget {
                           runSpacing: 4,
                           children: [
                             ...variants.take(2).map((variant) => Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: MyText.bodySmall(
-                                '₹${variant.sellingPrice.toStringAsFixed(0)} \\ ${variant.quantity} ${variant.unit}',
-                                color: theme.colorScheme.primary,
-                                fontSize: 10,
-                              ),
-                            )),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: MyText.bodySmall(
+                                    '₹${variant.sellingPrice.toStringAsFixed(0)} \\ ${variant.quantity} ${variant.unit}',
+                                    color: theme.colorScheme.primary,
+                                    fontSize: 10,
+                                  ),
+                                )),
                             if (variants.length > 2)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: theme.colorScheme.onSurface.withOpacity(0.08),
+                                  color: theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: MyText.bodySmall(
                                   '+${variants.length - 2}',
-                                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                  color: theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.6),
                                   fontSize: 10,
                                 ),
                               ),
@@ -140,7 +146,7 @@ class ProductCardWidget extends StatelessWidget {
                       children: [
                         const Icon(Icons.edit, size: 20),
                         MySpacing.width(8),
-                        MyText.bodyMedium('edit'.tr()),
+                        const MyText.bodyMedium('Edit'),
                       ],
                     ),
                   ),
@@ -150,7 +156,7 @@ class ProductCardWidget extends StatelessWidget {
                       children: [
                         const Icon(Icons.delete, size: 20, color: Colors.red),
                         MySpacing.width(8),
-                        MyText.bodyMedium('delete'.tr(), color: Colors.red),
+                        const MyText.bodyMedium('Delete', color: Colors.red),
                       ],
                     ),
                   ),

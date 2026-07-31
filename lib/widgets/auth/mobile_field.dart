@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/widgets/common/my_text_style.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:mandiapp/widgets/common/my_text_style.dart';
 
 class AuthMobileField extends StatelessWidget {
   final TextEditingController controller;
@@ -21,7 +21,7 @@ class AuthMobileField extends StatelessWidget {
     return TextFormField(
       style: MyTextStyle.bodyMedium(),
       decoration: InputDecoration(
-        hintText: "Mobile Number",
+        hintText: 'Mobile Number',
         hintStyle: MyTextStyle.bodyMedium(),
         border: outlineInputBorder,
         enabledBorder: outlineInputBorder,

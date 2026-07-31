@@ -82,9 +82,7 @@ class SocketService {
       _socket = PhoenixSocket(
         SocketConfig.wsUrl,
         socketOptions: PhoenixSocketOptions(
-          params: {
-            'mandi_id': '$_mandiId'
-          },
+          params: {'mandi_id': '$_mandiId'},
         ),
       );
 

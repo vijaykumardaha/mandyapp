@@ -54,7 +54,6 @@ class SettingsTile extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(
             color: theme.dividerColor,
-            width: 1,
           ),
           borderRadius: BorderRadius.circular(8),
         ),
@@ -63,20 +62,21 @@ class SettingsTile extends StatelessWidget {
             Icon(
               icon,
               size: 24,
-              color: iconColor ?? theme.colorScheme.onBackground.withOpacity(0.7),
+              color: iconColor ??
+                  theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
             MySpacing.width(16),
             Expanded(
               child: MyText.bodyMedium(
                 title,
                 fontWeight: 500,
-                color: titleColor ?? theme.colorScheme.onBackground,
+                color: titleColor ?? theme.colorScheme.onSurface,
               ),
             ),
             Icon(
               Icons.chevron_right,
               size: 20,
-              color: theme.colorScheme.onBackground.withOpacity(0.4),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
             ),
           ],
         ),

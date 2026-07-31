@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/utils/app_helper.dart';
-import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/user/user_bloc.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/models/user_model.dart';
+import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/info_controller.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/staff/staff_form_sheet.dart';
 
 class StaffScreen extends StatefulWidget {
@@ -26,7 +26,7 @@ class _StaffScreenState extends State<StaffScreen> {
     super.initState();
     theme = AppTheme.shoppingManagerTheme;
     _loadRole();
-    context.read<UserBloc>().add(LoadUsersByRole(role: 'staff'));
+    context.read<UserBloc>().add(const LoadUsersByRole(role: 'staff'));
   }
 
   Future<void> _loadRole() async {
@@ -68,26 +68,32 @@ class _StaffScreenState extends State<StaffScreen> {
           decoration: InputDecoration(
             hintText: 'Search staff...',
             filled: true,
-            fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            fillColor: theme.colorScheme.surfaceContainerHighest
+                .withValues(alpha: 0.5),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+              borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+              borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(color: theme.colorScheme.primary),
             ),
-            prefixIcon: Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
+            prefixIcon: Icon(Icons.search,
+                size: 20, color: theme.colorScheme.onSurfaceVariant),
             prefixIconConstraints: const BoxConstraints(minWidth: 36),
             suffixIcon: _isAdmin
                 ? IconButton(
-                    icon: Icon(Icons.person_add_outlined, size: 20, color: theme.colorScheme.onSurfaceVariant),
-                    tooltip: 'Add staff',
+                    icon: Icon(Icons.person_add_outlined,
+                        size: 20, color: theme.colorScheme.onSurfaceVariant),
+                    tooltip: 'Add Staff',
                     onPressed: () => _showStaffDialog(),
                   )
                 : null,
@@ -101,13 +107,19 @@ class _StaffScreenState extends State<StaffScreen> {
             if (state is UserError) {
               Info.error(state.errorMsg, context: context);
             } else if (state is UserUpdated) {
-              Info.message('Staff member updated successfully', context: context);
+              Info.message('Staff member updated successfully',
+                  context: context);
               // Reload the staff list
-              context.read<UserBloc>().add(LoadUsersByRole(role: 'staff'));
+              context
+                  .read<UserBloc>()
+                  .add(const LoadUsersByRole(role: 'staff'));
             } else if (state is UserDeleted) {
-              Info.message('Staff member deleted successfully', context: context);
+              Info.message('Staff member deleted successfully',
+                  context: context);
               // Reload the staff list
-              context.read<UserBloc>().add(LoadUsersByRole(role: 'staff'));
+              context
+                  .read<UserBloc>()
+                  .add(const LoadUsersByRole(role: 'staff'));
             }
           },
           builder: (context, state) {
@@ -121,7 +133,7 @@ class _StaffScreenState extends State<StaffScreen> {
                 final mobile = s.mobile ?? '';
                 return name.contains(query) || mobile.contains(query);
               }).toList();
-  
+
               if (filtered.isEmpty) {
                 return Center(
                   child: Column(
@@ -134,19 +146,23 @@ class _StaffScreenState extends State<StaffScreen> {
                       ),
                       const SizedBox(height: 16),
                       MyText.bodyMedium(
-                        query.isEmpty ? 'No staff members found' : 'No results found',
+                        query.isEmpty
+                            ? 'No staff members found'
+                            : 'No results found',
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                       const SizedBox(height: 8),
                       MyText.bodySmall(
-                        query.isEmpty ? 'Add your first staff member to get started' : '',
+                        query.isEmpty
+                            ? 'Add your first staff member to get started'
+                            : '',
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ],
                   ),
                 );
               }
-  
+
               return ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: filtered.length,
@@ -163,8 +179,9 @@ class _StaffScreenState extends State<StaffScreen> {
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor: isActive
-                            ? theme.colorScheme.primary.withOpacity(0.1)
-                            : theme.colorScheme.onSurfaceVariant.withOpacity(0.1),
+                            ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                            : theme.colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.1),
                         child: Text(
                           initials.toUpperCase(),
                           style: theme.textTheme.titleSmall?.copyWith(
@@ -184,11 +201,12 @@ class _StaffScreenState extends State<StaffScreen> {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: isActive
-                                  ? Colors.green.withOpacity(0.1)
-                                  : Colors.red.withOpacity(0.1),
+                                  ? Colors.green.withValues(alpha: 0.1)
+                                  : Colors.red.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: MyText.bodySmall(
@@ -210,12 +228,14 @@ class _StaffScreenState extends State<StaffScreen> {
                             _showStaffDialog(staff);
                           } else if (value == 'toggle') {
                             context.read<UserBloc>().add(
-                              ToggleUserActive(
-                                userId: staff.id!,
-                                active: !isActive,
-                              ),
-                            );
-                            context.read<UserBloc>().add(LoadUsersByRole(role: 'staff'));
+                                  ToggleUserActive(
+                                    userId: staff.id!,
+                                    active: !isActive,
+                                  ),
+                                );
+                            context
+                                .read<UserBloc>()
+                                .add(const LoadUsersByRole(role: 'staff'));
                           }
                         },
                         itemBuilder: (context) => [

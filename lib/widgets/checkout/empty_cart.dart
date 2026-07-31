@@ -15,17 +15,20 @@ class EmptyCart extends StatelessWidget {
           Icon(
             Icons.shopping_cart_outlined,
             size: 64,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
           ),
           MySpacing.height(16),
           MyText.bodyMedium(
             'Your cart is empty',
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
           MySpacing.height(8),
           MyText.bodySmall(
             'Add items to get started',
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
           ),
         ],
       ),

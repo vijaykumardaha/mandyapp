@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/user/user_bloc.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/models/user_model.dart';
+import 'package:mandiapp/utils/info_controller.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/utils/info_controller.dart';
-import 'package:mandiapp/models/user_model.dart';
 
 class StaffFormSheet extends StatefulWidget {
   final User? staff;
@@ -31,7 +31,8 @@ class _StaffFormSheetState extends State<StaffFormSheet> {
     theme = AppTheme.shoppingManagerTheme;
     nameController = TextEditingController(text: widget.staff?.name ?? '');
     mobileController = TextEditingController(text: widget.staff?.mobile ?? '');
-    passwordController = TextEditingController(text: widget.staff?.password ?? '');
+    passwordController =
+        TextEditingController(text: widget.staff?.password ?? '');
   }
 
   @override
@@ -50,7 +51,8 @@ class _StaffFormSheetState extends State<StaffFormSheet> {
 
     if (mobileController.text.trim().isEmpty ||
         mobileController.text.length != 10) {
-      Info.message('Please enter a valid 10-digit mobile number', context: context);
+      Info.message('Please enter a valid 10-digit mobile number',
+          context: context);
       return;
     }
 
@@ -72,11 +74,11 @@ class _StaffFormSheetState extends State<StaffFormSheet> {
       context.read<UserBloc>().add(UpdateUser(user: updatedStaff));
     } else {
       context.read<UserBloc>().add(SaveUser(
-        name: nameController.text.trim(),
-        mobile: mobileController.text.trim(),
-        password: passwordController.text.trim(),
-        role: selectedRole,
-      ));
+            name: nameController.text.trim(),
+            mobile: mobileController.text.trim(),
+            password: passwordController.text.trim(),
+            role: selectedRole,
+          ));
     }
   }
 
@@ -87,8 +89,12 @@ class _StaffFormSheetState extends State<StaffFormSheet> {
       listener: (context, state) {
         if (state is UserUpdated) {
           Navigator.pop(context);
-          Info.message(isEditing ? 'Staff updated successfully' : 'Staff added successfully', context: context);
-          context.read<UserBloc>().add(LoadUsersByRole(role: 'staff'));
+          Info.message(
+              isEditing
+                  ? 'Staff updated successfully'
+                  : 'Staff added successfully',
+              context: context);
+          context.read<UserBloc>().add(const LoadUsersByRole(role: 'staff'));
         } else if (state is UserError) {
           setState(() => _isSaving = false);
           Info.error(state.errorMsg, context: context);
@@ -110,7 +116,8 @@ class _StaffFormSheetState extends State<StaffFormSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+                  color:
+                      theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -166,7 +173,7 @@ class _StaffFormSheetState extends State<StaffFormSheet> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: _isSaving ? null : () => Navigator.pop(context),
-                    child: MyText.bodyMedium('Cancel'),
+                    child: const MyText.bodyMedium('Cancel'),
                   ),
                 ),
                 const SizedBox(width: 12),

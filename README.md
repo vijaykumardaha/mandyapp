@@ -1,16 +1,49 @@
 # mandiapp
 
-A new Flutter project.
+Offline-first Flutter app for a vegetable mandi (marketplace) business. Staff
+manage products, orders (bills), customers, stock, charges, expenses, and print
+Bluetooth receipts. Local SQLite storage syncs to the server over a Phoenix
+websocket.
 
-## Getting Started
+## Stack
 
-This project is a starting point for a Flutter application.
+- Flutter (Material 3), Provider + flutter_bloc, go_router
+- sqflite (local SQLite), dio (REST API), phoenix_socket (realtime sync)
+- print_bluetooth_thermal (receipt printing)
 
-A few resources to get you started if this is your first Flutter project:
+## Getting started
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```sh
+flutter pub get
+flutter run
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Requires Dart >= 3.3.1 (tested on Flutter 3.27.x).
+
+## Project structure
+
+See `AGENTS.md` for the full architecture guide — layer rules (screens / blocs /
+dao / models / services), the data & sync layer, and conventions.
+
+The most relevant entry points:
+
+- `lib/main.dart` — bootstrap, providers, theming
+- `lib/routes/app_routes.dart` — all go_router routes
+- `lib/utils/db_helper.dart` — SQLite schema + version (11)
+- `lib/utils/synced_database.dart` — DB wrapper that triggers sync on writes
+- `lib/services/sync_service.dart` — websocket push/merge logic
+
+Feature-specific docs: `PAYMENT_SUMMARY_MIGRATION.md`,
+`REPORTS_DAO_README.md`, `REPORTS_SYSTEM_README.md`.
+
+## Development
+
+```sh
+flutter analyze   # must report: No issues found!
+dart format lib/ test/
+flutter test
+```
+
+## Server config
+
+API + websocket endpoints are configured in `lib/services/app_config.dart`.

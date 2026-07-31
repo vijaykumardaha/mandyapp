@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/customer/customer_bloc.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 
 class CustomerGrid extends StatelessWidget {
   final String searchQuery;
@@ -46,7 +46,10 @@ class CustomerGrid extends StatelessWidget {
                   Icon(
                     Icons.person_outline,
                     size: 56,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurfaceVariant
+                        .withValues(alpha: 0.5),
                   ),
                   const SizedBox(height: 16),
                   MyText.bodyMedium(
@@ -56,7 +59,10 @@ class CustomerGrid extends StatelessWidget {
                   const SizedBox(height: 6),
                   MyText.bodySmall(
                     'Add customers to get started',
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurfaceVariant
+                        .withValues(alpha: 0.7),
                   ),
                 ],
               ),
@@ -83,19 +89,26 @@ class CustomerGrid extends StatelessWidget {
               return GestureDetector(
                 onTap: () => onCustomerSelected(customer),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.outline.withOpacity(0.15),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .outline
+                          .withValues(alpha: 0.15),
                     ),
                   ),
                   child: Row(
                     children: [
                       CircleAvatar(
                         radius: 14,
-                        backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.1),
                         child: MyText.bodySmall(
                           initials,
                           color: Theme.of(context).colorScheme.primary,
@@ -119,7 +132,9 @@ class CustomerGrid extends StatelessWidget {
                             if (customer.phone != null)
                               MyText.bodySmall(
                                 customer.phone!,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                                 fontSize: 10,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,

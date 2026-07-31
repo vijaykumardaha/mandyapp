@@ -23,7 +23,9 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<CustomerPaymentBloc>().add(FetchPayments(customerId: widget.customer.id!));
+    context
+        .read<CustomerPaymentBloc>()
+        .add(FetchPayments(customerId: widget.customer.id!));
   }
 
   @override
@@ -98,7 +100,9 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
           Expanded(
             child: _buildStatCard(
               theme: theme,
-              icon: netBalance >= 0 ? Icons.account_balance_wallet_rounded : Icons.trending_down_rounded,
+              icon: netBalance >= 0
+                  ? Icons.account_balance_wallet_rounded
+                  : Icons.trending_down_rounded,
               label: 'Balance',
               amount: netBalance,
               color: netBalance >= 0 ? Colors.green : Colors.red,
@@ -139,7 +143,7 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -184,13 +188,14 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
             Icon(
               Icons.receipt_long_outlined,
               size: 64,
-              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
             Text(
               'No payments yet',
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
+                color:
+                    theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -237,7 +242,8 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+                          color: theme.colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -245,12 +251,14 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                     const SizedBox(height: 20),
                     Text(
                       'Add Payment',
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 20),
                     Container(
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                        color: theme.colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       padding: const EdgeInsets.all(4),
@@ -262,7 +270,8 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                               icon: Icons.arrow_downward_rounded,
                               isSelected: isReceived,
                               color: Colors.green,
-                              onTap: () => setSheetState(() => selectedType = 'received'),
+                              onTap: () => setSheetState(
+                                  () => selectedType = 'received'),
                             ),
                           ),
                           Expanded(
@@ -271,7 +280,8 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                               icon: Icons.arrow_upward_rounded,
                               isSelected: !isReceived,
                               color: Colors.red,
-                              onTap: () => setSheetState(() => selectedType = 'paid'),
+                              onTap: () =>
+                                  setSheetState(() => selectedType = 'paid'),
                             ),
                           ),
                         ],
@@ -280,8 +290,10 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: amountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      style: theme.textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                       decoration: InputDecoration(
                         labelText: 'Amount',
                         prefixText: '₹ ',
@@ -289,16 +301,21 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                           fontWeight: FontWeight.bold,
                           color: accentColor,
                         ),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: accentColor, width: 2),
                         ),
                       ),
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) return 'Enter amount';
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Enter amount';
+                        }
                         final amount = double.tryParse(value.trim());
-                        if (amount == null || amount <= 0) return 'Enter valid amount';
+                        if (amount == null || amount <= 0) {
+                          return 'Enter valid amount';
+                        }
                         return null;
                       },
                     ),
@@ -308,7 +325,8 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                       dropdownColor: Theme.of(context).colorScheme.surface,
                       decoration: InputDecoration(
                         labelText: 'Source',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: accentColor, width: 2),
@@ -318,10 +336,13 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                         DropdownMenuItem(value: 'cash', child: Text('Cash')),
                         DropdownMenuItem(value: 'upi', child: Text('UPI')),
                         DropdownMenuItem(value: 'card', child: Text('Card')),
-                        DropdownMenuItem(value: 'credit', child: Text('Credit')),
+                        DropdownMenuItem(
+                            value: 'credit', child: Text('Credit')),
                       ],
                       onChanged: (value) {
-                        if (value != null) setSheetState(() => selectedSource = value);
+                        if (value != null) {
+                          setSheetState(() => selectedSource = value);
+                        }
                       },
                     ),
                     const SizedBox(height: 14),
@@ -329,14 +350,17 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                       controller: noteController,
                       decoration: InputDecoration(
                         labelText: 'Note',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: accentColor, width: 2),
                         ),
                       ),
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) return 'Enter a note';
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Enter a note';
+                        }
                         return null;
                       },
                     ),
@@ -347,7 +371,8 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: accentColor,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: () {
                           if (!formKey.currentState!.validate()) return;
@@ -359,11 +384,15 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                             note: noteController.text.trim(),
                             paymentDate: DateTime.now().millisecondsSinceEpoch,
                           );
-                          context.read<CustomerPaymentBloc>().add(AddPayment(payment: payment));
+                          context
+                              .read<CustomerPaymentBloc>()
+                              .add(AddPayment(payment: payment));
                           Navigator.pop(context);
                         },
                         child: Text(
-                          isReceived ? 'Add Received Payment' : 'Add Paid Payment',
+                          isReceived
+                              ? 'Add Received Payment'
+                              : 'Add Paid Payment',
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),

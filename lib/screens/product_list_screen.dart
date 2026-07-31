@@ -3,15 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/product/product_bloc.dart';
-import 'package:mandiapp/helpers/extensions/string.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/models/product_model.dart';
+import 'package:mandiapp/screens/product_detail_screen.dart';
 import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/models/product_model.dart';
-import 'package:mandiapp/screens/product_detail_screen.dart';
 import 'package:mandiapp/widgets/product_list/product_card_widget.dart';
 
 class ProductListScreen extends StatefulWidget {
@@ -52,7 +52,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
     _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
       if (!mounted) return;
-      if (table == 'products' || table == 'product_variants') {
+      if (table == DbTables.products || table == DbTables.productVariants) {
         final state = context.read<ProductBloc>().state;
         if (state is ProductLoaded) {
           context.read<ProductBloc>().add(LoadProducts());
@@ -79,6 +79,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
 
     if (result == true) {
+      if (!mounted) return;
       context.read<ProductBloc>().add(LoadProducts());
     }
   }
@@ -87,12 +88,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: MyText.titleMedium('delete_product'.tr(), fontWeight: 600),
-        content: MyText.bodyMedium('are_you_sure_delete_product'.tr()),
+        title: const MyText.titleMedium('Delete Product', fontWeight: 600),
+        content: const MyText.bodyMedium(
+            'Are you sure you want to delete this product?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: MyText.bodyMedium('cancel'.tr()),
+            child: const MyText.bodyMedium('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -100,7 +102,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               Navigator.pop(dialogContext);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: MyText.bodyMedium('delete'.tr(), color: Colors.white),
+            child: const MyText.bodyMedium('Delete', color: Colors.white),
           ),
         ],
       ),
@@ -118,26 +120,32 @@ class _ProductListScreenState extends State<ProductListScreen> {
           decoration: InputDecoration(
             hintText: 'Search products...',
             filled: true,
-            fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            fillColor: theme.colorScheme.surfaceContainerHighest
+                .withValues(alpha: 0.5),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+              borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+              borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(color: theme.colorScheme.primary),
             ),
-            prefixIcon: Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
+            prefixIcon: Icon(Icons.search,
+                size: 20, color: theme.colorScheme.onSurfaceVariant),
             prefixIconConstraints: const BoxConstraints(minWidth: 36),
             suffixIcon: _isAdmin
                 ? IconButton(
-                    icon: Icon(Icons.add_box_outlined, size: 20, color: theme.colorScheme.onSurfaceVariant),
-                    tooltip: 'add_product'.tr(),
+                    icon: Icon(Icons.add_box_outlined,
+                        size: 20, color: theme.colorScheme.onSurfaceVariant),
+                    tooltip: 'Add Product',
                     onPressed: () => _navigateToProductDetail(),
                   )
                 : null,
@@ -162,18 +170,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             Icon(
                               Icons.inventory_2_outlined,
                               size: 64,
-                              color: theme.colorScheme.onBackground.withOpacity(0.3),
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.3),
                             ),
                             MySpacing.height(16),
                             MyText.bodyLarge(
-                              'no_products_found'.tr(),
-                              color: theme.colorScheme.onBackground.withOpacity(0.6),
+                              'No products found',
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
                             ),
                           ],
                         ),
                       );
                     }
-  
+
                     return ListView.builder(
                       padding: MySpacing.all(16),
                       itemCount: productState.products.length,

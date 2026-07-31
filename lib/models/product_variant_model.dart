@@ -79,7 +79,8 @@ class ProductVariant {
       quantity: (json['quantity'] as num).toDouble(),
       unit: json['unit'] as String,
       imagePath: json['image_path'] as String,
-      updatedAt: json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+      updatedAt:
+          json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
       isDeleted: json['is_deleted'] as int? ?? 0,
       syncStatus: json['sync_status'] as int? ?? 0,
     );

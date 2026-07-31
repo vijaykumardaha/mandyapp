@@ -1,12 +1,12 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandiapp/blocs/order/order_bloc.dart';
 import 'package:mandiapp/blocs/order_payment/order_payment_bloc.dart';
-import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandiapp/dao/order_charge_dao.dart';
-import 'package:mandiapp/dao/order_payment_dao.dart';
-import 'package:mandiapp/dao/order_item_dao.dart';
 import 'package:mandiapp/dao/order_expense_dao.dart';
+import 'package:mandiapp/dao/order_item_dao.dart';
+import 'package:mandiapp/dao/order_payment_dao.dart';
 import 'package:mandiapp/models/bill_summary_model.dart';
 import 'package:mandiapp/models/order_model.dart';
 
@@ -43,7 +43,8 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
     if (orderBloc.state is! OrdersLoaded && orderBloc.state is! OrderEmpty) {
       orderBloc.add(LoadOrders());
       await orderBloc.stream.firstWhere(
-        (state) => state is OrdersLoaded || state is OrderEmpty || state is OrderError,
+        (state) =>
+            state is OrdersLoaded || state is OrderEmpty || state is OrderError,
       );
     }
     if (paymentBloc.state is! OrderPaymentsLoaded) {
@@ -82,7 +83,9 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
     List<Order> filteredOrders = orders;
 
     if (event.customerId != null) {
-      filteredOrders = filteredOrders.where((order) => order.customerId == event.customerId).toList();
+      filteredOrders = filteredOrders
+          .where((order) => order.customerId == event.customerId)
+          .toList();
     }
 
     if (filteredOrders.isEmpty) {
@@ -98,11 +101,13 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
 
     for (final order in filteredOrders) {
       // Find all payments for this order
-      final orderPayments = payments.where((payment) => payment.orderId == order.id).toList();
-      
+      final orderPayments =
+          payments.where((payment) => payment.orderId == order.id).toList();
+
       // Calculate totals from payments
-      final receiveAmount = orderPayments.fold(0.0, (sum, payment) => sum + payment.amount);
-      
+      final receiveAmount =
+          orderPayments.fold(0.0, (sum, payment) => sum + payment.amount);
+
       // Calculate charges and expenses at runtime
       final chargeTotal = await _calculateChargeTotal(order.id!);
       final expenseTotal = await _calculateExpenseTotal(order.id!);
@@ -133,7 +138,8 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
         BillSummary(
           cartId: order.id!,
           customerId: order.customerId,
-          createdAt: DateTime.fromMillisecondsSinceEpoch(order.updatedAt ?? DateTime.now().millisecondsSinceEpoch),
+          createdAt: DateTime.fromMillisecondsSinceEpoch(
+              order.updatedAt ?? DateTime.now().millisecondsSinceEpoch),
           itemTotal: itemTotal,
           chargesTotal: chargeTotal,
           expensesTotal: expenseTotal,
@@ -167,7 +173,7 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
   ) async {
     try {
       await orderBloc.orderDAO.deleteOrder(event.bill.cartId);
-      
+
       await orderChargeDAO.deleteOrderCharges(event.bill.cartId);
       await orderPaymentDAO.deleteOrderPayments(event.bill.cartId);
 

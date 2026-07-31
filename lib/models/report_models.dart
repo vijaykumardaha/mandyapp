@@ -26,7 +26,8 @@ class DailySalesData {
       date: json['date'] as String,
       productId: json['product_id'] as int,
       variantId: json['variant_id'] as int,
-      productName: json['variant_name'] as String? ?? 'Product ${json['product_id']}',
+      productName:
+          json['variant_name'] as String? ?? 'Product ${json['product_id']}',
       unit: json['unit'] as String? ?? 'units',
       totalQuantity: (json['total_quantity'] as num?)?.toDouble() ?? 0.0,
       transactionCount: json['transaction_count'] as int? ?? 0,
@@ -78,7 +79,8 @@ class DailyPurchaseData {
       date: json['date'] as String,
       productId: json['product_id'] as int,
       variantId: json['variant_id'] as int,
-      productName: json['variant_name'] as String? ?? 'Product ${json['product_id']}',
+      productName:
+          json['variant_name'] as String? ?? 'Product ${json['product_id']}',
       unit: json['unit'] as String? ?? 'units',
       totalQuantity: (json['total_quantity'] as num?)?.toDouble() ?? 0.0,
       transactionCount: json['transaction_count'] as int? ?? 0,
@@ -112,7 +114,8 @@ class MandiProfitData {
       dailyRevenue: (json['daily_revenue'] as num?)?.toDouble() ?? 0.0,
       dailyCost: (json['daily_cost'] as num?)?.toDouble() ?? 0.0,
       transactions: json['transactions'] as int? ?? 0,
-      avgTransactionProfit: (json['avg_transaction_profit'] as num?)?.toDouble() ?? 0.0,
+      avgTransactionProfit:
+          (json['avg_transaction_profit'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }
@@ -175,8 +178,12 @@ class PendingPaymentData {
   });
 
   factory PendingPaymentData.fromJson(Map<String, dynamic> json) {
-    final oldestDate = DateTime.tryParse(json['oldest_bill_date'] as String? ?? '') ?? DateTime.now();
-    final latestDate = DateTime.tryParse(json['latest_bill_date'] as String? ?? '') ?? DateTime.now();
+    final oldestDate =
+        DateTime.tryParse(json['oldest_bill_date'] as String? ?? '') ??
+            DateTime.now();
+    final latestDate =
+        DateTime.tryParse(json['latest_bill_date'] as String? ?? '') ??
+            DateTime.now();
     final daysPending = latestDate.difference(oldestDate).inDays.abs();
 
     return PendingPaymentData(
@@ -227,11 +234,13 @@ class ReportsSummaryData {
       uniqueProducts: json['unique_products'] as int? ?? 0,
       uniqueBuyers: json['unique_buyers'] as int? ?? 0,
       uniqueSellers: json['unique_sellers'] as int? ?? 0,
-      avgTransactionValue: (json['avg_transaction_value'] as num?)?.toDouble() ?? 0.0,
+      avgTransactionValue:
+          (json['avg_transaction_value'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
-  double get profitMargin => totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0.0;
+  double get profitMargin =>
+      totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0.0;
 }
 
 class StockTransactionReportData {
@@ -269,7 +278,8 @@ class StockTransactionReportData {
       stockId: json['stock_id'] as int,
       productId: json['product_id'] as int,
       productVariantId: json['product_variant_id'] as int?,
-      productName: json['product_name'] as String? ?? 'Product ${json['product_id']}',
+      productName:
+          json['product_name'] as String? ?? 'Product ${json['product_id']}',
       variantName: json['variant_name'] as String?,
       unit: json['unit'] as String?,
       buyerId: json['buyer_id'] as int,
@@ -326,7 +336,8 @@ class StockSummaryData {
       stockId: json['stock_id'] as int,
       productId: json['product_id'] as int,
       productVariantId: json['product_variant_id'] as int?,
-      productName: json['product_name'] as String? ?? 'Product ${json['product_id']}',
+      productName:
+          json['product_name'] as String? ?? 'Product ${json['product_id']}',
       variantName: json['variant_name'] as String?,
       unit: json['unit'] as String?,
       initialQuantity: initialQty,

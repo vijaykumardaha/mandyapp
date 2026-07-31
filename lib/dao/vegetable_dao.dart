@@ -1,5 +1,6 @@
 import 'package:mandiapp/models/vegetable_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 import 'package:mandiapp/utils/signup_sync.dart';
 
@@ -11,7 +12,7 @@ class VegetableDAO {
     final mandiId = await AppHelper.getCurrentMandiId();
 
     final existing = await db.query(
-      'vegetables',
+      DbTables.vegetables,
       where: 'mandi_id = ? AND is_deleted = ?',
       whereArgs: [mandiId, 0],
       limit: 1,
@@ -22,7 +23,7 @@ class VegetableDAO {
     if (existing.isNotEmpty) {
       for (final veg in SignupSync.vegetables) {
         await db.update(
-          'vegetables',
+          DbTables.vegetables,
           {
             'price': double.tryParse(veg['price'] ?? '0.0') ?? 0.0,
             'unit': veg['unit'] ?? 'Kilogram',
@@ -42,9 +43,18 @@ class VegetableDAO {
 
     for (final veg in SignupSync.vegetables) {
       batch.rawInsert('''
-        INSERT INTO vegetables (mandi_id, key, name, path, price, unit, common, updated_at, is_deleted, sync_status)
+        INSERT INTO ${DbTables.vegetables} (mandi_id, key, name, path, price, unit, common, updated_at, is_deleted, sync_status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0)
-      ''', [mandiId, veg['key'], veg['name'], veg['path'], double.tryParse(veg['price'] ?? '0.0') ?? 0.0, veg['unit'] ?? 'Kilogram', veg['common'] ?? 0, now]);
+      ''', [
+        mandiId,
+        veg['key'],
+        veg['name'],
+        veg['path'],
+        double.tryParse(veg['price'] ?? '0.0') ?? 0.0,
+        veg['unit'] ?? 'Kilogram',
+        veg['common'] ?? 0,
+        now
+      ]);
     }
 
     await batch.commit(noResult: true);
@@ -54,7 +64,7 @@ class VegetableDAO {
     final db = await dbHelper.database;
     final mandiId = await AppHelper.getCurrentMandiId();
     final List<Map<String, dynamic>> maps = await db.query(
-      'vegetables',
+      DbTables.vegetables,
       where: 'mandi_id = ? AND is_deleted = ?',
       whereArgs: [mandiId, 0],
     );
@@ -65,7 +75,7 @@ class VegetableDAO {
     final db = await dbHelper.database;
     final mandiId = await AppHelper.getCurrentMandiId();
     final List<Map<String, dynamic>> maps = await db.query(
-      'vegetables',
+      DbTables.vegetables,
       where: 'mandi_id = ? AND key = ? AND is_deleted = ?',
       whereArgs: [mandiId, key, 0],
       limit: 1,
@@ -84,7 +94,7 @@ class VegetableDAO {
 
       for (final veg in vegetables) {
         batch.rawInsert('''
-          INSERT INTO vegetables (
+          INSERT INTO ${DbTables.vegetables} (
             id, mandi_id, key, name, path, price, unit,
             common, updated_at, is_deleted, sync_status
           )
@@ -102,7 +112,7 @@ class VegetableDAO {
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
 
-          WHERE excluded.updated_at > vegetables.updated_at;
+          WHERE excluded.updated_at > ${DbTables.vegetables}.updated_at;
         ''', [
           veg.id,
           veg.mandiId,

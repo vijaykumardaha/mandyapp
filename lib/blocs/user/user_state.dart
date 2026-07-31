@@ -34,7 +34,7 @@ final class UserDeleted extends UserState {}
 final class UserError extends UserState {
   final String errorMsg;
   const UserError({required this.errorMsg});
-  
+
   @override
   List<Object> get props => [errorMsg];
 }
@@ -48,4 +48,3 @@ final class UsersByRoleLoaded extends UserState {
   @override
   List<Object> get props => [users, role];
 }
-

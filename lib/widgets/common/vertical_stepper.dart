@@ -24,7 +24,7 @@ class VerticalStepper extends StatelessWidget {
     double nextValue = increment ? current + step : current - step;
     if (nextValue < minValue) nextValue = minValue;
     if (maxValue != null && nextValue > maxValue!) nextValue = maxValue!;
-    
+
     if (nextValue != current) {
       controller.text = nextValue == nextValue.truncateToDouble()
           ? nextValue.toStringAsFixed(0)
@@ -36,14 +36,15 @@ class VerticalStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
+    final color =
+        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
     final current = double.tryParse(controller.text.trim()) ?? 0;
     final canIncrement = maxValue == null || current < maxValue!;
     final canDecrement = current > minValue;
-    
+
     void handleIncrement() => _adjust(true);
     void handleDecrement() => _adjust(false);
-    
+
     return SizedBox(
       width: 36,
       child: Column(
@@ -51,13 +52,13 @@ class VerticalStepper extends StatelessWidget {
         children: [
           StepperButton(
             icon: Icons.keyboard_arrow_up,
-            color: canIncrement ? color : color.withOpacity(0.3),
+            color: canIncrement ? color : color.withValues(alpha: 0.3),
             onTap: canIncrement ? handleIncrement : () {},
           ),
           const SizedBox(height: 2),
           StepperButton(
             icon: Icons.keyboard_arrow_down,
-            color: canDecrement ? color : color.withOpacity(0.3),
+            color: canDecrement ? color : color.withValues(alpha: 0.3),
             onTap: canDecrement ? handleDecrement : () {},
           ),
         ],

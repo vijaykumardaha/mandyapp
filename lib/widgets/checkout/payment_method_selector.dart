@@ -7,7 +7,8 @@ enum PaymentMethod { cash, upi, card, credit }
 class PaymentMethodSelector extends StatefulWidget {
   final Set<PaymentMethod> selectedPaymentMethods;
   final Map<PaymentMethod, double> paymentAmounts;
-  final Function(Set<PaymentMethod>, Map<PaymentMethod, double>) onSelectionChanged;
+  final Function(Set<PaymentMethod>, Map<PaymentMethod, double>)
+      onSelectionChanged;
   final String? orderFor;
   final double subtotal;
   final double chargesTotal;
@@ -24,8 +25,9 @@ class PaymentMethodSelector extends StatefulWidget {
     required this.chargesTotal,
     required this.expensesTotal,
     required this.grandTotal,
-  }) : selectedPaymentMethods = selectedPaymentMethods ?? const {PaymentMethod.cash},
-       paymentAmounts = paymentAmounts ?? const {};
+  })  : selectedPaymentMethods =
+            selectedPaymentMethods ?? const {PaymentMethod.cash},
+        paymentAmounts = paymentAmounts ?? const {};
 
   @override
   State<PaymentMethodSelector> createState() => _PaymentMethodSelectorState();
@@ -50,7 +52,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     super.initState();
     _selectedPaymentMethods = Set.from(widget.selectedPaymentMethods);
 
-    if (widget.orderFor == 'seller' && _selectedPaymentMethods.contains(PaymentMethod.credit)) {
+    if (widget.orderFor == 'seller' &&
+        _selectedPaymentMethods.contains(PaymentMethod.credit)) {
       _selectedPaymentMethods.remove(PaymentMethod.credit);
     }
 
@@ -71,7 +74,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
           if (controller != null && controller.text.isEmpty) {
             controller.text = widget.grandTotal.toStringAsFixed(2);
             final amount = double.tryParse(controller.text) ?? 0.0;
-            final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
+            final updatedAmounts =
+                Map<PaymentMethod, double>.from(widget.paymentAmounts);
             if (amount > 0) {
               updatedAmounts[method] = amount;
             }
@@ -87,13 +91,15 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.orderFor != widget.orderFor) {
-      if (widget.orderFor == 'seller' && _selectedPaymentMethods.contains(PaymentMethod.credit)) {
+      if (widget.orderFor == 'seller' &&
+          _selectedPaymentMethods.contains(PaymentMethod.credit)) {
         _selectedPaymentMethods.remove(PaymentMethod.credit);
         _controllers[PaymentMethod.credit]?.dispose();
         _focusNodes[PaymentMethod.credit]?.dispose();
         _controllers.remove(PaymentMethod.credit);
         _focusNodes.remove(PaymentMethod.credit);
-        final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
+        final updatedAmounts =
+            Map<PaymentMethod, double>.from(widget.paymentAmounts);
         updatedAmounts.remove(PaymentMethod.credit);
         final selected = Set<PaymentMethod>.from(_selectedPaymentMethods);
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -109,7 +115,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
           final controller = _controllers[method];
           if (controller != null && !_focusNodes[method]!.hasFocus) {
             controller.text = widget.grandTotal.toStringAsFixed(2);
-            final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
+            final updatedAmounts =
+                Map<PaymentMethod, double>.from(widget.paymentAmounts);
             updatedAmounts[method] = widget.grandTotal;
             widget.onSelectionChanged(_selectedPaymentMethods, updatedAmounts);
           }
@@ -137,7 +144,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
       if (controller == null) continue;
       final focusNode = _focusNodes[method];
       final amount = widget.paymentAmounts[method];
-      final formatted = (amount != null && amount > 0) ? amount.toStringAsFixed(2) : '';
+      final formatted =
+          (amount != null && amount > 0) ? amount.toStringAsFixed(2) : '';
       if (focusNode != null && focusNode.hasFocus) {
         continue;
       }
@@ -167,7 +175,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     }
 
     final updatedSelected = Set<PaymentMethod>.from(_selectedPaymentMethods);
-    final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
+    final updatedAmounts =
+        Map<PaymentMethod, double>.from(widget.paymentAmounts);
 
     for (final existingMethod in updatedSelected) {
       _focusNodes[existingMethod]?.unfocus();
@@ -178,7 +187,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
 
     updatedSelected.add(method);
 
-      if (method == PaymentMethod.credit) {
+    if (method == PaymentMethod.credit) {
       _controllers[method]?.text = '0';
       updatedAmounts[method] = 0;
       setState(() {
@@ -205,7 +214,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   void _updatePaymentAmount(PaymentMethod method, String value) {
     final amount = double.tryParse(value) ?? 0.0;
 
-    final updatedAmounts = Map<PaymentMethod, double>.from(widget.paymentAmounts);
+    final updatedAmounts =
+        Map<PaymentMethod, double>.from(widget.paymentAmounts);
     if (amount > 0) {
       updatedAmounts[method] = amount;
     } else {
@@ -216,12 +226,13 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   }
 
   double get totalAmount {
-    return widget.paymentAmounts.values.fold(0.0, (sum, amount) => sum + amount);
+    return widget.paymentAmounts.values
+        .fold(0.0, (sum, amount) => sum + amount);
   }
 
   @override
   Widget build(BuildContext context) {
-    double receivedAmount = totalAmount;
+    final double receivedAmount = totalAmount;
     double pendingPayment;
 
     if (widget.orderFor == 'seller') {
@@ -243,17 +254,24 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                 width: double.infinity,
                 padding: MySpacing.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    MyText.bodyMedium('How Would You Like to Pay?', fontWeight: 600),
+                    const MyText.bodyMedium('How Would You Like to Pay?',
+                        fontWeight: 600),
                     MySpacing.height(2),
                     MyText.bodySmall(
                       'Choose your payment option',
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
                     ),
                   ],
                 ),
@@ -267,7 +285,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                       final label = _getPaymentMethodLabel(method);
                       return [
                         _buildPaymentMethodOption(method, label),
-                        if (method != _availablePaymentMethods.last) MySpacing.width(8),
+                        if (method != _availablePaymentMethods.last)
+                          MySpacing.width(8),
                       ];
                     }).expand((element) => element),
                   ],
@@ -287,17 +306,23 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                 width: double.infinity,
                 padding: MySpacing.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    MyText.bodyMedium('Bill Summary', fontWeight: 600),
+                    const MyText.bodyMedium('Bill Summary', fontWeight: 600),
                     MySpacing.height(2),
                     MyText.bodySmall(
                       'Breakdown of your total amount',
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
                     ),
                   ],
                 ),
@@ -309,17 +334,25 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                   children: [
                     // Line items
                     _buildSummaryRow('Products', widget.subtotal, context),
-                    _buildSummaryRow('Additional Charges', widget.chargesTotal, context, prefix: widget.orderFor == 'seller' ? '-' : '+'),
-                    _buildSummaryRow('Other Expenses', widget.expensesTotal, context, prefix: widget.orderFor == 'seller' ? '-' : '+'),
+                    _buildSummaryRow(
+                        'Additional Charges', widget.chargesTotal, context,
+                        prefix: widget.orderFor == 'seller' ? '-' : '+'),
+                    _buildSummaryRow(
+                        'Other Expenses', widget.expensesTotal, context,
+                        prefix: widget.orderFor == 'seller' ? '-' : '+'),
                     MySpacing.height(8),
                     // Divider
                     Container(
                       height: 1,
-                      color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .outline
+                          .withValues(alpha: 0.2),
                     ),
                     MySpacing.height(8),
                     // Total
-                    _buildSummaryRow('Total to Pay', widget.grandTotal, context, isBold: true),
+                    _buildSummaryRow('Total to Pay', widget.grandTotal, context,
+                        isBold: true),
                     MySpacing.height(12),
                     // Payment input
                     Container(
@@ -328,7 +361,10 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                         color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .outline
+                              .withValues(alpha: 0.2),
                         ),
                       ),
                       child: Column(
@@ -338,7 +374,10 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                             widget.orderFor == 'seller'
                                 ? 'Amount You Will Receive'
                                 : 'Enter Amount You Are Paying',
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.7),
                           ),
                           MySpacing.height(8),
                           SizedBox(
@@ -352,19 +391,24 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                                   ? _focusNodes[_selectedPaymentMethods.first]
                                   : null,
                               enabled: _selectedPaymentMethods.isEmpty ||
-                                  _selectedPaymentMethods.first != PaymentMethod.credit,
+                                  _selectedPaymentMethods.first !=
+                                      PaymentMethod.credit,
                               decoration: InputDecoration(
                                 contentPadding: MySpacing.xy(12, 8),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
                                   borderSide: BorderSide(
-                                    color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outline
+                                        .withValues(alpha: 0.3),
                                   ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
                                   borderSide: BorderSide(
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                     width: 2,
                                   ),
                                 ),
@@ -376,10 +420,13 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                                 fontWeight: FontWeight.w600,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
-                              keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal: true),
                               onChanged: (value) {
                                 if (_selectedPaymentMethods.isNotEmpty) {
-                                  _updatePaymentAmount(_selectedPaymentMethods.first, value);
+                                  _updatePaymentAmount(
+                                      _selectedPaymentMethods.first, value);
                                 }
                               },
                             ),
@@ -394,8 +441,14 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                       padding: MySpacing.all(12),
                       decoration: BoxDecoration(
                         color: pendingPayment > 0
-                            ? Theme.of(context).colorScheme.error.withOpacity(0.1)
-                            : Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                            ? Theme.of(context)
+                                .colorScheme
+                                .error
+                                .withValues(alpha: 0.1)
+                            : Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -404,7 +457,9 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                           MyText.bodyMedium(
                             widget.orderFor == 'seller'
                                 ? 'Remaining Amount'
-                                : (pendingPayment >= 0 ? 'Balance Remaining' : 'Extra Paid'),
+                                : (pendingPayment >= 0
+                                    ? 'Balance Remaining'
+                                    : 'Extra Paid'),
                             fontWeight: 500,
                           ),
                           MyText.bodyMedium(
@@ -443,7 +498,10 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             border: Border.all(
               color: isSelected
                   ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                  : Theme.of(context)
+                      .colorScheme
+                      .outline
+                      .withValues(alpha: 0.3),
             ),
           ),
           child: Column(
@@ -453,7 +511,10 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                 size: 16,
                 color: isSelected
                     ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    : Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
               ),
               MySpacing.height(2),
               MyText.bodySmall(
@@ -498,7 +559,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     }
   }
 
-  Widget _buildSummaryRow(String label, double amount, BuildContext context, {bool isBold = false, String? prefix}) {
+  Widget _buildSummaryRow(String label, double amount, BuildContext context,
+      {bool isBold = false, String? prefix}) {
     return Padding(
       padding: MySpacing.symmetric(vertical: 6),
       child: Row(
@@ -509,7 +571,10 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             fontWeight: isBold ? 600 : 400,
             color: isBold
                 ? Theme.of(context).colorScheme.onSurface
-                : Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                : Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.8),
           ),
           MyText.bodyMedium(
             '${prefix != null ? '$prefix ' : ''}₹${amount.toStringAsFixed(2)}',

@@ -6,7 +6,8 @@ import 'package:mandiapp/models/customer_payment_model.dart';
 part 'customer_payment_event.dart';
 part 'customer_payment_state.dart';
 
-class CustomerPaymentBloc extends Bloc<CustomerPaymentEvent, CustomerPaymentState> {
+class CustomerPaymentBloc
+    extends Bloc<CustomerPaymentEvent, CustomerPaymentState> {
   final CustomerPaymentDAO _dao = CustomerPaymentDAO();
 
   CustomerPaymentBloc() : super(CustomerPaymentInitial()) {
@@ -16,7 +17,8 @@ class CustomerPaymentBloc extends Bloc<CustomerPaymentEvent, CustomerPaymentStat
     on<RemovePayment>(_onRemovePayment);
   }
 
-  Future<void> _fetchPayments(int customerId, Emitter<CustomerPaymentState> emit) async {
+  Future<void> _fetchPayments(
+      int customerId, Emitter<CustomerPaymentState> emit) async {
     final payments = await _dao.getPaymentsByCustomerId(customerId);
     final totalPaid = await _dao.getTotalByType(customerId, 'paid');
     final totalReceived = await _dao.getTotalByType(customerId, 'received');
@@ -27,7 +29,8 @@ class CustomerPaymentBloc extends Bloc<CustomerPaymentEvent, CustomerPaymentStat
     ));
   }
 
-  Future<void> _onFetchPayments(FetchPayments event, Emitter<CustomerPaymentState> emit) async {
+  Future<void> _onFetchPayments(
+      FetchPayments event, Emitter<CustomerPaymentState> emit) async {
     try {
       emit(CustomerPaymentLoading());
       await _fetchPayments(event.customerId, emit);
@@ -36,7 +39,8 @@ class CustomerPaymentBloc extends Bloc<CustomerPaymentEvent, CustomerPaymentStat
     }
   }
 
-  Future<void> _onAddPayment(AddPayment event, Emitter<CustomerPaymentState> emit) async {
+  Future<void> _onAddPayment(
+      AddPayment event, Emitter<CustomerPaymentState> emit) async {
     try {
       await _dao.insertPayment(event.payment);
       await _fetchPayments(event.payment.customerId, emit);
@@ -45,7 +49,8 @@ class CustomerPaymentBloc extends Bloc<CustomerPaymentEvent, CustomerPaymentStat
     }
   }
 
-  Future<void> _onEditPayment(EditPayment event, Emitter<CustomerPaymentState> emit) async {
+  Future<void> _onEditPayment(
+      EditPayment event, Emitter<CustomerPaymentState> emit) async {
     try {
       await _dao.updatePayment(event.payment);
       await _fetchPayments(event.payment.customerId, emit);
@@ -54,7 +59,8 @@ class CustomerPaymentBloc extends Bloc<CustomerPaymentEvent, CustomerPaymentStat
     }
   }
 
-  Future<void> _onRemovePayment(RemovePayment event, Emitter<CustomerPaymentState> emit) async {
+  Future<void> _onRemovePayment(
+      RemovePayment event, Emitter<CustomerPaymentState> emit) async {
     try {
       await _dao.deletePayment(event.paymentId);
       await _fetchPayments(event.customerId, emit);

@@ -40,7 +40,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: centerTitle,
       leading: showBackButton && canPop
           ? Padding(
-              padding: const EdgeInsets.only(left: 12, top: 8, bottom: 8, right: 0),
+              padding: const EdgeInsets.only(left: 12, top: 8, bottom: 8),
               child: GestureDetector(
                 onTap: () => Navigator.of(context).maybePop(),
                 child: Container(

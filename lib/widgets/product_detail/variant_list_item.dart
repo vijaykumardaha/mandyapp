@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/helpers/extensions/string.dart';
+import 'package:mandiapp/models/product_variant_model.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/models/product_variant_model.dart';
 import 'package:mandiapp/widgets/product_detail/variant_thumbnail.dart';
 
 class VariantListItem extends StatelessWidget {
@@ -31,11 +30,11 @@ class VariantListItem extends StatelessWidget {
       margin: MySpacing.bottom(8),
       padding: MySpacing.all(12),
       decoration: BoxDecoration(
-        border: Border.all(
-            color: theme.colorScheme.outline.withOpacity(0.3)),
+        border:
+            Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(8),
         color: isDefault
-            ? theme.colorScheme.primary.withOpacity(0.05)
+            ? theme.colorScheme.primary.withValues(alpha: 0.05)
             : null,
       ),
       child: Row(
@@ -69,8 +68,8 @@ class VariantListItem extends StatelessWidget {
                         margin: MySpacing.only(left: 8),
                         padding: MySpacing.xy(8, 4),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.primary
-                              .withOpacity(0.1),
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: MyText.bodySmall(
@@ -83,9 +82,8 @@ class VariantListItem extends StatelessWidget {
                 ),
                 MySpacing.height(4),
                 MyText.bodySmall(
-                  '${'selling_price'.tr()}: ${variant.sellingPrice.toStringAsFixed(2)} | ${'quantity'.tr()}: ${variant.quantity.toStringAsFixed(2)} ${variant.unit}',
-                  color: theme.colorScheme.onBackground
-                      .withOpacity(0.7),
+                  'Selling Price: ${variant.sellingPrice.toStringAsFixed(2)} | Quantity: ${variant.quantity.toStringAsFixed(2)} ${variant.unit}',
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ],
             ),
@@ -107,7 +105,7 @@ class VariantListItem extends StatelessWidget {
                   children: [
                     const Icon(Icons.edit, size: 20),
                     MySpacing.width(8),
-                    MyText.bodyMedium('edit'.tr()),
+                    const MyText.bodyMedium('Edit'),
                   ],
                 ),
               ),
@@ -115,11 +113,9 @@ class VariantListItem extends StatelessWidget {
                 value: 'delete',
                 child: Row(
                   children: [
-                    const Icon(Icons.delete,
-                        size: 20, color: Colors.red),
+                    const Icon(Icons.delete, size: 20, color: Colors.red),
                     MySpacing.width(8),
-                    MyText.bodyMedium('delete'.tr(),
-                        color: Colors.red),
+                    const MyText.bodyMedium('Delete', color: Colors.red),
                   ],
                 ),
               ),

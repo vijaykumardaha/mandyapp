@@ -1,21 +1,8 @@
 import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:sqflite/sqflite.dart';
 
-const _syncedTables = {
-  'users',
-  'products',
-  'product_variants',
-  'orders',
-  'order_items',
-  'order_payments',
-  'order_charges',
-  'order_expenses',
-  'charge_types',
-  'customers',
-  'customer_payments',
-  'stocks',
-  'stock_transactions',
-};
+const _syncedTables = DbTables.synced;
 
 class SyncedDatabase {
   final Database _db;
@@ -29,7 +16,8 @@ class SyncedDatabase {
     Map<String, dynamic> values, {
     ConflictAlgorithm? conflictAlgorithm,
   }) async {
-    final id = await _db.insert(table, values, conflictAlgorithm: conflictAlgorithm);
+    final id =
+        await _db.insert(table, values, conflictAlgorithm: conflictAlgorithm);
     _sync(table, values);
     return id;
   }
@@ -40,10 +28,14 @@ class SyncedDatabase {
     String? where,
     List<Object?>? whereArgs,
   }) async {
-    final count = await _db.update(table, values, where: where, whereArgs: whereArgs);
+    final count =
+        await _db.update(table, values, where: where, whereArgs: whereArgs);
 
     final record = Map<String, dynamic>.from(values);
-    if (!record.containsKey('id') && where != null && whereArgs != null && whereArgs.isNotEmpty) {
+    if (!record.containsKey('id') &&
+        where != null &&
+        whereArgs != null &&
+        whereArgs.isNotEmpty) {
       if (RegExp(r'\bid\s*=\s*\?').hasMatch(where)) {
         record['id'] = whereArgs[0];
       }
@@ -57,7 +49,8 @@ class SyncedDatabase {
 
   // ── Hard deletes (no sync — used for cleanup/logout) ─
 
-  Future<int> delete(String table, {String? where, List<Object?>? whereArgs}) async {
+  Future<int> delete(String table,
+      {String? where, List<Object?>? whereArgs}) async {
     return _db.delete(table, where: where, whereArgs: whereArgs);
   }
 
@@ -89,7 +82,8 @@ class SyncedDatabase {
     );
   }
 
-  Future<List<Map<String, dynamic>>> rawQuery(String sql, [List<Object?>? args]) async {
+  Future<List<Map<String, dynamic>>> rawQuery(String sql,
+      [List<Object?>? args]) async {
     return _db.rawQuery(sql, args);
   }
 

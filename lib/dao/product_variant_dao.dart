@@ -1,5 +1,6 @@
 import 'package:mandiapp/models/product_variant_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 
 class ProductVariantDAO {
@@ -12,13 +13,13 @@ class ProductVariantDAO {
     variant.isDeleted = 0;
     variant.syncStatus = 0;
     final db = await dbHelper.database;
-    return await db.insert('product_variants', variant.toJson());
+    return await db.insert(DbTables.productVariants, variant.toJson());
   }
 
   Future<List<ProductVariant>> getVariantsByProductId(int productId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'product_variants',
+      DbTables.productVariants,
       where: 'product_id = ? AND is_deleted = ?',
       whereArgs: [productId, 0],
     );
@@ -31,7 +32,7 @@ class ProductVariantDAO {
     variant.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
-      'product_variants',
+      DbTables.productVariants,
       variant.toJson(),
       where: 'id = ?',
       whereArgs: [variant.id],
@@ -41,7 +42,7 @@ class ProductVariantDAO {
   Future<int> restoreVariant(int variantId) async {
     final db = await dbHelper.database;
     return await db.update(
-      'product_variants',
+      DbTables.productVariants,
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -55,7 +56,7 @@ class ProductVariantDAO {
   Future<ProductVariant?> getVariantById(int variantId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'product_variants',
+      DbTables.productVariants,
       where: 'id = ? AND is_deleted = ?',
       whereArgs: [variantId, 0],
       limit: 1,
@@ -69,7 +70,7 @@ class ProductVariantDAO {
   Future<List<ProductVariant>> getAllVariants() async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'product_variants',
+      DbTables.productVariants,
       where: 'is_deleted = ?',
       whereArgs: [0],
     );
@@ -79,7 +80,7 @@ class ProductVariantDAO {
   Future<int> deleteVariant(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'product_variants',
+      DbTables.productVariants,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -93,7 +94,7 @@ class ProductVariantDAO {
   Future<int> deleteVariantsByProductId(int productId) async {
     final db = await dbHelper.database;
     return await db.update(
-      'product_variants',
+      DbTables.productVariants,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -112,7 +113,7 @@ class ProductVariantDAO {
 
       for (final variant in variants) {
         batch.rawInsert('''
-          INSERT INTO product_variants (
+          INSERT INTO ${DbTables.productVariants} (
             id, mandi_id, product_id, variant_name, selling_price,
             quantity, unit, image_path, updated_at, is_deleted, sync_status
           )
@@ -130,7 +131,7 @@ class ProductVariantDAO {
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
 
-          WHERE excluded.updated_at > product_variants.updated_at;
+          WHERE excluded.updated_at > ${DbTables.productVariants}.updated_at;
         ''', [
           variant.id,
           variant.mandiId,

@@ -27,7 +27,7 @@ class FinancialMetric extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -41,7 +41,7 @@ class FinancialMetric extends StatelessWidget {
         const SizedBox(height: 8),
         MyText.bodySmall(
           title,
-          color: theme.colorScheme.onSurface.withOpacity(0.7),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
           fontWeight: 500,
           textAlign: TextAlign.center,
         ),

@@ -15,7 +15,7 @@ class ContentParagraph extends StatelessWidget {
   Widget build(BuildContext context) {
     return MyText.bodyMedium(
       text,
-      color: theme.colorScheme.onBackground.withOpacity(0.8),
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
       height: 1.6,
     );
   }

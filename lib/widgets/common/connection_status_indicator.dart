@@ -33,8 +33,7 @@ class _ConnectionStatusIndicatorState extends State<ConnectionStatusIndicator>
       _pulseController.repeat(reverse: true);
     }
 
-    _subscription =
-        SocketService.instance.connectionStream.listen((connected) {
+    _subscription = SocketService.instance.connectionStream.listen((connected) {
       if (!mounted) return;
       setState(() => _isConnected = connected);
       if (connected) {
@@ -56,7 +55,7 @@ class _ConnectionStatusIndicatorState extends State<ConnectionStatusIndicator>
   @override
   Widget build(BuildContext context) {
     final color = _isConnected ? Colors.green : Colors.red;
-    final label = 'Live';
+    const label = 'Live';
 
     return AnimatedBuilder(
       animation: _pulseAnimation,

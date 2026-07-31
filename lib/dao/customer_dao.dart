@@ -1,7 +1,6 @@
-
-
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 
 class CustomerDAO {
@@ -10,7 +9,7 @@ class CustomerDAO {
   Future<void> bulkInsert(List<Customer> customers) async {
     final db = await dbHelper.database;
     final mandiId = await AppHelper.getCurrentMandiId();
-    await db.update('customers', {
+    await db.update(DbTables.customers, {
       'is_deleted': 1,
       'updated_at': DateTime.now().millisecondsSinceEpoch,
     });
@@ -21,14 +20,15 @@ class CustomerDAO {
         customer.updatedAt = DateTime.now().millisecondsSinceEpoch;
         customer.isDeleted = 0;
         customer.syncStatus = 0;
-        await txn.insert('customers', customer.toJson());
+        await txn.insert(DbTables.customers, customer.toJson());
       }
     });
   }
 
   Future<List<Customer>> getCustomers() async {
     final db = await dbHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query('customers', where: 'is_deleted = ?', whereArgs: [0], orderBy: 'name ASC');
+    final List<Map<String, dynamic>> maps = await db.query(DbTables.customers,
+        where: 'is_deleted = ?', whereArgs: [0], orderBy: 'name ASC');
     return List.generate(maps.length, (i) {
       return Customer.fromJson(maps[i]);
     });
@@ -42,7 +42,7 @@ class CustomerDAO {
     customer.isDeleted = 0;
     customer.syncStatus = 0;
 
-    await db.insert('customers', customer.toJson());
+    await db.insert(DbTables.customers, customer.toJson());
 
     return customer;
   }
@@ -50,7 +50,7 @@ class CustomerDAO {
   Future<int> restoreCustomer(int customerId) async {
     final db = await dbHelper.database;
     return await db.update(
-      'customers',
+      DbTables.customers,
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -64,7 +64,7 @@ class CustomerDAO {
   Future<void> deleteCustomer(int customerId) async {
     final db = await dbHelper.database;
     await db.update(
-      'customers',
+      DbTables.customers,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -84,7 +84,7 @@ class CustomerDAO {
     customer.syncStatus = 0;
     final db = await dbHelper.database;
     await db.update(
-      'customers',
+      DbTables.customers,
       customer.toJson(),
       where: 'id = ?',
       whereArgs: [customer.id],
@@ -103,7 +103,7 @@ class CustomerDAO {
   Future<Customer?> getCustomerById(int id) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'customers',
+      DbTables.customers,
       where: 'id = ? AND is_deleted = ?',
       whereArgs: [id, 0],
     );
@@ -118,8 +118,8 @@ class CustomerDAO {
       final batch = txn.batch();
 
       for (final customer in customers) {
-          batch.rawInsert('''
-          INSERT INTO customers (
+        batch.rawInsert('''
+          INSERT INTO ${DbTables.customers} (
             id, mandi_id, name, phone,
             updated_at, is_deleted, sync_status
           )
@@ -133,7 +133,7 @@ class CustomerDAO {
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
 
-          WHERE excluded.updated_at > customers.updated_at;
+          WHERE excluded.updated_at > ${DbTables.customers}.updated_at;
         ''', [
           customer.id,
           customer.mandiId,

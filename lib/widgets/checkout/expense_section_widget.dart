@@ -25,7 +25,8 @@ class ExpenseSectionWidget extends StatelessWidget {
             width: double.infinity,
             padding: MySpacing.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              color:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -33,13 +34,14 @@ class ExpenseSectionWidget extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    MyText.bodyMedium('Other Expenses', fontWeight: 600),
+                    const MyText.bodyMedium('Other Expenses', fontWeight: 600),
                     const Spacer(),
                     InkWell(
                       onTap: () => _showAddExpenseDialog(context),
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.primary,
                           borderRadius: BorderRadius.circular(8),
@@ -47,9 +49,11 @@ class ExpenseSectionWidget extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.add, size: 16, color: Colors.white),
+                            const Icon(Icons.add,
+                                size: 16, color: Colors.white),
                             MySpacing.width(4),
-                            MyText.bodySmall('Add', color: Colors.white, fontWeight: 600),
+                            const MyText.bodySmall('Add',
+                                color: Colors.white, fontWeight: 600),
                           ],
                         ),
                       ),
@@ -59,7 +63,10 @@ class ExpenseSectionWidget extends StatelessWidget {
                 ),
                 MyText.bodySmall(
                   'Packaging, gift wrapping, or other costs',
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
                 ),
               ],
             ),
@@ -69,7 +76,10 @@ class ExpenseSectionWidget extends StatelessWidget {
               padding: MySpacing.only(left: 12),
               child: MyText.bodySmall(
                 'No extra costs added yet',
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.6),
               ),
             )
           else
@@ -79,41 +89,44 @@ class ExpenseSectionWidget extends StatelessWidget {
               return Padding(
                 padding: MySpacing.only(left: 12),
                 child: ListTile(
-                leading: Icon(
-                  Icons.check_circle,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    MyText.bodyMedium(
-                      expense['description'] ?? 'Expense',
-                      fontWeight: 500,
-                    ),
-                    MyText.bodySmall(
-                      '₹${(expense['amount'] as double).toStringAsFixed(2)}',
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                  ],
-                ),
-                trailing: IconButton(
-                  onPressed: () {
-                    final updated = List<Map<String, dynamic>>.from(expenses);
-                    updated.removeAt(index);
-                    onExpensesChanged(updated);
-                  },
-                  icon: Icon(
-                    Icons.delete_outline,
-                    size: 18,
-                    color: Theme.of(context).colorScheme.error,
+                  leading: Icon(
+                    Icons.check_circle,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      MyText.bodyMedium(
+                        expense['description'] ?? 'Expense',
+                        fontWeight: 500,
+                      ),
+                      MyText.bodySmall(
+                        '₹${(expense['amount'] as double).toStringAsFixed(2)}',
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.7),
+                      ),
+                    ],
+                  ),
+                  trailing: IconButton(
+                    onPressed: () {
+                      final updated = List<Map<String, dynamic>>.from(expenses);
+                      updated.removeAt(index);
+                      onExpensesChanged(updated);
+                    },
+                    icon: Icon(
+                      Icons.delete_outline,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  contentPadding: EdgeInsets.zero,
                   visualDensity: VisualDensity.compact,
+                  dense: true,
                 ),
-                contentPadding: EdgeInsets.zero,
-                visualDensity: VisualDensity.compact,
-                dense: true,
-              ),
               );
             }),
           MySpacing.height(8),
@@ -144,7 +157,7 @@ class ExpenseSectionWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              MyText.titleMedium('Add Extra Cost', fontWeight: 600),
+              const MyText.titleMedium('Add Extra Cost', fontWeight: 600),
               MySpacing.height(16),
               TextField(
                 controller: descriptionController,
@@ -156,7 +169,8 @@ class ExpenseSectionWidget extends StatelessWidget {
               MySpacing.height(12),
               TextField(
                 controller: amountController,
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
                   labelText: 'Amount',
                   prefixText: '₹',
@@ -169,7 +183,7 @@ class ExpenseSectionWidget extends StatelessWidget {
                   Expanded(
                     child: TextButton(
                       onPressed: () => Navigator.pop(sheetContext),
-                      child: MyText.bodyMedium('Cancel'),
+                      child: const MyText.bodyMedium('Cancel'),
                     ),
                   ),
                   MySpacing.width(12),
@@ -178,18 +192,22 @@ class ExpenseSectionWidget extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
                       ),
                       onPressed: () {
                         final amount = double.tryParse(amountController.text);
-                        if (descriptionController.text.trim().isNotEmpty && amount != null && amount > 0) {
+                        if (descriptionController.text.trim().isNotEmpty &&
+                            amount != null &&
+                            amount > 0) {
                           Navigator.pop(sheetContext, {
                             'description': descriptionController.text.trim(),
                             'amount': amount,
                           });
                         }
                       },
-                      child: MyText.bodyMedium('Add', color: Colors.white),
+                      child:
+                          const MyText.bodyMedium('Add', color: Colors.white),
                     ),
                   ),
                 ],

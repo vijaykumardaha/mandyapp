@@ -60,7 +60,8 @@ class StockListItem extends StatelessWidget {
                       MySpacing.height(2),
                       MyText.bodySmall(
                         sellerName ?? 'Seller #${stock.sellerId}',
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ],
                   ),
@@ -76,14 +77,16 @@ class StockListItem extends StatelessWidget {
                       if (stock.soldQuantity <= 0)
                         const PopupMenuItem(
                           value: 'delete',
-                          child: Text('Delete', style: TextStyle(color: Colors.red)),
+                          child: Text('Delete',
+                              style: TextStyle(color: Colors.red)),
                         ),
                     ],
                   ),
               ],
             ),
             MySpacing.height(10),
-            Divider(height: 1, color: theme.dividerColor.withOpacity(0.15)),
+            Divider(
+                height: 1, color: theme.dividerColor.withValues(alpha: 0.15)),
             MySpacing.height(10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -92,8 +95,10 @@ class StockListItem extends StatelessWidget {
                 _buildStat('Current', stock.quantity.toStringAsFixed(1)),
                 _buildStat('Sold', stock.soldQuantity.toStringAsFixed(1)),
                 _buildStat('Loss', stock.lossQuantity.toStringAsFixed(1)),
-                _buildStat('Purchase', '₹${stock.purchaseAmount.toStringAsFixed(0)}'),
-                _buildStat('Sold Amt', '₹${stock.soldAmount.toStringAsFixed(0)}'),
+                _buildStat(
+                    'Purchase', '₹${stock.purchaseAmount.toStringAsFixed(0)}'),
+                _buildStat(
+                    'Sold Amt', '₹${stock.soldAmount.toStringAsFixed(0)}'),
               ],
             ),
           ],

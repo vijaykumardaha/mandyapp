@@ -1,4 +1,3 @@
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
@@ -12,6 +11,7 @@ import 'package:mandiapp/services/auth_api.dart';
 import 'package:mandiapp/services/socket_service.dart';
 import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 
 part 'login_event.dart';
@@ -25,8 +25,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     // Check if user is already logged in on app start
     on<CheckLoginStatus>((event, emit) async {
       try {
-        final userData = await AppHelper.getPreferences('user');
-        
+        final userData = await AppHelper.getPreferences(PrefsKeys.user);
+
         if (userData != null) {
           final user = User.fromJson(userData);
           emit(SyncLoading());
@@ -43,17 +43,16 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LoginSubmit>((event, emit) async {
       try {
         emit(LoginLoading());
-        
+
         final user = await _authApi.login(
           mobile: event.mobile,
           password: event.password,
         );
 
-        await AppHelper.savePreferences('user', user.toJson());
+        await AppHelper.savePreferences(PrefsKeys.user, user.toJson());
         emit(SyncLoading());
         await SyncService.instance.connectAndSync();
         emit(LoginSuccess(user: user));
-
       } catch (e) {
         emit(LoginFailure(error: e.toString().replaceFirst('Exception: ', '')));
       }
@@ -63,30 +62,35 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<RegisterUser>((event, emit) async {
       try {
         emit(LoginLoading());
-        
+
         final user = await _authApi.signup(
           name: event.name,
           mobile: event.mobile,
           password: event.password,
         );
 
-        await AppHelper.savePreferences('user', user.toJson());
+        await AppHelper.savePreferences(PrefsKeys.user, user.toJson());
 
         // Seed customers from phone contacts
         final customerDao = CustomerDAO();
         final existingCount = await customerDao.getCustomerCount();
         if (existingCount <= 1) {
-          final hasPermission = await FlutterContacts.requestPermission(readonly: true);
+          final hasPermission =
+              await FlutterContacts.requestPermission(readonly: true);
           if (hasPermission) {
-            final phoneContacts = await FlutterContacts.getContacts(withProperties: true);
+            final phoneContacts =
+                await FlutterContacts.getContacts(withProperties: true);
             final converted = phoneContacts
-                .where((c) => c.phones.isNotEmpty && c.phones.first.normalizedNumber.isNotEmpty)
+                .where((c) =>
+                    c.phones.isNotEmpty &&
+                    c.phones.first.normalizedNumber.isNotEmpty)
                 .map((c) {
-                  final phone = c.phones.first.normalizedNumber;
-                  final last10 = phone.length >= 10 ? phone.substring(phone.length - 10) : phone;
-                  return Customer(name: c.displayName, phone: last10);
-                })
-                .toList();
+              final phone = c.phones.first.normalizedNumber;
+              final last10 = phone.length >= 10
+                  ? phone.substring(phone.length - 10)
+                  : phone;
+              return Customer(name: c.displayName, phone: last10);
+            }).toList();
             if (converted.isNotEmpty) {
               await customerDao.bulkInsert(converted);
             }
@@ -110,7 +114,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         SyncService.instance.stopListening();
         SocketService.instance.disconnect();
         await DBHelper.instance.clearAllTables();
-        await AppHelper.removePreferences('user');
+        await AppHelper.removePreferences(PrefsKeys.user);
         emit(LogoutSuccess());
       } catch (error) {
         emit(LogoutSuccess());

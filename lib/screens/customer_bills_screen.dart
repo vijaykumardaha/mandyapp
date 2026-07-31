@@ -8,6 +8,7 @@ import 'package:mandiapp/dao/order_payment_dao.dart';
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/order_model.dart';
 import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/customer_bills/bill_card.dart';
 
@@ -37,10 +38,12 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
 
     _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
       if (!mounted) return;
-      if (table == 'orders') {
+      if (table == DbTables.orders) {
         final state = context.read<OrderBloc>().state;
         if (state is OrdersLoaded) {
-          context.read<OrderBloc>().add(LoadOrdersByCustomer(widget.customer.id!));
+          context
+              .read<OrderBloc>()
+              .add(LoadOrdersByCustomer(widget.customer.id!));
         }
       }
     });
@@ -61,8 +64,10 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
       final payments = await _paymentDAO.getOrderPaymentsByOrderId(order.id!);
 
       final itemTotal = order.totalPrice;
-      final chargesTotal = charges.fold<double>(0.0, (sum, c) => sum + c.chargeAmount);
-      final expensesTotal = expenses.fold<double>(0.0, (sum, e) => sum + e.expenseAmount);
+      final chargesTotal =
+          charges.fold<double>(0.0, (sum, c) => sum + c.chargeAmount);
+      final expensesTotal =
+          expenses.fold<double>(0.0, (sum, e) => sum + e.expenseAmount);
       final received = payments.fold<double>(0.0, (sum, p) => sum + p.amount);
 
       double total;
@@ -84,7 +89,6 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -171,13 +175,13 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.06),
+                color: theme.colorScheme.primary.withValues(alpha: 0.06),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.receipt_long_outlined,
                 size: 48,
-                color: theme.colorScheme.primary.withOpacity(0.5),
+                color: theme.colorScheme.primary.withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: 20),

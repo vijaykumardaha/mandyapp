@@ -26,7 +26,7 @@ class ContentContactRow extends StatelessWidget {
         MySpacing.width(12),
         MyText.bodyMedium(
           text,
-          color: theme.colorScheme.onBackground.withOpacity(0.8),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
         ),
       ],
     );

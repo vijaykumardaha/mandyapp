@@ -25,7 +25,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
       try {
         emit(CustomerLoading());
         final contacts = await contactDAO.getCustomers();
-        emit(CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
+        emit(
+            CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
       } catch (error) {
         emit(SyncCustomerError(errorMsg: error.toString()));
       }
@@ -42,7 +43,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
           ),
         );
         final contacts = await contactDAO.getCustomers();
-        emit(CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
+        emit(
+            CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
       } catch (error) {
         emit(SyncCustomerError(errorMsg: error.toString()));
       }
@@ -53,7 +55,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
         emit(CustomerLoading());
         await contactDAO.deleteCustomer(event.customerId);
         final contacts = await contactDAO.getCustomers();
-        emit(CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
+        emit(
+            CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
       } catch (error) {
         emit(SyncCustomerError(errorMsg: error.toString()));
       }
@@ -64,7 +67,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
         emit(CustomerLoading());
         await contactDAO.updateCustomer(event.customer);
         final contacts = await contactDAO.getCustomers();
-        emit(CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
+        emit(
+            CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
       } catch (error) {
         emit(SyncCustomerError(errorMsg: error.toString()));
       }
@@ -81,4 +85,3 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     }).toList();
   }
 }
-

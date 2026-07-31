@@ -11,9 +11,9 @@ import 'package:mandiapp/dao/order_item_dao.dart';
 import 'package:mandiapp/dao/order_payment_dao.dart';
 import 'package:mandiapp/dao/product_dao.dart';
 import 'package:mandiapp/dao/product_variant_dao.dart';
+import 'package:mandiapp/dao/stock_dao.dart';
 import 'package:mandiapp/dao/user_dao.dart';
 import 'package:mandiapp/dao/vegetable_dao.dart';
-import 'package:mandiapp/dao/stock_dao.dart';
 import 'package:mandiapp/models/charge_type_model.dart';
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/customer_payment_model.dart';
@@ -24,10 +24,11 @@ import 'package:mandiapp/models/order_model.dart';
 import 'package:mandiapp/models/order_payment_model.dart';
 import 'package:mandiapp/models/product_model.dart';
 import 'package:mandiapp/models/product_variant_model.dart';
+import 'package:mandiapp/models/stock_model.dart';
 import 'package:mandiapp/models/user_model.dart';
 import 'package:mandiapp/models/vegetable_model.dart';
-import 'package:mandiapp/models/stock_model.dart';
 import 'package:mandiapp/services/socket_service.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 
 class SyncService {
@@ -227,74 +228,104 @@ class SyncService {
     final tables = <String, List>{};
 
     // Each table: query sync_status=0, map to JSON
-    final customers = await db.query('customers', where: 'sync_status = ?', whereArgs: [0]);
+    final customers = await db
+        .query(DbTables.customers, where: 'sync_status = ?', whereArgs: [0]);
     if (customers.isNotEmpty) {
-      tables['customers'] = customers.map((m) => Customer.fromJson(m).toJson()).toList();
+      tables[DbTables.customers] =
+          customers.map((m) => Customer.fromJson(m).toJson()).toList();
     }
 
-    final products = await db.query('products', where: 'sync_status = ?', whereArgs: [0]);
+    final products = await db
+        .query(DbTables.products, where: 'sync_status = ?', whereArgs: [0]);
     if (products.isNotEmpty) {
-      tables['products'] = products.map((m) => Product.fromJson(m).toJson()).toList();
+      tables[DbTables.products] =
+          products.map((m) => Product.fromJson(m).toJson()).toList();
     }
 
-    final variants = await db.query('product_variants', where: 'sync_status = ?', whereArgs: [0]);
+    final variants = await db.query(DbTables.productVariants,
+        where: 'sync_status = ?', whereArgs: [0]);
     if (variants.isNotEmpty) {
-      tables['product_variants'] = variants.map((m) => ProductVariant.fromJson(m).toJson()).toList();
+      tables[DbTables.productVariants] =
+          variants.map((m) => ProductVariant.fromJson(m).toJson()).toList();
     }
 
-    final orders = await db.query('orders', where: 'sync_status = ?', whereArgs: [0]);
+    final orders = await db
+        .query(DbTables.orders, where: 'sync_status = ?', whereArgs: [0]);
     if (orders.isNotEmpty) {
-      tables['orders'] = orders.map((m) => Order.fromJson(m).toJson()).toList();
+      tables[DbTables.orders] =
+          orders.map((m) => Order.fromJson(m).toJson()).toList();
     }
 
-    final orderItems = await db.query('order_items', where: 'sync_status = ?', whereArgs: [0]);
+    final orderItems = await db
+        .query(DbTables.orderItems, where: 'sync_status = ?', whereArgs: [0]);
     if (orderItems.isNotEmpty) {
-      tables['order_items'] = orderItems.map((m) => OrderItem.fromJson(m).toJson()).toList();
+      tables[DbTables.orderItems] =
+          orderItems.map((m) => OrderItem.fromJson(m).toJson()).toList();
     }
 
-    final orderPayments = await db.query('order_payments', where: 'sync_status = ?', whereArgs: [0]);
+    final orderPayments = await db.query(DbTables.orderPayments,
+        where: 'sync_status = ?', whereArgs: [0]);
     if (orderPayments.isNotEmpty) {
-      tables['order_payments'] = orderPayments.map((m) => OrderPayment.fromJson(m).toJson()).toList();
+      tables[DbTables.orderPayments] =
+          orderPayments.map((m) => OrderPayment.fromJson(m).toJson()).toList();
     }
 
-    final orderCharges = await db.query('order_charges', where: 'sync_status = ?', whereArgs: [0]);
+    final orderCharges = await db
+        .query(DbTables.orderCharges, where: 'sync_status = ?', whereArgs: [0]);
     if (orderCharges.isNotEmpty) {
-      tables['order_charges'] = orderCharges.map((m) => OrderCharge.fromMap(m).toMap()).toList();
+      tables[DbTables.orderCharges] =
+          orderCharges.map((m) => OrderCharge.fromMap(m).toMap()).toList();
     }
 
-    final orderExpenses = await db.query('order_expenses', where: 'sync_status = ?', whereArgs: [0]);
+    final orderExpenses = await db.query(DbTables.orderExpenses,
+        where: 'sync_status = ?', whereArgs: [0]);
     if (orderExpenses.isNotEmpty) {
-      tables['order_expenses'] = orderExpenses.map((m) => OrderExpense.fromMap(m).toMap()).toList();
+      tables[DbTables.orderExpenses] =
+          orderExpenses.map((m) => OrderExpense.fromMap(m).toMap()).toList();
     }
 
-    final chargeTypes = await db.query('charge_types', where: 'sync_status = ?', whereArgs: [0]);
+    final chargeTypes = await db
+        .query(DbTables.chargeTypes, where: 'sync_status = ?', whereArgs: [0]);
     if (chargeTypes.isNotEmpty) {
-      tables['charge_types'] = chargeTypes.map((m) => ChargeType.fromJson(m).toJson()).toList();
+      tables[DbTables.chargeTypes] =
+          chargeTypes.map((m) => ChargeType.fromJson(m).toJson()).toList();
     }
 
-    final users = await db.query('users', where: 'sync_status = ?', whereArgs: [0]);
+    final users = await db
+        .query(DbTables.users, where: 'sync_status = ?', whereArgs: [0]);
     if (users.isNotEmpty) {
-      tables['users'] = users.map((m) => User.fromJson(m).toJson()).toList();
+      tables[DbTables.users] =
+          users.map((m) => User.fromJson(m).toJson()).toList();
     }
 
-    final customerPayments = await db.query('customer_payments', where: 'sync_status = ?', whereArgs: [0]);
+    final customerPayments = await db.query(DbTables.customerPayments,
+        where: 'sync_status = ?', whereArgs: [0]);
     if (customerPayments.isNotEmpty) {
-      tables['customer_payments'] = customerPayments.map((m) => CustomerPayment.fromJson(m).toJson()).toList();
+      tables[DbTables.customerPayments] = customerPayments
+          .map((m) => CustomerPayment.fromJson(m).toJson())
+          .toList();
     }
 
-    final vegetables = await db.query('vegetables', where: 'sync_status = ?', whereArgs: [0]);
+    final vegetables = await db
+        .query(DbTables.vegetables, where: 'sync_status = ?', whereArgs: [0]);
     if (vegetables.isNotEmpty) {
-      tables['vegetables'] = vegetables.map((m) => Vegetable.fromJson(m).toJson()).toList();
+      tables[DbTables.vegetables] =
+          vegetables.map((m) => Vegetable.fromJson(m).toJson()).toList();
     }
 
-    final stocks = await db.query('stocks', where: 'sync_status = ?', whereArgs: [0]);
+    final stocks = await db
+        .query(DbTables.stocks, where: 'sync_status = ?', whereArgs: [0]);
     if (stocks.isNotEmpty) {
-      tables['stocks'] = stocks.map((m) => Stock.fromJson(m).toJson()).toList();
+      tables[DbTables.stocks] =
+          stocks.map((m) => Stock.fromJson(m).toJson()).toList();
     }
 
-    final stockTransactions = await db.query('stock_transactions', where: 'sync_status = ?', whereArgs: [0]);
+    final stockTransactions = await db.query(DbTables.stockTransactions,
+        where: 'sync_status = ?', whereArgs: [0]);
     if (stockTransactions.isNotEmpty) {
-      tables['stock_transactions'] = stockTransactions.map((m) => StockTransaction.fromJson(m).toJson()).toList();
+      tables[DbTables.stockTransactions] = stockTransactions
+          .map((m) => StockTransaction.fromJson(m).toJson())
+          .toList();
     }
 
     return tables;
@@ -328,24 +359,10 @@ class SyncService {
 
   Future<void> _markAllSynced() async {
     final db = await _customerDAO.dbHelper.database;
-    final tables = [
-      'customers',
-      'products',
-      'product_variants',
-      'orders',
-      'order_items',
-      'order_payments',
-      'order_charges',
-      'order_expenses',
-      'charge_types',
-      'users',
-      'customer_payments',
-      'vegetables',
-      'stocks',
-      'stock_transactions',
-    ];
+    final tables = [...DbTables.synced, DbTables.vegetables];
     for (final table in tables) {
-      await db.update(table, {'sync_status': 1}, where: 'sync_status = ?', whereArgs: [0]);
+      await db.update(table, {'sync_status': 1},
+          where: 'sync_status = ?', whereArgs: [0]);
     }
   }
 
@@ -353,7 +370,8 @@ class SyncService {
   //  Mark a single record as synced
   // ──────────────────────────────────────────────
 
-  Future<void> _markRecordSynced(String table, Map<String, dynamic> record) async {
+  Future<void> _markRecordSynced(
+      String table, Map<String, dynamic> record) async {
     final db = await _customerDAO.dbHelper.database;
     final id = record['id'];
     if (id == null) return;
@@ -383,47 +401,52 @@ class SyncService {
 
   Future<void> _upsertRecord(String table, Map<String, dynamic> record) async {
     switch (table) {
-      case 'customers':
+      case DbTables.customers:
         await _customerDAO.bulkUpsertCustomers([Customer.fromJson(record)]);
         break;
-      case 'products':
+      case DbTables.products:
         await _productDAO.bulkUpsertProducts([Product.fromJson(record)]);
         break;
-      case 'product_variants':
+      case DbTables.productVariants:
         await _variantDAO.bulkUpsertVariants([ProductVariant.fromJson(record)]);
         break;
-      case 'orders':
+      case DbTables.orders:
         await _orderDAO.bulkUpsertOrders([Order.fromJson(record)]);
         break;
-      case 'order_items':
+      case DbTables.orderItems:
         await _orderItemDAO.bulkUpsertOrderItems([OrderItem.fromJson(record)]);
         break;
-      case 'order_payments':
-        await _paymentDAO.bulkUpsertOrderPayments([OrderPayment.fromJson(record)]);
+      case DbTables.orderPayments:
+        await _paymentDAO
+            .bulkUpsertOrderPayments([OrderPayment.fromJson(record)]);
         break;
-      case 'order_charges':
+      case DbTables.orderCharges:
         await _chargeDAO.bulkUpsertOrderCharges([OrderCharge.fromMap(record)]);
         break;
-      case 'order_expenses':
-        await _expenseDAO.bulkUpsertOrderExpenses([OrderExpense.fromMap(record)]);
+      case DbTables.orderExpenses:
+        await _expenseDAO
+            .bulkUpsertOrderExpenses([OrderExpense.fromMap(record)]);
         break;
-      case 'charge_types':
-        await _chargeTypeDAO.bulkUpsertChargeTypes([ChargeType.fromJson(record)]);
+      case DbTables.chargeTypes:
+        await _chargeTypeDAO
+            .bulkUpsertChargeTypes([ChargeType.fromJson(record)]);
         break;
-      case 'users':
+      case DbTables.users:
         await _userDAO.bulkUpsertUsers([User.fromJson(record)]);
         break;
-      case 'customer_payments':
-        await _customerPaymentDAO.bulkUpsertCustomerPayments([CustomerPayment.fromJson(record)]);
+      case DbTables.customerPayments:
+        await _customerPaymentDAO
+            .bulkUpsertCustomerPayments([CustomerPayment.fromJson(record)]);
         break;
-      case 'vegetables':
+      case DbTables.vegetables:
         await _vegetableDAO.bulkUpsertVegetables([Vegetable.fromJson(record)]);
         break;
-      case 'stocks':
+      case DbTables.stocks:
         await _stockDAO.bulkUpsertStocks([Stock.fromJson(record)]);
         break;
-      case 'stock_transactions':
-        await _stockDAO.bulkUpsertStockTransactions([StockTransaction.fromJson(record)]);
+      case DbTables.stockTransactions:
+        await _stockDAO
+            .bulkUpsertStockTransactions([StockTransaction.fromJson(record)]);
         break;
       default:
         log('SyncService: unknown table "$table", skipping');

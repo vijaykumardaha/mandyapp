@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mandiapp/services/printer_service.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/services/printer_service.dart';
 
 class StatusBanner extends StatelessWidget {
   final String message;
@@ -17,7 +17,7 @@ class StatusBanner extends StatelessWidget {
       width: double.infinity,
       padding: MySpacing.xy(16, 12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.error.withOpacity(0.08),
+        color: theme.colorScheme.error.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

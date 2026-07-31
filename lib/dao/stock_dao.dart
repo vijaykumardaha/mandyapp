@@ -1,5 +1,6 @@
 import 'package:mandiapp/models/stock_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 
 class StockDAO {
@@ -12,13 +13,13 @@ class StockDAO {
     stock.isDeleted = 0;
     stock.syncStatus = 0;
     final db = await dbHelper.database;
-    return await db.insert('stocks', stock.toJson());
+    return await db.insert(DbTables.stocks, stock.toJson());
   }
 
   Future<List<Stock>> getAllStocks() async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'stocks',
+      DbTables.stocks,
       where: 'is_deleted = ?',
       whereArgs: [0],
       orderBy: 'updated_at DESC',
@@ -29,7 +30,7 @@ class StockDAO {
   Future<Stock?> getStockById(int id) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'stocks',
+      DbTables.stocks,
       where: 'id = ? AND is_deleted = ?',
       whereArgs: [id, 0],
     );
@@ -42,7 +43,7 @@ class StockDAO {
   Future<List<Stock>> getStocksBySeller(int sellerId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'stocks',
+      DbTables.stocks,
       where: 'seller_id = ? AND is_deleted = ?',
       whereArgs: [sellerId, 0],
       orderBy: 'updated_at DESC',
@@ -53,7 +54,7 @@ class StockDAO {
   Future<List<Stock>> getStocksByProduct(int productId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'stocks',
+      DbTables.stocks,
       where: 'product_id = ? AND is_deleted = ?',
       whereArgs: [productId, 0],
       orderBy: 'updated_at DESC',
@@ -67,7 +68,7 @@ class StockDAO {
     stock.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
-      'stocks',
+      DbTables.stocks,
       stock.toJson(),
       where: 'id = ?',
       whereArgs: [stock.id],
@@ -77,7 +78,7 @@ class StockDAO {
   Future<int> deleteStock(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'stocks',
+      DbTables.stocks,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -91,7 +92,7 @@ class StockDAO {
   Future<int> restoreStock(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'stocks',
+      DbTables.stocks,
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -109,7 +110,7 @@ class StockDAO {
 
       for (final stock in stocks) {
         batch.rawInsert('''
-          INSERT INTO stocks (
+          INSERT INTO ${DbTables.stocks} (
             id, mandi_id, seller_id, product_id, product_variant_id,
             initial_quantity, quantity, sold_quantity, loss_quantity,
             purchase_amount, sold_amount, updated_at, sync_status, is_deleted
@@ -131,7 +132,7 @@ class StockDAO {
             sync_status = excluded.sync_status,
             is_deleted = excluded.is_deleted
 
-          WHERE excluded.updated_at > stocks.updated_at;
+          WHERE excluded.updated_at > ${DbTables.stocks}.updated_at;
         ''', [
           stock.id,
           stock.mandiId,
@@ -145,8 +146,8 @@ class StockDAO {
           stock.purchaseAmount,
           stock.soldAmount,
           stock.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
-          stock.syncStatus ?? 1,
-          stock.isDeleted ?? 0,
+          stock.syncStatus,
+          stock.isDeleted,
         ]);
       }
 
@@ -163,24 +164,25 @@ class StockDAO {
     transaction.isDeleted = 0;
     transaction.syncStatus = 0;
     final db = await dbHelper.database;
-    return await db.insert('stock_transactions', transaction.toJson());
+    return await db.insert(DbTables.stockTransactions, transaction.toJson());
   }
 
   Future<List<StockTransaction>> getAllStockTransactions() async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'stock_transactions',
+      DbTables.stockTransactions,
       where: 'is_deleted = ?',
       whereArgs: [0],
       orderBy: 'updated_at DESC',
     );
-    return List.generate(maps.length, (i) => StockTransaction.fromJson(maps[i]));
+    return List.generate(
+        maps.length, (i) => StockTransaction.fromJson(maps[i]));
   }
 
   Future<StockTransaction?> getStockTransactionById(int id) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'stock_transactions',
+      DbTables.stockTransactions,
       where: 'id = ? AND is_deleted = ?',
       whereArgs: [id, 0],
     );
@@ -193,34 +195,37 @@ class StockDAO {
   Future<List<StockTransaction>> getTransactionsByStock(int stockId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'stock_transactions',
+      DbTables.stockTransactions,
       where: 'stock_id = ? AND is_deleted = ?',
       whereArgs: [stockId, 0],
       orderBy: 'updated_at DESC',
     );
-    return List.generate(maps.length, (i) => StockTransaction.fromJson(maps[i]));
+    return List.generate(
+        maps.length, (i) => StockTransaction.fromJson(maps[i]));
   }
 
   Future<List<StockTransaction>> getTransactionsByBuyer(int buyerId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'stock_transactions',
+      DbTables.stockTransactions,
       where: 'buyer_id = ? AND is_deleted = ?',
       whereArgs: [buyerId, 0],
       orderBy: 'updated_at DESC',
     );
-    return List.generate(maps.length, (i) => StockTransaction.fromJson(maps[i]));
+    return List.generate(
+        maps.length, (i) => StockTransaction.fromJson(maps[i]));
   }
 
   Future<List<StockTransaction>> getTransactionsByBill(int billId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'stock_transactions',
+      DbTables.stockTransactions,
       where: 'bill_id = ? AND is_deleted = ?',
       whereArgs: [billId, 0],
       orderBy: 'updated_at DESC',
     );
-    return List.generate(maps.length, (i) => StockTransaction.fromJson(maps[i]));
+    return List.generate(
+        maps.length, (i) => StockTransaction.fromJson(maps[i]));
   }
 
   Future<int> updateStockTransaction(StockTransaction transaction) async {
@@ -229,7 +234,7 @@ class StockDAO {
     transaction.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
-      'stock_transactions',
+      DbTables.stockTransactions,
       transaction.toJson(),
       where: 'id = ?',
       whereArgs: [transaction.id],
@@ -239,7 +244,7 @@ class StockDAO {
   Future<int> deleteStockTransaction(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'stock_transactions',
+      DbTables.stockTransactions,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -250,14 +255,15 @@ class StockDAO {
     );
   }
 
-  Future<void> bulkUpsertStockTransactions(List<StockTransaction> transactions) async {
+  Future<void> bulkUpsertStockTransactions(
+      List<StockTransaction> transactions) async {
     final db = await dbHelper.database;
     await db.transaction((txn) async {
       final batch = txn.batch();
 
       for (final txn in transactions) {
         batch.rawInsert('''
-          INSERT INTO stock_transactions (
+          INSERT INTO ${DbTables.stockTransactions} (
             id, stock_id, mandi_id, product_id, product_variant_id,
             buyer_id, bill_id, buy_quantity, total_amount,
             updated_at, sync_status, is_deleted
@@ -277,7 +283,7 @@ class StockDAO {
             sync_status = excluded.sync_status,
             is_deleted = excluded.is_deleted
 
-          WHERE excluded.updated_at > stock_transactions.updated_at;
+          WHERE excluded.updated_at > ${DbTables.stockTransactions}.updated_at;
         ''', [
           txn.id,
           txn.stockId,
@@ -289,8 +295,8 @@ class StockDAO {
           txn.buyQuantity,
           txn.totalAmount,
           txn.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
-          txn.syncStatus ?? 1,
-          txn.isDeleted ?? 0,
+          txn.syncStatus,
+          txn.isDeleted,
         ]);
       }
 

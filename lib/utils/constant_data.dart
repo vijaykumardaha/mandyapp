@@ -1,4 +1,3 @@
-
 class MyConstantData {
   final double containerRadius;
   final double cardRadius;
@@ -13,7 +12,7 @@ class MyConstant {
 
   static MyConstantData get constant => _constant;
 
-  static setConstant(MyConstantData constantData) {
+  static void setConstant(MyConstantData constantData) {
     _constant = constantData;
   }
 }

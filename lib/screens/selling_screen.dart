@@ -1,18 +1,20 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mandiapp/blocs/customer/customer_bloc.dart';
 import 'package:mandiapp/blocs/order_item/order_item_bloc.dart';
 import 'package:mandiapp/blocs/product/product_bloc.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/services/sync_service.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/order_item_model.dart';
 import 'package:mandiapp/models/product_model.dart';
 import 'package:mandiapp/models/product_variant_model.dart';
-import 'package:mandiapp/blocs/customer/customer_bloc.dart';
+import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/utils/constants.dart';
+import 'package:mandiapp/utils/info_controller.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/selling/add_to_sale_bottom_sheet.dart';
 import 'package:mandiapp/widgets/selling/customer_grid.dart';
 import 'package:mandiapp/widgets/selling/product_card.dart';
@@ -41,19 +43,19 @@ class SellingScreenState extends State<SellingScreen> {
 
     _syncSubscriptions.add(SyncService.instance.tableUpdates.listen((table) {
       if (!mounted) return;
-      if (table == 'products' || table == 'product_variants') {
+      if (table == DbTables.products || table == DbTables.productVariants) {
         final state = context.read<ProductBloc>().state;
         if (state is ProductLoaded) {
           context.read<ProductBloc>().add(LoadProducts());
         }
       }
-      if (table == 'customers') {
+      if (table == DbTables.customers) {
         final state = context.read<CustomerBloc>().state;
         if (state is CustomerLoaded) {
           context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
         }
       }
-      if (table == 'order_items') {
+      if (table == DbTables.orderItems) {
         final state = context.read<OrderItemBloc>().state;
         if (state is OrderItemsLoaded) {
           context.read<OrderItemBloc>().add(const LoadAllUnlinkedOrderItems());
@@ -86,17 +88,24 @@ class SellingScreenState extends State<SellingScreen> {
                 hintText: 'Search seller...',
                 prefixIcon: const Icon(Icons.search, size: 20),
                 isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .outline
+                        .withValues(alpha: 0.3),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .outline
+                        .withValues(alpha: 0.3),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
@@ -152,10 +161,10 @@ class SellingScreenState extends State<SellingScreen> {
     );
   }
 
-
   void _showAddToSaleBottomSheet(Product product) {
     if (sellerCustomer == null) {
-      Info.message('Please select a customer before recording sales.', context: context);
+      Info.message('Please select a customer before recording sales.',
+          context: context);
       return;
     }
 
@@ -176,9 +185,7 @@ class SellingScreenState extends State<SellingScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero, // removes top radius
-      ),
+      shape: const RoundedRectangleBorder(),
       builder: (sheetContext) {
         return AddToSaleBottomSheet(
           variants: variants,
@@ -201,13 +208,10 @@ class SellingScreenState extends State<SellingScreen> {
     required double quantity,
     double? overrideSellingPrice,
   }) async {
-
     final effectiveSellingPrice = overrideSellingPrice ?? variant.sellingPrice;
     final sale = OrderItem(
       sellerId: sellerCustomer!.id!,
       sellerName: sellerCustomer!.name,
-      buyerOrderId: null,
-      buyerId: null,
       productId: product.id ?? 0,
       variantId: variant.id!,
       sellingPrice: effectiveSellingPrice,
@@ -239,16 +243,17 @@ class SellingScreenState extends State<SellingScreen> {
                     if (productState is ProductLoading) {
                       return const Center(child: CircularProgressIndicator());
                     }
-  
+
                     if (productState is ProductLoaded) {
                       var products = productState.products;
-                      final customerProductIds = sellerCustomer!.selectedProductIds;
+                      final customerProductIds =
+                          sellerCustomer!.selectedProductIds;
                       if (customerProductIds.isNotEmpty) {
                         products = products
                             .where((p) => customerProductIds.contains(p.id))
                             .toList();
                       }
-  
+
                       if (products.isEmpty) {
                         return Center(
                           child: Padding(
@@ -258,30 +263,37 @@ class SellingScreenState extends State<SellingScreen> {
                                 Icon(
                                   Icons.inventory_2_outlined,
                                   size: 56,
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                      .withValues(alpha: 0.5),
                                 ),
                                 const SizedBox(height: 16),
                                 MyText.bodyMedium(
                                   'No products found',
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
                                 ),
                                 const SizedBox(height: 6),
                                 MyText.bodySmall(
                                   'Add products to start selling',
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                      .withValues(alpha: 0.7),
                                 ),
                               ],
                             ),
                           ),
                         );
                       }
-  
+
                       return GridView.builder(
                         padding: const EdgeInsets.all(16),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 4,
-                          childAspectRatio: 1,
                           crossAxisSpacing: 5,
                           mainAxisSpacing: 5,
                         ),
@@ -291,21 +303,23 @@ class SellingScreenState extends State<SellingScreen> {
                           return ProductCard(
                             product: product,
                             theme: Theme.of(context),
-                            onAddTapped: () => _showAddToSaleBottomSheet(product),
+                            onAddTapped: () =>
+                                _showAddToSaleBottomSheet(product),
                           );
                         },
                       );
                     }
-  
+
                     if (productState is ProductError) {
                       return Center(
                         child: Text(
                           productState.message,
-                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error),
                         ),
                       );
                     }
-  
+
                     return const SizedBox.shrink();
                   },
                 ),

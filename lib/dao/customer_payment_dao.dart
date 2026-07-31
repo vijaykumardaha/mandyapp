@@ -1,5 +1,6 @@
 import 'package:mandiapp/models/customer_payment_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 
 class CustomerPaymentDAO {
@@ -13,7 +14,7 @@ class CustomerPaymentDAO {
     payment.updatedAt = DateTime.now().millisecondsSinceEpoch;
     payment.isDeleted = 0;
     payment.syncStatus = 0;
-    return await db.insert('customer_payments', payment.toJson());
+    return await db.insert(DbTables.customerPayments, payment.toJson());
   }
 
   Future<int> updatePayment(CustomerPayment payment) async {
@@ -22,7 +23,7 @@ class CustomerPaymentDAO {
     payment.isDeleted = 0;
     payment.syncStatus = 0;
     return await db.update(
-      'customer_payments',
+      DbTables.customerPayments,
       payment.toJson(),
       where: 'id = ?',
       whereArgs: [payment.id],
@@ -32,7 +33,7 @@ class CustomerPaymentDAO {
   Future<int> deletePayment(int paymentId) async {
     final db = await dbHelper.database;
     return await db.update(
-      'customer_payments',
+      DbTables.customerPayments,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -46,7 +47,7 @@ class CustomerPaymentDAO {
   Future<List<CustomerPayment>> getPaymentsByCustomerId(int customerId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'customer_payments',
+      DbTables.customerPayments,
       where: 'customer_id = ? AND is_deleted = ?',
       whereArgs: [customerId, 0],
       orderBy: 'payment_date DESC',
@@ -59,7 +60,7 @@ class CustomerPaymentDAO {
   Future<CustomerPayment?> getPaymentById(int id) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'customer_payments',
+      DbTables.customerPayments,
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -79,14 +80,15 @@ class CustomerPaymentDAO {
   }
 
   // Bulk upsert customer payments
-  Future<void> bulkUpsertCustomerPayments(List<CustomerPayment> customerPayments) async {
+  Future<void> bulkUpsertCustomerPayments(
+      List<CustomerPayment> customerPayments) async {
     final db = await dbHelper.database;
     await db.transaction((txn) async {
       final batch = txn.batch();
 
       for (final payment in customerPayments) {
         batch.rawInsert('''
-          INSERT INTO customer_payments (
+          INSERT INTO ${DbTables.customerPayments} (
             id, mandi_id, customer_id, amount, type, source,
             note, payment_date, updated_at, is_deleted, sync_status
           )
@@ -104,7 +106,7 @@ class CustomerPaymentDAO {
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
 
-          WHERE excluded.updated_at > customer_payments.updated_at;
+          WHERE excluded.updated_at > ${DbTables.customerPayments}.updated_at;
         ''', [
           payment.id,
           payment.mandiId,

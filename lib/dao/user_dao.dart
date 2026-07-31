@@ -1,5 +1,6 @@
 import 'package:mandiapp/models/user_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 
 class UserDAO {
@@ -10,7 +11,7 @@ class UserDAO {
     user.isDeleted = 0;
     user.syncStatus = 0;
     final db = await dbHelper.database;
-    return await db.insert('users', user.toJson());
+    return await db.insert(DbTables.users, user.toJson());
   }
 
   Future<int> insertUser(User user) async {
@@ -20,13 +21,14 @@ class UserDAO {
     user.isDeleted = 0;
     user.syncStatus = 0;
     final db = await dbHelper.database;
-    return await db.insert('users', user.toJson());
+    return await db.insert(DbTables.users, user.toJson());
   }
 
   Future<User?> userLogin(String mobile, String password) async {
     final db = await dbHelper.database;
-    var result = await db.query("users",
-        where: 'mobile = ? AND password = ? AND is_deleted = ? AND is_active = ?',
+    final result = await db.query(DbTables.users,
+        where:
+            'mobile = ? AND password = ? AND is_deleted = ? AND is_active = ?',
         whereArgs: [mobile, password, 0, 1]);
 
     return result.isNotEmpty ? User.fromJson(result.first) : null;
@@ -34,27 +36,26 @@ class UserDAO {
 
   Future<User?> getUserByMobile(String mobile) async {
     final db = await dbHelper.database;
-    var result = await db.query("users",
-        where: 'mobile = ? AND is_deleted = ?',
-        whereArgs: [mobile, 0]);
+    final result = await db.query(DbTables.users,
+        where: 'mobile = ? AND is_deleted = ?', whereArgs: [mobile, 0]);
 
     return result.isNotEmpty ? User.fromJson(result.first) : null;
   }
 
   Future<List<User>> getAllUsers() async {
     final db = await dbHelper.database;
-    var result = await db.query("users", where: 'is_deleted = ?', whereArgs: [0]);
+    final result =
+        await db.query(DbTables.users, where: 'is_deleted = ?', whereArgs: [0]);
 
-    return result.isNotEmpty 
-        ? result.map((user) => User.fromJson(user)).toList() 
+    return result.isNotEmpty
+        ? result.map((user) => User.fromJson(user)).toList()
         : [];
   }
 
   Future<User?> getUserById(int id) async {
     final db = await dbHelper.database;
-    var result = await db.query("users",
-        where: 'id = ? AND is_deleted = ?',
-        whereArgs: [id, 0]);
+    final result = await db.query(DbTables.users,
+        where: 'id = ? AND is_deleted = ?', whereArgs: [id, 0]);
 
     return result.isNotEmpty ? User.fromJson(result.first) : null;
   }
@@ -66,7 +67,7 @@ class UserDAO {
     user.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
-      'users',
+      DbTables.users,
       user.toJson(),
       where: 'id = ?',
       whereArgs: [user.id],
@@ -76,7 +77,7 @@ class UserDAO {
   Future<int> toggleUserActive(int userId, bool active) async {
     final db = await dbHelper.database;
     return await db.update(
-      'users',
+      DbTables.users,
       {
         'is_active': active ? 1 : 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -90,7 +91,7 @@ class UserDAO {
   Future<int> restoreUser(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'users',
+      DbTables.users,
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -104,7 +105,7 @@ class UserDAO {
   Future<int> deleteUser(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'users',
+      DbTables.users,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -123,7 +124,7 @@ class UserDAO {
 
       for (final user in users) {
         batch.rawInsert('''
-          INSERT INTO users (
+          INSERT INTO ${DbTables.users} (
             id, mandi_id, name, mobile, password, role, is_active,
             updated_at, is_deleted, sync_status
           )
@@ -140,7 +141,7 @@ class UserDAO {
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
 
-          WHERE excluded.updated_at > users.updated_at;
+          WHERE excluded.updated_at > ${DbTables.users}.updated_at;
         ''', [
           user.id,
           user.mandiId,
@@ -161,24 +162,21 @@ class UserDAO {
 
   Future<List<User>> getUsersByRole(String role) async {
     final db = await dbHelper.database;
-    var result = await db.query("users",
-        where: 'role = ? AND is_deleted = ?',
-        whereArgs: [role, 0]);
+    final result = await db.query(DbTables.users,
+        where: 'role = ? AND is_deleted = ?', whereArgs: [role, 0]);
 
-    return result.isNotEmpty 
-        ? result.map((user) => User.fromJson(user)).toList() 
+    return result.isNotEmpty
+        ? result.map((user) => User.fromJson(user)).toList()
         : [];
   }
 
   Future<User?> getAdminUser() async {
     final db = await dbHelper.database;
-    var result = await db.query("users",
+    final result = await db.query(DbTables.users,
         where: 'role = ? AND is_deleted = ?',
         whereArgs: ['admin', 0],
         limit: 1);
 
     return result.isNotEmpty ? User.fromJson(result.first) : null;
   }
-
-  
 }

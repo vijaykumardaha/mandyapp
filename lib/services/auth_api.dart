@@ -13,10 +13,9 @@ class AuthApi {
         'password': password,
       });
 
-      final userData = response.data['data']['user'];
-      return User.fromJson(userData);
+      return User.fromJson(_userMap(response));
     } on DioException catch (e) {
-      final message = e.response?.data['errors']['detail'] ?? e.message ?? 'Login failed';
+      final message = _errorMessage(e) ?? e.message ?? 'Login failed';
       throw Exception(message);
     }
   }
@@ -36,15 +35,14 @@ class AuthApi {
         },
       };
       if (password != null && password.isNotEmpty) {
-        data['user']['password'] = password;
+        (data['user'] as Map<String, dynamic>)['password'] = password;
       }
 
       final response = await _dio.post('/api/signup', data: data);
 
-      final userData = response.data['data']['user'];
-      return User.fromJson(userData);
+      return User.fromJson(_userMap(response));
     } on DioException catch (e) {
-      final message = e.response?.data['error'] ?? e.message ?? 'Signup failed';
+      final message = _errorMessage(e) ?? e.message ?? 'Signup failed';
       throw Exception(message);
     }
   }
@@ -65,16 +63,32 @@ class AuthApi {
         },
       };
       if (password != null && password.isNotEmpty) {
-        data['staff']['password'] = password;
+        (data['staff'] as Map<String, dynamic>)['password'] = password;
       }
 
       final response = await _dio.post('/api/add_staff', data: data);
 
-      final userData = response.data['data']['user'];
-      return User.fromJson(userData);
+      return User.fromJson(_userMap(response));
     } on DioException catch (e) {
-      final message = e.response?.data['errors']['detail'] ?? e.message ?? 'Failed to add staff';
+      final message = _errorMessage(e) ?? e.message ?? 'Failed to add staff';
       throw Exception(message);
     }
+  }
+
+  Map<String, dynamic> _userMap(Response<dynamic> response) {
+    final data = response.data as Map<String, dynamic>;
+    final payload = data['data'] as Map<String, dynamic>;
+    return payload['user'] as Map<String, dynamic>;
+  }
+
+  String? _errorMessage(DioException e) {
+    final data = e.response?.data;
+    if (data is! Map) return null;
+    final body = Map<String, dynamic>.from(data);
+    final errors = body['errors'];
+    if (errors is Map) {
+      return (Map<String, dynamic>.from(errors)['detail'])?.toString();
+    }
+    return body['error']?.toString();
   }
 }

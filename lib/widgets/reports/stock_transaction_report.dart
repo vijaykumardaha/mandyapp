@@ -46,9 +46,9 @@ class StockTransactionReportWidget extends StatelessWidget {
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Product', flex: 2),
-            ReportTableHeader(label: 'Buyer', flex: 1),
-            ReportTableHeader(label: 'Qty', flex: 1, textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Amount', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Buyer'),
+            ReportTableHeader(label: 'Qty', textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Amount', textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(
@@ -62,23 +62,22 @@ class StockTransactionReportWidget extends StatelessWidget {
                       children: [
                         MyText.bodySmall(item.productName, fontWeight: 600),
                         if (item.variantName != null)
-                          MyText.bodySmall(item.variantName!, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                          MyText.bodySmall(item.variantName!,
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6)),
                       ],
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(item.buyerName),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(
-                      '${item.buyQuantity.toStringAsFixed(2)}',
+                      item.buyQuantity.toStringAsFixed(2),
                       textAlign: TextAlign.center,
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(
                       currencyFormat.format(item.totalAmount),
                       textAlign: TextAlign.center,

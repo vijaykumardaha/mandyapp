@@ -23,15 +23,15 @@ class OrderExpense {
 
   factory OrderExpense.fromMap(Map<String, dynamic> map) {
     return OrderExpense(
-      id: map['id']?.toInt(),
-      mandiId: map['mandi_id']?.toInt(),
+      id: (map['id'] as num?)?.toInt(),
+      mandiId: (map['mandi_id'] as num?)?.toInt(),
       expenseName: map['expense_name'] ?? '',
-      expenseAmount: (map['expense_amount'] ?? 0.0).toDouble(),
+      expenseAmount: (map['expense_amount'] as num?)?.toDouble() ?? 0.0,
       expenseNote: map['expense_note'],
-      orderId: map['order_id']?.toInt(),
+      orderId: (map['order_id'] as num?)?.toInt(),
       updatedAt: map['updated_at'] ?? 0,
-      isDeleted: map['is_deleted']?.toInt(),
-      syncStatus: map['sync_status']?.toInt(),
+      isDeleted: (map['is_deleted'] as num?)?.toInt(),
+      syncStatus: (map['sync_status'] as num?)?.toInt(),
     );
   }
 
@@ -83,23 +83,23 @@ class OrderExpense {
     if (identical(this, other)) return true;
 
     return other is OrderExpense &&
-      other.id == id &&
-      other.mandiId == mandiId &&
-      other.expenseName == expenseName &&
-      other.expenseAmount == expenseAmount &&
-      other.expenseNote == expenseNote &&
-      other.orderId == orderId &&
-      other.updatedAt == updatedAt;
+        other.id == id &&
+        other.mandiId == mandiId &&
+        other.expenseName == expenseName &&
+        other.expenseAmount == expenseAmount &&
+        other.expenseNote == expenseNote &&
+        other.orderId == orderId &&
+        other.updatedAt == updatedAt;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-      mandiId.hashCode ^
-      expenseName.hashCode ^
-      expenseAmount.hashCode ^
-      expenseNote.hashCode ^
-      orderId.hashCode ^
-      updatedAt.hashCode;
+        mandiId.hashCode ^
+        expenseName.hashCode ^
+        expenseAmount.hashCode ^
+        expenseNote.hashCode ^
+        orderId.hashCode ^
+        updatedAt.hashCode;
   }
 }

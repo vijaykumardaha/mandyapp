@@ -21,10 +21,11 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
     on<LoadAllUnlinkedOrderItems>(_onLoadAllUnlinkedOrderItems);
   }
 
-  Future<void> _onLoadOrderItems(LoadOrderItems event, Emitter<OrderItemState> emit) async {
+  Future<void> _onLoadOrderItems(
+      LoadOrderItems event, Emitter<OrderItemState> emit) async {
     emit(const OrderItemLoading());
     try {
-      List<OrderItem> orderItems = [];
+      final List<OrderItem> orderItems = [];
 
       if (event.sellerId != null) {
         final sellerItems = await _orderItemDAO.getOrderItems(
@@ -52,19 +53,24 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
     }
   }
 
-  Future<void> _onLoadBillableOrderItems(LoadBillableOrderItems event, Emitter<OrderItemState> emit) async {
+  Future<void> _onLoadBillableOrderItems(
+      LoadBillableOrderItems event, Emitter<OrderItemState> emit) async {
     emit(const OrderItemLoading());
     try {
       // Load order items that are billable (not linked to any order)
-      final orderItems = await _orderItemDAO.getSellerOrderItems(sellerId: event.sellerId);
+      final orderItems =
+          await _orderItemDAO.getSellerOrderItems(sellerId: event.sellerId);
 
-      emit(OrderItemsLoaded(orderItems, message: 'Billable order items loaded'));
+      emit(
+          OrderItemsLoaded(orderItems, message: 'Billable order items loaded'));
     } catch (error) {
-      emit(OrderItemError('Failed to load billable order items: ${error.toString()}'));
+      emit(OrderItemError(
+          'Failed to load billable order items: ${error.toString()}'));
     }
   }
 
-  Future<void> _onAddOrderItem(AddOrderItemEvent event, Emitter<OrderItemState> emit) async {
+  Future<void> _onAddOrderItem(
+      AddOrderItemEvent event, Emitter<OrderItemState> emit) async {
     emit(const OrderItemLoading());
     try {
       await _orderItemDAO.insertOrderItem(event.orderItem);
@@ -72,27 +78,32 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
         sellerId: event.orderItem.sellerId,
         excludeSellerOrderLinked: true,
       );
-      emit(OrderItemsLoaded(orderItems, message: 'Order item added successfully'));
+      emit(OrderItemsLoaded(orderItems,
+          message: 'Order item added successfully'));
     } catch (error) {
       emit(OrderItemError('Failed to add order item: ${error.toString()}'));
     }
   }
 
-  Future<void> _onUpdateOrderItem(UpdateOrderItemEvent event, Emitter<OrderItemState> emit) async {
+  Future<void> _onUpdateOrderItem(
+      UpdateOrderItemEvent event, Emitter<OrderItemState> emit) async {
     emit(const OrderItemLoading());
     try {
       await _orderItemDAO.updateOrderItem(event.orderItem);
-      final orderItems = await _orderItemDAO.getOrderItems(sellerId: event.orderItem.sellerId);
-      emit(OrderItemsLoaded(orderItems, message: 'Order item updated successfully'));
+      final orderItems =
+          await _orderItemDAO.getOrderItems(sellerId: event.orderItem.sellerId);
+      emit(OrderItemsLoaded(orderItems,
+          message: 'Order item updated successfully'));
     } catch (error) {
       emit(OrderItemError('Failed to update order item: ${error.toString()}'));
     }
   }
 
-  Future<void> _onDeleteOrderItem(DeleteOrderItemEvent event, Emitter<OrderItemState> emit) async {
+  Future<void> _onDeleteOrderItem(
+      DeleteOrderItemEvent event, Emitter<OrderItemState> emit) async {
     try {
       await _orderItemDAO.deleteOrderItem(event.orderItemId);
-      List<OrderItem> orderItems = [];
+      final List<OrderItem> orderItems = [];
       if (event.sellerId != null) {
         final sellerItems = await _orderItemDAO.getOrderItems(
           sellerId: event.sellerId,
@@ -117,7 +128,8 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
     emit(const OrderItemsLoaded([]));
   }
 
-  Future<void> _onLoadAllUnlinkedOrderItems(LoadAllUnlinkedOrderItems event, Emitter<OrderItemState> emit) async {
+  Future<void> _onLoadAllUnlinkedOrderItems(
+      LoadAllUnlinkedOrderItems event, Emitter<OrderItemState> emit) async {
     emit(const OrderItemLoading());
     try {
       final orderItems = await _orderItemDAO.getOrderItems(

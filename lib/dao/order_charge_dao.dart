@@ -1,19 +1,22 @@
 import 'package:mandiapp/models/order_charge_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 
 class OrderChargeDAO {
   final dbHelper = DBHelper.instance;
 
   // Insert multiple order charges for an order (replaces existing ones)
-  Future<void> bulkInsertForOrder(String orderId, List<OrderCharge> charges) async {
+  Future<void> bulkInsertForOrder(
+      String orderId, List<OrderCharge> charges) async {
     final db = await dbHelper.database;
     final mandiId = await AppHelper.getCurrentMandiId();
 
     // Start transaction
     await db.transaction((txn) async {
       // Delete existing charges for this order
-      await txn.delete('order_charges', where: 'order_id = ?', whereArgs: [orderId]);
+      await txn.delete(DbTables.orderCharges,
+          where: 'order_id = ?', whereArgs: [orderId]);
 
       // Insert new charges
       for (var charge in charges) {
@@ -22,7 +25,7 @@ class OrderChargeDAO {
         charge.updatedAt = DateTime.now().millisecondsSinceEpoch;
         charge.isDeleted = 0;
         charge.syncStatus = 0;
-        await txn.insert('order_charges', charge.toMap());
+        await txn.insert(DbTables.orderCharges, charge.toMap());
       }
     });
   }
@@ -31,7 +34,7 @@ class OrderChargeDAO {
   Future<List<OrderCharge>> getOrderCharges(String orderId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'order_charges',
+      DbTables.orderCharges,
       where: 'order_id = ?',
       whereArgs: [orderId],
       orderBy: 'charge_name ASC',
@@ -50,7 +53,7 @@ class OrderChargeDAO {
     charge.isDeleted = 0;
     charge.syncStatus = 0;
     final db = await dbHelper.database;
-    return await db.insert('order_charges', charge.toMap());
+    return await db.insert(DbTables.orderCharges, charge.toMap());
   }
 
   // Update an existing order charge
@@ -60,7 +63,7 @@ class OrderChargeDAO {
     charge.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
-      'order_charges',
+      DbTables.orderCharges,
       charge.toMap(),
       where: 'id = ?',
       whereArgs: [charge.id],
@@ -71,7 +74,7 @@ class OrderChargeDAO {
   Future<int> deleteOrderCharge(int chargeId) async {
     final db = await dbHelper.database;
     return await db.update(
-      'order_charges',
+      DbTables.orderCharges,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -86,7 +89,7 @@ class OrderChargeDAO {
   Future<int> deleteOrderCharges(int orderId) async {
     final db = await dbHelper.database;
     return await db.update(
-      'order_charges',
+      DbTables.orderCharges,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -114,7 +117,7 @@ class OrderChargeDAO {
   Future<bool> chargeExistsForOrder(String orderId, String chargeName) async {
     final db = await dbHelper.database;
     final result = await db.query(
-      'order_charges',
+      DbTables.orderCharges,
       where: 'order_id = ? AND charge_name = ?',
       whereArgs: [orderId, chargeName],
     );
@@ -130,7 +133,7 @@ class OrderChargeDAO {
 
       for (final orderCharge in orderCharges) {
         batch.rawInsert('''
-          INSERT INTO order_charges (
+          INSERT INTO ${DbTables.orderCharges} (
             id, mandi_id, order_id, charge_name, charge_amount,
             updated_at, is_deleted, sync_status
           )
@@ -145,7 +148,7 @@ class OrderChargeDAO {
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
 
-          WHERE excluded.updated_at > order_charges.updated_at;
+          WHERE excluded.updated_at > ${DbTables.orderCharges}.updated_at;
         ''', [
           orderCharge.id,
           orderCharge.mandiId,

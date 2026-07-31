@@ -1,8 +1,8 @@
 // ignore_for_file: prefer_generic_function_type_aliases
 
-import 'package:mandiapp/helpers/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mandiapp/helpers/theme/app_theme.dart';
 
 enum MyTextType {
   displayLarge,
@@ -48,7 +48,7 @@ typedef TextStyle GoogleFontFunction({
 class MyTextStyle {
   static GoogleFontFunction _fontFamily = GoogleFonts.ibmPlexSans;
 
-  static changeFontFamily(GoogleFontFunction value) {
+  static void changeFontFamily(GoogleFontFunction value) {
     _fontFamily = value;
   }
 
@@ -87,7 +87,7 @@ class MyTextStyle {
       double? height,
       double? wordSpacing,
       double? fontSize}) {
-    double? finalFontSize =
+    final double? finalFontSize =
         fontSize ?? (textStyle == null ? 40 : textStyle.fontSize);
 
     Color finalColor = color ?? theme.colorScheme.onSurface;
@@ -274,7 +274,7 @@ class MyTextStyle {
         muted: muted,
         letterSpacing:
             letterSpacing ?? _defaultLetterSpacing[MyTextType.titleLarge],
-        fontWeight: fontWeight??_defaultTextFontWeight[MyTextType.titleLarge],
+        fontWeight: fontWeight ?? _defaultTextFontWeight[MyTextType.titleLarge],
         decoration: decoration,
         textStyle: textStyle,
         wordSpacing: wordSpacing,
@@ -510,7 +510,7 @@ class MyTextStyle {
   static Map<int, FontWeight> get defaultFontWeight => _defaultFontWeight;
 
   //-------------------Reset Font Styles---------------------------------
-  static resetFontStyles() {
+  static void resetFontStyles() {
     _fontFamily = GoogleFonts.ibmPlexSans;
 
     _defaultFontWeight = {

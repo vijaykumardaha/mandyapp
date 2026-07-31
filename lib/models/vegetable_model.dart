@@ -51,7 +51,8 @@ class Vegetable {
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       unit: json['unit'] as String? ?? 'Kilogram',
       common: json['common'] as int? ?? 0,
-      updatedAt: json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+      updatedAt:
+          json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
       isDeleted: json['is_deleted'] as int? ?? 0,
       syncStatus: json['sync_status'] as int? ?? 0,
     );

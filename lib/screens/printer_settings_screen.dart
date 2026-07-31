@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mandiapp/services/printer_service.dart';
-import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
@@ -10,6 +9,7 @@ import 'package:mandiapp/widgets/printer_settings/permission_prompt.dart';
 import 'package:mandiapp/widgets/printer_settings/printer_size_selector.dart';
 import 'package:mandiapp/widgets/printer_settings/status_banner.dart';
 import 'package:mandiapp/widgets/printer_settings/status_card.dart';
+import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 
 class PrinterSettingsScreen extends StatefulWidget {
   const PrinterSettingsScreen({super.key});
@@ -32,7 +32,7 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: CommonAppBar(
+      appBar: const CommonAppBar(
         titleWidget: MyText.titleMedium('Printer', fontWeight: 600),
       ),
       body: SafeArea(
@@ -59,10 +59,14 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
 
             final connectedDevice = devices.firstWhere(
               (device) => device.macAdress == connectedMac,
-              orElse: () => BluetoothInfo(name: connectedMac ?? 'Unknown', macAdress: connectedMac ?? ''),
+              orElse: () => BluetoothInfo(
+                  name: connectedMac ?? 'Unknown',
+                  macAdress: connectedMac ?? ''),
             );
 
-            final availableDevices = devices.where((device) => device.macAdress != connectedMac).toList();
+            final availableDevices = devices
+                .where((device) => device.macAdress != connectedMac)
+                .toList();
 
             return SingleChildScrollView(
               padding: MySpacing.all(16),
@@ -116,14 +120,18 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation(theme.colorScheme.onPrimary),
+                                  valueColor: AlwaysStoppedAnimation(
+                                      theme.colorScheme.onPrimary),
                                 ),
                               )
                             : const Icon(Icons.bluetooth_searching),
-                        label: MyText.bodyLarge(isScanning ? 'Scanning...' : 'Scan Bluetooth', fontWeight: 600),
+                        label: MyText.bodyLarge(
+                            isScanning ? 'Scanning...' : 'Scan Bluetooth',
+                            fontWeight: 600),
                         style: ElevatedButton.styleFrom(
                           padding: MySpacing.xy(16, 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                       ),
                     ),

@@ -22,9 +22,13 @@ class ReceiptInfo extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         children: [
-          InfoRow(label: 'Date', value: dateFormat.format(createdAt), theme: theme),
+          InfoRow(
+              label: 'Date', value: dateFormat.format(createdAt), theme: theme),
           const SizedBox(height: 4),
-          InfoRow(label: 'Type', value: data.order.orderFor.toUpperCase(), theme: theme),
+          InfoRow(
+              label: 'Type',
+              value: data.order.orderFor.toUpperCase(),
+              theme: theme),
         ],
       ),
     );

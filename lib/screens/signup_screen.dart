@@ -1,24 +1,24 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mandiapp/blocs/login/login_bloc.dart';
 import 'package:mandiapp/controllers/signup_controller.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/utils/info_controller.dart';
+import 'package:mandiapp/widgets/auth/confirm_password_field.dart';
+import 'package:mandiapp/widgets/auth/mobile_field.dart';
+import 'package:mandiapp/widgets/auth/name_field.dart';
+import 'package:mandiapp/widgets/auth/password_field.dart';
 import 'package:mandiapp/widgets/common/my_button.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:flutter/material.dart';
-import 'package:mandiapp/utils/info_controller.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
-import 'package:mandiapp/widgets/auth/name_field.dart';
-import 'package:mandiapp/widgets/auth/mobile_field.dart';
-import 'package:mandiapp/widgets/auth/password_field.dart';
-import 'package:mandiapp/widgets/auth/confirm_password_field.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
   @override
-  _SignupScreenState createState() => _SignupScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
 class _SignupScreenState extends State<SignupScreen> {
@@ -32,7 +32,6 @@ class _SignupScreenState extends State<SignupScreen> {
     theme = AppTheme.shoppingManagerTheme;
     controller = SignupController();
     outlineInputBorder = OutlineInputBorder(
-      borderRadius: const BorderRadius.all(Radius.circular(4)),
       borderSide: BorderSide(
         color: theme.dividerColor,
       ),
@@ -84,10 +83,10 @@ class _SignupScreenState extends State<SignupScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   MySpacing.height(40),
-                  Align(
+                  const Align(
                     alignment: Alignment.centerLeft,
                     child: MyText.headlineMedium(
-                      "Create Account",
+                      'Create Account',
                       fontWeight: 700,
                     ),
                   ),
@@ -95,8 +94,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: MyText.bodyMedium(
-                      "Sign up to get started",
-                      color: theme.colorScheme.onBackground.withOpacity(0.6),
+                      'Sign up to get started',
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   MySpacing.height(32),
@@ -122,7 +121,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         MyText.bodySmall(
-                          "Sign Up".toUpperCase(),
+                          'Sign Up'.toUpperCase(),
                           fontWeight: 700,
                           color: theme.colorScheme.onPrimary,
                           letterSpacing: 0.5,
@@ -141,13 +140,14 @@ class _SignupScreenState extends State<SignupScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       MyText.bodyMedium(
-                        "Already have an account? ",
-                        color: theme.colorScheme.onBackground.withOpacity(0.6),
+                        'Already have an account? ',
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                       InkWell(
                         onTap: () => context.go('/login'),
                         child: MyText.bodyMedium(
-                          "Sign In",
+                          'Login',
                           fontWeight: 600,
                           color: theme.colorScheme.primary,
                         ),
@@ -199,5 +199,4 @@ class _SignupScreenState extends State<SignupScreen> {
       ),
     );
   }
-
 }

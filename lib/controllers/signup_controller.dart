@@ -1,5 +1,5 @@
-import 'package:mandiapp/utils/my_string_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:mandiapp/utils/my_string_utils.dart';
 
 class SignupController {
   GlobalKey<FormState> formKey = GlobalKey();
@@ -12,20 +12,20 @@ class SignupController {
 
   String? validateName(String? text) {
     if (text == null || text.isEmpty) {
-      return "Please enter your name";
+      return 'Please enter your name';
     }
     if (text.length < 2) {
-      return "Name must be at least 2 characters";
+      return 'Name must be at least 2 characters';
     }
     return null;
   }
 
   String? validateMobileNumber(String? text) {
     if (text == null || text.isEmpty) {
-      return "Please enter mobile number";
+      return 'Please enter mobile number';
     }
 
-    RegExp regExp = RegExp(r'^\+?[1-9]\d{9,14}$');
+    final RegExp regExp = RegExp(r'^\+?[1-9]\d{9,14}$');
     if (!regExp.hasMatch(text)) {
       return 'Please enter valid mobile number';
     }
@@ -34,19 +34,19 @@ class SignupController {
 
   String? validatePassword(String? text) {
     if (text == null || text.isEmpty) {
-      return "Please enter password";
+      return 'Please enter password';
     } else if (!MyStringUtils.validateStringRange(text, 6, 100)) {
-      return "Password must be between 6 to 100";
+      return 'Password must be between 6 to 100';
     }
     return null;
   }
 
   String? validateConfirmPassword(String? text) {
     if (text == null || text.isEmpty) {
-      return "Please confirm your password";
+      return 'Please confirm your password';
     }
     if (text != passwordController.text) {
-      return "Passwords do not match";
+      return 'Passwords do not match';
     }
     return null;
   }

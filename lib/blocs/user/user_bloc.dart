@@ -5,6 +5,7 @@ import 'package:mandiapp/dao/user_dao.dart';
 import 'package:mandiapp/models/user_model.dart';
 import 'package:mandiapp/services/auth_api.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 
 part 'user_event.dart';
 part 'user_state.dart';
@@ -18,9 +19,9 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<LoadUser>((event, emit) async {
       try {
         emit(UserLoading());
-        
-        User? user = await userDAO.getUserById(event.userId);
-        
+
+        final User? user = await userDAO.getUserById(event.userId);
+
         if (user != null) {
           emit(UserLoaded(user: user));
         } else {
@@ -35,9 +36,9 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<LoadCurrentUser>((event, emit) async {
       try {
         emit(UserLoading());
-        
-        final userData = await AppHelper.getPreferences('user');
-        
+
+        final userData = await AppHelper.getPreferences(PrefsKeys.user);
+
         if (userData != null) {
           final user = User.fromJson(userData);
           emit(UserLoaded(user: user));
@@ -45,7 +46,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           emit(const UserError(errorMsg: 'No user logged in'));
         }
       } catch (error) {
-        emit(UserError(errorMsg: 'Failed to load current user: ${error.toString()}'));
+        emit(UserError(
+            errorMsg: 'Failed to load current user: ${error.toString()}'));
       }
     });
 
@@ -53,9 +55,9 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<UpdateUser>((event, emit) async {
       try {
         emit(UserLoading());
-        
+
         await userDAO.updateUser(event.user);
-        
+
         emit(UserUpdated(user: event.user));
       } catch (error) {
         emit(UserError(errorMsg: 'Failed to update user: ${error.toString()}'));
@@ -66,17 +68,17 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<UpdateUserProfile>((event, emit) async {
       try {
         emit(UserLoading());
-        
+
         // Get current user from SharedPreferences
-        final userData = await AppHelper.getPreferences('user');
-        
+        final userData = await AppHelper.getPreferences(PrefsKeys.user);
+
         if (userData == null) {
           emit(const UserError(errorMsg: 'No user logged in'));
           return;
         }
-        
+
         final currentUser = User.fromJson(userData);
-        
+
         // Update only provided fields
         final updatedUser = User(
           id: currentUser.id,
@@ -85,16 +87,17 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           password: event.password ?? currentUser.password,
           role: currentUser.role,
         );
-        
+
         // Update in database
         await userDAO.updateUser(updatedUser);
-        
+
         // Update in SharedPreferences
-        await AppHelper.savePreferences('user', updatedUser.toJson());
-        
+        await AppHelper.savePreferences(PrefsKeys.user, updatedUser.toJson());
+
         emit(UserUpdated(user: updatedUser));
       } catch (error) {
-        emit(UserError(errorMsg: 'Failed to update profile: ${error.toString()}'));
+        emit(UserError(
+            errorMsg: 'Failed to update profile: ${error.toString()}'));
       }
     });
 
@@ -102,18 +105,18 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<DeleteUser>((event, emit) async {
       try {
         emit(UserLoading());
-        
+
         await userDAO.deleteUser(event.userId);
-        
+
         // If deleting current user, clear session
-        final userData = await AppHelper.getPreferences('user');
+        final userData = await AppHelper.getPreferences(PrefsKeys.user);
         if (userData != null) {
           final currentUser = User.fromJson(userData);
           if (currentUser.id == event.userId) {
-            await AppHelper.removePreferences('user');
+            await AppHelper.removePreferences(PrefsKeys.user);
           }
         }
-        
+
         emit(UserDeleted());
       } catch (error) {
         emit(UserError(errorMsg: 'Failed to delete user: ${error.toString()}'));
@@ -124,9 +127,9 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<SaveUser>((event, emit) async {
       try {
         emit(UserLoading());
-        
+
         final mandiId = await AppHelper.getCurrentMandiId();
-        
+
         final newUser = await _authApi.addStaff(
           mandiId: mandiId ?? 0,
           name: event.name,
@@ -149,12 +152,13 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<LoadUsersByRole>((event, emit) async {
       try {
         emit(UserLoading());
-        
+
         final users = await userDAO.getUsersByRole(event.role);
-        
+
         emit(UsersByRoleLoaded(users: users, role: event.role));
       } catch (error) {
-        emit(UserError(errorMsg: 'Failed to load users by role: ${error.toString()}'));
+        emit(UserError(
+            errorMsg: 'Failed to load users by role: ${error.toString()}'));
       }
     });
 
@@ -162,16 +166,17 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<LoadAdminUser>((event, emit) async {
       try {
         emit(UserLoading());
-        
+
         final adminUser = await userDAO.getAdminUser();
-        
+
         if (adminUser != null) {
           emit(UserLoaded(user: adminUser));
         } else {
           emit(const UserError(errorMsg: 'No admin user found'));
         }
       } catch (error) {
-        emit(UserError(errorMsg: 'Failed to load admin user: ${error.toString()}'));
+        emit(UserError(
+            errorMsg: 'Failed to load admin user: ${error.toString()}'));
       }
     });
 
@@ -183,7 +188,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           user: User(id: event.userId, isActive: event.active ? 1 : 0),
         ));
       } catch (error) {
-        emit(UserError(errorMsg: 'Failed to update status: ${error.toString()}'));
+        emit(UserError(
+            errorMsg: 'Failed to update status: ${error.toString()}'));
       }
     });
   }

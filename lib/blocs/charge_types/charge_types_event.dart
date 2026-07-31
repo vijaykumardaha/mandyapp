@@ -48,7 +48,8 @@ class ToggleChargeTypeStatus extends ChargeTypesEvent {
   final int chargeTypeId;
   final bool activate;
 
-  const ToggleChargeTypeStatus({required this.chargeTypeId, required this.activate});
+  const ToggleChargeTypeStatus(
+      {required this.chargeTypeId, required this.activate});
 
   @override
   List<Object?> get props => [chargeTypeId, activate];

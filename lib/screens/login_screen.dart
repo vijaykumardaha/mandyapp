@@ -1,22 +1,21 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mandiapp/blocs/login/login_bloc.dart';
 import 'package:mandiapp/controllers/login_controller.dart';
-
 import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/widgets/common/my_button.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:flutter/material.dart';
 import 'package:mandiapp/utils/info_controller.dart';
 import 'package:mandiapp/widgets/auth/mobile_field.dart';
 import 'package:mandiapp/widgets/auth/password_field.dart';
+import 'package:mandiapp/widgets/common/my_button.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -30,7 +29,6 @@ class _LoginScreenState extends State<LoginScreen> {
     theme = AppTheme.shoppingManagerTheme;
     controller = LoginController();
     outlineInputBorder = OutlineInputBorder(
-      borderRadius: const BorderRadius.all(Radius.circular(4)),
       borderSide: BorderSide(
         color: theme.dividerColor,
       ),
@@ -76,10 +74,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   MySpacing.height(60),
-                  Align(
+                  const Align(
                     alignment: Alignment.centerLeft,
                     child: MyText.headlineMedium(
-                      "Sign In",
+                      'Login',
                       fontWeight: 700,
                     ),
                   ),
@@ -87,8 +85,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: MyText.bodyMedium(
-                      "Welcome back! Please login to continue",
-                      color: theme.colorScheme.onBackground.withOpacity(0.6),
+                      'Welcome back! Please login to continue',
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   MySpacing.height(32),
@@ -131,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        MyText.bodySmall("Sign In".toUpperCase(),
+                        MyText.bodySmall('Login'.toUpperCase(),
                             fontWeight: 700,
                             color: theme.colorScheme.onPrimary,
                             letterSpacing: 0.5),
@@ -144,12 +142,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       MyText.bodyMedium(
                         "Don't have an account? ",
-                        color: theme.colorScheme.onBackground.withOpacity(0.6),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                       InkWell(
                         onTap: () => context.go('/signup'),
                         child: MyText.bodyMedium(
-                          "Sign Up",
+                          'Sign Up',
                           fontWeight: 600,
                           color: theme.colorScheme.primary,
                         ),

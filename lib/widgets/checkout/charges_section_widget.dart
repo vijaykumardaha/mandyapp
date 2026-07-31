@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
+import 'package:mandiapp/models/charge_type_model.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/models/charge_type_model.dart';
 
 class ChargesSectionWidget extends StatelessWidget {
   final String orderFor;
@@ -29,8 +29,8 @@ class ChargesSectionWidget extends StatelessWidget {
     final state = chargesState;
     if (state is ChargeTypesLoaded) {
       final activeCharges = state.chargeTypes
-          .where((charge) =>
-              charge.isActive == 1 && charge.chargeFor == orderFor)
+          .where(
+              (charge) => charge.isActive == 1 && charge.chargeFor == orderFor)
           .toList();
 
       if (activeCharges.isEmpty) {
@@ -60,17 +60,21 @@ class ChargesSectionWidget extends StatelessWidget {
             width: double.infinity,
             padding: MySpacing.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              color:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                MyText.bodyMedium('Additional Charges', fontWeight: 600),
+                const MyText.bodyMedium('Additional Charges', fontWeight: 600),
                 MySpacing.height(2),
                 MyText.bodySmall(
                   'Extra fees like delivery or service charges',
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
                 ),
               ],
             ),
@@ -80,7 +84,10 @@ class ChargesSectionWidget extends StatelessWidget {
             padding: MySpacing.only(left: 12),
             child: MyText.bodySmall(
               'No extra charges for this order',
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -99,22 +106,26 @@ class ChargesSectionWidget extends StatelessWidget {
             width: double.infinity,
             padding: MySpacing.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              color:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                MyText.bodyMedium('Additional Charges', fontWeight: 600),
+                const MyText.bodyMedium('Additional Charges', fontWeight: 600),
                 MySpacing.height(2),
                 MyText.bodySmall(
                   'Select any extra fees that apply',
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 5),
+          const SizedBox(height: 5),
           ...activeCharges.map((charge) {
             if (charge.id == null) return const SizedBox.shrink();
 
@@ -135,25 +146,38 @@ class ChargesSectionWidget extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(
-                      isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+                      isSelected
+                          ? Icons.check_box
+                          : Icons.check_box_outline_blank,
                       size: 20,
                       color: isSelected
                           ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.4),
                     ),
                     MySpacing.width(12),
                     Expanded(
-                      child: MyText.bodyMedium(charge.chargeName, fontWeight: 500),
+                      child:
+                          MyText.bodyMedium(charge.chargeName, fontWeight: 500),
                     ),
                     MyText.bodySmall(
                       charge.chargeType == 'percentage'
                           ? () {
-                              final pct = charge.chargeAmount.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
-                              final amt = (subtotal * charge.chargeAmount / 100).toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
+                              final pct = charge.chargeAmount
+                                  .toStringAsFixed(2)
+                                  .replaceFirst(RegExp(r'\.?0+$'), '');
+                              final amt = (subtotal * charge.chargeAmount / 100)
+                                  .toStringAsFixed(2)
+                                  .replaceFirst(RegExp(r'\.?0+$'), '');
                               return '$pct% = ₹$amt';
                             }()
                           : '₹${charge.chargeAmount.toStringAsFixed(2)}',
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.7),
                     ),
                   ],
                 ),

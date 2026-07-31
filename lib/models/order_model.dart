@@ -39,8 +39,11 @@ class Order {
       id: json['id'] as int?,
       mandiId: json['mandi_id'] as int?,
       customerId: json['customer_id'] as int,
-      orderFor: (json['order_for'] as String?)?.trim().toLowerCase() == 'seller' ? 'seller' : 'buyer',
-      updatedAt: json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+      orderFor: (json['order_for'] as String?)?.trim().toLowerCase() == 'seller'
+          ? 'seller'
+          : 'buyer',
+      updatedAt:
+          json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
       isDeleted: json['is_deleted'] as int? ?? 0,
       syncStatus: json['sync_status'] as int? ?? 0,
       items: items,
@@ -56,7 +59,9 @@ class Order {
     return Order(
       id: id,
       customerId: customerId ?? this.customerId,
-      orderFor: orderFor != null && orderFor.trim().toLowerCase() == 'seller' ? 'seller' : (orderFor != null ? 'buyer' : this.orderFor),
+      orderFor: orderFor != null && orderFor.trim().toLowerCase() == 'seller'
+          ? 'seller'
+          : (orderFor != null ? 'buyer' : this.orderFor),
       items: items ?? this.items,
     );
   }
@@ -75,7 +80,8 @@ class Order {
 
   double get totalPrice {
     if (items == null || items!.isEmpty) return 0.0;
-    return items!.fold(0.0, (sum, item) => sum + item.sellingPrice * item.quantity);
+    return items!
+        .fold(0.0, (sum, item) => sum + item.sellingPrice * item.quantity);
   }
 
   bool get isEmpty => items == null || items!.isEmpty;

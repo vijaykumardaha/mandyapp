@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/models/order_item_model.dart';
-import 'package:mandiapp/widgets/checkout/empty_cart.dart';
 import 'package:mandiapp/widgets/checkout/charges_section_widget.dart';
+import 'package:mandiapp/widgets/checkout/empty_cart.dart';
 import 'package:mandiapp/widgets/checkout/expense_section_widget.dart';
 import 'package:mandiapp/widgets/checkout/payment_method_selector.dart';
 import 'package:mandiapp/widgets/checkout/payment_section_widget.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 
 class CheckoutContent extends StatefulWidget {
   final List<OrderItem>? cartItems;
@@ -97,17 +97,21 @@ class _CheckoutContentState extends State<CheckoutContent> {
             width: double.infinity,
             padding: MySpacing.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              color:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                MyText.bodyMedium('Your Order Items', fontWeight: 600),
+                const MyText.bodyMedium('Your Order Items', fontWeight: 600),
                 MySpacing.height(2),
                 MyText.bodySmall(
                   'Products you are purchasing',
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
                 ),
               ],
             ),
@@ -120,7 +124,10 @@ class _CheckoutContentState extends State<CheckoutContent> {
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .outline
+                        .withValues(alpha: 0.2),
                   ),
                 ),
               ),
@@ -139,12 +146,16 @@ class _CheckoutContentState extends State<CheckoutContent> {
                         if (item.sellerName != null)
                           MyText.bodySmall(
                             'Seller: ${item.sellerName}',
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           )
                         else
                           MyText.bodySmall(
                             '${item.quantity} × ₹${item.sellingPrice.toStringAsFixed(2)} each',
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.7),
                           ),
                       ],
                     ),
@@ -161,7 +172,10 @@ class _CheckoutContentState extends State<CheckoutContent> {
                         MySpacing.height(4),
                         MyText.bodySmall(
                           '${item.quantity} × ₹${item.sellingPrice.toStringAsFixed(2)}',
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.7),
                         ),
                       ],
                     ],

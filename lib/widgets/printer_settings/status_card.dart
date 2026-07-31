@@ -31,7 +31,9 @@ class BluetoothStatusCard extends StatelessWidget {
     final helperText = !permissionGranted
         ? 'Bluetooth permission is required. Grant it from system settings.'
         : bluetoothEnabled
-            ? (isConnected ? 'Printer connected and ready.' : 'Tap "Scan Bluetooth" to discover nearby printers.')
+            ? (isConnected
+                ? 'Printer connected and ready.'
+                : 'Tap "Scan Bluetooth" to discover nearby printers.')
             : 'Please activate your Bluetooth to connect devices.';
 
     return Container(
@@ -39,7 +41,8 @@ class BluetoothStatusCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.12)),
+        border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,7 +51,8 @@ class BluetoothStatusCard extends StatelessWidget {
             children: [
               Icon(Icons.bluetooth, color: statusColor),
               MySpacing.width(12),
-              MyText.titleSmall(statusText, fontWeight: 600, color: statusColor),
+              MyText.titleSmall(statusText,
+                  fontWeight: 600, color: statusColor),
             ],
           ),
           MySpacing.height(12),

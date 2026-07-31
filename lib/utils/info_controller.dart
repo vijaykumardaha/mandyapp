@@ -1,14 +1,15 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:flutter/material.dart';
 
 class Info {
   static OverlayEntry? _currentEntry;
 
-  static void _showTop(BuildContext context, String message, Color backgroundColor,
-      Color textColor, {Duration duration = const Duration(seconds: 3)}) {
+  static void _showTop(BuildContext context, String message,
+      Color backgroundColor, Color textColor,
+      {Duration duration = const Duration(seconds: 3)}) {
     _currentEntry?.remove();
     _currentEntry = null;
 
@@ -52,8 +53,8 @@ class Info {
       SnackBarBehavior snackBarBehavior = SnackBarBehavior.floating}) {
     final theme = AppTheme.theme;
     if (context != null) {
-      _showTop(context, message, theme.colorScheme.error,
-          theme.colorScheme.onError,
+      _showTop(
+          context, message, theme.colorScheme.error, theme.colorScheme.onError,
           duration: duration ?? const Duration(seconds: 3));
     }
   }
@@ -78,7 +79,8 @@ class _TopToast extends StatefulWidget {
   State<_TopToast> createState() => _TopToastState();
 }
 
-class _TopToastState extends State<_TopToast> with SingleTickerProviderStateMixin {
+class _TopToastState extends State<_TopToast>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   Timer? _timer;
@@ -90,7 +92,8 @@ class _TopToastState extends State<_TopToast> with SingleTickerProviderStateMixi
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _fadeAnimation =
+        CurvedAnimation(parent: _controller, curve: Curves.easeOut);
     _controller.forward();
 
     _timer = Timer(widget.duration, () {

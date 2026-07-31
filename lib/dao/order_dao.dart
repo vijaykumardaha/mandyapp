@@ -1,6 +1,7 @@
 import 'package:mandiapp/models/order_item_model.dart';
 import 'package:mandiapp/models/order_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -15,7 +16,7 @@ class OrderDAO {
     order.updatedAt = DateTime.now().millisecondsSinceEpoch;
     order.isDeleted = 0;
     order.syncStatus = 0;
-    return await db.insert('orders', order.toJson());
+    return await db.insert(DbTables.orders, order.toJson());
   }
 
   // Update an existing order
@@ -25,7 +26,7 @@ class OrderDAO {
     order.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
-      'orders',
+      DbTables.orders,
       order.toJson(),
       where: 'id = ?',
       whereArgs: [order.id],
@@ -35,7 +36,7 @@ class OrderDAO {
   Future<int> restoreOrder(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'orders',
+      DbTables.orders,
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -54,18 +55,19 @@ class OrderDAO {
     if (order != null) {
       // Soft delete all order-linked order items first
       await db.update(
-        'order_items',
+        DbTables.orderItems,
         {
           'is_deleted': 1,
           'updated_at': DateTime.now().millisecondsSinceEpoch,
           'sync_status': 0,
         },
-        where: '${order.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ?',
+        where:
+            '${order.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ?',
         whereArgs: [id],
       );
       // Then soft delete the order
       return await db.update(
-        'orders',
+        DbTables.orders,
         {
           'is_deleted': 1,
           'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -82,7 +84,7 @@ class OrderDAO {
   Future<Order?> getOrderById(int id) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'orders',
+      DbTables.orders,
       where: 'id = ? AND is_deleted = ?',
       whereArgs: [id, 0],
     );
@@ -97,7 +99,7 @@ class OrderDAO {
   Future<List<Order>> getAllOrders() async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'orders',
+      DbTables.orders,
       where: 'is_deleted = ?',
       whereArgs: [0],
       orderBy: 'updated_at DESC',
@@ -112,18 +114,19 @@ class OrderDAO {
   Future<List<Order>> getOrdersByCustomer(int customerId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'orders',
+      DbTables.orders,
       where: 'customer_id = ? AND is_deleted = ?',
       whereArgs: [customerId, 0],
       orderBy: 'updated_at DESC',
     );
 
     // Load items for each order
-    List<Order> orders = [];
+    final List<Order> orders = [];
     for (var map in maps) {
       final order = Order.fromJson(map);
       final items = await getOrderItems(order.id!, orderFor: order.orderFor);
-      orders.add(order.copyWith(id: order.id!, items: items, orderFor: order.orderFor));
+      orders.add(order.copyWith(
+          id: order.id!, items: items, orderFor: order.orderFor));
     }
     return orders;
   }
@@ -132,7 +135,7 @@ class OrderDAO {
   Future<Order?> getOrderWithItems(int orderId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> orderMaps = await db.query(
-      'orders',
+      DbTables.orders,
       where: 'id = ?',
       whereArgs: [orderId],
     );
@@ -158,7 +161,7 @@ class OrderDAO {
       isDeleted: 0,
       syncStatus: 0,
     );
-    return await db.insert('order_items', prepared.toJson());
+    return await db.insert(DbTables.orderItems, prepared.toJson());
   }
 
   // Update an order item sale
@@ -170,7 +173,7 @@ class OrderDAO {
       syncStatus: 0,
     );
     return await db.update(
-      'order_items',
+      DbTables.orderItems,
       updated.toJson(),
       where: 'id = ?',
       whereArgs: [item.id],
@@ -180,7 +183,7 @@ class OrderDAO {
   Future<int> restoreOrderItem(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'order_items',
+      DbTables.orderItems,
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -195,7 +198,7 @@ class OrderDAO {
   Future<int> deleteOrderItem(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'order_items',
+      DbTables.orderItems,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -210,7 +213,7 @@ class OrderDAO {
   Future<OrderItem?> getOrderItem(int id) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'order_items',
+      DbTables.orderItems,
       where: 'id = ? AND is_deleted = ?',
       whereArgs: [id, 0],
     );
@@ -261,13 +264,14 @@ class OrderDAO {
     final db = await dbHelper.database;
     final order = await getOrderById(orderId);
     return await db.update(
-      'order_items',
+      DbTables.orderItems,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
         'sync_status': 0,
       },
-      where: '${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ?',
+      where:
+          '${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ?',
       whereArgs: [orderId],
     );
   }
@@ -277,8 +281,9 @@ class OrderDAO {
     final db = await dbHelper.database;
     final order = await getOrderById(orderId);
     final List<Map<String, dynamic>> maps = await db.query(
-      'order_items',
-      where: '${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ? AND product_id = ? AND variant_id IS NULL AND is_deleted = ?',
+      DbTables.orderItems,
+      where:
+          '${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ? AND product_id = ? AND variant_id IS NULL AND is_deleted = ?',
       whereArgs: [orderId, productId, 0],
     );
 
@@ -293,8 +298,9 @@ class OrderDAO {
     final db = await dbHelper.database;
     final order = await getOrderById(orderId);
     final List<Map<String, dynamic>> maps = await db.query(
-      'order_items',
-      where: '${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ? AND variant_id = ? AND is_deleted = ?',
+      DbTables.orderItems,
+      where:
+          '${order?.orderFor == 'seller' ? 'seller_order_id' : 'buyer_order_id'} = ? AND variant_id = ? AND is_deleted = ?',
       whereArgs: [orderId, variantId, 0],
     );
 
@@ -323,7 +329,7 @@ class OrderDAO {
 
       for (final order in orders) {
         batch.rawInsert('''
-          INSERT INTO orders (
+          INSERT INTO ${DbTables.orders} (
             id, mandi_id, customer_id, order_for,
             updated_at, is_deleted, sync_status
           )
@@ -337,7 +343,7 @@ class OrderDAO {
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
 
-          WHERE excluded.updated_at > orders.updated_at;
+          WHERE excluded.updated_at > ${DbTables.orders}.updated_at;
         ''', [
           order.id,
           order.mandiId,
@@ -352,5 +358,4 @@ class OrderDAO {
       await batch.commit(noResult: true);
     });
   }
-
 }

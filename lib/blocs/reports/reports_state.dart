@@ -36,7 +36,8 @@ class DailySalesReportLoaded extends ReportsState {
   });
 
   @override
-  List<Object?> get props => [data, totalRevenue, totalQuantity, totalTransactions];
+  List<Object?> get props =>
+      [data, totalRevenue, totalQuantity, totalTransactions];
 }
 
 class DailyPurchaseReportLoaded extends ReportsState {
@@ -53,7 +54,8 @@ class DailyPurchaseReportLoaded extends ReportsState {
   });
 
   @override
-  List<Object?> get props => [data, totalCost, totalQuantity, totalTransactions];
+  List<Object?> get props =>
+      [data, totalCost, totalQuantity, totalTransactions];
 }
 
 class MandiProfitReportLoaded extends ReportsState {
@@ -131,15 +133,15 @@ class DashboardDataLoaded extends ReportsState {
 
   @override
   List<Object?> get props => [
-    todaySales,
-    grossProfit,
-    todayOrders,
-    netBalance,
-    totalReceived,
-    totalPending,
-    paidToSellers,
-    pendingToSellers,
-  ];
+        todaySales,
+        grossProfit,
+        todayOrders,
+        netBalance,
+        totalReceived,
+        totalPending,
+        paidToSellers,
+        pendingToSellers,
+      ];
 }
 
 class PaymentSummaryLoaded extends ReportsState {
@@ -156,7 +158,8 @@ class PaymentSummaryLoaded extends ReportsState {
   });
 
   @override
-  List<Object?> get props => [totalReceived, totalPending, paidToSellers, pendingToSellers];
+  List<Object?> get props =>
+      [totalReceived, totalPending, paidToSellers, pendingToSellers];
 }
 
 class TodayOrdersLoaded extends ReportsState {
@@ -208,5 +211,11 @@ class StockSummaryReportLoaded extends ReportsState {
   });
 
   @override
-  List<Object?> get props => [data, totalPurchaseAmount, totalSoldAmount, totalProfit, totalStockQuantity];
+  List<Object?> get props => [
+        data,
+        totalPurchaseAmount,
+        totalSoldAmount,
+        totalProfit,
+        totalStockQuantity
+      ];
 }

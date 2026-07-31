@@ -1,14 +1,12 @@
 import 'dart:ui';
 
-import 'package:mandiapp/helpers/localizations/translator.dart';
-
 extension StringUtil on String {
   Color get toColor {
-    String data = replaceAll("#", "");
+    String data = replaceAll('#', '');
     if (data.length == 6) {
-      data = "FF$data";
+      data = 'FF$data';
     }
-    return Color(int.parse("0x$data"));
+    return Color(int.parse('0x$data'));
   }
 
   String maxLength(int length) {
@@ -20,7 +18,7 @@ extension StringUtil on String {
   }
 
   String toParagraph([bool addDash = false]) {
-    return addDash ? "-\t$this" : "\t$this";
+    return addDash ? '-\t$this' : '\t$this';
   }
 
   bool toBool([bool defaultValue = false]) {
@@ -47,13 +45,5 @@ extension StringUtil on String {
     } catch (e) {
       return defaultValue;
     }
-  }
-}
-
-//------ App Localization Extension --------------------------//
-
-extension StringLocalization on String {
-  String tr() {
-    return Translator.translate(this);
   }
 }

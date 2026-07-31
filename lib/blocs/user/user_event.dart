@@ -52,8 +52,8 @@ class SaveUser extends UserEvent {
   final String role;
 
   const SaveUser(
-      {required this.name, 
-      required this.mobile, 
+      {required this.name,
+      required this.mobile,
       required this.password,
       this.role = 'admin'});
 

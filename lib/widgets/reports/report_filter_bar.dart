@@ -36,10 +36,11 @@ class _ReportFilterBarState extends State<ReportFilterBar> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.12)),
+        border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.12)),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow.withOpacity(0.04),
+            color: theme.colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -67,15 +68,21 @@ class _ReportFilterBarState extends State<ReportFilterBar> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isCustomSelected ? accent.withOpacity(0.15) : accent.withOpacity(0.12),
+        color: isCustomSelected
+            ? accent.withValues(alpha: 0.15)
+            : accent.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
-        border: isCustomSelected ? Border.all(color: accent.withOpacity(0.3), width: 1) : null,
+        border: isCustomSelected
+            ? Border.all(color: accent.withValues(alpha: 0.3))
+            : null,
       ),
       child: PopupMenuButton<ReportRangePreset>(
         color: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: isCustomSelected ? BorderSide(color: accent.withOpacity(0.3), width: 1) : BorderSide.none,
+          side: isCustomSelected
+              ? BorderSide(color: accent.withValues(alpha: 0.3))
+              : BorderSide.none,
         ),
         position: PopupMenuPosition.under,
         onSelected: (value) async {
@@ -88,10 +95,11 @@ class _ReportFilterBarState extends State<ReportFilterBar> {
               context: context,
               firstDate: firstDate,
               lastDate: lastDate,
-              initialDateRange: widget.customDateRange ?? DateTimeRange(
-                start: DateTime(now.year, now.month, now.day - 7),
-                end: now,
-              ),
+              initialDateRange: widget.customDateRange ??
+                  DateTimeRange(
+                    start: DateTime(now.year, now.month, now.day - 7),
+                    end: now,
+                  ),
               builder: (context, child) {
                 return Theme(
                   data: Theme.of(context).copyWith(
@@ -115,10 +123,14 @@ class _ReportFilterBarState extends State<ReportFilterBar> {
         },
         itemBuilder: (context) => const [
           PopupMenuItem(value: ReportRangePreset.today, child: Text('Today')),
-          PopupMenuItem(value: ReportRangePreset.yesterday, child: Text('Yesterday')),
-          PopupMenuItem(value: ReportRangePreset.week, child: Text('This Week')),
-          PopupMenuItem(value: ReportRangePreset.month, child: Text('This Month')),
-          PopupMenuItem(value: ReportRangePreset.custom, child: Text('Custom Range')),
+          PopupMenuItem(
+              value: ReportRangePreset.yesterday, child: Text('Yesterday')),
+          PopupMenuItem(
+              value: ReportRangePreset.week, child: Text('This Week')),
+          PopupMenuItem(
+              value: ReportRangePreset.month, child: Text('This Month')),
+          PopupMenuItem(
+              value: ReportRangePreset.custom, child: Text('Custom Range')),
         ],
         child: Padding(
           padding: MySpacing.xy(16, 12),
@@ -132,7 +144,9 @@ class _ReportFilterBarState extends State<ReportFilterBar> {
               ),
               MySpacing.width(8),
               Icon(
-                isCustomSelected ? Icons.calendar_today : Icons.keyboard_arrow_down,
+                isCustomSelected
+                    ? Icons.calendar_today
+                    : Icons.keyboard_arrow_down,
                 color: accent,
                 size: 18,
               ),
@@ -147,7 +161,8 @@ class _ReportFilterBarState extends State<ReportFilterBar> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.16)),
+        border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.16)),
       ),
       child: PopupMenuButton<ReportType>(
         color: theme.colorScheme.surface,
@@ -157,11 +172,20 @@ class _ReportFilterBarState extends State<ReportFilterBar> {
           widget.onReportTypeChanged(value);
         },
         itemBuilder: (context) => const [
-          PopupMenuItem(value: ReportType.dailySales, child: Text('Daily Sales Report')),
-          PopupMenuItem(value: ReportType.dailyPurchase, child: Text('Daily Purchase Report')),
-          PopupMenuItem(value: ReportType.mandiProfit, child: Text('Mandi Profit Report')),
-          PopupMenuItem(value: ReportType.pendingPayment, child: Text('Pending Payment Report')),
-          PopupMenuItem(value: ReportType.customerLedger, child: Text('Customer Ledger Report')),
+          PopupMenuItem(
+              value: ReportType.dailySales, child: Text('Daily Sales Report')),
+          PopupMenuItem(
+              value: ReportType.dailyPurchase,
+              child: Text('Daily Purchase Report')),
+          PopupMenuItem(
+              value: ReportType.mandiProfit,
+              child: Text('Mandi Profit Report')),
+          PopupMenuItem(
+              value: ReportType.pendingPayment,
+              child: Text('Pending Payment Report')),
+          PopupMenuItem(
+              value: ReportType.customerLedger,
+              child: Text('Customer Ledger Report')),
         ],
         child: Padding(
           padding: MySpacing.xy(16, 12),
@@ -196,7 +220,8 @@ class _ReportFilterBarState extends State<ReportFilterBar> {
       case ReportRangePreset.yesterday:
         final yesterday = DateTime.now().subtract(const Duration(days: 1));
         startDate = DateTime(yesterday.year, yesterday.month, yesterday.day);
-        endDate = DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
+        endDate = DateTime(
+            yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
         break;
       case ReportRangePreset.week:
         final now = DateTime.now();
@@ -206,14 +231,23 @@ class _ReportFilterBarState extends State<ReportFilterBar> {
         break;
       case ReportRangePreset.month:
         final now = DateTime.now();
-        startDate = DateTime(now.year, now.month, 1);
+        startDate = DateTime(now.year, now.month);
         endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
         break;
       case ReportRangePreset.custom:
         isCustom = true;
         if (widget.customDateRange != null) {
-          startDate = DateTime(widget.customDateRange!.start.year, widget.customDateRange!.start.month, widget.customDateRange!.start.day);
-          endDate = DateTime(widget.customDateRange!.end.year, widget.customDateRange!.end.month, widget.customDateRange!.end.day, 23, 59, 59);
+          startDate = DateTime(
+              widget.customDateRange!.start.year,
+              widget.customDateRange!.start.month,
+              widget.customDateRange!.start.day);
+          endDate = DateTime(
+              widget.customDateRange!.end.year,
+              widget.customDateRange!.end.month,
+              widget.customDateRange!.end.day,
+              23,
+              59,
+              59);
         } else {
           final now = DateTime.now();
           startDate = DateTime(now.year, now.month, now.day);
@@ -228,22 +262,33 @@ class _ReportFilterBarState extends State<ReportFilterBar> {
     return Container(
       padding: MySpacing.xy(16, 12),
       decoration: BoxDecoration(
-        color: isCustom ? accent.withOpacity(0.08) : theme.colorScheme.surface,
+        color: isCustom
+            ? accent.withValues(alpha: 0.08)
+            : theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isCustom ? accent.withOpacity(0.2) : theme.colorScheme.outline.withOpacity(0.1), width: 1),
+        border: Border.all(
+            color: isCustom
+                ? accent.withValues(alpha: 0.2)
+                : theme.colorScheme.outline.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
           Icon(
             isCustom ? Icons.calendar_today_outlined : Icons.date_range,
             size: 18,
-            color: isCustom ? accent : theme.colorScheme.onSurface.withOpacity(0.7),
+            color: isCustom
+                ? accent
+                : theme.colorScheme.onSurface.withValues(alpha: 0.7),
           ),
           MySpacing.width(8),
           MyText.bodyMedium(
-            isCustom ? 'Selected: $startDateStr - $endDateStr' : 'Range: $startDateStr - $endDateStr',
+            isCustom
+                ? 'Selected: $startDateStr - $endDateStr'
+                : 'Range: $startDateStr - $endDateStr',
             fontWeight: 500,
-            color: isCustom ? accent : theme.colorScheme.onSurface.withOpacity(0.8),
+            color: isCustom
+                ? accent
+                : theme.colorScheme.onSurface.withValues(alpha: 0.8),
           ),
           if (isCustom) ...[
             const Spacer(),
@@ -257,10 +302,11 @@ class _ReportFilterBarState extends State<ReportFilterBar> {
                   context: context,
                   firstDate: firstDate,
                   lastDate: lastDate,
-                  initialDateRange: widget.customDateRange ?? DateTimeRange(
-                    start: DateTime(now.year, now.month, now.day - 7),
-                    end: now,
-                  ),
+                  initialDateRange: widget.customDateRange ??
+                      DateTimeRange(
+                        start: DateTime(now.year, now.month, now.day - 7),
+                        end: now,
+                      ),
                   builder: (context, child) {
                     return Theme(
                       data: Theme.of(context).copyWith(
@@ -281,7 +327,7 @@ class _ReportFilterBarState extends State<ReportFilterBar> {
               child: Icon(
                 Icons.edit_calendar,
                 size: 18,
-                color: accent.withOpacity(0.7),
+                color: accent.withValues(alpha: 0.7),
               ),
             ),
           ],

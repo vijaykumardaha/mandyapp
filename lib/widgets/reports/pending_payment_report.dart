@@ -32,8 +32,8 @@ class PendingPaymentReportWidget extends StatelessWidget {
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Customer', flex: 2),
-            ReportTableHeader(label: 'Amount', flex: 1, textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Days', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Amount', textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Days', textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(
@@ -46,12 +46,13 @@ class PendingPaymentReportWidget extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         MyText.bodySmall(item.customerName, fontWeight: 600),
-                        MyText.bodySmall(item.customerPhone, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                        MyText.bodySmall(item.customerPhone,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.6)),
                       ],
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(
                       currencyFormat.format(item.pendingAmount),
                       textAlign: TextAlign.center,
@@ -60,12 +61,13 @@ class PendingPaymentReportWidget extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(
                       '${item.daysPending}',
                       textAlign: TextAlign.center,
                       fontWeight: 600,
-                      color: item.daysPending > 30 ? theme.colorScheme.error : theme.colorScheme.onSurface,
+                      color: item.daysPending > 30
+                          ? theme.colorScheme.error
+                          : theme.colorScheme.onSurface,
                     ),
                   ),
                 ],

@@ -30,12 +30,22 @@ class ReceiptPayment extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          InfoRow(label: 'Amount Paid', value: currency.format(data.receivedAmount), theme: theme),
+          InfoRow(
+              label: 'Amount Paid',
+              value: currency.format(data.receivedAmount),
+              theme: theme),
           const SizedBox(height: 4),
-          InfoRow(label: 'Amount Due', value: currency.format(data.pendingPayment.abs()), theme: theme),
-          if (data.paymentMethodLabel.isNotEmpty && data.paymentMethodLabel != 'Not recorded') ...[
+          InfoRow(
+              label: 'Amount Due',
+              value: currency.format(data.pendingPayment.abs()),
+              theme: theme),
+          if (data.paymentMethodLabel.isNotEmpty &&
+              data.paymentMethodLabel != 'Not recorded') ...[
             const SizedBox(height: 4),
-            InfoRow(label: 'Payment Method', value: data.paymentMethodLabel, theme: theme),
+            InfoRow(
+                label: 'Payment Method',
+                value: data.paymentMethodLabel,
+                theme: theme),
           ],
         ],
       ),

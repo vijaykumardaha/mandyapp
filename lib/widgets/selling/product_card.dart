@@ -58,8 +58,7 @@ class ProductCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(
-          color: theme.colorScheme.outline.withOpacity(0.3),
-          width: 1,
+          color: theme.colorScheme.outline.withValues(alpha: 0.3),
         ),
       ),
       child: InkWell(
@@ -72,7 +71,7 @@ class ProductCard extends StatelessWidget {
               flex: 3,
               child: Container(
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceVariant,
+                  color: theme.colorScheme.surfaceContainerHighest,
                   borderRadius: const BorderRadius.all(Radius.circular(8)),
                 ),
                 child: defaultVariant != null &&

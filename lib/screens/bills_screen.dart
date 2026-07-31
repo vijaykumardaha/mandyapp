@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mandiapp/dao/customer_dao.dart';
-import 'package:mandiapp/dao/order_dao.dart';
 import 'package:mandiapp/dao/order_charge_dao.dart';
+import 'package:mandiapp/dao/order_dao.dart';
 import 'package:mandiapp/dao/order_expense_dao.dart';
 import 'package:mandiapp/dao/order_payment_dao.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/models/order_model.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/models/order_model.dart';
 
 class _BillSearchResult {
   final Order order;
@@ -44,7 +45,8 @@ class _BillsScreenState extends State<BillsScreen> {
   bool _isLoading = false;
   bool _hasSearched = false;
   final DateFormat _shortDateFormat = DateFormat('dd MMM yyyy, hh:mm a');
-  final NumberFormat _currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
+  final NumberFormat _currencyFormat =
+      NumberFormat.currency(locale: 'en_IN', symbol: '₹');
 
   late DateTime _startDate;
   late DateTime _endDate;
@@ -55,7 +57,8 @@ class _BillsScreenState extends State<BillsScreen> {
     theme = AppTheme.shoppingManagerTheme;
     _endDate = DateTime.now();
     _startDate = _endDate.subtract(const Duration(days: 30));
-    WidgetsBinding.instance.addPostFrameCallback((_) => _search(_searchController.text));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _search(_searchController.text));
   }
 
   @override
@@ -82,8 +85,10 @@ class _BillsScreenState extends State<BillsScreen> {
       final queryInt = int.tryParse(query.trim());
 
       final filteredOrders = allOrders.where((order) {
-        final orderDate = DateTime.fromMillisecondsSinceEpoch(order.updatedAt ?? 0);
-        return !orderDate.isBefore(_startDate) && !orderDate.isAfter(_endDate.add(const Duration(days: 1)));
+        final orderDate =
+            DateTime.fromMillisecondsSinceEpoch(order.updatedAt ?? 0);
+        return !orderDate.isBefore(_startDate) &&
+            !orderDate.isAfter(_endDate.add(const Duration(days: 1)));
       }).toList();
 
       final matchedOrders = filteredOrders.where((order) {
@@ -91,7 +96,7 @@ class _BillsScreenState extends State<BillsScreen> {
         return false;
       }).toList();
 
-      final customerCache = <int, dynamic>{};
+      final customerCache = <int, Customer?>{};
       final nameMatchedOrders = <Order>[];
       final phoneMatchedOrders = <Order>[];
 
@@ -102,7 +107,8 @@ class _BillsScreenState extends State<BillsScreen> {
           continue;
         }
         if (!customerCache.containsKey(order.customerId)) {
-          customerCache[order.customerId] = await customerDAO.getCustomerById(order.customerId);
+          customerCache[order.customerId] =
+              await customerDAO.getCustomerById(order.customerId);
         }
         final customer = customerCache[order.customerId];
         if (customer == null) continue;
@@ -117,24 +123,33 @@ class _BillsScreenState extends State<BillsScreen> {
         }
       }
 
-      final allMatched = [...matchedOrders, ...nameMatchedOrders, ...phoneMatchedOrders];
+      final allMatched = [
+        ...matchedOrders,
+        ...nameMatchedOrders,
+        ...phoneMatchedOrders
+      ];
 
       final results = <_BillSearchResult>[];
       for (final order in allMatched) {
         final orderWithItems = await orderDAO.getOrderWithItems(order.id!);
 
         if (!customerCache.containsKey(order.customerId)) {
-          customerCache[order.customerId] = await customerDAO.getCustomerById(order.customerId);
+          customerCache[order.customerId] =
+              await customerDAO.getCustomerById(order.customerId);
         }
         final customer = customerCache[order.customerId];
 
-        final charges = await orderChargeDAO.getOrderCharges(order.id.toString());
+        final charges =
+            await orderChargeDAO.getOrderCharges(order.id.toString());
         final expenses = await orderExpenseDAO.getByOrderId(order.id!);
-        final payments = await orderPaymentDAO.getOrderPaymentsByOrderId(order.id!);
+        final payments =
+            await orderPaymentDAO.getOrderPaymentsByOrderId(order.id!);
 
         final itemTotal = orderWithItems?.totalPrice ?? 0.0;
-        final chargesTotal = charges.fold<double>(0.0, (sum, c) => sum + c.chargeAmount);
-        final expensesTotal = expenses.fold<double>(0.0, (sum, e) => sum + e.expenseAmount);
+        final chargesTotal =
+            charges.fold<double>(0.0, (sum, c) => sum + c.chargeAmount);
+        final expensesTotal =
+            expenses.fold<double>(0.0, (sum, e) => sum + e.expenseAmount);
         final received = payments.fold<double>(0.0, (sum, p) => sum + p.amount);
 
         double total;
@@ -176,31 +191,36 @@ class _BillsScreenState extends State<BillsScreen> {
           controller: _searchController,
           onChanged: (q) => _search(q),
           style: theme.textTheme.bodyMedium,
-          autofocus: false,
           decoration: InputDecoration(
             hintText: 'Search by bill ID, name or mobile...',
             filled: true,
-            fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            fillColor: theme.colorScheme.surfaceContainerHighest
+                .withValues(alpha: 0.5),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+              borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+              borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(color: theme.colorScheme.primary),
             ),
-            prefixIcon: Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
+            prefixIcon: Icon(Icons.search,
+                size: 20, color: theme.colorScheme.onSurfaceVariant),
             prefixIconConstraints: const BoxConstraints(minWidth: 36),
             suffixIcon: GestureDetector(
               onTap: _showDateFilter,
               child: Container(
                 padding: const EdgeInsets.all(10),
-                child: Icon(Icons.date_range, size: 20, color: theme.colorScheme.primary),
+                child: Icon(Icons.date_range,
+                    size: 20, color: theme.colorScheme.primary),
               ),
             ),
           ),
@@ -222,11 +242,13 @@ class _BillsScreenState extends State<BillsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.receipt_long_outlined, size: 64, color: theme.colorScheme.onSurface.withOpacity(0.3)),
+              Icon(Icons.receipt_long_outlined,
+                  size: 64,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
               MySpacing.height(16),
               MyText.bodyLarge(
                 'Search bills by ID, customer name or mobile number',
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -242,11 +264,13 @@ class _BillsScreenState extends State<BillsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.search_off, size: 64, color: theme.colorScheme.onSurface.withOpacity(0.3)),
+              Icon(Icons.search_off,
+                  size: 64,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
               MySpacing.height(16),
               MyText.bodyLarge(
                 'No bills found',
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ],
           ),
@@ -260,16 +284,18 @@ class _BillsScreenState extends State<BillsScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              Icon(Icons.date_range, size: 14, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+              Icon(Icons.date_range,
+                  size: 14,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
               const SizedBox(width: 4),
               MyText.bodySmall(
                 '${_shortDateFormat.format(_startDate)} - ${_shortDateFormat.format(_endDate)}',
-                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
               const Spacer(),
               MyText.bodySmall(
                 '${_results.length} bill${_results.length == 1 ? '' : 's'}',
-                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 fontWeight: 600,
               ),
             ],
@@ -296,8 +322,8 @@ class _BillsScreenState extends State<BillsScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: theme.colorScheme.primary,
-            ),
+                  primary: theme.colorScheme.primary,
+                ),
           ),
           child: child!,
         );
@@ -329,12 +355,13 @@ class _BillsScreenState extends State<BillsScreen> {
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: theme.shadowColor.withOpacity(0.06),
+              color: theme.shadowColor.withValues(alpha: 0.06),
               blurRadius: 4,
               offset: const Offset(0, 1),
             ),
           ],
-          border: Border.all(color: theme.colorScheme.outline.withOpacity(0.1)),
+          border: Border.all(
+              color: theme.colorScheme.outline.withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
@@ -355,44 +382,43 @@ class _BillsScreenState extends State<BillsScreen> {
                   ),
                   const SizedBox(height: 4),
                   MyText.bodySmall(
-                    _shortDateFormat.format(DateTime.fromMillisecondsSinceEpoch(order.updatedAt ?? 0)),
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    _shortDateFormat.format(DateTime.fromMillisecondsSinceEpoch(
+                        order.updatedAt ?? 0)),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ],
               ),
             ),
-             Column(
-               crossAxisAlignment: CrossAxisAlignment.end,
-               children: [
-                 Row(
-                   mainAxisSize: MainAxisSize.min,
-                   children: [
-                     if (result.pendingAmount.abs() > 0.01) ...[
-                       MyText.bodySmall(
-                         '(${_currencyFormat.format(result.pendingAmount)} ${result.pendingAmount > 0 ? "Dues" : "Refund"})',
-                         color: result.pendingAmount > 0
-                             ? Colors.red
-                             : Colors.green,
-                         fontWeight: 500,
-                       ),
-                       const SizedBox(width: 8),
-                     ],
-                     MyText.bodyMedium(
-                       _currencyFormat.format(result.totalAmount),
-                       fontWeight: 600,
-                     ),
-                   ],
-                 ),
-                 const SizedBox(height: 2),
-                 MyText.bodySmall(
-                   order.orderFor.toUpperCase(),
-                   color: order.orderFor == 'buyer'
-                       ? Colors.blue
-                       : Colors.teal,
-                   fontWeight: 500,
-                 ),
-               ],
-             ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (result.pendingAmount.abs() > 0.01) ...[
+                      MyText.bodySmall(
+                        '(${_currencyFormat.format(result.pendingAmount)} ${result.pendingAmount > 0 ? "Dues" : "Refund"})',
+                        color: result.pendingAmount > 0
+                            ? Colors.red
+                            : Colors.green,
+                        fontWeight: 500,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    MyText.bodyMedium(
+                      _currencyFormat.format(result.totalAmount),
+                      fontWeight: 600,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                MyText.bodySmall(
+                  order.orderFor.toUpperCase(),
+                  color: order.orderFor == 'buyer' ? Colors.blue : Colors.teal,
+                  fontWeight: 500,
+                ),
+              ],
+            ),
           ],
         ),
       ),

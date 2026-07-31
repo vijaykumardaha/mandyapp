@@ -1,8 +1,9 @@
 import 'dart:math';
 
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/synced_database.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
 class DBHelper {
@@ -22,12 +23,7 @@ class DBHelper {
 
   Future<void> clearAllTables() async {
     final db = await database;
-    final tables = [
-      'users', 'products', 'product_variants', 'orders',
-      'order_items', 'order_payments', 'order_charges',
-      'order_expenses', 'charge_types', 'customers',
-      'customer_payments', 'vegetables', 'stocks', 'stock_transactions',
-    ];
+    final tables = [...DbTables.synced, DbTables.vegetables];
     for (final table in tables) {
       await db.delete(table);
     }
@@ -263,9 +259,8 @@ class DBHelper {
             is_deleted INTEGER NOT NULL DEFAULT 0
           )
         ''');
-
       },
-      onUpgrade: (db, oldVersion, newVersion) async { },
+      onUpgrade: (db, oldVersion, newVersion) async {},
     );
   }
 }

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
 class CustomTheme {
-  static final Color occur = Color(0xffb38220);
-  static final Color peach = Color(0xffe09c5f);
-  static final Color skyBlue = Color(0xff639fdc);
-  static final Color darkGreen = Color(0xff226e79);
-  static final Color red = Color(0xfff8575e);
-  static final Color purple = Color(0xff9f50bf);
-  static final Color pink = Color(0xffd17b88);
-  static final Color brown = Color(0xffbd631a);
-  static final Color blue = Color(0xff1a71bd);
-  static final Color green = Color(0xff068425);
-  static final Color yellow = Color(0xfffff44f);
-  static final Color orange = Color(0xffFFA500);
-  static final Color grey = Color(0xff808080);
+  static const Color occur = Color(0xffb38220);
+  static const Color peach = Color(0xffe09c5f);
+  static const Color skyBlue = Color(0xff639fdc);
+  static const Color darkGreen = Color(0xff226e79);
+  static const Color red = Color(0xfff8575e);
+  static const Color purple = Color(0xff9f50bf);
+  static const Color pink = Color(0xffd17b88);
+  static const Color brown = Color(0xffbd631a);
+  static const Color blue = Color(0xff1a71bd);
+  static const Color green = Color(0xff068425);
+  static const Color yellow = Color(0xfffff44f);
+  static const Color orange = Color(0xffFFA500);
+  static const Color grey = Color(0xff808080);
 
   final Color card,
       cardDark,
@@ -157,7 +157,6 @@ class CustomTheme {
     this.shoppingOnPrimary = const Color(0xffFAF9F9),
     this.shoppingSecondary = const Color(0xffD2E7EE),
     this.shoppingOnSecondary = const Color(0xff387D94),
-
     this.foodPrimary = const Color(0xffF2894F),
     this.foodOnPrimary = const Color(0xffffffff),
     this.foodSecondary = const Color(0xff462F4D),
@@ -167,38 +166,8 @@ class CustomTheme {
   //--------------------------------------  Custom App Theme ----------------------------------------//
 
   static final CustomTheme lightCustomTheme = CustomTheme(
-      card: Color(0xfff6f6f6),
-      cardDark: Color(0xfff0f0f0),
-      disabledColor: Color(0xff636363),
-      onDisabled: Color(0xffffffff),
-      colorInfo: Color(0xffff784b),
-      colorWarning: Color(0xffffc837),
-      colorSuccess: Color(0xff3cd278),
-      shadowColor: Color(0xffd9d9d9),
-      onInfo: Color(0xffffffff),
-      onSuccess: Color(0xffffffff),
-      onWarning: Color(0xffffffff),
-      colorError: Color(0xfff0323c),
-      onError: Color(0xffffffff),
-      shimmerBaseColor: Color(0xFFF5F5F5),
-      shimmerHighlightColor: Color(0xFFE0E0E0));
-
-  static final CustomTheme darkCustomTheme = CustomTheme(
-      card: Color(0xff222327),
-      cardDark: Color(0xff101010),
-      border: Color(0xff303030),
-      borderDark: Color(0xff363636),
-      disabledColor: Color(0xffbababa),
-      onDisabled: Color(0xff000000),
-      colorInfo: Color(0xffff784b),
-      colorWarning: Color(0xffffc837),
-      colorSuccess: Color(0xff3cd278),
-      shadowColor: Color(0xff202020),
-      onInfo: Color(0xffffffff),
-      onSuccess: Color(0xffffffff),
-      onWarning: Color(0xffffffff),
-      colorError: Color(0xfff0323c),
-      onError: Color(0xffffffff),
-      shimmerBaseColor: Color(0xFF1a1a1a),
-      shimmerHighlightColor: Color(0xFF454545));
+      card: const Color(0xfff6f6f6),
+      cardDark: const Color(0xfff0f0f0),
+      disabledColor: const Color(0xff636363),
+      shadowColor: const Color(0xffd9d9d9));
 }

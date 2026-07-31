@@ -1,3 +1,4 @@
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 
 class ReportDAO {
@@ -28,7 +29,10 @@ class ReportDAO {
       ORDER BY date DESC, total_revenue DESC
     ''';
 
-    return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
+    return db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      toDate.toIso8601String().split('T')[0]
+    ]);
   }
 
   // 1b. Daily Purchase Report
@@ -57,10 +61,13 @@ class ReportDAO {
       ORDER BY date DESC, total_cost DESC
     ''';
 
-    return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
+    return db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      toDate.toIso8601String().split('T')[0]
+    ]);
   }
 
-   // 4. Mandi Profit Report
+  // 4. Mandi Profit Report
   Future<List<Map<String, dynamic>>> getMandiProfitReport({
     required DateTime fromDate,
     required DateTime toDate,
@@ -82,10 +89,13 @@ class ReportDAO {
       ORDER BY date DESC
     ''';
 
-    return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
+    return db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      toDate.toIso8601String().split('T')[0]
+    ]);
   }
 
-   // 5. Customer Ledger Report
+  // 5. Customer Ledger Report
   Future<List<Map<String, dynamic>>> getCustomerLedgerReport({
     required DateTime fromDate,
     required DateTime toDate,
@@ -109,7 +119,10 @@ class ReportDAO {
       ORDER BY net_balance DESC
     ''';
 
-    return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
+    return db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      toDate.toIso8601String().split('T')[0]
+    ]);
   }
 
   // 6. Pending Payment Report
@@ -141,10 +154,13 @@ class ReportDAO {
       ORDER BY pending_amount DESC
     ''';
 
-    return db.rawQuery(sql, [fromDate.toIso8601String().split('T')[0], toDate.toIso8601String().split('T')[0]]);
+    return db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      toDate.toIso8601String().split('T')[0]
+    ]);
   }
 
-   // Summary Report (Combined metrics)
+  // Summary Report (Combined metrics)
   Future<Map<String, dynamic>> getReportsSummary({
     required DateTime fromDate,
     required DateTime toDate,
@@ -195,6 +211,7 @@ class ReportDAO {
       return "AND date($alias.updated_at / 1000, 'unixepoch', 'localtime') >= date(?) "
           "AND date($alias.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)";
     }
+
     List<String> args() => hasDateFilter ? [fDate, tDate] : [];
     List<String> args2() => hasDateFilter ? [fDate, tDate, fDate, tDate] : [];
 
@@ -219,7 +236,7 @@ class ReportDAO {
         WHERE buyer_order_id IS NULL
           AND buyer_id IS NOT NULL
           AND (is_deleted IS NULL OR is_deleted = 0)
-          ${filter('order_items')}
+          ${filter(DbTables.orderItems)}
         UNION ALL
         SELECT
           item_totals.item_total
@@ -230,7 +247,7 @@ class ReportDAO {
           SELECT buyer_order_id as order_id, SUM(quantity * selling_price) as item_total
           FROM order_items
           WHERE buyer_order_id IS NOT NULL
-          ${filter('order_items')}
+          ${filter(DbTables.orderItems)}
           GROUP BY buyer_order_id
         ) item_totals
         LEFT JOIN (
@@ -273,7 +290,7 @@ class ReportDAO {
         WHERE seller_order_id IS NULL
           AND seller_id IS NOT NULL
           AND (is_deleted IS NULL OR is_deleted = 0)
-          ${filter('order_items')}
+          ${filter(DbTables.orderItems)}
         UNION ALL
         SELECT
           item_totals.item_total
@@ -284,7 +301,7 @@ class ReportDAO {
           SELECT seller_order_id as order_id, SUM(quantity * selling_price) as item_total
           FROM order_items
           WHERE seller_order_id IS NOT NULL
-          ${filter('order_items')}
+          ${filter(DbTables.orderItems)}
           GROUP BY seller_order_id
         ) item_totals
         LEFT JOIN (
@@ -309,13 +326,22 @@ class ReportDAO {
     final receivedResult = await db.rawQuery(receivedAmountSql, args());
     final pendingResult = await db.rawQuery(pendingPaymentsSql, args2());
     final paidToSellersResult = await db.rawQuery(paidToSellersSql, args());
-    final pendingToSellersResult = await db.rawQuery(pendingToSellersSql, args2());
+    final pendingToSellersResult =
+        await db.rawQuery(pendingToSellersSql, args2());
 
     return {
-      'total_received': (receivedResult.first['total_received'] as num?)?.toDouble() ?? 0.0,
-      'total_pending': (pendingResult.first['total_pending'] as num?)?.toDouble() ?? 0.0,
-      'total_paid_to_sellers': (paidToSellersResult.first['total_paid_to_sellers'] as num?)?.toDouble() ?? 0.0,
-      'total_pending_to_sellers': (pendingToSellersResult.first['total_pending_to_sellers'] as num?)?.toDouble() ?? 0.0,
+      'total_received':
+          (receivedResult.first['total_received'] as num?)?.toDouble() ?? 0.0,
+      'total_pending':
+          (pendingResult.first['total_pending'] as num?)?.toDouble() ?? 0.0,
+      'total_paid_to_sellers':
+          (paidToSellersResult.first['total_paid_to_sellers'] as num?)
+                  ?.toDouble() ??
+              0.0,
+      'total_pending_to_sellers':
+          (pendingToSellersResult.first['total_pending_to_sellers'] as num?)
+                  ?.toDouble() ??
+              0.0,
     };
   }
 
@@ -335,7 +361,7 @@ class ReportDAO {
     return (result.first['orders_count'] as num?)?.toInt() ?? 0;
   }
 
-   // Get net balance (cash in hand + UPI - payables)
+  // Get net balance (cash in hand + UPI - payables)
   Future<double> getNetBalance({DateTime? fromDate, DateTime? toDate}) async {
     final db = await dbHelper.database;
     final bool hasDateFilter = fromDate != null && toDate != null;
@@ -354,7 +380,7 @@ class ReportDAO {
       SELECT COALESCE(SUM(amount), 0) as total_received
       FROM order_payments
       WHERE amount > 0
-        ${filter('order_payments')}
+        ${filter(DbTables.orderPayments)}
     ''';
 
     // Get total payables (pending payments to sellers)
@@ -364,14 +390,16 @@ class ReportDAO {
       JOIN order_items oi ON order_charges.order_id = oi.buyer_order_id
       WHERE oi.seller_order_id IS NULL
         AND oi.buyer_order_id IS NOT NULL
-        ${filter('order_charges')}
+        ${filter(DbTables.orderCharges)}
     ''';
 
     final receivedResult = await db.rawQuery(receivedSql, args);
     final payablesResult = await db.rawQuery(payablesSql, args);
 
-    final totalReceived = (receivedResult.first['total_received'] as num?)?.toDouble() ?? 0.0;
-    final totalPayables = (payablesResult.first['total_payables'] as num?)?.toDouble() ?? 0.0;
+    final totalReceived =
+        (receivedResult.first['total_received'] as num?)?.toDouble() ?? 0.0;
+    final totalPayables =
+        (payablesResult.first['total_payables'] as num?)?.toDouble() ?? 0.0;
 
     return totalReceived - totalPayables;
   }

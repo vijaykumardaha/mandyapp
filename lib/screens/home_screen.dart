@@ -8,12 +8,12 @@ import 'package:go_router/go_router.dart';
 import 'package:mandiapp/blocs/login/login_bloc.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
 import 'package:mandiapp/screens/billing_screen.dart';
-import 'package:mandiapp/screens/home_tab_screen.dart';
-import 'package:mandiapp/screens/selling_screen.dart';
-import 'package:mandiapp/screens/settings_screen.dart';
 import 'package:mandiapp/screens/bills_screen.dart';
 import 'package:mandiapp/screens/customer_management_screen.dart';
+import 'package:mandiapp/screens/home_tab_screen.dart';
 import 'package:mandiapp/screens/reports_screen.dart';
+import 'package:mandiapp/screens/selling_screen.dart';
+import 'package:mandiapp/screens/settings_screen.dart';
 import 'package:mandiapp/services/socket_service.dart';
 import 'package:mandiapp/services/sync_service.dart';
 
@@ -22,7 +22,7 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.activeTab});
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -76,8 +76,13 @@ class _HomeScreenState extends State<HomeScreen> {
       ];
 
   final _navLabels = const [
-    "Home", "Selling", "Billing", "Customers",
-    "Bills", "Reports", "Settings",
+    'Home',
+    'Selling',
+    'Billing',
+    'Customers',
+    'Bills',
+    'Reports',
+    'Settings',
   ];
 
   final _unselectedIcons = const [
@@ -109,7 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
       child: Scaffold(
-        appBar: null,
         body: SafeArea(child: _screens[initialIndex]),
         bottomNavigationBar: ClipRRect(
             borderRadius: const BorderRadius.only(
@@ -121,7 +125,8 @@ class _HomeScreenState extends State<HomeScreen> {
               type: BottomNavigationBarType.fixed,
               backgroundColor: theme.cardTheme.surfaceTintColor,
               selectedItemColor: theme.primaryColor,
-              unselectedItemColor: theme.colorScheme.onSurface.withOpacity(0.6),
+              unselectedItemColor:
+                  theme.colorScheme.onSurface.withValues(alpha: 0.6),
               showSelectedLabels: true,
               showUnselectedLabels: false,
               selectedFontSize: 13,
@@ -132,17 +137,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   initialIndex = i;
                 });
               },
-              items: List.generate(_navLabels.length, (i) => BottomNavigationBarItem(
-                icon: Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Icon(_unselectedIcons[i], size: 22),
-                ),
-                activeIcon: Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Icon(_selectedIcons[i], size: 26),
-                ),
-                label: _navLabels[i],
-              )),
+              items: List.generate(
+                  _navLabels.length,
+                  (i) => BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: Icon(_unselectedIcons[i], size: 22),
+                        ),
+                        activeIcon: Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: Icon(_selectedIcons[i], size: 26),
+                        ),
+                        label: _navLabels[i],
+                      )),
             )),
       ),
     );

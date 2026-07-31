@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/utils/info_controller.dart';
 import 'package:intl/intl.dart';
-import 'package:mandiapp/dao/order_charge_dao.dart';
-import 'package:mandiapp/dao/order_dao.dart';
-import 'package:mandiapp/dao/order_payment_dao.dart';
-import 'package:mandiapp/dao/order_expense_dao.dart';
-import 'package:mandiapp/dao/product_dao.dart';
-import 'package:mandiapp/dao/product_variant_dao.dart';
 import 'package:mandiapp/dao/customer_dao.dart';
 import 'package:mandiapp/dao/customer_payment_dao.dart';
-import 'package:mandiapp/models/order_charge_model.dart';
-import 'package:mandiapp/models/order_expense_model.dart';
-import 'package:mandiapp/models/order_model.dart';
-import 'package:mandiapp/models/order_payment_model.dart';
+import 'package:mandiapp/dao/order_charge_dao.dart';
+import 'package:mandiapp/dao/order_dao.dart';
+import 'package:mandiapp/dao/order_expense_dao.dart';
+import 'package:mandiapp/dao/order_payment_dao.dart';
+import 'package:mandiapp/dao/product_dao.dart';
+import 'package:mandiapp/dao/product_variant_dao.dart';
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/customer_payment_model.dart';
-import 'package:mandiapp/utils/db_helper.dart';
+import 'package:mandiapp/models/order_payment_model.dart';
 import 'package:mandiapp/services/printer_service.dart' as printer_service;
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/utils/db_helper.dart';
+import 'package:mandiapp/utils/info_controller.dart';
+import 'package:mandiapp/widgets/bill_details/bill_details_data.dart';
+import 'package:mandiapp/widgets/bill_details/receipt_info.dart';
+import 'package:mandiapp/widgets/bill_details/receipt_items.dart';
+import 'package:mandiapp/widgets/bill_details/receipt_payment.dart';
+import 'package:mandiapp/widgets/bill_details/receipt_summary.dart';
 import 'package:mandiapp/widgets/billing/bill_line_item.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
 
 class BillDetailsScreen extends StatefulWidget {
   final int orderId;
@@ -30,7 +32,7 @@ class BillDetailsScreen extends StatefulWidget {
 }
 
 class _BillDetailsScreenState extends State<BillDetailsScreen> {
-  late Future<_BillDetailsData> _billFuture;
+  late Future<BillDetailsData> _billFuture;
 
   @override
   void initState() {
@@ -38,37 +40,43 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     _billFuture = _loadBillDetails();
   }
 
-  Future<void> _handlePrint(_BillDetailsData data) async {
+  Future<void> _handlePrint(BillDetailsData data) async {
     final printerService = printer_service.PrinterService.instance;
 
     if (!printerService.connectionStatus.value) {
       if (mounted) {
-        Info.error('No printer connected. Please connect a printer first.', context: context);
+        Info.error('No printer connected. Please connect a printer first.',
+            context: context);
       }
       return;
     }
 
     if (!printerService.bluetoothEnabled.value) {
       if (mounted) {
-        Info.error('Bluetooth is not enabled. Please enable Bluetooth.', context: context);
+        Info.error('Bluetooth is not enabled. Please enable Bluetooth.',
+            context: context);
       }
       return;
     }
 
     if (mounted) {
-      Info.message('Printing bills...', context: context, duration: Duration(seconds: 2));
+      Info.message('Printing bills...',
+          context: context, duration: const Duration(seconds: 2));
     }
 
     final isSellerOrder = data.order.orderFor == 'seller';
-    final invoiceItems = data.lineItems.map((item) => printer_service.InvoiceItem(
-      productName: item.productName,
-      quantity: item.sale.quantity,
-      unit: item.unitLabel.isNotEmpty ? item.unitLabel : 'pc',
-      price: item.sellingPrice,
-      total: item.totalPrice,
-      partnerName: isSellerOrder ? item.sale.buyerName : item.sellerLabel,
-      partnerType: isSellerOrder ? 'Buyer' : 'Seller',
-    )).toList();
+    final invoiceItems = data.lineItems
+        .map((item) => printer_service.InvoiceItem(
+              productName: item.productName,
+              quantity: item.sale.quantity,
+              unit: item.unitLabel.isNotEmpty ? item.unitLabel : 'pc',
+              price: item.sellingPrice,
+              total: item.totalPrice,
+              partnerName:
+                  isSellerOrder ? item.sale.buyerName : item.sellerLabel,
+              partnerType: isSellerOrder ? 'Buyer' : 'Seller',
+            ))
+        .toList();
 
     final success = await printerService.printInvoice(
       cartId: data.order.id!,
@@ -86,14 +94,16 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
 
     if (mounted) {
       if (success) {
-        Info.message('Bill printed successfully!', context: context, duration: const Duration(seconds: 3));
+        Info.message('Bill printed successfully',
+            context: context, duration: const Duration(seconds: 3));
       } else {
-        Info.error('Failed to print bill. Please try again.', context: context, duration: const Duration(seconds: 3));
+        Info.error('Failed to print bill. Please try again.',
+            context: context, duration: const Duration(seconds: 3));
       }
     }
   }
 
-  Future<_BillDetailsData> _loadBillDetails() async {
+  Future<BillDetailsData> _loadBillDetails() async {
     final orderDAO = OrderDAO();
     final orderChargeDAO = OrderChargeDAO();
     final orderPaymentDAO = OrderPaymentDAO();
@@ -107,14 +117,14 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       throw StateError('Order not found');
     }
 
-    final items = order.items ?? await orderDAO.getOrderItems(order.id!, orderFor: order.orderFor);
+    final items = order.items ??
+        await orderDAO.getOrderItems(order.id!, orderFor: order.orderFor);
     final payments = await orderPaymentDAO.getOrderPaymentsByOrderId(order.id!);
     final charges = await orderChargeDAO.getOrderCharges(order.id.toString());
     final expenses = await orderExpenseDAO.getByOrderId(order.id!);
     final customers = await customerDAO.getCustomers();
     final Map<int, Customer> customerById = {
-      for (final customer in customers)
-        customer.id!: customer,
+      for (final customer in customers) customer.id!: customer,
     };
 
     final List<BillLineItem> lineItems = [];
@@ -131,7 +141,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       );
     }
 
-    return _BillDetailsData(
+    return BillDetailsData(
       order: order,
       payments: payments,
       lineItems: lineItems,
@@ -147,7 +157,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     });
   }
 
-  void _showReceivePaymentSheet(_BillDetailsData data) {
+  void _showReceivePaymentSheet(BillDetailsData data) {
     String selectedSource = 'cash';
     final amountController = TextEditingController(
       text: data.pendingPayment.toStringAsFixed(0),
@@ -164,7 +174,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
         return StatefulBuilder(
           builder: (context, setSheetState) {
             final theme = Theme.of(context);
-            final accentColor = Colors.green;
+            const accentColor = Colors.green;
 
             return Padding(
               padding: EdgeInsets.only(
@@ -184,7 +194,8 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+                          color: theme.colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -195,12 +206,14 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                       children: [
                         Text(
                           'Receive Payment',
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          style: theme.textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
+                            color: Colors.orange.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -217,8 +230,10 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: amountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      style: theme.textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                       decoration: InputDecoration(
                         labelText: 'Amount',
                         prefixText: '₹ ',
@@ -226,17 +241,25 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                           fontWeight: FontWeight.bold,
                           color: accentColor,
                         ),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: accentColor, width: 2),
+                          borderSide:
+                              const BorderSide(color: accentColor, width: 2),
                         ),
                       ),
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) return 'Enter amount';
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Enter amount';
+                        }
                         final amount = double.tryParse(value.trim());
-                        if (amount == null || amount <= 0) return 'Enter valid amount';
-                        if (amount > data.pendingPayment) return 'Amount exceeds pending balance';
+                        if (amount == null || amount <= 0) {
+                          return 'Enter valid amount';
+                        }
+                        if (amount > data.pendingPayment) {
+                          return 'Amount exceeds pending balance';
+                        }
                         return null;
                       },
                     ),
@@ -246,20 +269,25 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                       dropdownColor: Theme.of(context).colorScheme.surface,
                       decoration: InputDecoration(
                         labelText: 'Payment Method',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: accentColor, width: 2),
+                          borderSide:
+                              const BorderSide(color: accentColor, width: 2),
                         ),
                       ),
                       items: const [
                         DropdownMenuItem(value: 'cash', child: Text('Cash')),
                         DropdownMenuItem(value: 'upi', child: Text('UPI')),
                         DropdownMenuItem(value: 'card', child: Text('Card')),
-                        DropdownMenuItem(value: 'credit', child: Text('Credit')),
+                        DropdownMenuItem(
+                            value: 'credit', child: Text('Credit')),
                       ],
                       onChanged: (value) {
-                        if (value != null) setSheetState(() => selectedSource = value);
+                        if (value != null) {
+                          setSheetState(() => selectedSource = value);
+                        }
                       },
                     ),
                     const SizedBox(height: 24),
@@ -269,11 +297,13 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: accentColor,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: () async {
                           if (!formKey.currentState!.validate()) return;
-                          final amount = double.parse(amountController.text.trim());
+                          final amount =
+                              double.parse(amountController.text.trim());
                           Navigator.pop(context);
                           await _receivePayment(data, amount, selectedSource);
                         },
@@ -293,9 +323,11 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     );
   }
 
-  Future<void> _receivePayment(_BillDetailsData data, double amount, String source) async {
+  Future<void> _receivePayment(
+      BillDetailsData data, double amount, String source) async {
     if (!mounted) return;
-    Info.message('Recording payment...', context: context, duration: const Duration(seconds: 2));
+    Info.message('Recording payment...',
+        context: context, duration: const Duration(seconds: 2));
 
     try {
       final now = DateTime.now().millisecondsSinceEpoch;
@@ -312,7 +344,8 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
       ));
 
       // 2. Insert into customer_payments (keeps customer ledger consistent)
-      final transactionType = data.order.orderFor == 'buyer' ? 'paid' : 'received';
+      final transactionType =
+          data.order.orderFor == 'buyer' ? 'paid' : 'received';
       await customerPaymentDAO.insertPayment(CustomerPayment(
         customerId: data.order.customerId,
         amount: amount,
@@ -327,11 +360,13 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
         setState(() {
           _billFuture = _loadBillDetails();
         });
-        Info.message('Payment recorded successfully!', context: context, duration: const Duration(seconds: 2));
+        Info.message('Payment recorded successfully!',
+            context: context, duration: const Duration(seconds: 2));
       }
     } catch (e) {
       if (mounted) {
-        Info.error('Failed to record payment: ${e.toString()}', context: context, duration: const Duration(seconds: 3));
+        Info.error('Failed to record payment: ${e.toString()}',
+            context: context, duration: const Duration(seconds: 3));
       }
     }
   }
@@ -341,12 +376,13 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: CommonAppBar(
-        titleWidget: FutureBuilder<_BillDetailsData>(
+        titleWidget: FutureBuilder<BillDetailsData>(
           future: _billFuture,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               final data = snapshot.data!;
-              final orderForLabel = data.order.orderFor == 'seller' ? 'Seller' : 'Buyer';
+              final orderForLabel =
+                  data.order.orderFor == 'seller' ? 'Seller' : 'Buyer';
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -368,11 +404,10 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
             return const Text('Bill Details');
           },
         ),
-        actions: [
-        ],
+        actions: [],
       ),
       body: SafeArea(
-        child: FutureBuilder<_BillDetailsData>(
+        child: FutureBuilder<BillDetailsData>(
           future: _billFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
@@ -389,13 +424,14 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.error.withOpacity(0.06),
+                          color:
+                              theme.colorScheme.error.withValues(alpha: 0.06),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.receipt_long_outlined,
                           size: 48,
-                          color: theme.colorScheme.error.withOpacity(0.5),
+                          color: theme.colorScheme.error.withValues(alpha: 0.5),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -425,12 +461,15 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
             }
 
             final data = snapshot.data!;
-            final currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
-            final createdAt = DateTime.fromMillisecondsSinceEpoch(data.order.updatedAt ?? DateTime.now().millisecondsSinceEpoch);
+            final currency =
+                NumberFormat.currency(locale: 'en_IN', symbol: '₹');
+            final createdAt = DateTime.fromMillisecondsSinceEpoch(
+                data.order.updatedAt ?? DateTime.now().millisecondsSinceEpoch);
 
             return Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                 child: Column(
                   children: [
                     Container(
@@ -439,11 +478,12 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                         color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: theme.colorScheme.outline.withOpacity(0.2),
+                          color:
+                              theme.colorScheme.outline.withValues(alpha: 0.2),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: theme.shadowColor.withOpacity(0.05),
+                            color: theme.shadowColor.withValues(alpha: 0.05),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -454,14 +494,18 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _buildReceiptInfo(data, createdAt, theme),
+                            ReceiptInfo(
+                                data: data, createdAt: createdAt, theme: theme),
                             const SizedBox(height: 12),
                             const Divider(thickness: 1),
-                            _buildReceiptItems(data, currency, theme),
+                            ReceiptItems(
+                                data: data, currency: currency, theme: theme),
                             const Divider(thickness: 1),
-                            _buildReceiptSummary(data, currency, theme),
+                            ReceiptSummary(
+                                data: data, currency: currency, theme: theme),
                             const Divider(thickness: 1),
-                            _buildReceiptPayment(data, currency, theme),
+                            ReceiptPayment(
+                                data: data, currency: currency, theme: theme),
                             const SizedBox(height: 16),
                             const Divider(thickness: 1),
                             Center(
@@ -487,7 +531,8 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                               context: context,
                               builder: (ctx) => AlertDialog(
                                 title: const Text('Print Bill'),
-                                content: const Text('Do you really want to print this bill?'),
+                                content: const Text(
+                                    'Do you really want to print this bill?'),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(ctx, false),
@@ -505,7 +550,8 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                             }
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.primaryContainer,
                               borderRadius: BorderRadius.circular(20),
@@ -536,21 +582,22 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                           GestureDetector(
                             onTap: () => _showReceivePaymentSheet(data),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
                               decoration: BoxDecoration(
                                 color: Colors.red,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: Row(
+                              child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.account_balance_wallet,
                                     size: 18,
                                     color: Colors.white,
                                   ),
-                                  const SizedBox(width: 6),
-                                  const Text(
+                                  SizedBox(width: 6),
+                                  Text(
                                     'Pay Due Amount',
                                     style: TextStyle(
                                       fontSize: 13,
@@ -573,289 +620,5 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
         ),
       ),
     );
-  }
-
-  Widget _buildReceiptInfo(_BillDetailsData data, DateTime createdAt, ThemeData theme) {
-    final dateFormat = DateFormat('dd/MM/yyyy hh:mm a');
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        children: [
-          _buildInfoRow('Date', dateFormat.format(createdAt), theme),
-          const SizedBox(height: 4),
-          _buildInfoRow('Type', data.order.orderFor.toUpperCase(), theme),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value, ThemeData theme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        Text(
-          value,
-          style: theme.textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildReceiptItems(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Product',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              Text(
-                'Amount',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-        ...data.lineItems.map((item) {
-          final isSellerOrder = data.order.orderFor == 'seller';
-          final partnerLabel = isSellerOrder ? 'Buyer' : 'Seller';
-          final partnerName = isSellerOrder
-              ? data.customerById[item.sale.buyerId]?.name
-              : item.sellerLabel;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item.productName,
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    ),
-                    Text(
-                      '${item.quantityLabel} × ${currency.format(item.sellingPrice)} = ${currency.format(item.totalPrice)}',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                if (partnerName != null && partnerName.isNotEmpty)
-                  Text(
-                    '$partnerLabel: $partnerName',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-              ],
-            ),
-          );
-        }),
-      ],
-    );
-  }
-
-  Widget _buildReceiptSummary(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
-    final isSeller = data.order.orderFor == 'seller';
-    final chargesPrefix = isSeller ? '- ' : '+ ';
-    final expensesPrefix = isSeller ? '- ' : '+ ';
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        children: [
-          _buildSummaryRow('Item Total', currency.format(data.itemTotal), theme),
-          const SizedBox(height: 4),
-          _buildSummaryRow('Total Charges', '$chargesPrefix${currency.format(data.chargesTotal)}', theme),
-          const SizedBox(height: 4),
-          _buildSummaryRow('Total Expenses', '$expensesPrefix${currency.format(data.expensesTotal)}', theme),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Divider(thickness: 1),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'GRAND TOTAL',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                currency.format(data.grandTotal),
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryRow(String label, String value, ThemeData theme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        Text(
-          value,
-          style: theme.textTheme.bodyMedium,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildReceiptPayment(_BillDetailsData data, NumberFormat currency, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Payment Info',
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 8),
-          _buildInfoRow('Amount Paid', currency.format(data.receivedAmount), theme),
-          const SizedBox(height: 4),
-          _buildInfoRow('Amount Due', currency.format(data.pendingPayment.abs()), theme),
-          if (data.paymentMethodLabel.isNotEmpty && data.paymentMethodLabel != 'Not recorded') ...[
-            const SizedBox(height: 4),
-            _buildInfoRow('Payment Method', data.paymentMethodLabel, theme),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _BillDetailsData {
-  final Order order;
-  final List<OrderPayment>? payments;
-  final List<BillLineItem> lineItems;
-  final List<OrderCharge> charges;
-  final List<OrderExpense> expenses;
-  final Map<int, Customer> customerById;
-
-  const _BillDetailsData({
-    required this.order,
-    this.payments,
-    required this.lineItems,
-    required this.charges,
-    required this.expenses,
-    required this.customerById,
-  });
-
-  String get customerName {
-    final customer = customerById[order.customerId];
-    return customer?.name?.trim().isNotEmpty ?? false
-        ? customer!.name!.trim()
-        : 'Customer ${order.customerId}';
-  }
-
-  double get itemTotal {
-    return lineItems.fold(0.0, (sum, item) => sum + item.totalPrice);
-  }
-
-  double get chargesTotal {
-    return charges.fold(0.0, (sum, charge) => sum + charge.chargeAmount);
-  }
-
-  double get expensesTotal {
-    return expenses.fold(0.0, (sum, expense) => sum + expense.expenseAmount);
-  }
-
-  double get grandTotal {
-    if (order.orderFor == 'seller') {
-      return itemTotal - chargesTotal - expensesTotal;
-    } else {
-      return itemTotal + chargesTotal + expensesTotal;
-    }
-  }
-
-  double get receivedAmount {
-    if (payments == null || payments!.isEmpty) {
-      return 0.0;
-    }
-    return payments!.fold(0.0, (sum, payment) => sum + payment.amount);
-  }
-
-  double get outstandingAmount => grandTotal - receivedAmount;
-
-  double get paymentAmount {
-    if (order.orderFor == 'seller') {
-      return grandTotal;
-    } else {
-      return receivedAmount;
-    }
-  }
-
-  double get pendingPayment {
-    if (order.orderFor == 'seller') {
-      return paymentAmount - receivedAmount;
-    } else {
-      return outstandingAmount;
-    }
-  }
-
-  String get paymentMethodLabel {
-    if (payments == null || payments!.isEmpty) {
-      return 'Not recorded';
-    }
-    final methods = <String>[];
-    for (final payment in payments!) {
-      switch (payment.source) {
-        case 'cash':
-          methods.add('Cash');
-          break;
-        case 'upi':
-          methods.add('UPI');
-          break;
-        case 'card':
-          methods.add('Card');
-          break;
-        case 'credit':
-          methods.add('Credit');
-          break;
-      }
-    }
-    if (methods.isEmpty) {
-      return 'Not recorded';
-    }
-    return methods.join(', ');
   }
 }

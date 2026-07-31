@@ -30,12 +30,14 @@ class Product {
     };
   }
 
-  factory Product.fromJson(Map<String, dynamic> json, {List<ProductVariant>? variants}) {
+  factory Product.fromJson(Map<String, dynamic> json,
+      {List<ProductVariant>? variants}) {
     return Product(
       id: json['id'] as int?,
       mandiId: json['mandi_id'] as int?,
       defaultVariant: (json['default_variant'] as int?) ?? 0,
-      updatedAt: json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+      updatedAt:
+          json['updated_at'] as int? ?? DateTime.now().millisecondsSinceEpoch,
       isDeleted: json['is_deleted'] as int? ?? 0,
       syncStatus: json['sync_status'] as int? ?? 0,
       variants: variants,
@@ -55,4 +57,3 @@ class Product {
   int get variantCount => variants?.length ?? 0;
   bool get hasVariants => variants != null && variants!.isNotEmpty;
 }
-

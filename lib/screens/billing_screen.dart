@@ -1,16 +1,18 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:mandiapp/utils/info_controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/blocs/order_item/order_item_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mandiapp/blocs/customer/customer_bloc.dart';
+import 'package:mandiapp/blocs/order_item/order_item_bloc.dart';
 import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/services/sync_service.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/models/order_item_model.dart';
 import 'package:mandiapp/screens/checkout_screen.dart';
+import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/utils/constants.dart';
+import 'package:mandiapp/utils/info_controller.dart';
+import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/selling/cart_item_list.dart';
 
 class BillingScreen extends StatefulWidget {
@@ -30,9 +32,9 @@ class _BillingScreenState extends State<BillingScreen> {
   String get _orderFor => _isBuyerMode ? 'buyer' : 'seller';
 
   LoadAllUnlinkedOrderItems get _loadEventForMode => LoadAllUnlinkedOrderItems(
-    excludeBuyerOrderLinked: _isBuyerMode,
-    excludeSellerOrderLinked: !_isBuyerMode,
-  );
+        excludeBuyerOrderLinked: _isBuyerMode,
+        excludeSellerOrderLinked: !_isBuyerMode,
+      );
 
   @override
   void initState() {
@@ -42,7 +44,7 @@ class _BillingScreenState extends State<BillingScreen> {
 
     _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
       if (!mounted) return;
-      if (table == 'order_items') {
+      if (table == DbTables.orderItems) {
         final state = context.read<OrderItemBloc>().state;
         if (state is OrderItemsLoaded) {
           context.read<OrderItemBloc>().add(_loadEventForMode);
@@ -75,9 +77,11 @@ class _BillingScreenState extends State<BillingScreen> {
       return;
     }
     if (customer != null && customer.id != null) {
-      context.read<OrderItemBloc>().add(LoadOrderItems(sellerId: customer.id, excludeOrderLinked: true));
+      context.read<OrderItemBloc>().add(LoadOrderItems(sellerId: customer.id));
     } else {
-      context.read<OrderItemBloc>().add(LoadAllUnlinkedOrderItems(excludeBuyerOrderLinked: false, excludeSellerOrderLinked: true));
+      context
+          .read<OrderItemBloc>()
+          .add(const LoadAllUnlinkedOrderItems(excludeBuyerOrderLinked: false));
     }
   }
 
@@ -93,7 +97,9 @@ class _BillingScreenState extends State<BillingScreen> {
   Future<void> _createNewCart(List<OrderItem> selectedSales) async {
     final customer = _selectedCustomer;
     if (customer == null || customer.id == null) {
-      Info.error('Please select a ${_isBuyerMode ? 'buyer' : 'seller'} name before checkout.', context: context);
+      Info.error(
+          'Please select a ${_isBuyerMode ? 'buyer' : 'seller'} name before checkout.',
+          context: context);
       return;
     }
 
@@ -117,9 +123,11 @@ class _BillingScreenState extends State<BillingScreen> {
         context.push('/bill-details/${result['orderId']}');
       }
       if (_isBuyerMode) {
-        context.read<OrderItemBloc>().add(LoadAllUnlinkedOrderItems(excludeBuyerOrderLinked: true, excludeSellerOrderLinked: false));
+        context.read<OrderItemBloc>().add(
+            const LoadAllUnlinkedOrderItems(excludeSellerOrderLinked: false));
       } else {
-        context.read<OrderItemBloc>().add(LoadAllUnlinkedOrderItems(excludeBuyerOrderLinked: false, excludeSellerOrderLinked: true));
+        context.read<OrderItemBloc>().add(
+            const LoadAllUnlinkedOrderItems(excludeBuyerOrderLinked: false));
       }
     }
   }
@@ -151,7 +159,9 @@ class _BillingScreenState extends State<BillingScreen> {
             Icon(
               isBuyer ? Icons.shopping_cart : Icons.store,
               size: 16,
-              color: isBuyer ? colors.onTertiaryContainer : colors.onSecondaryContainer,
+              color: isBuyer
+                  ? colors.onTertiaryContainer
+                  : colors.onSecondaryContainer,
             ),
             const SizedBox(width: 4),
             Text(
@@ -159,7 +169,9 @@ class _BillingScreenState extends State<BillingScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: isBuyer ? colors.onTertiaryContainer : colors.onSecondaryContainer,
+                color: isBuyer
+                    ? colors.onTertiaryContainer
+                    : colors.onSecondaryContainer,
               ),
             ),
           ],
@@ -199,7 +211,10 @@ class _BillingScreenState extends State<BillingScreen> {
                   )
                 : null,
             filled: true,
-            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+            fillColor: Theme.of(context)
+                .colorScheme
+                .surfaceContainerHighest
+                .withValues(alpha: 0.5),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none,
@@ -207,7 +222,10 @@ class _BillingScreenState extends State<BillingScreen> {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                color: Theme.of(context)
+                    .colorScheme
+                    .outline
+                    .withValues(alpha: 0.2),
               ),
             ),
             focusedBorder: OutlineInputBorder(
@@ -217,7 +235,8 @@ class _BillingScreenState extends State<BillingScreen> {
               ),
             ),
             isDense: true,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           ),
           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
         );
@@ -234,7 +253,7 @@ class _BillingScreenState extends State<BillingScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).shadowColor.withOpacity(0.1),
+                  color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -246,7 +265,8 @@ class _BillingScreenState extends State<BillingScreen> {
                 shrinkWrap: true,
                 padding: EdgeInsets.zero,
                 itemCount: customers.length,
-                separatorBuilder: (_, __) => const Divider(height: 1, indent: 16),
+                separatorBuilder: (_, __) =>
+                    const Divider(height: 1, indent: 16),
                 itemBuilder: (context, index) {
                   final customer = customers[index];
                   final name = customer.name ?? 'Unnamed';
@@ -257,7 +277,10 @@ class _BillingScreenState extends State<BillingScreen> {
                     dense: true,
                     leading: CircleAvatar(
                       radius: 16,
-                      backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      backgroundColor: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.1),
                       child: MyText.bodySmall(
                         initials,
                         color: Theme.of(context).colorScheme.primary,
@@ -267,7 +290,9 @@ class _BillingScreenState extends State<BillingScreen> {
                     ),
                     title: MyText.bodyMedium(name, fontWeight: 600),
                     subtitle: customer.phone != null
-                        ? MyText.bodySmall(customer.phone!, color: Theme.of(context).colorScheme.onSurfaceVariant)
+                        ? MyText.bodySmall(customer.phone!,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant)
                         : null,
                     onTap: () => onSelected(customer),
                   );
@@ -290,7 +315,6 @@ class _BillingScreenState extends State<BillingScreen> {
     return Scaffold(
       appBar: CommonAppBar(
         showBackButton: false,
-        centerTitle: false,
         titleWidget: _buildAppBarTitle(),
         actions: [
           Padding(
@@ -305,8 +329,9 @@ class _BillingScreenState extends State<BillingScreen> {
             if (state is OrderItemLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-  
-            final sales = state is OrderItemsLoaded ? state.orderItems : <OrderItem>[];
+
+            final sales =
+                state is OrderItemsLoaded ? state.orderItems : <OrderItem>[];
             return _buildCartContent(sales);
           },
         ),
@@ -322,14 +347,15 @@ class _BillingScreenState extends State<BillingScreen> {
       onBuyerChanged: _onCustomerChanged,
       formatCustomer: _formatCustomer,
       sellerNameForSale: (sale) => sale.sellerName,
-      productTitleForSale: (sale) => sale.productName ?? 'Product #${sale.productId}',
+      productTitleForSale: (sale) =>
+          sale.productName ?? 'Product #${sale.productId}',
       onDeleteSale: (sale, index) async {
         if (sale.id == null) return false;
         context.read<OrderItemBloc>().add(DeleteOrderItemEvent(
-          sale.id!,
-          sellerId: _isBuyerMode ? null : _selectedCustomer?.id,
-          buyerId: _isBuyerMode ? _selectedCustomer?.id : null,
-        ));
+              sale.id!,
+              sellerId: _isBuyerMode ? null : _selectedCustomer?.id,
+              buyerId: _isBuyerMode ? _selectedCustomer?.id : null,
+            ));
         return true;
       },
       onCheckout: (selectedSales) async {

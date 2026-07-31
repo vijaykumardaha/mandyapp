@@ -1,5 +1,6 @@
 import 'package:mandiapp/models/order_expense_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -14,17 +15,17 @@ class OrderExpenseDao {
     orderExpense.updatedAt = DateTime.now().millisecondsSinceEpoch;
     orderExpense.isDeleted = 0;
     orderExpense.syncStatus = 0;
-    return await db.insert('order_expenses', orderExpense.toMap());
+    return await db.insert(DbTables.orderExpenses, orderExpense.toMap());
   }
 
   Future<OrderExpense?> getById(int id) async {
     final db = await dbHelper.database;
     final maps = await db.query(
-      'order_expenses',
+      DbTables.orderExpenses,
       where: 'id = ?',
       whereArgs: [id],
     );
-    
+
     if (maps.isNotEmpty) {
       return OrderExpense.fromMap(maps.first);
     }
@@ -33,14 +34,15 @@ class OrderExpenseDao {
 
   Future<List<OrderExpense>> getAll() async {
     final db = await dbHelper.database;
-    final maps = await db.query('order_expenses', orderBy: 'updated_at DESC');
+    final maps =
+        await db.query(DbTables.orderExpenses, orderBy: 'updated_at DESC');
     return List.generate(maps.length, (i) => OrderExpense.fromMap(maps[i]));
   }
 
   Future<List<OrderExpense>> getByOrderId(int orderId) async {
     final db = await dbHelper.database;
     final maps = await db.query(
-      'order_expenses',
+      DbTables.orderExpenses,
       where: 'order_id = ?',
       whereArgs: [orderId],
       orderBy: 'updated_at DESC',
@@ -51,7 +53,7 @@ class OrderExpenseDao {
   Future<List<OrderExpense>> getByOrderIdOrNull(int orderId) async {
     final db = await dbHelper.database;
     final maps = await db.query(
-      'order_expenses',
+      DbTables.orderExpenses,
       where: 'order_id = ? OR order_id IS NULL',
       whereArgs: [orderId],
       orderBy: 'updated_at DESC',
@@ -65,7 +67,7 @@ class OrderExpenseDao {
     orderExpense.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
-      'order_expenses',
+      DbTables.orderExpenses,
       orderExpense.toMap(),
       where: 'id = ?',
       whereArgs: [orderExpense.id],
@@ -75,7 +77,7 @@ class OrderExpenseDao {
   Future<int> delete(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'order_expenses',
+      DbTables.orderExpenses,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -89,7 +91,7 @@ class OrderExpenseDao {
   Future<int> deleteByOrderId(int orderId) async {
     final db = await dbHelper.database;
     return await db.update(
-      'order_expenses',
+      DbTables.orderExpenses,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -106,7 +108,7 @@ class OrderExpenseDao {
       'SELECT SUM(expense_amount) as total FROM order_expenses WHERE order_id = ?',
       [orderId],
     );
-    
+
     if (result.isNotEmpty && result.first['total'] != null) {
       return (result.first['total'] as num).toDouble();
     }
@@ -115,7 +117,8 @@ class OrderExpenseDao {
 
   Future<int> count() async {
     final db = await dbHelper.database;
-    final result = await db.rawQuery('SELECT COUNT(*) as count FROM order_expenses');
+    final result =
+        await db.rawQuery('SELECT COUNT(*) as count FROM order_expenses');
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
@@ -136,7 +139,7 @@ class OrderExpenseDao {
 
       for (final orderExpense in orderExpenses) {
         batch.rawInsert('''
-          INSERT INTO order_expenses (
+          INSERT INTO ${DbTables.orderExpenses} (
             id, mandi_id, order_id, expense_name, expense_amount,
             expense_note, updated_at, is_deleted, sync_status
           )
@@ -152,7 +155,7 @@ class OrderExpenseDao {
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
 
-          WHERE excluded.updated_at > order_expenses.updated_at;
+          WHERE excluded.updated_at > ${DbTables.orderExpenses}.updated_at;
         ''', [
           orderExpense.id,
           orderExpense.mandiId,

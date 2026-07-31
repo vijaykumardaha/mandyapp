@@ -1,5 +1,5 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/dao/charge_type_dao.dart';
 import 'package:mandiapp/models/charge_type_model.dart';
 
@@ -55,7 +55,7 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
       await _chargeTypeDAO.insertChargeType(event.chargeType);
       final chargeTypes = await _chargeTypeDAO.getAllChargeTypes();
       emit(ChargeTypesLoaded(chargeTypes));
-      emit(ChargeTypesOperationSuccess('Charge type added successfully'));
+      emit(const ChargeTypesOperationSuccess('Charge type added successfully'));
     } catch (e) {
       emit(ChargeTypesError('Failed to add charge type: $e'));
     }
@@ -70,7 +70,8 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
       await _chargeTypeDAO.updateChargeType(event.chargeType);
       final chargeTypes = await _chargeTypeDAO.getAllChargeTypes();
       emit(ChargeTypesLoaded(chargeTypes));
-      emit(ChargeTypesOperationSuccess('Charge type updated successfully'));
+      emit(const ChargeTypesOperationSuccess(
+          'Charge type updated successfully'));
     } catch (e) {
       emit(ChargeTypesError('Failed to update charge type: $e'));
     }
@@ -85,7 +86,8 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
       await _chargeTypeDAO.deleteChargeType(event.chargeTypeId);
       final chargeTypes = await _chargeTypeDAO.getAllChargeTypes();
       emit(ChargeTypesLoaded(chargeTypes));
-      emit(ChargeTypesOperationSuccess('Charge type deleted successfully'));
+      emit(const ChargeTypesOperationSuccess(
+          'Charge type deleted successfully'));
     } catch (e) {
       emit(ChargeTypesError('Failed to delete charge type: $e'));
     }
@@ -104,7 +106,8 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
       }
       final chargeTypes = await _chargeTypeDAO.getAllChargeTypes();
       emit(ChargeTypesLoaded(chargeTypes));
-      emit(ChargeTypesOperationSuccess('Charge type status updated successfully'));
+      emit(const ChargeTypesOperationSuccess(
+          'Charge type status updated successfully'));
     } catch (e) {
       emit(ChargeTypesError('Failed to update charge type status: $e'));
     }
@@ -116,7 +119,8 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
   ) async {
     try {
       emit(ChargeTypesLoading());
-      final chargeTypes = await _chargeTypeDAO.getChargeTypesByType(event.chargeFor);
+      final chargeTypes =
+          await _chargeTypeDAO.getChargeTypesByType(event.chargeFor);
       emit(ChargeTypesLoaded(chargeTypes));
     } catch (e) {
       emit(ChargeTypesError('Failed to load charge types by type: $e'));
@@ -129,11 +133,12 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
   ) async {
     try {
       emit(ChargeTypesLoading());
-      final chargeType = await _chargeTypeDAO.getChargeTypeById(event.chargeTypeId);
+      final chargeType =
+          await _chargeTypeDAO.getChargeTypeById(event.chargeTypeId);
       if (chargeType != null) {
         emit(ChargeTypeLoaded(chargeType));
       } else {
-        emit(ChargeTypesError('Charge type not found'));
+        emit(const ChargeTypesError('Charge type not found'));
       }
     } catch (e) {
       emit(ChargeTypesError('Failed to get charge type: $e'));

@@ -32,9 +32,9 @@ class CustomerLedgerReportWidget extends StatelessWidget {
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Customer', flex: 2),
-            ReportTableHeader(label: 'Purchases', flex: 1, textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Sales', flex: 1, textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Balance', flex: 1, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Purchases', textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Sales', textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Balance', textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
             return Container(
@@ -47,12 +47,13 @@ class CustomerLedgerReportWidget extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         MyText.bodySmall(item.customerName, fontWeight: 600),
-                        MyText.bodySmall(item.customerPhone, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                        MyText.bodySmall(item.customerPhone,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.6)),
                       ],
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(
                       currencyFormat.format(item.totalPurchases),
                       textAlign: TextAlign.center,
@@ -60,7 +61,6 @@ class CustomerLedgerReportWidget extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(
                       currencyFormat.format(item.totalSales),
                       textAlign: TextAlign.center,
@@ -68,7 +68,6 @@ class CustomerLedgerReportWidget extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: MyText.bodySmall(
                       currencyFormat.format(item.netBalance),
                       textAlign: TextAlign.center,

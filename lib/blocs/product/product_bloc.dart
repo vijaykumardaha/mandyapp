@@ -20,7 +20,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       }
     });
 
-    
     on<AddProduct>((event, emit) async {
       try {
         emit(ProductLoading());
@@ -63,12 +62,14 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         final allProducts = await productDAO.getAllProductsWithVariants();
         final filteredProducts = allProducts.where((product) {
           final queryLower = event.query.toLowerCase();
-          final defaultName = product.defaultVariantModel?.variantName.toLowerCase() ?? '';
+          final defaultName =
+              product.defaultVariantModel?.variantName.toLowerCase() ?? '';
           if (defaultName.contains(queryLower)) {
             return true;
           }
           if (product.variants == null) return false;
-          return product.variants!.any((variant) => variant.variantName.toLowerCase().contains(queryLower));
+          return product.variants!.any((variant) =>
+              variant.variantName.toLowerCase().contains(queryLower));
         }).toList();
         emit(ProductLoaded(filteredProducts));
       } catch (error) {

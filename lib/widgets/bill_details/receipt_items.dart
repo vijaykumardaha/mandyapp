@@ -43,22 +43,39 @@ class ReceiptItems extends StatelessWidget {
           ),
         ),
         ...data.lineItems.map((item) {
+          final isSellerOrder = data.order.orderFor == 'seller';
+          final partnerLabel = isSellerOrder ? 'Buyer' : 'Seller';
+          final partnerName = isSellerOrder
+              ? data.customerById[item.sale.buyerId]?.name
+              : item.sellerLabel;
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    item.productName,
-                    style: theme.textTheme.bodyMedium,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.productName,
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ),
+                    Text(
+                      '${item.quantityLabel} × ${currency.format(item.sellingPrice)} = ${currency.format(item.totalPrice)}',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  '${item.quantityLabel} × ${currency.format(item.sellingPrice)} = ${currency.format(item.totalPrice)}',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
+                if (partnerName != null && partnerName.isNotEmpty)
+                  Text(
+                    '$partnerLabel: $partnerName',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
               ],
             ),
           );

@@ -20,7 +20,7 @@ class VariantThumbnail extends StatelessWidget {
     final placeholder = Container(
       width: width,
       height: height,
-      color: theme.colorScheme.surfaceVariant,
+      color: theme.colorScheme.surfaceContainerHighest,
       child: Icon(
         Icons.image_not_supported,
         size: 24,

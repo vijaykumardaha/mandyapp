@@ -35,7 +35,7 @@ class MyStringUtils {
   }
 
   static bool isSpecialCharacterIncluded(String string) {
-    String ch = "~`!@#\$%^&*.?_";
+    const String ch = '~`!@#\$%^&*.?_';
 
     for (int i = 0; i < string.length; i++) {
       if (ch.contains(string[i])) {
@@ -200,9 +200,9 @@ class MyStringUtils {
   }
 
   static bool isEmail(String email) {
-    Pattern pattern =
+    const Pattern pattern =
         r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{1,}))$';
-    RegExp regex = RegExp(pattern as String);
+    final RegExp regex = RegExp(pattern as String);
     log(regex.hasMatch(email).toString());
     return regex.hasMatch(email);
   }

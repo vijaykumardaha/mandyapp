@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mandiapp/models/charge_type_model.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/models/charge_type_model.dart';
 
 class ChargeListItem extends StatelessWidget {
   final ChargeType charge;
@@ -40,13 +40,13 @@ class ChargeListItem extends StatelessWidget {
                 padding: MySpacing.xy(6, 2),
                 decoration: BoxDecoration(
                   color: charge.chargeType == 'percentage'
-                      ? Colors.purple.withOpacity(0.1)
-                      : theme.colorScheme.primary.withOpacity(0.1),
+                      ? Colors.purple.withValues(alpha: 0.1)
+                      : theme.colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: charge.chargeType == 'percentage'
-                        ? Colors.purple.withOpacity(0.3)
-                        : theme.colorScheme.primary.withOpacity(0.3),
+                        ? Colors.purple.withValues(alpha: 0.3)
+                        : theme.colorScheme.primary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: MyText.bodySmall(
@@ -64,18 +64,19 @@ class ChargeListItem extends StatelessWidget {
                 padding: MySpacing.xy(6, 2),
                 decoration: BoxDecoration(
                   color: charge.chargeFor == 'buyer'
-                      ? Colors.blue.withOpacity(0.1)
-                      : Colors.orange.withOpacity(0.1),
+                      ? Colors.blue.withValues(alpha: 0.1)
+                      : Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: charge.chargeFor == 'buyer'
-                        ? Colors.blue.withOpacity(0.3)
-                        : Colors.orange.withOpacity(0.3),
+                        ? Colors.blue.withValues(alpha: 0.3)
+                        : Colors.orange.withValues(alpha: 0.3),
                   ),
                 ),
                 child: MyText.bodySmall(
                   charge.chargeFor == 'buyer' ? 'For Buyers' : 'For Sellers',
-                  color: charge.chargeFor == 'buyer' ? Colors.blue : Colors.orange,
+                  color:
+                      charge.chargeFor == 'buyer' ? Colors.blue : Colors.orange,
                   fontWeight: 500,
                   fontSize: 10,
                 ),
@@ -84,13 +85,13 @@ class ChargeListItem extends StatelessWidget {
                 Container(
                   padding: MySpacing.xy(6, 2),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: Colors.green.withOpacity(0.3),
+                      color: Colors.green.withValues(alpha: 0.3),
                     ),
                   ),
-                  child: MyText.bodySmall(
+                  child: const MyText.bodySmall(
                     'Default',
                     color: Colors.green,
                     fontWeight: 500,
@@ -101,13 +102,13 @@ class ChargeListItem extends StatelessWidget {
                 padding: MySpacing.xy(6, 2),
                 decoration: BoxDecoration(
                   color: charge.isActive == 1
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.red.withOpacity(0.1),
+                      ? Colors.green.withValues(alpha: 0.1)
+                      : Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: charge.isActive == 1
-                        ? Colors.green.withOpacity(0.3)
-                        : Colors.red.withOpacity(0.3),
+                        ? Colors.green.withValues(alpha: 0.3)
+                        : Colors.red.withValues(alpha: 0.3),
                   ),
                 ),
                 child: MyText.bodySmall(
@@ -164,7 +165,8 @@ class ChargeListItem extends StatelessWidget {
                       children: [
                         const Icon(Icons.delete, size: 20, color: Colors.red),
                         MySpacing.width(8),
-                        const Text('Delete', style: TextStyle(color: Colors.red)),
+                        const Text('Delete',
+                            style: TextStyle(color: Colors.red)),
                       ],
                     ),
                   ),

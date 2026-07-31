@@ -38,5 +38,6 @@ class BillListLoaded extends BillListState {
   });
 
   @override
-  List<Object?> get props => [bills, totalSales, averageSale, billCount, totalPending];
+  List<Object?> get props =>
+      [bills, totalSales, averageSale, billCount, totalPending];
 }

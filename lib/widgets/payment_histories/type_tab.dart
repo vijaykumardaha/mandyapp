@@ -26,14 +26,19 @@ class PaymentTypeTab extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : Colors.transparent,
+          color:
+              isSelected ? color.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
-          border: isSelected ? Border.all(color: color.withOpacity(0.4), width: 1.5) : null,
+          border: isSelected
+              ? Border.all(color: color.withValues(alpha: 0.4), width: 1.5)
+              : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 18, color: isSelected ? color : theme.colorScheme.onSurfaceVariant),
+            Icon(icon,
+                size: 18,
+                color: isSelected ? color : theme.colorScheme.onSurfaceVariant),
             const SizedBox(width: 6),
             Text(
               label,

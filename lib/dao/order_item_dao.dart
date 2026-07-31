@@ -1,5 +1,6 @@
 import 'package:mandiapp/models/order_item_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 
 class OrderItemDAO {
@@ -12,7 +13,7 @@ class OrderItemDAO {
     orderItem.updatedAt = DateTime.now().millisecondsSinceEpoch;
     orderItem.isDeleted = 0;
     orderItem.syncStatus = 0;
-    return db.insert('order_items', orderItem.toJson());
+    return db.insert(DbTables.orderItems, orderItem.toJson());
   }
 
   Future<int> updateOrderItem(OrderItem orderItem) async {
@@ -23,7 +24,7 @@ class OrderItemDAO {
       syncStatus: 0,
     );
     return db.update(
-      'order_items',
+      DbTables.orderItems,
       updatedOrderItem.toJson(),
       where: 'id = ?',
       whereArgs: [orderItem.id],
@@ -33,7 +34,7 @@ class OrderItemDAO {
   Future<int> restoreOrderItem(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'order_items',
+      DbTables.orderItems,
       {
         'is_deleted': 0,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -47,7 +48,7 @@ class OrderItemDAO {
   Future<int> deleteOrderItem(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'order_items',
+      DbTables.orderItems,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -61,7 +62,7 @@ class OrderItemDAO {
   Future<OrderItem?> getOrderItemById(int id) async {
     final db = await dbHelper.database;
     final maps = await db.query(
-      'order_items',
+      DbTables.orderItems,
       where: 'id = ? AND is_deleted = ?',
       whereArgs: [id, 0],
       limit: 1,
@@ -72,8 +73,13 @@ class OrderItemDAO {
     return OrderItem.fromJson(maps.first);
   }
 
-  Future<List<OrderItem>> getOrderItems({int? sellerId, int? buyerId, int? productId, int? variantId, 
-  bool excludeBuyerOrderLinked = false, bool excludeSellerOrderLinked = false}) async {
+  Future<List<OrderItem>> getOrderItems(
+      {int? sellerId,
+      int? buyerId,
+      int? productId,
+      int? variantId,
+      bool excludeBuyerOrderLinked = false,
+      bool excludeSellerOrderLinked = false}) async {
     final db = await dbHelper.database;
     final whereClauses = <String>[];
     final whereArgs = <Object?>[];
@@ -105,7 +111,7 @@ class OrderItemDAO {
     }
 
     final maps = await db.query(
-      'order_items',
+      DbTables.orderItems,
       where: whereClauses.isNotEmpty ? whereClauses.join(' AND ') : null,
       whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
       orderBy: 'updated_at DESC',
@@ -114,7 +120,7 @@ class OrderItemDAO {
     return maps.map(OrderItem.fromJson).toList();
   }
 
-  Future<List<OrderItem>> getSellerOrderItems({required int sellerId }) async {
+  Future<List<OrderItem>> getSellerOrderItems({required int sellerId}) async {
     final db = await dbHelper.database;
     final whereClauses = <String>[];
     final whereArgs = <Object?>[];
@@ -127,7 +133,7 @@ class OrderItemDAO {
     whereArgs.add(0);
 
     final maps = await db.query(
-      'order_items',
+      DbTables.orderItems,
       where: whereClauses.isNotEmpty ? whereClauses.join(' AND ') : null,
       whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
       orderBy: 'updated_at DESC',
@@ -190,7 +196,7 @@ class OrderItemDAO {
 
       for (final orderItem in orderItems) {
         batch.rawInsert('''
-          INSERT INTO order_items (
+          INSERT INTO ${DbTables.orderItems} (
             id, mandi_id, seller_id, buyer_order_id, seller_order_id, buyer_id,
             product_id, variant_id, selling_price, quantity,
             unit, product_name, image_path, seller_name, buyer_name, updated_at, is_deleted, sync_status
@@ -216,7 +222,7 @@ class OrderItemDAO {
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
 
-          WHERE excluded.updated_at > order_items.updated_at;
+          WHERE excluded.updated_at > ${DbTables.orderItems}.updated_at;
         ''', [
           orderItem.id,
           orderItem.mandiId,

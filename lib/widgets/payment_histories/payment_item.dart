@@ -21,7 +21,8 @@ class PaymentItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: theme.colorScheme.outline.withOpacity(0.1)),
+          border: Border.all(
+              color: theme.colorScheme.outline.withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
@@ -29,11 +30,14 @@ class PaymentItem extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: (isReceived ? Colors.green : Colors.red).withOpacity(0.1),
+                color: (isReceived ? Colors.green : Colors.red)
+                    .withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                isReceived ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+                isReceived
+                    ? Icons.arrow_downward_rounded
+                    : Icons.arrow_upward_rounded,
                 color: isReceived ? Colors.green : Colors.red,
                 size: 20,
               ),
@@ -44,8 +48,11 @@ class PaymentItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    payment.note.isNotEmpty ? payment.note : payment.source.toUpperCase(),
-                    style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                    payment.note.isNotEmpty
+                        ? payment.note
+                        : payment.source.toUpperCase(),
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w500),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -53,7 +60,8 @@ class PaymentItem extends StatelessWidget {
                   Text(
                     '${payment.source.toUpperCase()} • $timeStr',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                      color: theme.colorScheme.onSurfaceVariant
+                          .withValues(alpha: 0.7),
                     ),
                   ),
                 ],

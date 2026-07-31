@@ -66,7 +66,7 @@ class InvoiceItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '${_quantityLabel} ${unit.isNotEmpty ? unit : 'pc'}' ,
+                    '$_quantityLabel ${unit.isNotEmpty ? unit : 'pc'}',
                     style: textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 4),

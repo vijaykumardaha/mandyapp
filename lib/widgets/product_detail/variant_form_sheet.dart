@@ -3,13 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/helpers/extensions/string.dart';
+import 'package:mandiapp/blocs/vegetable/vegetable_bloc.dart';
+import 'package:mandiapp/models/product_variant_model.dart';
 import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/utils/constants.dart';
+import 'package:mandiapp/utils/info_controller.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/models/product_variant_model.dart';
-import 'package:mandiapp/blocs/vegetable/vegetable_bloc.dart';
-import 'package:mandiapp/utils/info_controller.dart';
 
 class VariantFormSheet extends StatefulWidget {
   final int productId;
@@ -60,16 +60,16 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
     super.initState();
     final v = widget.existingVariant;
     nameController = TextEditingController(text: v?.variantName ?? '');
-    sellingPriceController = TextEditingController(
-        text: v != null ? v.sellingPrice.toString() : '');
-    quantityController = TextEditingController(
-        text: v != null ? v.quantity.toString() : '');
+    sellingPriceController =
+        TextEditingController(text: v != null ? v.sellingPrice.toString() : '');
+    quantityController =
+        TextEditingController(text: v != null ? v.quantity.toString() : '');
     selectedUnit = v?.unit ?? 'Kilogram';
     imagePath = v?.imagePath ?? '';
 
     _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
       if (!mounted) return;
-      if (table == 'vegetables') {
+      if (table == DbTables.vegetables) {
         final state = context.read<VegetableBloc>().state;
         if (state is VegetableLoaded) {
           context.read<VegetableBloc>().add(const FetchVegetables());
@@ -105,7 +105,7 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             MyText.titleMedium(
-              isEditing ? 'edit_variant'.tr() : 'add_variant'.tr(),
+              isEditing ? 'Edit Variant' : 'Add Variant',
               fontWeight: 600,
             ),
             MySpacing.height(16),
@@ -152,7 +152,7 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
                                     color: isSelected
                                         ? theme.colorScheme.primary
                                         : theme.colorScheme.outline
-                                            .withOpacity(0.3),
+                                            .withValues(alpha: 0.3),
                                     width: isSelected ? 2 : 1,
                                   ),
                                   borderRadius: BorderRadius.circular(8),
@@ -176,7 +176,7 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
                                     fontSize: 9,
                                     color: isSelected
                                         ? theme.colorScheme.primary
-                                        : theme.colorScheme.onBackground,
+                                        : theme.colorScheme.onSurface,
                                   ),
                                 ),
                               ),
@@ -193,19 +193,19 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
             MySpacing.height(12),
             TextField(
               controller: nameController,
-              decoration: InputDecoration(
-                labelText: 'variant_name'.tr(),
+              decoration: const InputDecoration(
+                labelText: 'Variant Name',
                 hintText: 'e.g., 500g, 1Kg, Small, Medium',
-                border: const OutlineInputBorder(),
+                border: OutlineInputBorder(),
               ),
             ),
             MySpacing.height(12),
             TextField(
               controller: sellingPriceController,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'selling_price'.tr(),
-                border: const OutlineInputBorder(),
+              decoration: const InputDecoration(
+                labelText: 'Selling Price',
+                border: OutlineInputBorder(),
               ),
             ),
             MySpacing.height(12),
@@ -216,9 +216,9 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
                   child: TextField(
                     controller: quantityController,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'quantity'.tr(),
-                      border: const OutlineInputBorder(),
+                    decoration: const InputDecoration(
+                      labelText: 'Quantity',
+                      border: OutlineInputBorder(),
                     ),
                   ),
                 ),
@@ -227,9 +227,9 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
                   child: DropdownButtonFormField<String>(
                     value: selectedUnit,
                     dropdownColor: Theme.of(context).colorScheme.surface,
-                    decoration: InputDecoration(
-                      labelText: 'unit'.tr(),
-                      border: const OutlineInputBorder(),
+                    decoration: const InputDecoration(
+                      labelText: 'Unit',
+                      border: OutlineInputBorder(),
                     ),
                     items: [
                       'Gram',
@@ -262,15 +262,14 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
                 Expanded(
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: MyText.bodyMedium('cancel'.tr()),
+                    child: const MyText.bodyMedium('Cancel'),
                   ),
                 ),
                 MySpacing.width(12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _onSubmit,
-                    child: MyText.bodyMedium(
-                        isEditing ? 'update'.tr() : 'add'.tr()),
+                    child: MyText.bodyMedium(isEditing ? 'Update' : 'Add'),
                   ),
                 ),
               ],
@@ -291,7 +290,7 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
         imagePath.isEmpty ||
         sellingPriceText.isEmpty ||
         quantityText.isEmpty) {
-      Info.message('please_fill_required_fields'.tr(), context: context);
+      Info.message('Please fill all required fields', context: context);
       return;
     }
 
@@ -299,7 +298,7 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
     final quantity = double.tryParse(quantityText);
 
     if (sellingPrice == null || quantity == null) {
-      Info.message('please_enter_valid_numbers'.tr(), context: context);
+      Info.message('Please enter valid numbers', context: context);
       return;
     }
 

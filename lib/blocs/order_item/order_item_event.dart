@@ -14,10 +14,16 @@ class LoadOrderItems extends OrderItemEvent {
   final int? variantId;
   final bool excludeOrderLinked;
 
-  const LoadOrderItems({this.sellerId, this.buyerId, this.productId, this.variantId, this.excludeOrderLinked = true});
+  const LoadOrderItems(
+      {this.sellerId,
+      this.buyerId,
+      this.productId,
+      this.variantId,
+      this.excludeOrderLinked = true});
 
   @override
-  List<Object?> get props => [sellerId, buyerId, productId, variantId, excludeOrderLinked];
+  List<Object?> get props =>
+      [sellerId, buyerId, productId, variantId, excludeOrderLinked];
 }
 
 class AddOrderItemEvent extends OrderItemEvent {
@@ -76,5 +82,6 @@ class LoadAllUnlinkedOrderItems extends OrderItemEvent {
   });
 
   @override
-  List<Object?> get props => [excludeBuyerOrderLinked, excludeSellerOrderLinked];
+  List<Object?> get props =>
+      [excludeBuyerOrderLinked, excludeSellerOrderLinked];
 }

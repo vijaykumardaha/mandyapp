@@ -11,9 +11,11 @@ class PrinterService {
 
   final ValueNotifier<bool> bluetoothEnabled = ValueNotifier<bool>(false);
   final ValueNotifier<bool> connectionStatus = ValueNotifier<bool>(false);
-  final ValueNotifier<String?> connectedDeviceMac = ValueNotifier<String?>(null);
+  final ValueNotifier<String?> connectedDeviceMac =
+      ValueNotifier<String?>(null);
   final ValueNotifier<String?> connectingMac = ValueNotifier<String?>(null);
-  final ValueNotifier<List<BluetoothInfo>> pairedDevices = ValueNotifier<List<BluetoothInfo>>(<BluetoothInfo>[]);
+  final ValueNotifier<List<BluetoothInfo>> pairedDevices =
+      ValueNotifier<List<BluetoothInfo>>(<BluetoothInfo>[]);
   final ValueNotifier<String?> statusMessage = ValueNotifier<String?>(null);
   final ValueNotifier<bool> permissionGranted = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isScanning = ValueNotifier<bool>(false);
@@ -30,7 +32,8 @@ class PrinterService {
       final granted = await PrintBluetoothThermal.isPermissionBluetoothGranted;
       permissionGranted.value = granted;
       if (!granted) {
-        statusMessage.value = 'Bluetooth permission not granted. Please enable it in system settings.';
+        statusMessage.value =
+            'Bluetooth permission not granted. Please enable it in system settings.';
       }
     } catch (error) {
       permissionGranted.value = false;
@@ -56,7 +59,8 @@ class PrinterService {
         permissions.add(Permission.locationWhenInUse);
       }
 
-      final Map<Permission, PermissionStatus> statuses = await permissions.request();
+      final Map<Permission, PermissionStatus> statuses =
+          await permissions.request();
       final bool granted = statuses.entries
           .where((entry) => entry.key != Permission.bluetoothAdvertise)
           .every((entry) => entry.value.isGranted);
@@ -64,7 +68,8 @@ class PrinterService {
       permissionGranted.value = granted;
 
       if (!granted) {
-        final bool permanentlyDenied = statuses.values.any((status) => status.isPermanentlyDenied);
+        final bool permanentlyDenied =
+            statuses.values.any((status) => status.isPermanentlyDenied);
         statusMessage.value = permanentlyDenied
             ? 'Bluetooth permission permanently denied. Please enable it in system settings.'
             : 'Bluetooth permission not granted.';
@@ -105,10 +110,12 @@ class PrinterService {
         statusMessage.value = 'Enable Bluetooth to view paired printers.';
         return;
       }
-      final List<BluetoothInfo> devices = await PrintBluetoothThermal.pairedBluetooths;
+      final List<BluetoothInfo> devices =
+          await PrintBluetoothThermal.pairedBluetooths;
       pairedDevices.value = devices;
       if (devices.isEmpty) {
-        statusMessage.value = 'No paired printers found. Pair a device in system Bluetooth settings.';
+        statusMessage.value =
+            'No paired printers found. Pair a device in system Bluetooth settings.';
       } else {
         statusMessage.value = null;
       }
@@ -137,10 +144,12 @@ class PrinterService {
     try {
       connectingMac.value = macAddress;
       statusMessage.value = 'Connecting to printer...';
-      final bool result = await PrintBluetoothThermal.connect(macPrinterAddress: macAddress);
+      final bool result =
+          await PrintBluetoothThermal.connect(macPrinterAddress: macAddress);
       connectionStatus.value = result;
       connectedDeviceMac.value = result ? macAddress : null;
-      statusMessage.value = result ? 'Connected to printer.' : 'Failed to connect to printer.';
+      statusMessage.value =
+          result ? 'Connected to printer.' : 'Failed to connect to printer.';
       return result;
     } catch (error) {
       connectionStatus.value = false;
@@ -171,7 +180,8 @@ class PrinterService {
   Future<void> toggleBluetooth(bool enable) async {
     // print_bluetooth_thermal does not provide enable/disable APIs.
     // Notify users to change the state manually and refresh the status.
-    statusMessage.value = 'Bluetooth state must be changed from system settings.';
+    statusMessage.value =
+        'Bluetooth state must be changed from system settings.';
     await _refreshBluetoothEnabled();
     if (bluetoothEnabled.value) {
       await loadPairedDevices();
@@ -189,7 +199,7 @@ class PrinterService {
     required int cartId,
     required String customerName,
     required String cartType,
-    required List<dynamic> items,
+    required List<InvoiceItem> items,
     required double itemTotal,
     required double chargesTotal,
     required double expensesTotal,
@@ -212,13 +222,13 @@ class PrinterService {
       invoiceText.writeln('=' * 32);
       invoiceText.writeln(_centerText('Bill No #$cartId'));
       invoiceText.writeln('=' * 32);
-     
+
       // Date and customer info
       final now = DateTime.now();
       final dateStr = '${now.day.toString().padLeft(2, '0')}/'
-                     '${now.month.toString().padLeft(2, '0')}/'
-                     '${now.year} ${now.hour.toString().padLeft(2, '0')}:'
-                     '${now.minute.toString().padLeft(2, '0')}';
+          '${now.month.toString().padLeft(2, '0')}/'
+          '${now.year} ${now.hour.toString().padLeft(2, '0')}:'
+          '${now.minute.toString().padLeft(2, '0')}';
 
       invoiceText.writeln('Date:           $dateStr');
       invoiceText.writeln('Customer:       $customerName');
@@ -233,11 +243,13 @@ class PrinterService {
             ? '${item.productName.substring(0, 15)}...'
             : item.productName;
         final qty = item.quantity.toInt();
-        final amount = '${item.total.toStringAsFixed(2)}';
+        final amount = item.total.toStringAsFixed(2);
 
-        invoiceText.writeln('${productName.padRight(12)} ${qty} x ${item.price.toStringAsFixed(2)}   ${amount}');
+        invoiceText.writeln(
+            '${productName.padRight(12)} $qty x ${item.price.toStringAsFixed(2)}   $amount');
         if (item.partnerName != null && item.partnerName!.isNotEmpty) {
-          invoiceText.writeln('${item.partnerType}: ${item.partnerName}'.padLeft(20));
+          invoiceText
+              .writeln('${item.partnerType}: ${item.partnerName}'.padLeft(20));
         }
       }
       invoiceText.writeln('-' * 32);
@@ -245,35 +257,42 @@ class PrinterService {
       // Summary
       final chargesPrefix = cartType == 'seller' ? '-' : '+';
       final expensesPrefix = cartType == 'seller' ? '-' : '+';
-      invoiceText.writeln('Item Total:               ${itemTotal.toStringAsFixed(2)}');
-      invoiceText.writeln('Total Charges:           $chargesPrefix ${chargesTotal.toStringAsFixed(2)}');
-      invoiceText.writeln('Total Expenses:          $expensesPrefix ${expensesTotal.toStringAsFixed(2)}');
+      invoiceText
+          .writeln('Item Total:               ${itemTotal.toStringAsFixed(2)}');
+      invoiceText.writeln(
+          'Total Charges:           $chargesPrefix ${chargesTotal.toStringAsFixed(2)}');
+      invoiceText.writeln(
+          'Total Expenses:          $expensesPrefix ${expensesTotal.toStringAsFixed(2)}');
 
       invoiceText.writeln('-' * 32);
-      invoiceText.writeln('GRAND TOTAL:              ${grandTotal.toStringAsFixed(2)}');
+      invoiceText.writeln(
+          'GRAND TOTAL:              ${grandTotal.toStringAsFixed(2)}');
 
       // Payment info
-      invoiceText.writeln('');
+      invoiceText.writeln();
       invoiceText.writeln('Payment Info:');
       invoiceText.writeln('-' * 32);
-      invoiceText.writeln('Amount Paid:              ${receivedAmount.toStringAsFixed(2)}');
-      invoiceText.writeln('Amount Due:               ${pendingAmount.toStringAsFixed(2)}');
+      invoiceText.writeln(
+          'Amount Paid:              ${receivedAmount.toStringAsFixed(2)}');
+      invoiceText.writeln(
+          'Amount Due:               ${pendingAmount.toStringAsFixed(2)}');
 
       if (paymentMethod.isNotEmpty && paymentMethod != 'Not recorded') {
         invoiceText.writeln('Payment Method:           $paymentMethod');
       }
 
-      invoiceText.writeln('');
+      invoiceText.writeln();
       invoiceText.writeln(_centerText('Thank you!'));
-      invoiceText.writeln('');
-      invoiceText.writeln('');
+      invoiceText.writeln();
+      invoiceText.writeln();
 
-      final bool result = await PrintBluetoothThermal.writeBytes(invoiceText.toString().codeUnits);
+      final bool result = await PrintBluetoothThermal.writeBytes(
+          invoiceText.toString().codeUnits);
 
       if (result) {
         statusMessage.value = 'Bill printed successfully';
       } else {
-        statusMessage.value = 'Failed to print bill';
+        statusMessage.value = 'Failed to print bill. Please try again.';
       }
 
       return result;

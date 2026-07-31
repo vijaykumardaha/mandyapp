@@ -1,5 +1,6 @@
 import 'package:mandiapp/models/order_payment_model.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -13,7 +14,7 @@ class OrderPaymentDAO {
     payment.isDeleted = 0;
     payment.syncStatus = 0;
 
-    return await db.insert('order_payments', payment.toJson());
+    return await db.insert(DbTables.orderPayments, payment.toJson());
   }
 
   Future<int> updateOrderPayment(OrderPayment payment) async {
@@ -22,7 +23,7 @@ class OrderPaymentDAO {
     payment.syncStatus = 0;
     final db = await dbHelper.database;
     return await db.update(
-      'order_payments',
+      DbTables.orderPayments,
       payment.toJson(),
       where: 'id = ?',
       whereArgs: [payment.id],
@@ -32,7 +33,7 @@ class OrderPaymentDAO {
   Future<int> deleteOrderPayment(int id) async {
     final db = await dbHelper.database;
     return await db.update(
-      'order_payments',
+      DbTables.orderPayments,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -46,7 +47,7 @@ class OrderPaymentDAO {
   Future<OrderPayment?> getOrderPaymentById(int id) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'order_payments',
+      DbTables.orderPayments,
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -60,7 +61,7 @@ class OrderPaymentDAO {
   Future<int> deleteOrderPayments(int orderId) async {
     final db = await dbHelper.database;
     return await db.update(
-      'order_payments',
+      DbTables.orderPayments,
       {
         'is_deleted': 1,
         'updated_at': DateTime.now().millisecondsSinceEpoch,
@@ -74,7 +75,7 @@ class OrderPaymentDAO {
   Future<List<OrderPayment>> getAllOrderPayments() async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'order_payments',
+      DbTables.orderPayments,
       orderBy: 'updated_at DESC',
     );
 
@@ -86,7 +87,7 @@ class OrderPaymentDAO {
   Future<List<OrderPayment>> getOrderPaymentsByOrderId(int orderId) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'order_payments',
+      DbTables.orderPayments,
       where: 'order_id = ?',
       whereArgs: [orderId],
       orderBy: 'updated_at DESC',
@@ -115,10 +116,11 @@ class OrderPaymentDAO {
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
-  Future<List<OrderPayment>> getPaymentsByDateRange(String startDate, String endDate) async {
+  Future<List<OrderPayment>> getPaymentsByDateRange(
+      String startDate, String endDate) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'order_payments',
+      DbTables.orderPayments,
       where: 'updated_at BETWEEN ? AND ?',
       whereArgs: [startDate, endDate],
       orderBy: 'updated_at DESC',
@@ -132,7 +134,7 @@ class OrderPaymentDAO {
   Future<List<OrderPayment>> getRecentPayments({int limit = 10}) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'order_payments',
+      DbTables.orderPayments,
       orderBy: 'updated_at DESC',
       limit: limit,
     );
@@ -145,7 +147,7 @@ class OrderPaymentDAO {
   Future<List<OrderPayment>> getPaymentsBySource(String source) async {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'order_payments',
+      DbTables.orderPayments,
       where: 'source = ?',
       whereArgs: [source],
       orderBy: 'updated_at DESC',
@@ -172,9 +174,10 @@ class OrderPaymentDAO {
       [orderId],
     );
 
-    Map<String, double> summary = {};
+    final Map<String, double> summary = {};
     for (var row in result) {
-      summary[row['source'] as String] = (row['total'] as num?)?.toDouble() ?? 0.0;
+      summary[row['source'] as String] =
+          (row['total'] as num?)?.toDouble() ?? 0.0;
     }
     return summary;
   }
@@ -186,7 +189,7 @@ class OrderPaymentDAO {
 
       for (final orderPayment in orderPayments) {
         batch.rawInsert('''
-          INSERT INTO order_payments (
+          INSERT INTO ${DbTables.orderPayments} (
             id, mandi_id, order_id, source, amount,
             updated_at, is_deleted, sync_status
           )
@@ -201,7 +204,7 @@ class OrderPaymentDAO {
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
 
-          WHERE excluded.updated_at > order_payments.updated_at;
+          WHERE excluded.updated_at > ${DbTables.orderPayments}.updated_at;
         ''', [
           orderPayment.id,
           orderPayment.mandiId ?? 0,

@@ -9,7 +9,6 @@ sealed class ProductEvent extends Equatable {
 
 class LoadProducts extends ProductEvent {}
 
-
 class AddProduct extends ProductEvent {
   final Product product;
 
