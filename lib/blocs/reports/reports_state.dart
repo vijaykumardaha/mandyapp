@@ -66,6 +66,19 @@ class DailyPurchaseReportLoaded extends ReportsState {
     required this.totalTransactions,
   });
 
+  String get totalQuantityLabel {
+    if (data.isEmpty) {
+      return '${totalQuantity.toStringAsFixed(2)} units';
+    }
+    final byUnit = <String, double>{};
+    for (final item in data) {
+      byUnit[item.unit] = (byUnit[item.unit] ?? 0) + item.totalQuantity;
+    }
+    final dominant =
+        byUnit.entries.reduce((a, b) => a.value >= b.value ? a : b);
+    return '${totalQuantity.toStringAsFixed(2)} ${dominant.key.unitAbbreviation}';
+  }
+
   @override
   List<Object?> get props =>
       [data, totalCost, totalQuantity, totalTransactions];
@@ -104,14 +117,19 @@ class CustomerLedgerReportLoaded extends ReportsState {
 class PendingPaymentReportLoaded extends ReportsState {
   final List<PendingPaymentData> data;
   final double totalPendingAmount;
+  final double totalBuyerPending;
+  final double totalSellerPending;
 
   const PendingPaymentReportLoaded({
     required this.data,
     required this.totalPendingAmount,
+    required this.totalBuyerPending,
+    required this.totalSellerPending,
   });
 
   @override
-  List<Object?> get props => [data, totalPendingAmount];
+  List<Object?> get props =>
+      [data, totalPendingAmount, totalBuyerPending, totalSellerPending];
 }
 
 class ReportsSummaryLoaded extends ReportsState {
@@ -203,6 +221,24 @@ class StockTransactionReportLoaded extends ReportsState {
     required this.totalQuantity,
     required this.totalAmount,
   });
+
+  String get totalQuantityLabel {
+    if (data.isEmpty) {
+      return '${totalQuantity.toStringAsFixed(2)} units';
+    }
+    final byUnit = <String, double>{};
+    for (final item in data) {
+      final unit = (item.unit ?? '').trim();
+      if (unit.isEmpty) continue;
+      byUnit[unit] = (byUnit[unit] ?? 0) + item.buyQuantity;
+    }
+    if (byUnit.isEmpty) {
+      return '${totalQuantity.toStringAsFixed(2)} units';
+    }
+    final dominant =
+        byUnit.entries.reduce((a, b) => a.value >= b.value ? a : b);
+    return '${totalQuantity.toStringAsFixed(2)} ${dominant.key.unitAbbreviation}';
+  }
 
   @override
   List<Object?> get props => [data, totalQuantity, totalAmount];

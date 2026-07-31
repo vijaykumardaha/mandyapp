@@ -2,29 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 
-class SettingsSectionHeader extends StatelessWidget {
-  final String title;
-  final ThemeData theme;
-
-  const SettingsSectionHeader({
-    super.key,
-    required this.title,
-    required this.theme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: MySpacing.bottom(12),
-      child: MyText.titleSmall(
-        title,
-        fontWeight: 600,
-        color: theme.colorScheme.primary,
-      ),
-    );
-  }
-}
-
 class SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;

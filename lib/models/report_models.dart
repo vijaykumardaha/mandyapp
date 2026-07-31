@@ -65,6 +65,8 @@ class DailyPurchaseData {
   final int variantId;
   final String productName;
   final String unit;
+  final int? sellerId;
+  final String? sellerName;
   final double totalQuantity;
   final int transactionCount;
   final double totalCost;
@@ -76,6 +78,8 @@ class DailyPurchaseData {
     required this.variantId,
     required this.productName,
     required this.unit,
+    required this.sellerId,
+    required this.sellerName,
     required this.totalQuantity,
     required this.transactionCount,
     required this.totalCost,
@@ -90,6 +94,8 @@ class DailyPurchaseData {
       productName:
           json['variant_name'] as String? ?? 'Product ${json['product_id']}',
       unit: json['unit'] as String? ?? 'units',
+      sellerId: json['seller_id'] as int?,
+      sellerName: json['seller_name'] as String?,
       totalQuantity: (json['total_quantity'] as num?)?.toDouble() ?? 0.0,
       transactionCount: json['transaction_count'] as int? ?? 0,
       totalCost: (json['total_cost'] as num?)?.toDouble() ?? 0.0,
@@ -133,8 +139,8 @@ class CustomerLedgerData {
   final String customerName;
   final String customerPhone;
   final int totalTransactions;
-  final double totalPurchases;
-  final double totalSales;
+  final double totalPaid;
+  final double totalReceived;
   final double netBalance;
 
   const CustomerLedgerData({
@@ -142,8 +148,8 @@ class CustomerLedgerData {
     required this.customerName,
     required this.customerPhone,
     required this.totalTransactions,
-    required this.totalPurchases,
-    required this.totalSales,
+    required this.totalPaid,
+    required this.totalReceived,
     required this.netBalance,
   });
 
@@ -153,8 +159,8 @@ class CustomerLedgerData {
       customerName: json['customer_name'] as String? ?? 'Unknown Customer',
       customerPhone: json['customer_phone'] as String? ?? '',
       totalTransactions: json['total_transactions'] as int? ?? 0,
-      totalPurchases: (json['total_purchases'] as num?)?.toDouble() ?? 0.0,
-      totalSales: (json['total_sales'] as num?)?.toDouble() ?? 0.0,
+      totalPaid: (json['total_paid'] as num?)?.toDouble() ?? 0.0,
+      totalReceived: (json['total_received'] as num?)?.toDouble() ?? 0.0,
       netBalance: (json['net_balance'] as num?)?.toDouble() ?? 0.0,
     );
   }
@@ -164,6 +170,8 @@ class PendingPaymentData {
   final String customerName;
   final String customerPhone;
   final int customerId;
+  final int? billingId;
+  final String? billingType;
   final int totalBills;
   final double totalAmount;
   final double paidAmount;
@@ -176,6 +184,8 @@ class PendingPaymentData {
     required this.customerName,
     required this.customerPhone,
     required this.customerId,
+    required this.billingId,
+    required this.billingType,
     required this.totalBills,
     required this.totalAmount,
     required this.paidAmount,
@@ -198,6 +208,8 @@ class PendingPaymentData {
       customerName: json['customer_name'] as String? ?? 'Unknown Customer',
       customerPhone: json['customer_phone'] as String? ?? '',
       customerId: json['customer_id'] as int,
+      billingId: json['billing_id'] as int?,
+      billingType: json['billing_type'] as String?,
       totalBills: json['total_bills'] as int? ?? 0,
       totalAmount: (json['total_amount'] as num?)?.toDouble() ?? 0.0,
       paidAmount: (json['paid_amount'] as num?)?.toDouble() ?? 0.0,

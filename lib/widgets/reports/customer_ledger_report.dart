@@ -4,7 +4,6 @@ import 'package:mandiapp/blocs/reports/reports_bloc.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/reports/report_data_table.dart';
-import 'package:mandiapp/widgets/reports/report_summary_card.dart';
 
 class CustomerLedgerReportWidget extends StatelessWidget {
   final CustomerLedgerReportLoaded state;
@@ -23,18 +22,13 @@ class CustomerLedgerReportWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ReportSummaryCard(
-          title: 'Net Balance',
-          value: currencyFormat.format(state.totalNetBalance),
-          color: state.totalNetBalance >= 0 ? Colors.green : Colors.red,
-        ),
-        MySpacing.height(16),
         ReportDataTable(
           headers: const [
-            ReportTableHeader(label: 'Customer', flex: 2),
-            ReportTableHeader(label: 'Purchases', textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Sales', textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Balance', textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Customer Name', flex: 2),
+            ReportTableHeader(label: 'Phone', flex: 2),
+            ReportTableHeader(label: 'Paid'),
+            ReportTableHeader(label: 'Received'),
+            ReportTableHeader(label: 'Balance', textAlign: TextAlign.right),
           ],
           rows: state.data.map((item) {
             return Container(
@@ -43,34 +37,39 @@ class CustomerLedgerReportWidget extends StatelessWidget {
                 children: [
                   Expanded(
                     flex: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        MyText.bodySmall(item.customerName, fontWeight: 600),
-                        MyText.bodySmall(item.customerPhone,
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.6)),
-                      ],
+                    child: MyText.bodySmall(
+                      item.customerName,
+                      fontWeight: 600,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: MyText.bodySmall(
+                      item.customerPhone,
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Expanded(
                     child: MyText.bodySmall(
-                      currencyFormat.format(item.totalPurchases),
-                      textAlign: TextAlign.center,
-                      color: Colors.red,
-                    ),
-                  ),
-                  Expanded(
-                    child: MyText.bodySmall(
-                      currencyFormat.format(item.totalSales),
-                      textAlign: TextAlign.center,
+                      currencyFormat.format(item.totalPaid),
+                      fontWeight: 600,
                       color: Colors.green,
                     ),
                   ),
                   Expanded(
                     child: MyText.bodySmall(
+                      currencyFormat.format(item.totalReceived),
+                      fontWeight: 600,
+                      color: Colors.red,
+                    ),
+                  ),
+                  Expanded(
+                    child: MyText.bodySmall(
                       currencyFormat.format(item.netBalance),
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.right,
                       fontWeight: 600,
                       color: item.netBalance >= 0 ? Colors.green : Colors.red,
                     ),

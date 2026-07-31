@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mandiapp/blocs/reports/reports_bloc.dart';
+import 'package:mandiapp/helpers/extensions/string.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/reports/report_data_table.dart';
@@ -47,7 +48,7 @@ class StockSummaryReportWidget extends StatelessWidget {
           children: [
             Expanded(
               child: ReportSummaryCard(
-                title: 'Profit',
+                title: 'Total Profit',
                 value: currencyFormat.format(state.totalProfit),
                 color: state.totalProfit >= 0 ? Colors.green : Colors.red,
               ),
@@ -65,10 +66,12 @@ class StockSummaryReportWidget extends StatelessWidget {
         MySpacing.height(16),
         ReportDataTable(
           headers: const [
-            ReportTableHeader(label: 'Product', flex: 2),
-            ReportTableHeader(label: 'Initial', textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Sold', textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Remaining', textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Product'),
+            ReportTableHeader(
+                label: 'Initial Stock', flex: 2, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Sold Qty', textAlign: TextAlign.center),
+            ReportTableHeader(
+                label: 'Remaining Qty', flex: 2, textAlign: TextAlign.center),
             ReportTableHeader(label: 'Profit', textAlign: TextAlign.center),
           ],
           rows: state.data.map((item) {
@@ -77,33 +80,28 @@ class StockSummaryReportWidget extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
+                    child: MyText.bodySmall(
+                      item.variantName ?? '',
+                      fontWeight: 600,
+                    ),
+                  ),
+                  Expanded(
                     flex: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        MyText.bodySmall(item.productName, fontWeight: 600),
-                        if (item.variantName != null)
-                          MyText.bodySmall(item.variantName!,
-                              color: theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.6)),
-                      ],
-                    ),
-                  ),
-                  Expanded(
                     child: MyText.bodySmall(
-                      item.initialQuantity.toStringAsFixed(2),
+                      '${item.initialQuantity.toStringAsFixed(2)} ${item.unit?.unitAbbreviation ?? ''}',
                       textAlign: TextAlign.center,
                     ),
                   ),
                   Expanded(
                     child: MyText.bodySmall(
-                      item.soldQuantity.toStringAsFixed(2),
+                      '${item.soldQuantity.toStringAsFixed(2)} ${item.unit?.unitAbbreviation ?? ''}',
                       textAlign: TextAlign.center,
                     ),
                   ),
                   Expanded(
+                    flex: 2,
                     child: MyText.bodySmall(
-                      item.quantity.toStringAsFixed(2),
+                      '${item.quantity.toStringAsFixed(2)} ${item.unit?.unitAbbreviation ?? ''}',
                       textAlign: TextAlign.center,
                     ),
                   ),

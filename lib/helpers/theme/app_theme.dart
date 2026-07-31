@@ -21,7 +21,7 @@ class AppTheme {
 
     /// Primary Color
     primaryColor: const Color(0xff3C4EC5),
-    scaffoldBackgroundColor: const Color(0xffffffff),
+    scaffoldBackgroundColor: const Color(0xfff0f0f0),
     canvasColor: Colors.transparent,
 
     /// AppBar Theme

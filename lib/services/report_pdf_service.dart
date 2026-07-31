@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:intl/intl.dart';
 import 'package:mandiapp/blocs/reports/reports_bloc.dart';
+import 'package:mandiapp/dao/customer_payment_dao.dart';
 import 'package:mandiapp/helpers/extensions/string.dart';
+import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/widgets/reports/report_types.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -24,6 +26,7 @@ class ReportPdfService {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
+        maxPages: 1000,
         header: (context) => _buildHeader(title, dateRange),
         footer: (context) => _buildFooter(context),
         build: (context) => _buildContent(state, reportType),
@@ -36,6 +39,69 @@ class ReportPdfService {
     final file = File('${dir.path}/$fileName');
     await file.writeAsBytes(await pdf.save());
     return file;
+  }
+
+  static Future<File> generateCustomersPdf(List<Customer> customers) async {
+    final rows = <List<String>>[];
+    double totalReceived = 0;
+    double totalPaid = 0;
+
+    for (final customer in customers) {
+      final stats = await _customerPaymentTotals(customer);
+      rows.add([
+        (customer.name?.trim().isNotEmpty ?? false)
+            ? customer.name!.trim()
+            : 'Unnamed Customer',
+        customer.phone?.trim().isNotEmpty == true ? customer.phone!.trim() : '',
+        currencyFormat.format(stats.received),
+        currencyFormat.format(stats.paid),
+        currencyFormat.format(stats.received - stats.paid),
+      ]);
+      totalReceived += stats.received;
+      totalPaid += stats.paid;
+    }
+
+    final pdf = pw.Document();
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        maxPages: 1000,
+        header: (context) => _buildHeader('Customer List', 'All Customers'),
+        footer: (context) => _buildFooter(context),
+        build: (context) => [
+          _buildSummaryRow([
+            _summaryCard('Customers', '${customers.length}',
+                PdfColor.fromHex('#1565C0')),
+            _summaryCard('Total Received', currencyFormat.format(totalReceived),
+                PdfColor.fromHex('#2E7D32')),
+            _summaryCard('Total Paid', currencyFormat.format(totalPaid),
+                PdfColor.fromHex('#C62828')),
+          ]),
+          pw.SizedBox(height: 16),
+          _buildTable(
+            ['Customer', 'Phone', 'Received', 'Paid', 'Balance'],
+            rows,
+          ),
+        ],
+      ),
+    );
+
+    final dir = await getApplicationDocumentsDirectory();
+    final fileName =
+        'customers_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.pdf';
+    final file = File('${dir.path}/$fileName');
+    await file.writeAsBytes(await pdf.save());
+    return file;
+  }
+
+  static Future<({double paid, double received})> _customerPaymentTotals(
+      Customer customer) async {
+    final paymentDAO = CustomerPaymentDAO();
+    final paid = await paymentDAO.getTotalByType(customer.id ?? 0, 'paid');
+    final received =
+        await paymentDAO.getTotalByType(customer.id ?? 0, 'received');
+    return (paid: paid, received: received);
   }
 
   static pw.Widget _buildHeader(String title, String dateRange) {
@@ -254,9 +320,7 @@ class ReportPdfService {
       _buildSummaryRow([
         _summaryCard('Total Cost', currencyFormat.format(state.totalCost),
             PdfColor.fromHex('#1565C0')),
-        _summaryCard(
-            'Total Quantity',
-            '${state.totalQuantity.toStringAsFixed(2)} units',
+        _summaryCard('Total Quantity', state.totalQuantityLabel,
             PdfColor.fromHex('#2E7D32')),
         _summaryCard('Transactions', '${state.totalTransactions}',
             PdfColor.fromHex('#E65100')),
@@ -266,12 +330,13 @@ class ReportPdfService {
           style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
-        ['Product', 'Unit', 'Quantity', 'Cost'],
+        ['Product', 'Rate', 'Quantity', 'Cost'],
         state.data
             .map((item) => [
-                  item.productName,
-                  item.unit.unitAbbreviation,
-                  item.totalQuantity.toStringAsFixed(2),
+                  '${item.productName}\n'
+                      'Seller: ${item.sellerName ?? (item.sellerId != null ? 'Seller #${item.sellerId}' : 'Unknown Seller')}',
+                  currencyFormat.format(item.avgPrice),
+                  '${item.totalQuantity.toStringAsFixed(2)}\u00A0${item.unit.unitAbbreviation}',
                   currencyFormat.format(item.totalCost),
                 ])
             .toList(),
@@ -296,12 +361,11 @@ class ReportPdfService {
           style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
-        ['Date', 'Sales', 'Cost', 'Profit'],
+        ['Date', 'Total Sales', 'Total Profit'],
         state.data
             .map((item) => [
                   item.date,
                   currencyFormat.format(item.dailyRevenue),
-                  currencyFormat.format(item.dailyCost),
                   currencyFormat.format(item.dailyProfit),
                 ])
             .toList(),
@@ -313,23 +377,30 @@ class ReportPdfService {
   static List<pw.Widget> _buildPendingPaymentContent(
       PendingPaymentReportLoaded state) {
     return [
-      _summaryCard(
-          'Total Pending',
-          currencyFormat.format(state.totalPendingAmount),
-          PdfColor.fromHex('#C62828')),
+      _buildSummaryRow([
+        _summaryCard(
+            'Buyer Total Pending',
+            currencyFormat.format(state.totalBuyerPending),
+            PdfColor.fromHex('#C62828')),
+        _summaryCard(
+            'Seller Total Pending',
+            currencyFormat.format(state.totalSellerPending),
+            PdfColor.fromHex('#1565C0')),
+      ]),
       pw.SizedBox(height: 16),
       pw.Text('Pending Details',
           style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
-        ['Customer', 'Phone', 'Bills', 'Pending Amount', 'Days'],
+        ['Customer', 'Billing ID', 'Type', 'Phone', 'Bills', 'Total Amount'],
         state.data
             .map((item) => [
                   item.customerName,
+                  item.billingId != null ? '#${item.billingId}' : '-',
+                  item.billingType ?? 'Buyer',
                   item.customerPhone,
                   '${item.totalBills}',
                   currencyFormat.format(item.pendingAmount),
-                  '${item.daysPending}',
                 ])
             .toList(),
       ),
@@ -340,24 +411,17 @@ class ReportPdfService {
   static List<pw.Widget> _buildCustomerLedgerContent(
       CustomerLedgerReportLoaded state) {
     return [
-      _summaryCard(
-          'Net Balance',
-          currencyFormat.format(state.totalNetBalance),
-          state.totalNetBalance >= 0
-              ? PdfColor.fromHex('#2E7D32')
-              : PdfColor.fromHex('#C62828')),
-      pw.SizedBox(height: 16),
       pw.Text('Customer Details',
           style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
-        ['Customer', 'Phone', 'Purchases', 'Sales', 'Net Balance'],
+        ['Customer', 'Phone', 'Paid', 'Received', 'Balance'],
         state.data
             .map((item) => [
                   item.customerName,
                   item.customerPhone,
-                  currencyFormat.format(item.totalPurchases),
-                  currencyFormat.format(item.totalSales),
+                  currencyFormat.format(item.totalPaid),
+                  currencyFormat.format(item.totalReceived),
                   currencyFormat.format(item.netBalance),
                 ])
             .toList(),
@@ -372,22 +436,24 @@ class ReportPdfService {
       _summaryCard('Total Amount', currencyFormat.format(state.totalAmount),
           PdfColor.fromHex('#1565C0')),
       pw.SizedBox(height: 8),
-      _summaryCard(
-          'Total Quantity',
-          '${state.totalQuantity.toStringAsFixed(2)} units',
+      _summaryCard('Total Quantity', state.totalQuantityLabel,
           PdfColor.fromHex('#6A1B9A')),
       pw.SizedBox(height: 16),
       pw.Text('Stock Transactions',
           style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
-        ['Date', 'Product', 'Buyer', 'Qty', 'Amount'],
+        ['Date', 'Product', 'Buyer Name', 'Rate', 'Quantity', 'Amount'],
         state.data
             .map((item) => [
                   item.date,
-                  item.productName,
+                  item.variantName ?? '',
                   item.buyerName,
-                  (item.buyQuantity.toStringAsFixed(2)),
+                  currencyFormat.format(item.avgPrice),
+                  item.buyQuantity.toStringAsFixed(2) +
+                      (item.unit != null && item.unit!.trim().isNotEmpty
+                          ? '\u00A0${item.unit!.unitAbbreviation}'
+                          : ''),
                   currencyFormat.format(item.totalAmount),
                 ])
             .toList(),
@@ -408,7 +474,7 @@ class ReportPdfService {
           PdfColor.fromHex('#6A1B9A')),
       pw.SizedBox(height: 8),
       _summaryCard(
-          'Profit',
+          'Total Profit',
           currencyFormat.format(state.totalProfit),
           state.totalProfit >= 0
               ? PdfColor.fromHex('#2E7D32')
@@ -423,13 +489,13 @@ class ReportPdfService {
           style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
-        ['Product', 'Initial', 'Sold', 'Remaining', 'Profit'],
+        ['Product', 'Initial Stock', 'Sold Qty', 'Remaining Qty', 'Profit'],
         state.data
             .map((item) => [
-                  item.productName,
-                  (item.initialQuantity.toStringAsFixed(2)),
-                  (item.soldQuantity.toStringAsFixed(2)),
-                  (item.quantity.toStringAsFixed(2)),
+                  item.variantName ?? '',
+                  '${item.initialQuantity.toStringAsFixed(2)} ${item.unit?.unitAbbreviation ?? ''}',
+                  '${item.soldQuantity.toStringAsFixed(2)} ${item.unit?.unitAbbreviation ?? ''}',
+                  '${item.quantity.toStringAsFixed(2)} ${item.unit?.unitAbbreviation ?? ''}',
                   currencyFormat.format(item.profit),
                 ])
             .toList(),

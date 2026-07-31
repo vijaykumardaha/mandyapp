@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
 import 'package:mandiapp/dao/customer_dao.dart';
-import 'package:mandiapp/dao/customer_payment_dao.dart';
 import 'package:mandiapp/dao/order_charge_dao.dart';
 import 'package:mandiapp/dao/order_dao.dart';
 import 'package:mandiapp/dao/order_expense_dao.dart';
 import 'package:mandiapp/dao/order_payment_dao.dart';
 import 'package:mandiapp/dao/stock_dao.dart';
 import 'package:mandiapp/models/charge_type_model.dart';
-import 'package:mandiapp/models/customer_payment_model.dart';
 import 'package:mandiapp/models/order_charge_model.dart';
 import 'package:mandiapp/models/order_expense_model.dart';
 import 'package:mandiapp/models/order_item_model.dart';
@@ -253,24 +251,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             updatedAt: now,
           ));
         }
-      }
-
-      final transactionType = widget.orderFor == 'buyer' ? 'paid' : 'received';
-      final totalReceived = paymentAmountsToSave.entries
-          .fold<double>(0.0, (sum, e) => sum + e.value);
-      if (widget.customerId != null && totalReceived > 0) {
-        final source = paymentAmountsToSave.entries
-            .where((e) => e.value > 0)
-            .map((e) => _paymentMethodToSource(e.key))
-            .first;
-        await CustomerPaymentDAO().insertPayment(CustomerPayment(
-          customerId: widget.customerId!,
-          amount: totalReceived,
-          type: transactionType,
-          source: source,
-          note: 'Bill #$orderId',
-          paymentDate: DateTime.now().millisecondsSinceEpoch,
-        ));
       }
 
       if (widget.orderFor == 'buyer') {

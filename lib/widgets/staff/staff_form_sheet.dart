@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/user/user_bloc.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
 import 'package:mandiapp/models/user_model.dart';
+import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/utils/info_controller.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
@@ -29,10 +30,18 @@ class _StaffFormSheetState extends State<StaffFormSheet> {
   void initState() {
     super.initState();
     theme = AppTheme.shoppingManagerTheme;
-    nameController = TextEditingController(text: widget.staff?.name ?? '');
+    nameController = TextEditingController();
     mobileController = TextEditingController(text: widget.staff?.mobile ?? '');
     passwordController =
         TextEditingController(text: widget.staff?.password ?? '');
+    _loadMandiName();
+  }
+
+  Future<void> _loadMandiName() async {
+    final user = await AppHelper.getCurrentUser();
+    final name = user?.name?.trim() ?? '';
+    if (!mounted) return;
+    setState(() => nameController.text = name);
   }
 
   @override
@@ -130,8 +139,9 @@ class _StaffFormSheetState extends State<StaffFormSheet> {
             const SizedBox(height: 20),
             TextField(
               controller: nameController,
+              enabled: false,
               decoration: const InputDecoration(
-                labelText: 'Staff Name',
+                labelText: 'Staff Name (Mandi)',
                 border: OutlineInputBorder(),
               ),
             ),

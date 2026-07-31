@@ -49,6 +49,8 @@ class ReportDAO {
         date(oi.updated_at / 1000, 'unixepoch', 'localtime') as date,
         oi.product_id,
         oi.variant_id,
+        oi.seller_id,
+        c.name as seller_name,
         pv.variant_name,
         pv.unit,
         SUM(oi.quantity) as total_quantity,
@@ -57,10 +59,11 @@ class ReportDAO {
         AVG(oi.selling_price) as avg_price
       FROM order_items oi
       LEFT JOIN product_variants pv ON oi.variant_id = pv.id
+      LEFT JOIN customers c ON oi.seller_id = c.id
       WHERE date(oi.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
         AND date(oi.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
         AND oi.seller_order_id IS NOT NULL
-      GROUP BY date(oi.updated_at / 1000, 'unixepoch', 'localtime'), oi.product_id, oi.variant_id, pv.variant_name, pv.unit
+      GROUP BY date(oi.updated_at / 1000, 'unixepoch', 'localtime'), oi.product_id, oi.variant_id, oi.seller_id, c.name, pv.variant_name, pv.unit
       ORDER BY date DESC, total_cost DESC
     ''';
 
@@ -109,16 +112,18 @@ class ReportDAO {
         c.id as customer_id,
         c.name as customer_name,
         c.phone as customer_phone,
-        COUNT(*) as total_transactions,
-        SUM(CASE WHEN oi.buyer_order_id IS NOT NULL THEN oi.quantity * oi.selling_price ELSE 0 END) as total_purchases,
-        0.0 as total_sales,
-        (SUM(CASE WHEN oi.buyer_order_id IS NOT NULL THEN oi.quantity * oi.selling_price ELSE 0 END) - 0.0) as net_balance
-      FROM order_items oi
-      LEFT JOIN customers c ON (oi.buyer_id = c.id OR oi.seller_id = c.id)
-      WHERE date(oi.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
-        AND date(oi.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
+        COUNT(cp.id) as total_transactions,
+        SUM(CASE WHEN cp.type = 'paid' THEN cp.amount ELSE 0 END) as total_paid,
+        SUM(CASE WHEN cp.type = 'received' THEN cp.amount ELSE 0 END) as total_received,
+        (SUM(CASE WHEN cp.type = 'paid' THEN cp.amount ELSE 0 END) -
+         SUM(CASE WHEN cp.type = 'received' THEN cp.amount ELSE 0 END)) as net_balance
+      FROM customer_payments cp
+      LEFT JOIN customers c ON cp.customer_id = c.id
+      WHERE cp.is_deleted = 0
+        AND date(cp.payment_date / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(cp.payment_date / 1000, 'unixepoch', 'localtime') <= date(?)
       GROUP BY c.id, c.name, c.phone
-      HAVING total_transactions > 0
+      HAVING COUNT(cp.id) > 0
       ORDER BY net_balance DESC
     ''';
 
@@ -139,25 +144,52 @@ class ReportDAO {
         c.name as customer_name,
         c.phone as customer_phone,
         c.id as customer_id,
+        t.billing_type,
+        t.billing_id,
         COUNT(*) as total_bills,
-        SUM(CASE WHEN order_items.buyer_order_id IS NOT NULL THEN order_items.quantity * order_items.selling_price ELSE 0 END) as total_amount,
-        COALESCE(SUM(cp.amount), 0) as paid_amount,
-        (SUM(CASE WHEN order_items.buyer_order_id IS NOT NULL THEN order_items.quantity * order_items.selling_price ELSE 0 END) -
-         COALESCE(SUM(cp.amount), 0)) as pending_amount,
-        MIN(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as oldest_bill_date,
-        MAX(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as latest_bill_date
-      FROM order_items
-      LEFT JOIN customers c ON order_items.buyer_id = c.id
-      LEFT JOIN order_payments cp ON order_items.buyer_order_id = cp.order_id
-      WHERE date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
-        AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
-        AND order_items.buyer_order_id IS NOT NULL
-      GROUP BY c.id, c.name, c.phone
-      HAVING pending_amount > 0
+        SUM(t.bill_amount) as total_amount,
+        SUM(t.paid_amount) as paid_amount,
+        (SUM(t.bill_amount) - SUM(t.paid_amount)) as pending_amount,
+        MIN(t.oldest_bill_date) as oldest_bill_date,
+        MAX(t.latest_bill_date) as latest_bill_date
+      FROM (
+        SELECT
+          order_items.buyer_order_id as billing_id,
+          order_items.buyer_id as customer_id,
+          'Buyer' as billing_type,
+          SUM(order_items.quantity * order_items.selling_price) as bill_amount,
+          COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = order_items.buyer_order_id), 0) as paid_amount,
+          MIN(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as oldest_bill_date,
+          MAX(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as latest_bill_date
+        FROM order_items
+        WHERE order_items.buyer_order_id IS NOT NULL
+          AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+          AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
+        GROUP BY order_items.buyer_order_id, order_items.buyer_id
+        UNION ALL
+        SELECT
+          order_items.seller_order_id as billing_id,
+          order_items.seller_id as customer_id,
+          'Seller' as billing_type,
+          SUM(order_items.quantity * order_items.selling_price) as bill_amount,
+          COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = order_items.seller_order_id), 0) as paid_amount,
+          MIN(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as oldest_bill_date,
+          MAX(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as latest_bill_date
+        FROM order_items
+        WHERE order_items.seller_order_id IS NOT NULL
+          AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+          AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
+        GROUP BY order_items.seller_order_id, order_items.seller_id
+      ) t
+      LEFT JOIN customers c ON t.customer_id = c.id
+      GROUP BY c.id, c.name, c.phone, t.billing_type, t.billing_id
+      HAVING (SUM(t.bill_amount) - SUM(t.paid_amount)) > 0
       ORDER BY pending_amount DESC
     ''';
 
     return db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      toDate.toIso8601String().split('T')[0],
       fromDate.toIso8601String().split('T')[0],
       toDate.toIso8601String().split('T')[0]
     ]);

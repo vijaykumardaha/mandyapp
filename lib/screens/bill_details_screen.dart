@@ -12,6 +12,7 @@ import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/customer_payment_model.dart';
 import 'package:mandiapp/models/order_payment_model.dart';
 import 'package:mandiapp/services/printer_service.dart' as printer_service;
+import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/utils/db_helper.dart';
 import 'package:mandiapp/utils/info_controller.dart';
 import 'package:mandiapp/widgets/bill_details/bill_details_data.dart';
@@ -33,11 +34,20 @@ class BillDetailsScreen extends StatefulWidget {
 
 class _BillDetailsScreenState extends State<BillDetailsScreen> {
   late Future<BillDetailsData> _billFuture;
+  String _mandiName = '';
 
   @override
   void initState() {
     super.initState();
     _billFuture = _loadBillDetails();
+    _loadMandiName();
+  }
+
+  Future<void> _loadMandiName() async {
+    final user = await AppHelper.getCurrentUser();
+    final name = user?.name?.trim() ?? '';
+    if (!mounted) return;
+    setState(() => _mandiName = name);
   }
 
   Future<void> _handlePrint(BillDetailsData data) async {
@@ -494,6 +504,27 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            if (_mandiName.isNotEmpty) ...[
+                              Center(
+                                child: Text(
+                                  _mandiName,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                            ],
+                            Center(
+                              child: Text(
+                                '#${data.order.id ?? '-'}',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
                             ReceiptInfo(
                                 data: data, createdAt: createdAt, theme: theme),
                             const SizedBox(height: 12),

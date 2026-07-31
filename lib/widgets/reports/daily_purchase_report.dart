@@ -37,7 +37,7 @@ class DailyPurchaseReportWidget extends StatelessWidget {
             Expanded(
               child: ReportSummaryCard(
                 title: 'Total Quantity',
-                value: '${state.totalQuantity.toStringAsFixed(2)} units',
+                value: state.totalQuantityLabel,
                 color: theme.colorScheme.secondary,
               ),
             ),
@@ -47,8 +47,10 @@ class DailyPurchaseReportWidget extends StatelessWidget {
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Product', flex: 2),
-            ReportTableHeader(label: 'Qty', textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Cost', textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Rate', textAlign: TextAlign.center),
+            ReportTableHeader(
+                label: 'Quantity', flex: 2, textAlign: TextAlign.center),
+            ReportTableHeader(label: 'Cost', textAlign: TextAlign.right),
           ],
           rows: state.data.map((item) {
             return Container(
@@ -61,22 +63,38 @@ class DailyPurchaseReportWidget extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         MyText.bodySmall(item.productName, fontWeight: 600),
-                        MyText.bodySmall(item.unit.unitAbbreviation,
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.6)),
+                        MyText.bodySmall(
+                          'Seller: ${item.sellerName ?? (item.sellerId != null ? 'Seller #${item.sellerId}' : 'Unknown Seller')}',
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.7),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ],
                     ),
                   ),
                   Expanded(
                     child: MyText.bodySmall(
-                      item.totalQuantity.toStringAsFixed(2),
+                      currencyFormat.format(item.avgPrice),
                       textAlign: TextAlign.center,
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: MyText.bodySmall(
+                      '${item.totalQuantity.toStringAsFixed(2)}\u00A0${item.unit.unitAbbreviation}',
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Expanded(
                     child: MyText.bodySmall(
                       currencyFormat.format(item.totalCost),
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.right,
                       fontWeight: 600,
                       color: theme.colorScheme.primary,
                     ),

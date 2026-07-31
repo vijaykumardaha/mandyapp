@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:mandiapp/utils/app_helper.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 
@@ -19,12 +21,32 @@ class PrinterService {
   final ValueNotifier<String?> statusMessage = ValueNotifier<String?>(null);
   final ValueNotifier<bool> permissionGranted = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isScanning = ValueNotifier<bool>(false);
+  Timer? _statusClearTimer;
+  Timer? _bluetoothPollTimer;
+
+  void _setStatus(String message, {bool autoClear = false}) {
+    _statusClearTimer?.cancel();
+    statusMessage.value = message;
+    if (autoClear) {
+      _statusClearTimer = Timer(const Duration(seconds: 3), () {
+        statusMessage.value = null;
+      });
+    }
+  }
 
   Future<void> init() async {
     await checkPermissions();
     await _refreshBluetoothEnabled();
     await loadPairedDevices();
     await refreshConnectionStatus();
+    _startBluetoothPolling();
+  }
+
+  void _startBluetoothPolling() {
+    _bluetoothPollTimer?.cancel();
+    _bluetoothPollTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
+      await _refreshBluetoothEnabled();
+    });
   }
 
   Future<void> checkPermissions() async {
@@ -88,10 +110,17 @@ class PrinterService {
   Future<void> _refreshBluetoothEnabled() async {
     try {
       final enabled = await PrintBluetoothThermal.bluetoothEnabled;
+      final wasEnabled = bluetoothEnabled.value;
       bluetoothEnabled.value = enabled;
       if (!enabled) {
         connectionStatus.value = false;
         connectedDeviceMac.value = null;
+      } else if (!wasEnabled) {
+        if (statusMessage.value ==
+            'Enable Bluetooth to view paired printers.') {
+          statusMessage.value = null;
+        }
+        await loadPairedDevices();
       }
     } catch (error) {
       bluetoothEnabled.value = false;
@@ -148,8 +177,10 @@ class PrinterService {
           await PrintBluetoothThermal.connect(macPrinterAddress: macAddress);
       connectionStatus.value = result;
       connectedDeviceMac.value = result ? macAddress : null;
-      statusMessage.value =
-          result ? 'Connected to printer.' : 'Failed to connect to printer.';
+      _setStatus(
+        result ? 'Connected to printer.' : 'Failed to connect to printer.',
+        autoClear: result,
+      );
       return result;
     } catch (error) {
       connectionStatus.value = false;
@@ -218,9 +249,13 @@ class PrinterService {
 
       final StringBuffer invoiceText = StringBuffer();
 
-      // Header
-      invoiceText.writeln('=' * 32);
-      invoiceText.writeln(_centerText('Bill No #$cartId'));
+      // Mandi name + bill id header
+      final user = await AppHelper.getCurrentUser();
+      final mandiName = user?.name?.trim() ?? '';
+      if (mandiName.isNotEmpty) {
+        invoiceText.writeln(_centerText(mandiName));
+      }
+      invoiceText.writeln(_centerText('#$cartId'));
       invoiceText.writeln('=' * 32);
 
       // Date and customer info
@@ -239,17 +274,13 @@ class PrinterService {
       invoiceText.writeln('-' * 32);
 
       for (final item in items) {
-        final productName = item.productName.length > 20
-            ? '${item.productName.substring(0, 15)}...'
-            : item.productName;
         final qty = item.quantity.toInt();
         final amount = item.total.toStringAsFixed(2);
+        final qtyPrice = '$qty x ${item.price.toStringAsFixed(2)}';
 
-        invoiceText.writeln(
-            '${productName.padRight(12)} $qty x ${item.price.toStringAsFixed(2)}   $amount');
+        invoiceText.writeln(_buildItemLine(item.productName, qtyPrice, amount));
         if (item.partnerName != null && item.partnerName!.isNotEmpty) {
-          invoiceText
-              .writeln('${item.partnerType}: ${item.partnerName}'.padLeft(20));
+          invoiceText.writeln('${item.partnerType}: ${item.partnerName}');
         }
       }
       invoiceText.writeln('-' * 32);
@@ -306,6 +337,29 @@ class PrinterService {
     const int maxWidth = 32;
     final int padding = (maxWidth - text.length) ~/ 2;
     return ' ' * padding + text;
+  }
+
+  String _buildItemLine(String name, String qtyPrice, String amount) {
+    const int maxWidth = 32;
+    String line = '${_truncate(name, 12).padRight(12)} $qtyPrice   $amount';
+    if (line.length > maxWidth) {
+      final int nameWidth = maxWidth - (' $qtyPrice   $amount').length;
+      line =
+          '${_truncate(name, nameWidth < 0 ? 0 : nameWidth)}$qtyPrice   $amount';
+    }
+    if (line.length > maxWidth) {
+      final String compact = ' $qtyPrice $amount';
+      line =
+          '${_truncate(name, (maxWidth - compact.length) < 0 ? 0 : maxWidth - compact.length)}$compact';
+    }
+    return line;
+  }
+
+  String _truncate(String text, int maxChars) {
+    if (maxChars <= 0) return '';
+    if (text.length <= maxChars) return text;
+    if (maxChars <= 3) return text.substring(0, maxChars);
+    return '${text.substring(0, maxChars - 3)}...';
   }
 
   void clearStatus() {

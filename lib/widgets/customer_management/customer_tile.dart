@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:mandiapp/dao/order_dao.dart';
-import 'package:mandiapp/dao/order_payment_dao.dart';
+import 'package:mandiapp/dao/customer_payment_dao.dart';
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/screens/customer_bills_screen.dart';
 import 'package:mandiapp/screens/payment_histories_screen.dart';
+import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 
@@ -26,40 +29,40 @@ class CustomerTile extends StatefulWidget {
 }
 
 class _CustomerTileState extends State<CustomerTile> {
-  int _billCount = 0;
   double _totalPaid = 0;
   double _totalReceived = 0;
   bool _loaded = false;
+  StreamSubscription<String>? _syncSubscription;
+
+  double get _netBalance => _totalReceived - _totalPaid;
 
   @override
   void initState() {
     super.initState();
     _loadStats();
+    _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
+      if (!mounted) return;
+      if (table == DbTables.customerPayments) {
+        _loadStats();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _syncSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadStats() async {
-    final orderDAO = OrderDAO();
-    final orderPaymentDAO = OrderPaymentDAO();
+    final paymentDAO = CustomerPaymentDAO();
 
-    final orders = await orderDAO.getOrdersByCustomer(widget.customer.id!);
-    double paid = 0;
-    double received = 0;
-
-    for (final order in orders) {
-      final payments =
-          await orderPaymentDAO.getOrderPaymentsByOrderId(order.id!);
-      for (final payment in payments) {
-        if (order.orderFor == 'buyer') {
-          received += payment.amount;
-        } else {
-          paid += payment.amount;
-        }
-      }
-    }
+    final received =
+        await paymentDAO.getTotalByType(widget.customer.id!, 'received');
+    final paid = await paymentDAO.getTotalByType(widget.customer.id!, 'paid');
 
     if (mounted) {
       setState(() {
-        _billCount = orders.length;
         _totalPaid = paid;
         _totalReceived = received;
         _loaded = true;
@@ -103,37 +106,35 @@ class _CustomerTileState extends State<CustomerTile> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   MyText.bodyLarge(
-                    displayName,
+                    customer.phone != null && customer.phone!.trim().isNotEmpty
+                        ? '$displayName (${customer.phone!.trim()})'
+                        : displayName,
                     fontWeight: 600,
                   ),
-                  if (_loaded && _billCount > 0) ...[
+                  if (_loaded) ...[
                     const SizedBox(height: 2),
-                    Row(
+                    Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
                       children: [
                         _StatChip(
-                          label: 'Bills',
-                          value: '$_billCount',
-                          color: theme.colorScheme.primary,
+                          label: 'Received',
+                          value: '₹${_totalReceived.toStringAsFixed(0)}',
+                          color: Colors.green,
                           theme: theme,
                         ),
-                        if (_totalReceived > 0) ...[
-                          const SizedBox(width: 4),
-                          _StatChip(
-                            label: 'Received',
-                            value: '₹${_totalReceived.toStringAsFixed(0)}',
-                            color: Colors.green,
-                            theme: theme,
-                          ),
-                        ],
-                        if (_totalPaid > 0) ...[
-                          const SizedBox(width: 4),
-                          _StatChip(
-                            label: 'Paid',
-                            value: '₹${_totalPaid.toStringAsFixed(0)}',
-                            color: Colors.orange,
-                            theme: theme,
-                          ),
-                        ],
+                        _StatChip(
+                          label: 'Paid',
+                          value: '₹${_totalPaid.toStringAsFixed(0)}',
+                          color: Colors.red,
+                          theme: theme,
+                        ),
+                        _StatChip(
+                          label: 'Balance',
+                          value: '₹${_netBalance.toStringAsFixed(0)}',
+                          color: _netBalance >= 0 ? Colors.green : Colors.red,
+                          theme: theme,
+                        ),
                       ],
                     ),
                   ],
@@ -141,25 +142,27 @@ class _CustomerTileState extends State<CustomerTile> {
               ),
             ),
             PopupMenuButton<String>(
-              onSelected: (value) {
+              onSelected: (value) async {
                 if (value == 'edit') {
                   widget.onEdit();
                 } else if (value == 'payments') {
-                  Navigator.push(
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
                           PaymentHistoriesScreen(customer: customer),
                     ),
                   );
+                  _loadStats();
                 } else if (value == 'bills') {
-                  Navigator.push(
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
                           CustomerBillsScreen(customer: customer),
                     ),
                   );
+                  _loadStats();
                 }
               },
               itemBuilder: (context) => [

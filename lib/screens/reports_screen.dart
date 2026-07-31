@@ -485,15 +485,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
               state is ReportsInitial) {
             return const SizedBox.shrink();
           }
-          return FloatingActionButton.extended(
+          return FloatingActionButton(
             onPressed: _downloadPdf,
-            backgroundColor: Theme.of(context).colorScheme.tertiary,
-            foregroundColor: Theme.of(context).colorScheme.onTertiary,
-            icon: const Icon(Icons.download_rounded, size: 20),
-            label: const Text(
-              'Download',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
+            child: const Icon(Icons.download_rounded, size: 22),
           );
         },
       ),

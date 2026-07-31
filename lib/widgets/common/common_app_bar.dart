@@ -24,12 +24,12 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight + 20);
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bgColor = backgroundColor ?? theme.scaffoldBackgroundColor;
+    final bgColor = backgroundColor ?? theme.cardColor;
     final fgColor = foregroundColor ?? theme.colorScheme.onSurface;
 
     final bool canPop = GoRouter.of(context).canPop();
@@ -38,6 +38,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: bgColor,
       elevation: elevation,
       centerTitle: centerTitle,
+      toolbarHeight: kToolbarHeight + 20,
       leading: showBackButton && canPop
           ? Padding(
               padding: const EdgeInsets.only(left: 12, top: 8, bottom: 8),

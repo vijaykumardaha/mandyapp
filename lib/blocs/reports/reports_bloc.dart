@@ -189,10 +189,18 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       final data = rawData.map(PendingPaymentData.fromJson).toList();
       final totalPendingAmount =
           data.fold(0.0, (sum, item) => sum + item.pendingAmount);
+      final totalBuyerPending = data
+          .where((item) => item.billingType == 'Buyer')
+          .fold(0.0, (sum, item) => sum + item.pendingAmount);
+      final totalSellerPending = data
+          .where((item) => item.billingType == 'Seller')
+          .fold(0.0, (sum, item) => sum + item.pendingAmount);
 
       emit(PendingPaymentReportLoaded(
         data: data,
         totalPendingAmount: totalPendingAmount,
+        totalBuyerPending: totalBuyerPending,
+        totalSellerPending: totalSellerPending,
       ));
     } catch (error) {
       emit(ReportsError(

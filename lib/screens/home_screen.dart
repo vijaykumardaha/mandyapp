@@ -69,9 +69,9 @@ class _HomeScreenState extends State<HomeScreen> {
         const HomeTabScreen(),
         const SellingScreen(),
         const BillingScreen(),
-        const CustomerManagementScreen(),
         const BillsScreen(),
         const ReportsScreen(),
+        const CustomerManagementScreen(),
         const SettingsScreen(),
       ];
 
@@ -79,9 +79,9 @@ class _HomeScreenState extends State<HomeScreen> {
     'Home',
     'Selling',
     'Billing',
-    'Customers',
     'Bills',
     'Reports',
+    'Customers',
     'Settings',
   ];
 
@@ -89,9 +89,9 @@ class _HomeScreenState extends State<HomeScreen> {
     Icons.home_outlined,
     Icons.qr_code,
     Icons.shopping_cart_outlined,
-    Icons.people_outline,
     Icons.receipt_long_outlined,
     Icons.bar_chart_outlined,
+    Icons.people_outline,
     Icons.settings_outlined,
   ];
 
@@ -99,9 +99,9 @@ class _HomeScreenState extends State<HomeScreen> {
     Icons.home,
     Icons.qr_code,
     Icons.shopping_cart,
-    Icons.people,
     Icons.receipt_long,
     Icons.bar_chart,
+    Icons.people,
     Icons.settings,
   ];
 
@@ -123,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: BottomNavigationBar(
               currentIndex: initialIndex,
               type: BottomNavigationBarType.fixed,
-              backgroundColor: theme.cardTheme.surfaceTintColor,
+              backgroundColor: theme.cardColor,
               selectedItemColor: theme.primaryColor,
               unselectedItemColor:
                   theme.colorScheme.onSurface.withValues(alpha: 0.6),

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/blocs/customer/customer_bloc.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
 import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/services/report_pdf_service.dart';
 import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/utils/constants.dart';
@@ -13,6 +14,7 @@ import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/customer_management/customer_form_sheet.dart';
 import 'package:mandiapp/widgets/customer_management/customer_tile.dart';
+import 'package:open_file/open_file.dart';
 
 class CustomerManagementScreen extends StatefulWidget {
   const CustomerManagementScreen({super.key});
@@ -154,6 +156,19 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
           },
         ),
       ),
+      floatingActionButton: BlocBuilder<CustomerBloc, CustomerState>(
+        builder: (context, state) {
+          if (state is! CustomerLoaded || state.customers.isEmpty) {
+            return const SizedBox.shrink();
+          }
+          return FloatingActionButton(
+            onPressed: () => _downloadPdf(state.customers),
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
+            child: const Icon(Icons.download_rounded, size: 22),
+          );
+        },
+      ),
     );
   }
 
@@ -215,5 +230,28 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
       customer: customer,
       query: _searchController.text.trim(),
     );
+  }
+
+  Future<void> _downloadPdf(List<Customer> customers) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Generating PDF...')),
+      );
+      final file = await ReportPdfService.generateCustomersPdf(customers);
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        await OpenFile.open(file.path);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to generate PDF: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

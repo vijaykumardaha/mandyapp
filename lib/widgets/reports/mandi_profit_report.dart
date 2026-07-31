@@ -46,9 +46,10 @@ class MandiProfitReportWidget extends StatelessWidget {
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Date'),
-            ReportTableHeader(label: 'Sales', textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Cost', textAlign: TextAlign.center),
-            ReportTableHeader(label: 'Profit', textAlign: TextAlign.center),
+            ReportTableHeader(
+                label: 'Total Sales', textAlign: TextAlign.center),
+            ReportTableHeader(
+                label: 'Total Profit', textAlign: TextAlign.right),
           ],
           rows: state.data.map((item) {
             return Container(
@@ -67,15 +68,8 @@ class MandiProfitReportWidget extends StatelessWidget {
                   ),
                   Expanded(
                     child: MyText.bodySmall(
-                      currencyFormat.format(item.dailyCost),
-                      textAlign: TextAlign.center,
-                      color: Colors.red,
-                    ),
-                  ),
-                  Expanded(
-                    child: MyText.bodySmall(
                       currencyFormat.format(item.dailyProfit),
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.right,
                       fontWeight: 600,
                       color: item.dailyProfit >= 0 ? Colors.green : Colors.red,
                     ),
