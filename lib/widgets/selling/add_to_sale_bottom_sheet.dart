@@ -70,17 +70,16 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
     return BlocListener<OrderItemBloc, OrderItemState>(
       listener: (context, state) {
         if (state is OrderItemsLoaded) {
-          // Set success message
+          // Show success message, then close the sheet automatically.
           setState(() {
             _successMessage = 'Successfully added to cart.';
           });
-
-          // Clear message after 2 seconds
-          Future.delayed(const Duration(seconds: 2), () {
-            if (mounted) {
-              setState(() {
-                _successMessage = '';
-              });
+          final navigator = Navigator.of(context);
+          final route = ModalRoute.of(context);
+          Future.delayed(const Duration(seconds: 1), () {
+            if (!mounted) return;
+            if (route != null && route.isCurrent) {
+              navigator.pop();
             }
           });
         }
@@ -91,6 +90,17 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 4, right: 4),
+                child: IconButton(
+                  icon: const Icon(Icons.close),
+                  tooltip: 'Close',
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ),
             // Success message at first position
             if (_successMessage.isNotEmpty)
               Container(

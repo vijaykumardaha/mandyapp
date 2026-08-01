@@ -15,7 +15,6 @@ import 'package:krishimandi/models/order_model.dart';
 import 'package:krishimandi/models/order_payment_model.dart';
 import 'package:krishimandi/models/stock_model.dart';
 import 'package:krishimandi/services/printer_service.dart';
-import 'package:krishimandi/services/sync_service.dart';
 import 'package:krishimandi/utils/app_helper.dart';
 import 'package:krishimandi/utils/db_helper.dart';
 import 'package:krishimandi/utils/info_controller.dart';
@@ -145,7 +144,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _placeOrder(List<ChargeType> chargeTypes) async {
     if (_isPlacingOrder) return;
     setState(() => _isPlacingOrder = true);
-    SyncService.instance.pause();
 
     try {
       final now = DateTime.now().millisecondsSinceEpoch;
@@ -296,8 +294,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             context: context);
         setState(() => _isPlacingOrder = false);
       }
-    } finally {
-      SyncService.instance.resume();
     }
   }
 

@@ -131,15 +131,16 @@ class CustomerDAO {
       for (final customer in customers) {
         batch.rawInsert('''
           INSERT INTO ${DbTables.customers} (
-            id, mandi_id, name, phone,
+            id, mandi_id, name, phone, product_ids,
             updated_at, is_deleted, sync_status
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 
           ON CONFLICT(id) DO UPDATE SET
             mandi_id = excluded.mandi_id,
             name = excluded.name,
             phone = excluded.phone,
+            product_ids = excluded.product_ids,
             updated_at = excluded.updated_at,
             is_deleted = excluded.is_deleted,
             sync_status = excluded.sync_status
@@ -150,6 +151,7 @@ class CustomerDAO {
           customer.mandiId,
           customer.name,
           customer.phone,
+          customer.productIds ?? '',
           customer.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           customer.isDeleted ?? 0,
           customer.syncStatus ?? 1,

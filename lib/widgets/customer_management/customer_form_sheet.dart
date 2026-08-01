@@ -126,117 +126,121 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
                           ),
                         );
                       }
-                      return GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4,
-                          mainAxisSpacing: 8,
-                          crossAxisSpacing: 8,
-                        ),
-                        itemCount: productState.products.length,
-                        itemBuilder: (context, index) {
-                          final product = productState.products[index];
-                          final productId = product.id!;
-                          final isSelected =
-                              selectedProductIds.contains(productId);
-                          final defaultVariant = product.defaultVariantModel;
-                          return GestureDetector(
-                            onTap: () {
-                              setSheetState(() {
-                                if (isSelected) {
-                                  selectedProductIds.remove(productId);
-                                } else {
-                                  selectedProductIds.add(productId);
-                                }
-                              });
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(
+                      return SizedBox(
+                        height: 80,
+                        child: GridView.builder(
+                          scrollDirection: Axis.horizontal,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 1,
+                            mainAxisSpacing: 8,
+                            crossAxisSpacing: 8,
+                          ),
+                          itemCount: productState.products.length,
+                          itemBuilder: (context, index) {
+                            final product = productState.products[index];
+                            final productId = product.id!;
+                            final isSelected =
+                                selectedProductIds.contains(productId);
+                            final defaultVariant = product.defaultVariantModel;
+                            return GestureDetector(
+                              onTap: () {
+                                setSheetState(() {
+                                  if (isSelected) {
+                                    selectedProductIds.remove(productId);
+                                  } else {
+                                    selectedProductIds.add(productId);
+                                  }
+                                });
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? theme.colorScheme.primary
+                                        : theme.colorScheme.outline
+                                            .withValues(alpha: 0.3),
+                                    width: isSelected ? 2 : 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
                                   color: isSelected
                                       ? theme.colorScheme.primary
-                                      : theme.colorScheme.outline
-                                          .withValues(alpha: 0.3),
-                                  width: isSelected ? 2 : 1,
+                                          .withValues(alpha: 0.05)
+                                      : null,
                                 ),
-                                borderRadius: BorderRadius.circular(8),
-                                color: isSelected
-                                    ? theme.colorScheme.primary
-                                        .withValues(alpha: 0.05)
-                                    : null,
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Expanded(
-                                    child: Container(
-                                      width: double.infinity,
-                                      margin: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: theme
-                                            .colorScheme.surfaceContainerHighest
-                                            .withValues(alpha: 0.5),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: defaultVariant != null &&
-                                              defaultVariant
-                                                  .imagePath.isNotEmpty
-                                          ? ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                              child: defaultVariant.imagePath
-                                                      .startsWith('assets/')
-                                                  ? Image.asset(
-                                                      defaultVariant.imagePath,
-                                                      fit: BoxFit.cover)
-                                                  : Image.file(
-                                                      File(defaultVariant
-                                                          .imagePath),
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                            )
-                                          : Center(
-                                              child: Icon(
-                                                Icons.inventory_2,
-                                                size: 24,
-                                                color:
-                                                    theme.colorScheme.primary,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        width: double.infinity,
+                                        margin: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme
+                                              .surfaceContainerHighest
+                                              .withValues(alpha: 0.5),
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                        ),
+                                        child: defaultVariant != null &&
+                                                defaultVariant
+                                                    .imagePath.isNotEmpty
+                                            ? ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                child: defaultVariant.imagePath
+                                                        .startsWith('assets/')
+                                                    ? Image.asset(
+                                                        defaultVariant
+                                                            .imagePath,
+                                                        fit: BoxFit.cover)
+                                                    : Image.file(
+                                                        File(defaultVariant
+                                                            .imagePath),
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                              )
+                                            : Center(
+                                                child: Icon(
+                                                  Icons.inventory_2,
+                                                  size: 24,
+                                                  color:
+                                                      theme.colorScheme.primary,
+                                                ),
                                               ),
-                                            ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 4, vertical: 2),
-                                    child: Text(
-                                      defaultVariant?.variantName ??
-                                          'Product #${product.id}',
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: isSelected
-                                            ? FontWeight.w600
-                                            : FontWeight.normal,
-                                        color: isSelected
-                                            ? theme.colorScheme.primary
-                                            : theme.colorScheme.onSurface,
                                       ),
                                     ),
-                                  ),
-                                  if (isSelected)
-                                    Icon(
-                                      Icons.check_circle,
-                                      size: 14,
-                                      color: theme.colorScheme.primary,
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 4, vertical: 2),
+                                      child: Text(
+                                        defaultVariant?.variantName ??
+                                            'Product #${product.id}',
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                          color: isSelected
+                                              ? theme.colorScheme.primary
+                                              : theme.colorScheme.onSurface,
+                                        ),
+                                      ),
                                     ),
-                                ],
+                                    if (isSelected)
+                                      Icon(
+                                        Icons.check_circle,
+                                        size: 14,
+                                        color: theme.colorScheme.primary,
+                                      ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       );
                     }
                     return const SizedBox.shrink();

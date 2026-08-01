@@ -70,6 +70,16 @@ class _CustomerTileState extends State<CustomerTile> {
     }
   }
 
+  Future<void> _openPayments() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentHistoriesScreen(customer: widget.customer),
+      ),
+    );
+    _loadStats();
+  }
+
   @override
   Widget build(BuildContext context) {
     final customer = widget.customer;
@@ -79,7 +89,9 @@ class _CustomerTileState extends State<CustomerTile> {
     final nameParts = displayName.split(RegExp(r'\s+'));
     final initials = nameParts.length >= 2
         ? '${nameParts.first[0]}${nameParts.last[0]}'
-        : nameParts.first[0];
+        : nameParts.first.length >= 2
+            ? nameParts.first.substring(0, 2)
+            : nameParts.first;
 
     final theme = widget.theme;
 
@@ -89,71 +101,77 @@ class _CustomerTileState extends State<CustomerTile> {
         padding: MySpacing.xy(12, 10),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-              child: Text(
-                initials.toUpperCase(),
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  MyText.bodyLarge(
-                    customer.phone != null && customer.phone!.trim().isNotEmpty
-                        ? '$displayName (${customer.phone!.trim()})'
-                        : displayName,
-                    fontWeight: 600,
-                  ),
-                  if (_loaded) ...[
-                    const SizedBox(height: 2),
-                    Wrap(
-                      spacing: 4,
-                      runSpacing: 4,
-                      children: [
-                        _StatChip(
-                          label: 'Received',
-                          value: '₹${_totalReceived.toStringAsFixed(0)}',
-                          color: Colors.green,
-                          theme: theme,
+              child: InkWell(
+                onTap: _openPayments,
+                borderRadius: BorderRadius.circular(8),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor:
+                          theme.colorScheme.primary.withValues(alpha: 0.1),
+                      child: Text(
+                        initials.toUpperCase(),
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.bold,
                         ),
-                        _StatChip(
-                          label: 'Paid',
-                          value: '₹${_totalPaid.toStringAsFixed(0)}',
-                          color: Colors.red,
-                          theme: theme,
-                        ),
-                        _StatChip(
-                          label: 'Balance',
-                          value: '₹${_netBalance.toStringAsFixed(0)}',
-                          color: _netBalance >= 0 ? Colors.green : Colors.red,
-                          theme: theme,
-                        ),
-                      ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          MyText.bodyMedium(
+                            customer.phone != null &&
+                                    customer.phone!.trim().isNotEmpty
+                                ? '$displayName (${customer.phone!.trim()})'
+                                : displayName,
+                            fontWeight: 600,
+                          ),
+                          if (_loaded) ...[
+                            const SizedBox(height: 2),
+                            Wrap(
+                              spacing: 4,
+                              runSpacing: 4,
+                              children: [
+                                _StatChip(
+                                  label: 'Received',
+                                  value:
+                                      '₹${_totalReceived.toStringAsFixed(0)}',
+                                  color: Colors.green,
+                                  theme: theme,
+                                ),
+                                _StatChip(
+                                  label: 'Paid',
+                                  value: '₹${_totalPaid.toStringAsFixed(0)}',
+                                  color: Colors.red,
+                                  theme: theme,
+                                ),
+                                _StatChip(
+                                  label: 'Balance',
+                                  value: '₹${_netBalance.toStringAsFixed(0)}',
+                                  color: _netBalance >= 0
+                                      ? Colors.green
+                                      : Colors.red,
+                                  theme: theme,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   ],
-                ],
+                ),
               ),
             ),
             PopupMenuButton<String>(
               onSelected: (value) async {
                 if (value == 'edit') {
                   widget.onEdit();
-                } else if (value == 'payments') {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          PaymentHistoriesScreen(customer: customer),
-                    ),
-                  );
-                  _loadStats();
                 } else if (value == 'bills') {
                   await Navigator.push(
                     context,
@@ -168,7 +186,6 @@ class _CustomerTileState extends State<CustomerTile> {
               itemBuilder: (context) => [
                 if (widget.isAdmin)
                   const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                const PopupMenuItem(value: 'payments', child: Text('Payments')),
                 const PopupMenuItem(value: 'bills', child: Text('Bills')),
               ],
             ),
@@ -204,7 +221,7 @@ class _StatChip extends StatelessWidget {
         '$label: $value',
         color: color,
         fontWeight: 500,
-        fontSize: 10,
+        fontSize: 12,
       ),
     );
   }

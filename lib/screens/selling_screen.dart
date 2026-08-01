@@ -135,15 +135,45 @@ class SellingScreenState extends State<SellingScreen> {
       actions: [
         if (sellerCustomer != null)
           Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: IconButton(
-              icon: const Icon(Icons.swap_horiz),
-              tooltip: 'Change Customer',
-              onPressed: () {
-                setState(() {
-                  sellerCustomer = null;
-                });
-              },
+            padding: const EdgeInsets.only(right: 12),
+            child: Tooltip(
+              message: 'Change Customer',
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    sellerCustomer = null;
+                  });
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.swap_horiz,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Change Seller',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
       ],
