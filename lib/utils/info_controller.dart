@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
 
 class Info {
   static OverlayEntry? _currentEntry;

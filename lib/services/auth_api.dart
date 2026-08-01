@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:mandiapp/models/mandi_model.dart';
-import 'package:mandiapp/models/user_model.dart';
-import 'package:mandiapp/services/api_service.dart';
+import 'package:krishimandi/models/mandi_model.dart';
+import 'package:krishimandi/models/user_model.dart';
+import 'package:krishimandi/services/api_service.dart';
 
 class AuthApi {
   final _dio = ApiService.instance.dio;

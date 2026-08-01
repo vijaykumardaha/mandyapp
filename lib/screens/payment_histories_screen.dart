@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/blocs/customer_payment/customer_payment_bloc.dart';
-import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/models/customer_payment_model.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
-import 'package:mandiapp/widgets/common/dropdown_option.dart';
-import 'package:mandiapp/widgets/payment_histories/payment_item.dart';
-import 'package:mandiapp/widgets/payment_histories/type_tab.dart';
+import 'package:krishimandi/blocs/customer_payment/customer_payment_bloc.dart';
+import 'package:krishimandi/models/customer_model.dart';
+import 'package:krishimandi/models/customer_payment_model.dart';
+import 'package:krishimandi/widgets/common/common_app_bar.dart';
+import 'package:krishimandi/widgets/common/dropdown_option.dart';
+import 'package:krishimandi/widgets/payment_histories/payment_item.dart';
+import 'package:krishimandi/widgets/payment_histories/type_tab.dart';
 
 const _paymentSources = ['cash', 'upi', 'card', 'credit'];
 

@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/dao/stock_dao.dart';
-import 'package:mandiapp/models/stock_model.dart';
+import 'package:krishimandi/dao/stock_dao.dart';
+import 'package:krishimandi/models/stock_model.dart';
 
 part 'stock_event.dart';
 part 'stock_state.dart';

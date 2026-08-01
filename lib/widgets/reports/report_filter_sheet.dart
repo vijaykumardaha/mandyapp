@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/widgets/reports/report_types.dart';
+import 'package:krishimandi/widgets/reports/report_types.dart';
 
 /// Modal bottom sheet that lets the user pick a report date range and type.
 ///

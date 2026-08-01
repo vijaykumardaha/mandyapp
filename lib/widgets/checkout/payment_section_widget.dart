@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/widgets/checkout/payment_method_selector.dart';
+import 'package:krishimandi/widgets/checkout/payment_method_selector.dart';
 
 class PaymentSectionWidget extends StatefulWidget {
   final String orderFor;

@@ -8,7 +8,7 @@
 PRODUCT_NAME = Krishi Mandi
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.mandiappp.mandiapp
+PRODUCT_BUNDLE_IDENTIFIER = com.mandiappp.krishimandi
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2024 com.mandiappp. All rights reserved.

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandiapp/blocs/login/login_bloc.dart';
-import 'package:mandiapp/controllers/customer_login_controller.dart';
-import 'package:mandiapp/controllers/login_controller.dart';
-import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/models/mandi_model.dart';
-import 'package:mandiapp/services/auth_api.dart';
-import 'package:mandiapp/utils/info_controller.dart';
-import 'package:mandiapp/widgets/auth/mandi_dropdown_field.dart';
-import 'package:mandiapp/widgets/auth/mobile_field.dart';
-import 'package:mandiapp/widgets/auth/password_field.dart';
-import 'package:mandiapp/widgets/common/my_button.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:krishimandi/blocs/login/login_bloc.dart';
+import 'package:krishimandi/controllers/customer_login_controller.dart';
+import 'package:krishimandi/controllers/login_controller.dart';
+import 'package:krishimandi/helpers/theme/app_theme.dart';
+import 'package:krishimandi/models/mandi_model.dart';
+import 'package:krishimandi/services/auth_api.dart';
+import 'package:krishimandi/utils/info_controller.dart';
+import 'package:krishimandi/widgets/auth/mandi_dropdown_field.dart';
+import 'package:krishimandi/widgets/auth/mobile_field.dart';
+import 'package:krishimandi/widgets/auth/password_field.dart';
+import 'package:krishimandi/widgets/common/my_button.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
 
 enum _LoginMode { staff, customer }
 

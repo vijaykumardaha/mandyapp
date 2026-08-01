@@ -1,14 +1,14 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
-import 'package:mandiapp/blocs/order/order_bloc.dart';
-import 'package:mandiapp/blocs/order_payment/order_payment_bloc.dart';
-import 'package:mandiapp/dao/order_charge_dao.dart';
-import 'package:mandiapp/dao/order_expense_dao.dart';
-import 'package:mandiapp/dao/order_item_dao.dart';
-import 'package:mandiapp/dao/order_payment_dao.dart';
-import 'package:mandiapp/models/bill_summary_model.dart';
-import 'package:mandiapp/models/order_model.dart';
+import 'package:krishimandi/blocs/charge_types/charge_types_bloc.dart';
+import 'package:krishimandi/blocs/order/order_bloc.dart';
+import 'package:krishimandi/blocs/order_payment/order_payment_bloc.dart';
+import 'package:krishimandi/dao/order_charge_dao.dart';
+import 'package:krishimandi/dao/order_expense_dao.dart';
+import 'package:krishimandi/dao/order_item_dao.dart';
+import 'package:krishimandi/dao/order_payment_dao.dart';
+import 'package:krishimandi/models/bill_summary_model.dart';
+import 'package:krishimandi/models/order_model.dart';
 
 part 'bill_list_event.dart';
 part 'bill_list_state.dart';

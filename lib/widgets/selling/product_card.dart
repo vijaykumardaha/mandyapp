@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:mandiapp/models/product_model.dart';
+import 'package:krishimandi/models/product_model.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;

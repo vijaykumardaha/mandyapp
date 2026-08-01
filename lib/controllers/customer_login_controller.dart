@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/models/mandi_model.dart';
+import 'package:krishimandi/models/mandi_model.dart';
 
 class CustomerLoginController {
   GlobalKey<FormState> formKey = GlobalKey();

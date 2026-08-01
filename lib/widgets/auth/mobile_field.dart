@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
-import 'package:mandiapp/widgets/common/my_text_style.dart';
+import 'package:krishimandi/widgets/common/my_text_style.dart';
 
 class AuthMobileField extends StatelessWidget {
   final TextEditingController controller;

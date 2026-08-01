@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
 
 class ContentSectionTitle extends StatelessWidget {
   final String title;

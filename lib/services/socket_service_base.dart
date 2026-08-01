@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:mandiapp/models/user_model.dart';
-import 'package:mandiapp/services/socket_config.dart';
-import 'package:mandiapp/utils/app_helper.dart';
+import 'package:krishimandi/models/user_model.dart';
+import 'package:krishimandi/services/socket_config.dart';
+import 'package:krishimandi/utils/app_helper.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 
 abstract class SocketServiceBase {

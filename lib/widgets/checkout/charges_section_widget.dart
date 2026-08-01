@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
-import 'package:mandiapp/models/charge_type_model.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:krishimandi/blocs/charge_types/charge_types_bloc.dart';
+import 'package:krishimandi/models/charge_type_model.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
 
 class ChargesSectionWidget extends StatelessWidget {
   final String orderFor;

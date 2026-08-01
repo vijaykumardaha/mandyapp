@@ -5,8 +5,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mandiapp/helpers/theme/custom_theme.dart';
-import 'package:mandiapp/widgets/common/my_text_style.dart';
+import 'package:krishimandi/helpers/theme/custom_theme.dart';
+import 'package:krishimandi/widgets/common/my_text_style.dart';
 
 export 'custom_theme.dart';
 

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:mandiapp/dao/customer_dao.dart';
-import 'package:mandiapp/dao/order_charge_dao.dart';
-import 'package:mandiapp/dao/order_dao.dart';
-import 'package:mandiapp/dao/order_expense_dao.dart';
-import 'package:mandiapp/dao/order_payment_dao.dart';
-import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/models/order_model.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:krishimandi/dao/customer_dao.dart';
+import 'package:krishimandi/dao/order_charge_dao.dart';
+import 'package:krishimandi/dao/order_dao.dart';
+import 'package:krishimandi/dao/order_expense_dao.dart';
+import 'package:krishimandi/dao/order_payment_dao.dart';
+import 'package:krishimandi/helpers/theme/app_theme.dart';
+import 'package:krishimandi/models/customer_model.dart';
+import 'package:krishimandi/models/order_model.dart';
+import 'package:krishimandi/widgets/common/common_app_bar.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
 
 class _BillSearchResult {
   final Order order;

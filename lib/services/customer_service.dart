@@ -1,9 +1,9 @@
 import 'dart:developer';
 
-import 'package:mandiapp/models/user_model.dart';
-import 'package:mandiapp/services/socket_config.dart';
-import 'package:mandiapp/services/socket_service_base.dart';
-import 'package:mandiapp/services/sync_service.dart';
+import 'package:krishimandi/models/user_model.dart';
+import 'package:krishimandi/services/socket_config.dart';
+import 'package:krishimandi/services/socket_service_base.dart';
+import 'package:krishimandi/services/sync_service.dart';
 
 class CustomerService extends SocketServiceBase {
   CustomerService._();

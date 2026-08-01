@@ -1,7 +1,7 @@
-import 'package:mandiapp/models/stock_model.dart';
-import 'package:mandiapp/utils/app_helper.dart';
-import 'package:mandiapp/utils/constants.dart';
-import 'package:mandiapp/utils/db_helper.dart';
+import 'package:krishimandi/models/stock_model.dart';
+import 'package:krishimandi/utils/app_helper.dart';
+import 'package:krishimandi/utils/constants.dart';
+import 'package:krishimandi/utils/db_helper.dart';
 
 class StockDAO {
   final dbHelper = DBHelper.instance;

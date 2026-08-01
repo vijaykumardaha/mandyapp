@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mandiapp/dao/customer_payment_dao.dart';
-import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/screens/customer_bills_screen.dart';
-import 'package:mandiapp/screens/payment_histories_screen.dart';
-import 'package:mandiapp/services/sync_service.dart';
-import 'package:mandiapp/utils/constants.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:krishimandi/dao/customer_payment_dao.dart';
+import 'package:krishimandi/models/customer_model.dart';
+import 'package:krishimandi/screens/customer_bills_screen.dart';
+import 'package:krishimandi/screens/payment_histories_screen.dart';
+import 'package:krishimandi/services/sync_service.dart';
+import 'package:krishimandi/utils/constants.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
 
 class CustomerTile extends StatefulWidget {
   final Customer customer;

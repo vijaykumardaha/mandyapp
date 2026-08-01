@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandiapp/widgets/common/introduction_screen.dart';
+import 'package:krishimandi/widgets/common/introduction_screen.dart';
 
 class SignupIntroductionScreen extends StatelessWidget {
   const SignupIntroductionScreen({super.key});

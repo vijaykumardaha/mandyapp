@@ -2,18 +2,18 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
-import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/models/charge_type_model.dart';
-import 'package:mandiapp/services/sync_service.dart';
-import 'package:mandiapp/utils/app_helper.dart';
-import 'package:mandiapp/utils/constants.dart';
-import 'package:mandiapp/utils/info_controller.dart';
-import 'package:mandiapp/widgets/charges/charge_list_item.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
-import 'package:mandiapp/widgets/common/dropdown_option.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:krishimandi/blocs/charge_types/charge_types_bloc.dart';
+import 'package:krishimandi/helpers/theme/app_theme.dart';
+import 'package:krishimandi/models/charge_type_model.dart';
+import 'package:krishimandi/services/sync_service.dart';
+import 'package:krishimandi/utils/app_helper.dart';
+import 'package:krishimandi/utils/constants.dart';
+import 'package:krishimandi/utils/info_controller.dart';
+import 'package:krishimandi/widgets/charges/charge_list_item.dart';
+import 'package:krishimandi/widgets/common/common_app_bar.dart';
+import 'package:krishimandi/widgets/common/dropdown_option.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
 
 class ChargeTypesScreen extends StatefulWidget {
   const ChargeTypesScreen({super.key});

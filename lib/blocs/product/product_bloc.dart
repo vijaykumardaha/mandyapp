@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:mandiapp/dao/product_dao.dart';
-import 'package:mandiapp/models/product_model.dart';
+import 'package:krishimandi/dao/product_dao.dart';
+import 'package:krishimandi/models/product_model.dart';
 
 part 'product_event.dart';
 part 'product_state.dart';

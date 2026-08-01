@@ -1,11 +1,11 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/dao/user_dao.dart';
-import 'package:mandiapp/models/user_model.dart';
-import 'package:mandiapp/services/auth_api.dart';
-import 'package:mandiapp/utils/app_helper.dart';
-import 'package:mandiapp/utils/constants.dart';
+import 'package:krishimandi/dao/user_dao.dart';
+import 'package:krishimandi/models/user_model.dart';
+import 'package:krishimandi/services/auth_api.dart';
+import 'package:krishimandi/utils/app_helper.dart';
+import 'package:krishimandi/utils/constants.dart';
 
 part 'user_event.dart';
 part 'user_state.dart';

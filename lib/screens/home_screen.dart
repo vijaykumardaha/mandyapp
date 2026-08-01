@@ -5,17 +5,17 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandiapp/blocs/login/login_bloc.dart';
-import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/screens/billing_screen.dart';
-import 'package:mandiapp/screens/bills_screen.dart';
-import 'package:mandiapp/screens/customer_management_screen.dart';
-import 'package:mandiapp/screens/home_tab_screen.dart';
-import 'package:mandiapp/screens/reports_screen.dart';
-import 'package:mandiapp/screens/selling_screen.dart';
-import 'package:mandiapp/screens/settings_screen.dart';
-import 'package:mandiapp/services/sync_service.dart';
-import 'package:mandiapp/services/user_service.dart';
+import 'package:krishimandi/blocs/login/login_bloc.dart';
+import 'package:krishimandi/helpers/theme/app_theme.dart';
+import 'package:krishimandi/screens/billing_screen.dart';
+import 'package:krishimandi/screens/bills_screen.dart';
+import 'package:krishimandi/screens/customer_management_screen.dart';
+import 'package:krishimandi/screens/home_tab_screen.dart';
+import 'package:krishimandi/screens/reports_screen.dart';
+import 'package:krishimandi/screens/selling_screen.dart';
+import 'package:krishimandi/screens/settings_screen.dart';
+import 'package:krishimandi/services/sync_service.dart';
+import 'package:krishimandi/services/user_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final int activeTab;

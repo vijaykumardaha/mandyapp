@@ -1,8 +1,8 @@
-import 'package:mandiapp/helpers/extensions/string.dart';
-import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/models/order_item_model.dart';
-import 'package:mandiapp/models/product_model.dart';
-import 'package:mandiapp/models/product_variant_model.dart';
+import 'package:krishimandi/helpers/extensions/string.dart';
+import 'package:krishimandi/models/customer_model.dart';
+import 'package:krishimandi/models/order_item_model.dart';
+import 'package:krishimandi/models/product_model.dart';
+import 'package:krishimandi/models/product_variant_model.dart';
 
 class BillLineItem {
   final OrderItem sale;

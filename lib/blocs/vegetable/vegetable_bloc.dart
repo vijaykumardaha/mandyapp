@@ -1,8 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/dao/vegetable_dao.dart';
-import 'package:mandiapp/models/vegetable_model.dart';
+import 'package:krishimandi/dao/vegetable_dao.dart';
+import 'package:krishimandi/models/vegetable_model.dart';
 
 part 'vegetable_event.dart';
 part 'vegetable_state.dart';

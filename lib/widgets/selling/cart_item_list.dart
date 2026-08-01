@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/helpers/extensions/string.dart';
-import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/models/order_item_model.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:krishimandi/helpers/extensions/string.dart';
+import 'package:krishimandi/models/customer_model.dart';
+import 'package:krishimandi/models/order_item_model.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
 
 typedef SaleSelectionFormatCustomer = String Function(Customer? customer);
 typedef SaleSelectionSellerLookup = String? Function(OrderItem sale);

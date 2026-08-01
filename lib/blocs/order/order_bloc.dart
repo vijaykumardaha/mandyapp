@@ -1,8 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:mandiapp/dao/order_dao.dart';
-import 'package:mandiapp/models/order_item_model.dart';
-import 'package:mandiapp/models/order_model.dart';
+import 'package:krishimandi/dao/order_dao.dart';
+import 'package:krishimandi/models/order_item_model.dart';
+import 'package:krishimandi/models/order_model.dart';
 
 part 'order_event.dart';
 part 'order_state.dart';

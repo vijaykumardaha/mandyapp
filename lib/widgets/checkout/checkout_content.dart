@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/blocs/charge_types/charge_types_bloc.dart';
-import 'package:mandiapp/models/order_item_model.dart';
-import 'package:mandiapp/widgets/checkout/charges_section_widget.dart';
-import 'package:mandiapp/widgets/checkout/empty_cart.dart';
-import 'package:mandiapp/widgets/checkout/expense_section_widget.dart';
-import 'package:mandiapp/widgets/checkout/payment_method_selector.dart';
-import 'package:mandiapp/widgets/checkout/payment_section_widget.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:krishimandi/blocs/charge_types/charge_types_bloc.dart';
+import 'package:krishimandi/models/order_item_model.dart';
+import 'package:krishimandi/widgets/checkout/charges_section_widget.dart';
+import 'package:krishimandi/widgets/checkout/empty_cart.dart';
+import 'package:krishimandi/widgets/checkout/expense_section_widget.dart';
+import 'package:krishimandi/widgets/checkout/payment_method_selector.dart';
+import 'package:krishimandi/widgets/checkout/payment_section_widget.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
 
 class CheckoutContent extends StatefulWidget {
   final List<OrderItem>? cartItems;

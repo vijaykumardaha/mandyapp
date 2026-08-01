@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:mandiapp/models/user_model.dart';
-import 'package:mandiapp/utils/constants.dart';
+import 'package:krishimandi/models/user_model.dart';
+import 'package:krishimandi/utils/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppHelper {

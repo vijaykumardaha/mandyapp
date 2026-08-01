@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/services/api_service.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:krishimandi/helpers/theme/app_theme.dart';
+import 'package:krishimandi/services/api_service.dart';
+import 'package:krishimandi/widgets/common/common_app_bar.dart';
 
 class PrivacyPolicyScreen extends StatefulWidget {
   const PrivacyPolicyScreen({super.key});

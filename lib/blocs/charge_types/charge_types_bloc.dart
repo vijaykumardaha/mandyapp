@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/dao/charge_type_dao.dart';
-import 'package:mandiapp/models/charge_type_model.dart';
+import 'package:krishimandi/dao/charge_type_dao.dart';
+import 'package:krishimandi/models/charge_type_model.dart';
 
 part 'charge_types_event.dart';
 part 'charge_types_state.dart';

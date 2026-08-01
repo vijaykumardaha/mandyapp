@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/widgets/common/my_button.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:krishimandi/widgets/common/my_button.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
 
 class IntroductionItem {
   final IconData icon;

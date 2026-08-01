@@ -1,4 +1,4 @@
-import 'package:mandiapp/models/product_variant_model.dart';
+import 'package:krishimandi/models/product_variant_model.dart';
 
 class Product {
   int? id;

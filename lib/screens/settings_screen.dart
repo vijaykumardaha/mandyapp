@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandiapp/blocs/login/login_bloc.dart';
-import 'package:mandiapp/blocs/reports/reports_bloc.dart';
-import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/services/sync_service.dart';
-import 'package:mandiapp/services/user_service.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/widgets/settings/settings_tile.dart';
+import 'package:krishimandi/blocs/login/login_bloc.dart';
+import 'package:krishimandi/blocs/reports/reports_bloc.dart';
+import 'package:krishimandi/helpers/theme/app_theme.dart';
+import 'package:krishimandi/services/sync_service.dart';
+import 'package:krishimandi/services/user_service.dart';
+import 'package:krishimandi/widgets/common/common_app_bar.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
+import 'package:krishimandi/widgets/settings/settings_tile.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

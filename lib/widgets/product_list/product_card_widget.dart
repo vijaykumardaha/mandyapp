@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/helpers/extensions/string.dart';
-import 'package:mandiapp/models/product_model.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/widgets/product_list/variant_image.dart';
+import 'package:krishimandi/helpers/extensions/string.dart';
+import 'package:krishimandi/models/product_model.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
+import 'package:krishimandi/widgets/product_list/variant_image.dart';
 
 class ProductCardWidget extends StatelessWidget {
   final Product product;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/utils/my_string_utils.dart';
+import 'package:krishimandi/utils/my_string_utils.dart';
 
 class SignupController {
   GlobalKey<FormState> formKey = GlobalKey();

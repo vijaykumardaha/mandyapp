@@ -1,5 +1,5 @@
-import 'package:mandiapp/services/sync_service.dart';
-import 'package:mandiapp/utils/constants.dart';
+import 'package:krishimandi/services/sync_service.dart';
+import 'package:krishimandi/utils/constants.dart';
 import 'package:sqflite/sqflite.dart';
 
 const _syncedTables = DbTables.synced;

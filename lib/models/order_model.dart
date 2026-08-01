@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:mandiapp/models/order_item_model.dart';
+import 'package:krishimandi/models/order_item_model.dart';
 
 class Order {
   int? id;

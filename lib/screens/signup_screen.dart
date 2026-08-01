@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandiapp/blocs/login/login_bloc.dart';
-import 'package:mandiapp/controllers/signup_controller.dart';
-import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/utils/info_controller.dart';
-import 'package:mandiapp/widgets/auth/confirm_password_field.dart';
-import 'package:mandiapp/widgets/auth/mobile_field.dart';
-import 'package:mandiapp/widgets/auth/name_field.dart';
-import 'package:mandiapp/widgets/auth/password_field.dart';
-import 'package:mandiapp/widgets/common/my_button.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:krishimandi/blocs/login/login_bloc.dart';
+import 'package:krishimandi/controllers/signup_controller.dart';
+import 'package:krishimandi/helpers/theme/app_theme.dart';
+import 'package:krishimandi/utils/info_controller.dart';
+import 'package:krishimandi/widgets/auth/confirm_password_field.dart';
+import 'package:krishimandi/widgets/auth/mobile_field.dart';
+import 'package:krishimandi/widgets/auth/name_field.dart';
+import 'package:krishimandi/widgets/auth/password_field.dart';
+import 'package:krishimandi/widgets/common/my_button.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});

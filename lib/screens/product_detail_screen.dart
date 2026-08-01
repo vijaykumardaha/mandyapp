@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/blocs/product/product_bloc.dart';
-import 'package:mandiapp/dao/product_dao.dart';
-import 'package:mandiapp/dao/product_variant_dao.dart';
-import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/models/product_model.dart';
-import 'package:mandiapp/models/product_variant_model.dart';
-import 'package:mandiapp/utils/info_controller.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/widgets/product_detail/variant_form_sheet.dart';
-import 'package:mandiapp/widgets/product_detail/variant_list_item.dart';
+import 'package:krishimandi/blocs/product/product_bloc.dart';
+import 'package:krishimandi/dao/product_dao.dart';
+import 'package:krishimandi/dao/product_variant_dao.dart';
+import 'package:krishimandi/helpers/theme/app_theme.dart';
+import 'package:krishimandi/models/product_model.dart';
+import 'package:krishimandi/models/product_variant_model.dart';
+import 'package:krishimandi/utils/info_controller.dart';
+import 'package:krishimandi/widgets/common/common_app_bar.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
+import 'package:krishimandi/widgets/product_detail/variant_form_sheet.dart';
+import 'package:krishimandi/widgets/product_detail/variant_list_item.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product? product;

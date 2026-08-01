@@ -1,9 +1,9 @@
-import 'package:mandiapp/models/product_model.dart';
-import 'package:mandiapp/models/product_variant_model.dart';
-import 'package:mandiapp/utils/app_helper.dart';
-import 'package:mandiapp/utils/constants.dart';
-import 'package:mandiapp/utils/db_helper.dart';
-import 'package:mandiapp/utils/signup_sync.dart';
+import 'package:krishimandi/models/product_model.dart';
+import 'package:krishimandi/models/product_variant_model.dart';
+import 'package:krishimandi/utils/app_helper.dart';
+import 'package:krishimandi/utils/constants.dart';
+import 'package:krishimandi/utils/db_helper.dart';
+import 'package:krishimandi/utils/signup_sync.dart';
 
 class ProductDAO {
   final dbHelper = DBHelper.instance;

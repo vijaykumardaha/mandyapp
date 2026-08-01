@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:mandiapp/utils/constants.dart';
-import 'package:mandiapp/utils/synced_database.dart';
+import 'package:krishimandi/utils/constants.dart';
+import 'package:krishimandi/utils/synced_database.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';

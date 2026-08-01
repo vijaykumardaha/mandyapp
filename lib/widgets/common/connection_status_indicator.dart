@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mandiapp/services/user_service.dart';
+import 'package:krishimandi/services/user_service.dart';
 
 class ConnectionStatusIndicator extends StatefulWidget {
   const ConnectionStatusIndicator({super.key});

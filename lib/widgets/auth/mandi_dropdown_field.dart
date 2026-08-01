@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
-import 'package:mandiapp/models/mandi_model.dart';
-import 'package:mandiapp/widgets/common/dropdown_option.dart';
-import 'package:mandiapp/widgets/common/my_text_style.dart';
+import 'package:krishimandi/models/mandi_model.dart';
+import 'package:krishimandi/widgets/common/dropdown_option.dart';
+import 'package:krishimandi/widgets/common/my_text_style.dart';
 
 class AuthMandiDropdownField extends StatelessWidget {
   final List<Mandi> mandis;

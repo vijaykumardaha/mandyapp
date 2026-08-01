@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/blocs/order/order_bloc.dart';
-import 'package:mandiapp/dao/order_charge_dao.dart';
-import 'package:mandiapp/dao/order_expense_dao.dart';
-import 'package:mandiapp/dao/order_payment_dao.dart';
-import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/models/order_model.dart';
-import 'package:mandiapp/services/sync_service.dart';
-import 'package:mandiapp/utils/constants.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
-import 'package:mandiapp/widgets/customer_bills/bill_card.dart';
+import 'package:krishimandi/blocs/order/order_bloc.dart';
+import 'package:krishimandi/dao/order_charge_dao.dart';
+import 'package:krishimandi/dao/order_expense_dao.dart';
+import 'package:krishimandi/dao/order_payment_dao.dart';
+import 'package:krishimandi/models/customer_model.dart';
+import 'package:krishimandi/models/order_model.dart';
+import 'package:krishimandi/services/sync_service.dart';
+import 'package:krishimandi/utils/constants.dart';
+import 'package:krishimandi/widgets/common/common_app_bar.dart';
+import 'package:krishimandi/widgets/customer_bills/bill_card.dart';
 
 class CustomerBillsScreen extends StatefulWidget {
   final Customer customer;

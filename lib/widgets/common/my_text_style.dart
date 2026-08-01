@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:krishimandi/helpers/theme/app_theme.dart';
 
 enum MyTextType {
   displayLarge,

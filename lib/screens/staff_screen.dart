@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/blocs/user/user_bloc.dart';
-import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/models/user_model.dart';
-import 'package:mandiapp/utils/app_helper.dart';
-import 'package:mandiapp/utils/info_controller.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/widgets/staff/staff_form_sheet.dart';
+import 'package:krishimandi/blocs/user/user_bloc.dart';
+import 'package:krishimandi/helpers/theme/app_theme.dart';
+import 'package:krishimandi/models/user_model.dart';
+import 'package:krishimandi/utils/app_helper.dart';
+import 'package:krishimandi/utils/info_controller.dart';
+import 'package:krishimandi/widgets/common/common_app_bar.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
+import 'package:krishimandi/widgets/staff/staff_form_sheet.dart';
 
 class StaffScreen extends StatefulWidget {
   const StaffScreen({super.key});

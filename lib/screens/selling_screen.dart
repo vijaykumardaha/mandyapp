@@ -2,22 +2,22 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/blocs/customer/customer_bloc.dart';
-import 'package:mandiapp/blocs/order_item/order_item_bloc.dart';
-import 'package:mandiapp/blocs/product/product_bloc.dart';
-import 'package:mandiapp/helpers/theme/app_theme.dart';
-import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/models/order_item_model.dart';
-import 'package:mandiapp/models/product_model.dart';
-import 'package:mandiapp/models/product_variant_model.dart';
-import 'package:mandiapp/services/sync_service.dart';
-import 'package:mandiapp/utils/constants.dart';
-import 'package:mandiapp/utils/info_controller.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/widgets/selling/add_to_sale_bottom_sheet.dart';
-import 'package:mandiapp/widgets/selling/customer_grid.dart';
-import 'package:mandiapp/widgets/selling/product_card.dart';
+import 'package:krishimandi/blocs/customer/customer_bloc.dart';
+import 'package:krishimandi/blocs/order_item/order_item_bloc.dart';
+import 'package:krishimandi/blocs/product/product_bloc.dart';
+import 'package:krishimandi/helpers/theme/app_theme.dart';
+import 'package:krishimandi/models/customer_model.dart';
+import 'package:krishimandi/models/order_item_model.dart';
+import 'package:krishimandi/models/product_model.dart';
+import 'package:krishimandi/models/product_variant_model.dart';
+import 'package:krishimandi/services/sync_service.dart';
+import 'package:krishimandi/utils/constants.dart';
+import 'package:krishimandi/utils/info_controller.dart';
+import 'package:krishimandi/widgets/common/common_app_bar.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
+import 'package:krishimandi/widgets/selling/add_to_sale_bottom_sheet.dart';
+import 'package:krishimandi/widgets/selling/customer_grid.dart';
+import 'package:krishimandi/widgets/selling/product_card.dart';
 
 class SellingScreen extends StatefulWidget {
   const SellingScreen({super.key});

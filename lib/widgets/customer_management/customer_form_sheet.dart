@@ -2,12 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/blocs/customer/customer_bloc.dart';
-import 'package:mandiapp/blocs/product/product_bloc.dart';
-import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/utils/info_controller.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
+import 'package:krishimandi/blocs/customer/customer_bloc.dart';
+import 'package:krishimandi/blocs/product/product_bloc.dart';
+import 'package:krishimandi/models/customer_model.dart';
+import 'package:krishimandi/utils/info_controller.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
 
 class CustomerFormSheet extends StatefulWidget {
   final Customer? customer;

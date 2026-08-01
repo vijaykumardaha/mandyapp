@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/helpers/extensions/string.dart';
-import 'package:mandiapp/models/product_variant_model.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/widgets/common/reusable_controls.dart';
+import 'package:krishimandi/helpers/extensions/string.dart';
+import 'package:krishimandi/models/product_variant_model.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
+import 'package:krishimandi/widgets/common/reusable_controls.dart';
 
 class VariantItemCard extends StatefulWidget {
   final ProductVariant variant;

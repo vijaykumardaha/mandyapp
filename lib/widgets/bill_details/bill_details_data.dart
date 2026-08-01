@@ -1,9 +1,9 @@
-import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/models/order_charge_model.dart';
-import 'package:mandiapp/models/order_expense_model.dart';
-import 'package:mandiapp/models/order_model.dart';
-import 'package:mandiapp/models/order_payment_model.dart';
-import 'package:mandiapp/widgets/billing/bill_line_item.dart';
+import 'package:krishimandi/models/customer_model.dart';
+import 'package:krishimandi/models/order_charge_model.dart';
+import 'package:krishimandi/models/order_expense_model.dart';
+import 'package:krishimandi/models/order_model.dart';
+import 'package:krishimandi/models/order_payment_model.dart';
+import 'package:krishimandi/widgets/billing/bill_line_item.dart';
 
 class BillDetailsData {
   final Order order;

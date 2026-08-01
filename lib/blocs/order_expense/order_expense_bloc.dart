@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/dao/order_expense_dao.dart';
-import 'package:mandiapp/models/order_expense_model.dart';
+import 'package:krishimandi/dao/order_expense_dao.dart';
+import 'package:krishimandi/models/order_expense_model.dart';
 
 part 'order_expense_event.dart';
 part 'order_expense_state.dart';

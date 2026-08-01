@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/services/printer_service.dart';
-import 'package:mandiapp/widgets/common/common_app_bar.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/widgets/printer_settings/connected_printer_card.dart';
-import 'package:mandiapp/widgets/printer_settings/device_list.dart';
-import 'package:mandiapp/widgets/printer_settings/permission_prompt.dart';
-import 'package:mandiapp/widgets/printer_settings/printer_size_selector.dart';
-import 'package:mandiapp/widgets/printer_settings/status_banner.dart';
-import 'package:mandiapp/widgets/printer_settings/status_card.dart';
+import 'package:krishimandi/services/printer_service.dart';
+import 'package:krishimandi/widgets/common/common_app_bar.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
+import 'package:krishimandi/widgets/printer_settings/connected_printer_card.dart';
+import 'package:krishimandi/widgets/printer_settings/device_list.dart';
+import 'package:krishimandi/widgets/printer_settings/permission_prompt.dart';
+import 'package:krishimandi/widgets/printer_settings/printer_size_selector.dart';
+import 'package:krishimandi/widgets/printer_settings/status_banner.dart';
+import 'package:krishimandi/widgets/printer_settings/status_card.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 
 class PrinterSettingsScreen extends StatefulWidget {

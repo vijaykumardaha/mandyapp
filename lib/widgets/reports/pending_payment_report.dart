@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mandiapp/blocs/reports/reports_bloc.dart';
-import 'package:mandiapp/widgets/common/my_spacing.dart';
-import 'package:mandiapp/widgets/common/my_text.dart';
-import 'package:mandiapp/widgets/reports/report_data_table.dart';
-import 'package:mandiapp/widgets/reports/report_summary_card.dart';
+import 'package:krishimandi/blocs/reports/reports_bloc.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
+import 'package:krishimandi/widgets/reports/report_data_table.dart';
+import 'package:krishimandi/widgets/reports/report_summary_card.dart';
 
 class PendingPaymentReportWidget extends StatelessWidget {
   final PendingPaymentReportLoaded state;

@@ -1,4 +1,4 @@
-import 'package:mandiapp/utils/constants.dart';
+import 'package:krishimandi/utils/constants.dart';
 
 import 'app_config.dart';
 

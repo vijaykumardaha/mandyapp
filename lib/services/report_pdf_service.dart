@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:intl/intl.dart';
-import 'package:mandiapp/blocs/reports/reports_bloc.dart';
-import 'package:mandiapp/dao/customer_payment_dao.dart';
-import 'package:mandiapp/helpers/extensions/string.dart';
-import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/widgets/reports/report_types.dart';
+import 'package:krishimandi/blocs/reports/reports_bloc.dart';
+import 'package:krishimandi/dao/customer_payment_dao.dart';
+import 'package:krishimandi/helpers/extensions/string.dart';
+import 'package:krishimandi/models/customer_model.dart';
+import 'package:krishimandi/widgets/reports/report_types.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;

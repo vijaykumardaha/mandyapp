@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mandiapp/widgets/common/my_text_style.dart';
+import 'package:krishimandi/widgets/common/my_text_style.dart';
 
 class MyText extends StatelessWidget {
   final String text;

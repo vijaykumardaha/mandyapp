@@ -1,4 +1,4 @@
-package com.mandiappp.mandiapp
+package com.mandiappp.krishimandi
 
 import io.flutter.embedding.android.FlutterActivity
 

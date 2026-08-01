@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/blocs/order_item/order_item_bloc.dart';
-import 'package:mandiapp/models/product_variant_model.dart';
-import 'package:mandiapp/widgets/selling/variant_item_card.dart';
+import 'package:krishimandi/blocs/order_item/order_item_bloc.dart';
+import 'package:krishimandi/models/product_variant_model.dart';
+import 'package:krishimandi/widgets/selling/variant_item_card.dart';
 
 typedef AddToSaleSubmitCallback = Future<void> Function(
   ProductVariant variant,

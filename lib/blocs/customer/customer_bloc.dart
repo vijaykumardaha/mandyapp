@@ -1,10 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mandiapp/dao/customer_dao.dart';
-import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/services/customer_service.dart';
-import 'package:mandiapp/utils/app_helper.dart';
+import 'package:krishimandi/dao/customer_dao.dart';
+import 'package:krishimandi/models/customer_model.dart';
+import 'package:krishimandi/services/customer_service.dart';
+import 'package:krishimandi/utils/app_helper.dart';
 
 part 'customer_event.dart';
 part 'customer_state.dart';

@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mandiapp/screens/bill_details_screen.dart';
-import 'package:mandiapp/screens/bills_screen.dart';
-import 'package:mandiapp/screens/charges_screen.dart';
-import 'package:mandiapp/screens/customer_home_screen.dart';
-import 'package:mandiapp/screens/customer_management_screen.dart';
-import 'package:mandiapp/screens/home_screen.dart';
-import 'package:mandiapp/screens/initial_screen.dart';
-import 'package:mandiapp/screens/login_screen.dart';
-import 'package:mandiapp/screens/printer_settings_screen.dart';
-import 'package:mandiapp/screens/privacy_policy_screen.dart';
-import 'package:mandiapp/screens/product_list_screen.dart';
-import 'package:mandiapp/screens/profile_screen.dart';
-import 'package:mandiapp/screens/reports_screen.dart';
-import 'package:mandiapp/screens/signup_introduction_screen.dart';
-import 'package:mandiapp/screens/signup_screen.dart';
-import 'package:mandiapp/screens/staff_screen.dart';
-import 'package:mandiapp/screens/stock_screen.dart';
-import 'package:mandiapp/screens/terms_conditions_screen.dart';
+import 'package:krishimandi/screens/bill_details_screen.dart';
+import 'package:krishimandi/screens/bills_screen.dart';
+import 'package:krishimandi/screens/charges_screen.dart';
+import 'package:krishimandi/screens/customer_home_screen.dart';
+import 'package:krishimandi/screens/customer_management_screen.dart';
+import 'package:krishimandi/screens/home_screen.dart';
+import 'package:krishimandi/screens/initial_screen.dart';
+import 'package:krishimandi/screens/login_screen.dart';
+import 'package:krishimandi/screens/printer_settings_screen.dart';
+import 'package:krishimandi/screens/privacy_policy_screen.dart';
+import 'package:krishimandi/screens/product_list_screen.dart';
+import 'package:krishimandi/screens/profile_screen.dart';
+import 'package:krishimandi/screens/reports_screen.dart';
+import 'package:krishimandi/screens/signup_introduction_screen.dart';
+import 'package:krishimandi/screens/signup_screen.dart';
+import 'package:krishimandi/screens/staff_screen.dart';
+import 'package:krishimandi/screens/stock_screen.dart';
+import 'package:krishimandi/screens/terms_conditions_screen.dart';
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
