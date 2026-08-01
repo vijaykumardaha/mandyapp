@@ -50,6 +50,18 @@ class BillCard extends StatelessWidget {
         ),
         child: Row(
           children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor:
+                  (order.orderFor == 'buyer' ? Colors.blue : Colors.teal)
+                      .withValues(alpha: 0.1),
+              child: Icon(
+                Icons.receipt_long_outlined,
+                size: 20,
+                color: order.orderFor == 'buyer' ? Colors.blue : Colors.teal,
+              ),
+            ),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,17 +69,9 @@ class BillCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '#${order.id}',
+                        '${order.orderFor == 'seller' ? 'Seller' : 'Buyer'} #${order.id}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        order.orderFor == 'seller' ? 'Seller' : 'Buyer',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w500,
                           color: order.orderFor == 'buyer'
                               ? Colors.blue
                               : Colors.teal,

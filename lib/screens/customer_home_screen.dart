@@ -50,7 +50,7 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
   late ThemeData theme;
   late TabController _tabController;
   final DateFormat _dateFormat = DateFormat('dd MMM yyyy');
-  final DateFormat _dateFormatShort = DateFormat('dd MMM');
+  final DateFormat _dateTimeFormat = DateFormat('dd MMM yyyy • hh:mm a');
   final NumberFormat _currencyFormat =
       NumberFormat.currency(locale: 'en_IN', symbol: '₹');
   final OrderChargeDAO _chargeDAO = OrderChargeDAO();
@@ -313,8 +313,8 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
                           theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       labelStyle: MyTextStyle.bodyMedium(fontWeight: 600),
                       tabs: const [
-                        Tab(text: 'Bills'),
                         Tab(text: 'Payments'),
+                        Tab(text: 'Bills'),
                       ],
                     ),
                   ),
@@ -351,8 +351,8 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
                         return TabBarView(
                           controller: _tabController,
                           children: [
-                            _buildBillsTab(context, customer),
                             _buildPaymentsTab(),
+                            _buildBillsTab(context, customer),
                           ],
                         );
                       },
@@ -381,53 +381,74 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
         final totalReceived =
             state is CustomerPaymentsLoaded ? state.totalReceived : 0.0;
 
-        return SizedBox(
-          height: 110,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            children: [
-              SizedBox(
-                width: 160,
-                child: CustomerSummaryCard(
-                  label: 'Buyer Bills',
-                  count: '$_buyerBillCount bills',
-                  amount: _currencyFormat.format(_buyerBillTotal),
-                  color: Colors.blue,
-                ),
+        return AnimatedBuilder(
+          animation: _tabController,
+          builder: (context, _) {
+            final isPaymentsTab = _tabController.index == 0;
+            return SizedBox(
+              height: 110,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                children: isPaymentsTab
+                    ? [
+                        SizedBox(
+                          width: 160,
+                          child: CustomerSummaryCard(
+                            label: 'Net Balance',
+                            count: 'balance',
+                            amount: _currencyFormat
+                                .format(totalReceived - totalPaid),
+                            color: totalReceived - totalPaid >= 0
+                                ? Colors.green
+                                : Colors.red,
+                          ),
+                        ),
+                        MySpacing.width(12),
+                        SizedBox(
+                          width: 160,
+                          child: CustomerSummaryCard(
+                            label: 'Payments Paid',
+                            count: '$paidCount payments',
+                            amount: _currencyFormat.format(totalPaid),
+                            color: Colors.red,
+                          ),
+                        ),
+                        MySpacing.width(12),
+                        SizedBox(
+                          width: 160,
+                          child: CustomerSummaryCard(
+                            label: 'Payments Received',
+                            count: '$receivedCount payments',
+                            amount: _currencyFormat.format(totalReceived),
+                            color: Colors.green,
+                          ),
+                        ),
+                      ]
+                    : [
+                        SizedBox(
+                          width: 160,
+                          child: CustomerSummaryCard(
+                            label: 'Buyer Bills',
+                            count: '$_buyerBillCount bills',
+                            amount: _currencyFormat.format(_buyerBillTotal),
+                            color: Colors.blue,
+                          ),
+                        ),
+                        MySpacing.width(12),
+                        SizedBox(
+                          width: 160,
+                          child: CustomerSummaryCard(
+                            label: 'Seller Bills',
+                            count: '$_sellerBillCount bills',
+                            amount: _currencyFormat.format(_sellerBillTotal),
+                            color: Colors.teal,
+                          ),
+                        ),
+                      ],
               ),
-              MySpacing.width(12),
-              SizedBox(
-                width: 160,
-                child: CustomerSummaryCard(
-                  label: 'Seller Bills',
-                  count: '$_sellerBillCount bills',
-                  amount: _currencyFormat.format(_sellerBillTotal),
-                  color: Colors.teal,
-                ),
-              ),
-              MySpacing.width(12),
-              SizedBox(
-                width: 160,
-                child: CustomerSummaryCard(
-                  label: 'Payments Paid',
-                  count: '$paidCount payments',
-                  amount: _currencyFormat.format(totalPaid),
-                  color: Colors.red,
-                ),
-              ),
-              MySpacing.width(12),
-              SizedBox(
-                width: 160,
-                child: CustomerSummaryCard(
-                  label: 'Payments Received',
-                  count: '$receivedCount payments',
-                  amount: _currencyFormat.format(totalReceived),
-                  color: Colors.green,
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -518,22 +539,36 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
                 ),
                 child: Row(
                   children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: (isReceived ? Colors.green : Colors.red)
+                          .withValues(alpha: 0.1),
+                      child: Icon(
+                        isReceived
+                            ? Icons.arrow_downward_rounded
+                            : Icons.arrow_upward_rounded,
+                        size: 20,
+                        color: isReceived ? Colors.green : Colors.red,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              Icon(
-                                isReceived
-                                    ? Icons.arrow_downward_rounded
-                                    : Icons.arrow_upward_rounded,
-                                size: 16,
-                                color: isReceived ? Colors.green : Colors.red,
+                              Expanded(
+                                child: MyText.bodyMedium(
+                                  payment.note,
+                                  fontWeight: 600,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                               const SizedBox(width: 8),
-                              MyText.bodySmall(
-                                isReceived ? 'Received' : 'Paid',
+                              MyText.bodyMedium(
+                                '${isReceived ? "+" : "-"}${_currencyFormat.format(payment.amount)}',
                                 fontWeight: 600,
                                 color: isReceived ? Colors.green : Colors.red,
                               ),
@@ -541,24 +576,14 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
                           ),
                           const SizedBox(height: 4),
                           MyText.bodySmall(
-                            '${payment.source} · ${payment.note}',
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.5),
-                            maxLines: 1,
-                          ),
-                          const SizedBox(height: 2),
-                          MyText.bodySmall(
-                            _dateFormatShort.format(paymentDate),
+                            '${payment.source} · ${_dateTimeFormat.format(paymentDate)}',
                             color: theme.colorScheme.onSurface
                                 .withValues(alpha: 0.4),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
-                    ),
-                    MyText.bodyMedium(
-                      '${isReceived ? "+" : "-"}${_currencyFormat.format(payment.amount)}',
-                      fontWeight: 600,
-                      color: isReceived ? Colors.green : Colors.red,
                     ),
                   ],
                 ),
