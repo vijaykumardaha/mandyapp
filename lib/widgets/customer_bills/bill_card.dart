@@ -66,18 +66,11 @@ class BillCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        '${order.orderFor == 'seller' ? 'Seller' : 'Buyer'} #${order.id}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: order.orderFor == 'buyer'
-                              ? Colors.blue
-                              : Colors.teal,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    '#${order.id}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -94,6 +87,7 @@ class BillCard extends StatelessWidget {
               children: [
                 if (grandTotal != null &&
                     receivedAmount != null &&
+                    receivedAmount! > 0 &&
                     (receivedAmount! - grandTotal!).abs() > 0.01)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 2),
@@ -104,7 +98,9 @@ class BillCard extends StatelessWidget {
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: receivedAmount! >= grandTotal!
                             ? Colors.green
-                            : Colors.red,
+                            : (order.orderFor == 'buyer'
+                                ? Colors.red
+                                : Colors.green),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -113,6 +109,16 @@ class BillCard extends StatelessWidget {
                   '₹${(grandTotal ?? order.totalPrice).toStringAsFixed(2)}',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  order.orderFor == 'seller' ? 'Seller' : 'Buyer',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: order.orderFor == 'buyer'
+                        ? Colors.blue
+                        : Colors.teal,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],

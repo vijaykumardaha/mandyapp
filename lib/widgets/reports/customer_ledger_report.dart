@@ -25,7 +25,6 @@ class CustomerLedgerReportWidget extends StatelessWidget {
         ReportDataTable(
           headers: const [
             ReportTableHeader(label: 'Customer Name', flex: 2),
-            ReportTableHeader(label: 'Phone', flex: 2),
             ReportTableHeader(label: 'Paid'),
             ReportTableHeader(label: 'Received'),
             ReportTableHeader(label: 'Balance', textAlign: TextAlign.right),
@@ -37,19 +36,23 @@ class CustomerLedgerReportWidget extends StatelessWidget {
                 children: [
                   Expanded(
                     flex: 2,
-                    child: MyText.bodySmall(
-                      item.customerName,
-                      fontWeight: 600,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: MyText.bodySmall(
-                      item.customerPhone,
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        MyText.bodySmall(
+                          item.customerName,
+                          fontWeight: 600,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (item.customerPhone.isNotEmpty)
+                          MyText.bodySmall(
+                            item.customerPhone,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                      ],
                     ),
                   ),
                   Expanded(

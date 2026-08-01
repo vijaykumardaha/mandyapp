@@ -365,10 +365,26 @@ class _BillsScreenState extends State<BillsScreen> {
         ),
         child: Row(
           children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: (order.orderFor == 'buyer'
+                      ? Colors.blue
+                      : Colors.teal)
+                  .withValues(alpha: 0.1),
+              child: Icon(
+                Icons.receipt_long_outlined,
+                size: 20,
+                color:
+                    order.orderFor == 'buyer' ? Colors.blue : Colors.teal,
+              ),
+            ),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  MyText.bodyMedium(result.customerName, fontWeight: 600),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       MyText.bodySmall(
@@ -376,15 +392,17 @@ class _BillsScreenState extends State<BillsScreen> {
                         fontWeight: 600,
                         color: theme.colorScheme.primary,
                       ),
-                      const SizedBox(width: 8),
-                      MyText.titleMedium(result.customerName, fontWeight: 600),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: MyText.bodySmall(
+                          _shortDateFormat.format(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                  order.updatedAt ?? 0)),
+                          color:
+                              theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                      ),
                     ],
-                  ),
-                  const SizedBox(height: 4),
-                  MyText.bodySmall(
-                    _shortDateFormat.format(DateTime.fromMillisecondsSinceEpoch(
-                        order.updatedAt ?? 0)),
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ],
               ),
@@ -395,11 +413,14 @@ class _BillsScreenState extends State<BillsScreen> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (result.pendingAmount.abs() > 0.01) ...[
+                    if (result.receivedAmount > 0 &&
+                        result.pendingAmount.abs() > 0.01) ...[
                       MyText.bodySmall(
                         '(${_currencyFormat.format(result.pendingAmount)} ${result.pendingAmount > 0 ? "Dues" : "Refund"})',
                         color: result.pendingAmount > 0
-                            ? Colors.red
+                            ? (order.orderFor == 'buyer'
+                                ? Colors.red
+                                : Colors.green)
                             : Colors.green,
                         fontWeight: 500,
                       ),

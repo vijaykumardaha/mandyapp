@@ -61,6 +61,10 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
   double _buyerBillTotal = 0;
   int _sellerBillCount = 0;
   double _sellerBillTotal = 0;
+  int _buyerDueCount = 0;
+  double _buyerDuesTotal = 0;
+  int _sellerDueCount = 0;
+  double _sellerDuesTotal = 0;
   String _userName = 'Customer';
   Customer? _customer;
 
@@ -118,15 +122,28 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
         _buyerBillTotal = 0;
         _sellerBillCount = 0;
         _sellerBillTotal = 0;
+        _buyerDueCount = 0;
+        _buyerDuesTotal = 0;
+        _sellerDueCount = 0;
+        _sellerDuesTotal = 0;
         for (final order in orders) {
           final financial = order.id != null ? data[order.id] : null;
           if (financial == null) continue;
+          final due = financial.grandTotal - financial.receivedAmount;
           if (order.orderFor == 'seller') {
             _sellerBillCount++;
             _sellerBillTotal += financial.grandTotal;
+            if (due > 0.01) {
+              _sellerDueCount++;
+              _sellerDuesTotal += due;
+            }
           } else {
             _buyerBillCount++;
             _buyerBillTotal += financial.grandTotal;
+            if (due > 0.01) {
+              _buyerDueCount++;
+              _buyerDuesTotal += due;
+            }
           }
         }
       });
@@ -231,10 +248,31 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
               onTap: () {
                 context.read<LoginBloc>().add(LogoutSubmit());
               },
-              child: Icon(
-                Icons.logout_rounded,
-                size: 20,
-                color: theme.colorScheme.onSurfaceVariant,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.logout_rounded,
+                      size: 16,
+                      color: Colors.red,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Logout',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -445,6 +483,26 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
                             color: Colors.teal,
                           ),
                         ),
+                        MySpacing.width(12),
+                        SizedBox(
+                          width: 160,
+                          child: CustomerSummaryCard(
+                            label: 'Buyer Dues',
+                            count: '$_buyerDueCount bills',
+                            amount: _currencyFormat.format(_buyerDuesTotal),
+                            color: Colors.red,
+                          ),
+                        ),
+                        MySpacing.width(12),
+                        SizedBox(
+                          width: 160,
+                          child: CustomerSummaryCard(
+                            label: 'Seller Dues',
+                            count: '$_sellerDueCount bills',
+                            amount: _currencyFormat.format(_sellerDuesTotal),
+                            color: Colors.green,
+                          ),
+                        ),
                       ],
               ),
             );
@@ -556,34 +614,38 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: MyText.bodyMedium(
-                                  payment.note,
-                                  fontWeight: 600,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              MyText.bodyMedium(
-                                '${isReceived ? "+" : "-"}${_currencyFormat.format(payment.amount)}',
-                                fontWeight: 600,
-                                color: isReceived ? Colors.green : Colors.red,
-                              ),
-                            ],
+                          MyText.bodyMedium(
+                            payment.note,
+                            fontWeight: 600,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
                           MyText.bodySmall(
                             '${payment.source} · ${_dateTimeFormat.format(paymentDate)}',
                             color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.4),
+                                .withValues(alpha: 0.5),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        MyText.bodyMedium(
+                          '${isReceived ? "+" : "-"}${_currencyFormat.format(payment.amount)}',
+                          fontWeight: 600,
+                          color: isReceived ? Colors.green : Colors.red,
+                        ),
+                        const SizedBox(height: 2),
+                        MyText.bodySmall(
+                          isReceived ? 'Received' : 'Paid',
+                          fontWeight: 500,
+                          color: isReceived ? Colors.green : Colors.red,
+                        ),
+                      ],
                     ),
                   ],
                 ),

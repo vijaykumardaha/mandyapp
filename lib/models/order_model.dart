@@ -51,17 +51,25 @@ class Order {
   }
 
   Order copyWith({
-    required int id,
+    int? id,
+    int? mandiId,
     int? customerId,
     String? orderFor,
+    int? updatedAt,
+    int? isDeleted,
+    int? syncStatus,
     List<OrderItem>? items,
   }) {
     return Order(
-      id: id,
+      id: id ?? this.id,
+      mandiId: mandiId ?? this.mandiId,
       customerId: customerId ?? this.customerId,
       orderFor: orderFor != null && orderFor.trim().toLowerCase() == 'seller'
           ? 'seller'
           : (orderFor != null ? 'buyer' : this.orderFor),
+      updatedAt: updatedAt ?? this.updatedAt,
+      isDeleted: isDeleted ?? this.isDeleted,
+      syncStatus: syncStatus ?? this.syncStatus,
       items: items ?? this.items,
     );
   }
