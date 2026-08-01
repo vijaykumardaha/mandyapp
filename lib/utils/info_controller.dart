@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mandiapp/helpers/theme/app_theme.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 
 class Info {
@@ -38,10 +37,8 @@ class Info {
       BuildContext? context,
       Duration? duration,
       SnackBarBehavior snackBarBehavior = SnackBarBehavior.floating}) {
-    final theme = AppTheme.theme;
     if (context != null) {
-      _showTop(context, message, theme.colorScheme.primary,
-          theme.colorScheme.onPrimary,
+      _showTop(context, message, Colors.green, Colors.white,
           duration: duration ?? const Duration(seconds: 3));
     }
   }
@@ -51,10 +48,8 @@ class Info {
       BuildContext? context,
       Duration? duration,
       SnackBarBehavior snackBarBehavior = SnackBarBehavior.floating}) {
-    final theme = AppTheme.theme;
     if (context != null) {
-      _showTop(
-          context, message, theme.colorScheme.error, theme.colorScheme.onError,
+      _showTop(context, message, Colors.red, Colors.white,
           duration: duration ?? const Duration(seconds: 3));
     }
   }

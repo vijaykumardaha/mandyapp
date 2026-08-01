@@ -21,7 +21,7 @@ class AppTheme {
 
     /// Primary Color
     primaryColor: const Color(0xff3C4EC5),
-    scaffoldBackgroundColor: const Color(0xfff0f0f0),
+    scaffoldBackgroundColor: const Color(0xffffffff),
     canvasColor: const Color(0xffffffff),
 
     /// AppBar Theme
@@ -31,8 +31,8 @@ class AppTheme {
         actionsIconTheme: IconThemeData(color: Color(0xff495057))),
 
     /// Card Theme
-    cardTheme: const CardTheme(color: Color(0xfff0f0f0)),
-    cardColor: const Color(0xfff0f0f0),
+    cardTheme: const CardTheme(color: Color(0xffffffff)),
+    cardColor: const Color(0xffffffff),
 
     textTheme: TextTheme(
         titleLarge: GoogleFonts.aBeeZee(), bodyLarge: GoogleFonts.abel()),
