@@ -10,7 +10,7 @@
 
 
     <application
-        android:label="mandiapp"
+        android:label="Krishi Mandi"
         android:name="${applicationName}"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/launcher_icon">
