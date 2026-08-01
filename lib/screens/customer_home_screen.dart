@@ -381,56 +381,50 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
         final totalReceived =
             state is CustomerPaymentsLoaded ? state.totalReceived : 0.0;
 
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-          child: Column(
+        return SizedBox(
+          height: 110,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: CustomerSummaryCard(
-                      label: 'Buyer Bills',
-                      count: '$_buyerBillCount bills',
-                      amount: _currencyFormat.format(_buyerBillTotal),
-                      icon: Icons.shopping_bag_outlined,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  MySpacing.width(12),
-                  Expanded(
-                    child: CustomerSummaryCard(
-                      label: 'Seller Bills',
-                      count: '$_sellerBillCount bills',
-                      amount: _currencyFormat.format(_sellerBillTotal),
-                      icon: Icons.storefront_outlined,
-                      color: Colors.teal,
-                    ),
-                  ),
-                ],
+              SizedBox(
+                width: 160,
+                child: CustomerSummaryCard(
+                  label: 'Buyer Bills',
+                  count: '$_buyerBillCount bills',
+                  amount: _currencyFormat.format(_buyerBillTotal),
+                  color: Colors.blue,
+                ),
               ),
-              MySpacing.height(12),
-              Row(
-                children: [
-                  Expanded(
-                    child: CustomerSummaryCard(
-                      label: 'Payments Paid',
-                      count: '$paidCount payments',
-                      amount: _currencyFormat.format(totalPaid),
-                      icon: Icons.arrow_upward_rounded,
-                      color: Colors.red,
-                    ),
-                  ),
-                  MySpacing.width(12),
-                  Expanded(
-                    child: CustomerSummaryCard(
-                      label: 'Payments Received',
-                      count: '$receivedCount payments',
-                      amount: _currencyFormat.format(totalReceived),
-                      icon: Icons.arrow_downward_rounded,
-                      color: Colors.green,
-                    ),
-                  ),
-                ],
+              MySpacing.width(12),
+              SizedBox(
+                width: 160,
+                child: CustomerSummaryCard(
+                  label: 'Seller Bills',
+                  count: '$_sellerBillCount bills',
+                  amount: _currencyFormat.format(_sellerBillTotal),
+                  color: Colors.teal,
+                ),
+              ),
+              MySpacing.width(12),
+              SizedBox(
+                width: 160,
+                child: CustomerSummaryCard(
+                  label: 'Payments Paid',
+                  count: '$paidCount payments',
+                  amount: _currencyFormat.format(totalPaid),
+                  color: Colors.red,
+                ),
+              ),
+              MySpacing.width(12),
+              SizedBox(
+                width: 160,
+                child: CustomerSummaryCard(
+                  label: 'Payments Received',
+                  count: '$receivedCount payments',
+                  amount: _currencyFormat.format(totalReceived),
+                  color: Colors.green,
+                ),
               ),
             ],
           ),
