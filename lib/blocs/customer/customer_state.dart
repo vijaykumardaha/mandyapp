@@ -4,7 +4,7 @@ sealed class CustomerState extends Equatable {
   const CustomerState();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 final class CustomerInitial extends CustomerState {}
@@ -24,4 +24,38 @@ final class SyncCustomerError extends CustomerState {
   const SyncCustomerError({required this.errorMsg});
   @override
   List<Object> get props => [errorMsg];
+}
+
+final class CurrentCustomerLoading extends CustomerState {}
+
+final class CurrentCustomerLoaded extends CustomerState {
+  final Customer? customer;
+  const CurrentCustomerLoaded({this.customer});
+
+  @override
+  List<Object?> get props => [customer];
+}
+
+final class CurrentCustomerSyncLoading extends CustomerState {
+  final Customer? customer;
+  const CurrentCustomerSyncLoading({this.customer});
+
+  @override
+  List<Object?> get props => [customer];
+}
+
+final class CurrentCustomerSyncSuccess extends CustomerState {
+  final Customer? customer;
+  const CurrentCustomerSyncSuccess({this.customer});
+
+  @override
+  List<Object?> get props => [customer];
+}
+
+final class CurrentCustomerError extends CustomerState {
+  final String message;
+  const CurrentCustomerError(this.message);
+
+  @override
+  List<Object> get props => [message];
 }

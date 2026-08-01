@@ -35,12 +35,21 @@ class BillDetailsScreen extends StatefulWidget {
 class _BillDetailsScreenState extends State<BillDetailsScreen> {
   late Future<BillDetailsData> _billFuture;
   String _mandiName = '';
+  bool _isCustomer = false;
 
   @override
   void initState() {
     super.initState();
     _billFuture = _loadBillDetails();
     _loadMandiName();
+    _loadUserRole();
+  }
+
+  Future<void> _loadUserRole() async {
+    final user = await AppHelper.getCurrentUser();
+    if (mounted) {
+      setState(() => _isCustomer = user?.isCustomer ?? false);
+    }
   }
 
   Future<void> _loadMandiName() async {
@@ -553,96 +562,99 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        GestureDetector(
-                          onTap: () async {
-                            final confirmed = await showDialog<bool>(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                title: const Text('Print Bill'),
-                                content: const Text(
-                                    'Do you really want to print this bill?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx, false),
-                                    child: const Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx, true),
-                                    child: const Text('Print'),
-                                  ),
-                                ],
-                              ),
-                            );
-                            if (confirmed == true) {
-                              _handlePrint(data);
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primaryContainer,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.print_outlined,
-                                  size: 18,
-                                  color: theme.colorScheme.onPrimaryContainer,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Print Bill',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colorScheme.onPrimaryContainer,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        if (data.pendingPayment > 0) ...[
-                          const SizedBox(width: 10),
+                    if (!_isCustomer)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
                           GestureDetector(
-                            onTap: () => _showReceivePaymentSheet(data),
+                            onTap: () async {
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Print Bill'),
+                                  content: const Text(
+                                      'Do you really want to print this bill?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      child: const Text('Print'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirmed == true) {
+                                _handlePrint(data);
+                              }
+                            },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 10),
                               decoration: BoxDecoration(
-                                color: Colors.red,
+                                color: theme.colorScheme.primaryContainer,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    Icons.account_balance_wallet,
+                                    Icons.print_outlined,
                                     size: 18,
-                                    color: Colors.white,
+                                    color: theme.colorScheme.onPrimaryContainer,
                                   ),
-                                  SizedBox(width: 6),
+                                  const SizedBox(width: 6),
                                   Text(
-                                    'Pay Due Amount',
+                                    'Print Bill',
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.white,
+                                      color:
+                                          theme.colorScheme.onPrimaryContainer,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                           ),
+                          if (data.pendingPayment > 0) ...[
+                            const SizedBox(width: 10),
+                            GestureDetector(
+                              onTap: () => _showReceivePaymentSheet(data),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.account_balance_wallet,
+                                      size: 18,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Pay Due Amount',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
+                      ),
                   ],
                 ),
               ),

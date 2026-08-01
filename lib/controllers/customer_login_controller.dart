@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:mandiapp/models/mandi_model.dart';
 
 class CustomerLoginController {
   GlobalKey<FormState> formKey = GlobalKey();
-  TextEditingController mandiIdController = TextEditingController();
+  Mandi? selectedMandi;
   TextEditingController mobileController = TextEditingController();
 
-  String? validateMandiId(String? text) {
-    if (text == null || text.isEmpty) {
-      return 'Please enter mandi id';
-    }
-
-    final RegExp regExp = RegExp(r'^\d+$');
-    if (!regExp.hasMatch(text)) {
-      return 'Please enter valid mandi id';
+  String? validateMandi(Mandi? mandi) {
+    if (mandi == null) {
+      return 'Please select mandi';
     }
     return null;
   }
@@ -30,7 +26,6 @@ class CustomerLoginController {
   }
 
   void dispose() {
-    mandiIdController.dispose();
     mobileController.dispose();
   }
 

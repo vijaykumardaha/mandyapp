@@ -27,7 +27,9 @@ import 'package:mandiapp/models/product_variant_model.dart';
 import 'package:mandiapp/models/stock_model.dart';
 import 'package:mandiapp/models/user_model.dart';
 import 'package:mandiapp/models/vegetable_model.dart';
+import 'package:mandiapp/services/auth_api.dart';
 import 'package:mandiapp/services/socket_service.dart';
+import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/utils/constants.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 
@@ -219,9 +221,52 @@ class SyncService {
     }
   }
 
-  // ──────────────────────────────────────────────
-  //  Collect pending (sync_status=0) records
-  // ──────────────────────────────────────────────
+  Future<Map<String, dynamic>?> customerSync() async {
+    if (_paused) return null;
+    if (_syncing) {
+      log('SyncService: customerSync already in progress, skipping');
+      return null;
+    }
+    _syncing = true;
+
+    try {
+      final userData = await AppHelper.getPreferences('user');
+      if (userData == null) {
+        log('SyncService: customerSync → no user data found');
+        return null;
+      }
+
+      final user = userData as Map<String, dynamic>;
+      final mandiId = user['mandi_id'] as int?;
+      final customerId = user['id'] as int?;
+      if (mandiId == null) {
+        log('SyncService: customerSync → no mandi_id found');
+        return null;
+      }
+
+      log('SyncService: customerSync → mandi_id=$mandiId, customer_id=$customerId');
+
+      final tables = await AuthApi().customerSync(
+        mandiId: mandiId,
+        customerId: customerId ?? 0,
+      );
+
+      if (tables.isEmpty) {
+        log('SyncService: customerSync → empty response');
+        return null;
+      }
+
+      await _upsertBulkResponse(tables);
+      log('SyncService: customerSync → upserted ${tables.length} tables from server');
+
+      return tables;
+    } catch (e, st) {
+      log('SyncService: customerSync failed: $e', stackTrace: st);
+      return null;
+    } finally {
+      _syncing = false;
+    }
+  }
 
   Future<Map<String, List>> _collectPendingRecords() async {
     final db = await _customerDAO.dbHelper.database;

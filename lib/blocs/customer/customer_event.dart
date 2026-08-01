@@ -59,3 +59,11 @@ class UpdateCustomer extends CustomerEvent {
   @override
   List<Object> get props => [customer, query];
 }
+
+class LoadCurrentCustomer extends CustomerEvent {
+  const LoadCurrentCustomer();
+}
+
+class SyncCurrentCustomer extends CustomerEvent {
+  const SyncCurrentCustomer();
+}

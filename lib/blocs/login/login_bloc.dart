@@ -71,6 +71,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         );
 
         await AppHelper.savePreferences(PrefsKeys.user, user.toJson());
+        await SyncService.instance.customerSync();
         emit(LoginCustomerSuccess(user: user));
       } catch (e) {
         emit(LoginCustomerFailure(

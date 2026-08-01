@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:mandiapp/blocs/login/login_bloc.dart';
 import 'package:mandiapp/controllers/customer_login_controller.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
+import 'package:mandiapp/models/mandi_model.dart';
+import 'package:mandiapp/services/auth_api.dart';
 import 'package:mandiapp/utils/info_controller.dart';
-import 'package:mandiapp/widgets/auth/mandi_id_field.dart';
+import 'package:mandiapp/widgets/auth/mandi_dropdown_field.dart';
 import 'package:mandiapp/widgets/auth/mobile_field.dart';
 import 'package:mandiapp/widgets/common/my_button.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
@@ -22,6 +24,9 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
   late ThemeData theme;
   late CustomerLoginController controller;
   late OutlineInputBorder outlineInputBorder;
+  List<Mandi> _mandis = [];
+  bool _loadingMandis = true;
+  String? _mandiError;
 
   @override
   void initState() {
@@ -31,6 +36,87 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
     outlineInputBorder = OutlineInputBorder(
       borderSide: BorderSide(
         color: theme.dividerColor,
+      ),
+    );
+    _loadMandis();
+  }
+
+  Future<void> _loadMandis() async {
+    setState(() {
+      _loadingMandis = true;
+      _mandiError = null;
+    });
+    try {
+      final mandis = await AuthApi().mandiList();
+      if (mounted) {
+        setState(() {
+          _mandis = mandis;
+          _loadingMandis = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _mandiError = e.toString().replaceFirst('Exception: ', '');
+          _loadingMandis = false;
+        });
+      }
+    }
+  }
+
+  Widget _buildMandiLoading() {
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        border: Border.all(color: theme.dividerColor),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          MySpacing.width(12),
+          const MyText.bodyMedium('Loading mandis...'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMandiError() {
+    return Container(
+      padding: MySpacing.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: theme.colorScheme.error.withValues(alpha: 0.5),
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 20,
+            color: theme.colorScheme.error,
+          ),
+          MySpacing.width(8),
+          Expanded(
+            child: MyText.bodySmall(
+              _mandiError!,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+          ),
+          TextButton(
+            onPressed: _loadMandis,
+            child: const Text('Retry'),
+          ),
+        ],
       ),
     );
   }
@@ -87,12 +173,20 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                     key: controller.formKey,
                     child: Column(
                       children: [
-                        AuthMandiIdField(
-                          controller: controller.mandiIdController,
-                          outlineInputBorder: outlineInputBorder,
-                          theme: theme,
-                          validator: controller.validateMandiId,
-                        ),
+                        if (_loadingMandis)
+                          _buildMandiLoading()
+                        else if (_mandiError != null)
+                          _buildMandiError()
+                        else
+                          AuthMandiDropdownField(
+                            mandis: _mandis,
+                            value: controller.selectedMandi,
+                            onChanged: (mandi) =>
+                                controller.selectedMandi = mandi,
+                            outlineInputBorder: outlineInputBorder,
+                            theme: theme,
+                            validator: controller.validateMandi,
+                          ),
                         MySpacing.height(20),
                         AuthMobileField(
                           controller: controller.mobileController,
@@ -106,17 +200,20 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                   MySpacing.height(24),
                   MyButton.block(
                     padding: MySpacing.y(20),
-                    onPressed: () {
-                      if (controller.formKey.currentState!.validate()) {
-                        context.read<LoginBloc>().add(
-                              CustomerLoginSubmit(
-                                mandiId: int.parse(
-                                    controller.mandiIdController.text),
-                                mobile: controller.mobileController.text,
-                              ),
-                            );
-                      }
-                    },
+                    onPressed: _loadingMandis
+                        ? null
+                        : () {
+                            if (controller.formKey.currentState!.validate() &&
+                                controller.selectedMandi != null) {
+                              context.read<LoginBloc>().add(
+                                    CustomerLoginSubmit(
+                                      mandiId:
+                                          controller.selectedMandi!.mandiId,
+                                      mobile: controller.mobileController.text,
+                                    ),
+                                  );
+                            }
+                          },
                     backgroundColor: theme.colorScheme.primary,
                     elevation: 0,
                     borderRadiusAll: 24,
