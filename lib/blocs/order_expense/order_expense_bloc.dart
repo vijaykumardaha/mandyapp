@@ -33,7 +33,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
       emit(const OrderExpenseOperationSuccess(
           'Order expense added successfully'));
     } catch (e) {
-      emit(OrderExpenseError('Failed to add order expense: $e'));
+      emit(const OrderExpenseError(
+          'Failed to add order expense. Please try again.'));
     }
   }
 
@@ -50,7 +51,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
       emit(const OrderExpenseOperationSuccess(
           'Order expense updated successfully'));
     } catch (e) {
-      emit(OrderExpenseError('Failed to update order expense: $e'));
+      emit(const OrderExpenseError(
+          'Failed to update order expense. Please try again.'));
     }
   }
 
@@ -66,7 +68,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
       emit(const OrderExpenseOperationSuccess(
           'Order expense deleted successfully'));
     } catch (e) {
-      emit(OrderExpenseError('Failed to delete order expense: $e'));
+      emit(const OrderExpenseError(
+          'Failed to delete order expense. Please try again.'));
     }
   }
 
@@ -80,7 +83,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
       emit(const OrderExpenseOperationSuccess(
           'Order expenses deleted successfully'));
     } catch (e) {
-      emit(OrderExpenseError('Failed to delete order expenses: $e'));
+      emit(const OrderExpenseError(
+          'Failed to delete order expenses. Please try again.'));
     }
   }
 
@@ -93,7 +97,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
       final orderExpenses = await _orderExpenseDao.getAll();
       emit(OrderExpensesLoaded(orderExpenses));
     } catch (e) {
-      emit(OrderExpenseError('Failed to load order expenses: $e'));
+      emit(const OrderExpenseError(
+          'Failed to load order expenses. Please try again.'));
     }
   }
 
@@ -106,7 +111,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
       final orderExpenses = await _orderExpenseDao.getByOrderId(event.orderId);
       emit(OrderExpensesLoaded(orderExpenses));
     } catch (e) {
-      emit(OrderExpenseError('Failed to load order expenses: $e'));
+      emit(const OrderExpenseError(
+          'Failed to load order expenses. Please try again.'));
     }
   }
 
@@ -120,7 +126,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
           await _orderExpenseDao.getByOrderIdOrNull(event.orderId);
       emit(OrderExpensesLoaded(orderExpenses));
     } catch (e) {
-      emit(OrderExpenseError('Failed to load order expenses: $e'));
+      emit(const OrderExpenseError(
+          'Failed to load order expenses. Please try again.'));
     }
   }
 
@@ -137,7 +144,8 @@ class OrderExpenseBloc extends Bloc<OrderExpenseEvent, OrderExpenseState> {
         emit(const OrderExpenseError('Order expense not found'));
       }
     } catch (e) {
-      emit(OrderExpenseError('Failed to get order expense: $e'));
+      emit(const OrderExpenseError(
+          'Failed to get order expense. Please try again.'));
     }
   }
 }

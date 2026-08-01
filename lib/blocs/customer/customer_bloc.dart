@@ -19,7 +19,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
         await contactDAO.bulkInsert(event.customers);
         add(const FetchCustomer(query: ''));
       } catch (error) {
-        emit(SyncCustomerError(errorMsg: error.toString()));
+        emit(const SyncCustomerError(
+            errorMsg: 'Something went wrong. Please try again.'));
       }
     });
 
@@ -30,7 +31,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
         emit(
             CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
       } catch (error) {
-        emit(SyncCustomerError(errorMsg: error.toString()));
+        emit(const SyncCustomerError(
+            errorMsg: 'Something went wrong. Please try again.'));
       }
     });
 
@@ -48,7 +50,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
         emit(
             CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
       } catch (error) {
-        emit(SyncCustomerError(errorMsg: error.toString()));
+        emit(const SyncCustomerError(
+            errorMsg: 'Something went wrong. Please try again.'));
       }
     });
 
@@ -60,7 +63,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
         emit(
             CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
       } catch (error) {
-        emit(SyncCustomerError(errorMsg: error.toString()));
+        emit(const SyncCustomerError(
+            errorMsg: 'Something went wrong. Please try again.'));
       }
     });
 
@@ -72,7 +76,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
         emit(
             CustomerLoaded(customers: _filterCustomers(contacts, event.query)));
       } catch (error) {
-        emit(SyncCustomerError(errorMsg: error.toString()));
+        emit(const SyncCustomerError(
+            errorMsg: 'Something went wrong. Please try again.'));
       }
     });
 

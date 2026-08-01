@@ -63,8 +63,7 @@ class ProductCardWidget extends StatelessWidget {
                     children: [
                       Expanded(
                         child: MyText.bodyLarge(
-                          defaultVariant?.variantName ??
-                              'Product #${product.id ?? ''}',
+                          defaultVariant?.variantName ?? 'Product',
                           fontWeight: 600,
                         ),
                       ),

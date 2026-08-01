@@ -163,7 +163,7 @@ class SellingScreenState extends State<SellingScreen> {
 
   void _showAddToSaleBottomSheet(Product product) {
     if (sellerCustomer == null) {
-      Info.message('Please select a customer before recording sales.',
+      Info.message('Please select a customer before recording sales',
           context: context);
       return;
     }

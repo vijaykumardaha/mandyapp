@@ -11,6 +11,7 @@ import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/info_controller.dart';
 import 'package:mandiapp/widgets/charges/charge_list_item.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/dropdown_option.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 
@@ -117,32 +118,62 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                 MySpacing.height(12),
                 DropdownButtonFormField<String>(
                   value: selectedType,
-                  dropdownColor: Theme.of(context).colorScheme.surface,
+                  isExpanded: true,
+                  dropdownColor: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  menuMaxHeight: 300,
+                  elevation: 4,
                   decoration: const InputDecoration(
                     labelText: 'Charge Type Type',
                     border: OutlineInputBorder(),
                     helperText: 'Choose how the charge amount is calculated',
                   ),
-                  items: const [
+                  items: [
                     DropdownMenuItem(
                       value: 'fixed',
-                      child: Row(
-                        children: [
-                          Icon(Icons.attach_money, size: 16),
-                          SizedBox(width: 8),
-                          Text('Fixed Amount'),
-                        ],
+                      child: DropdownOption(
+                        selected: selectedType == 'fixed',
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.attach_money, size: 16),
+                            SizedBox(width: 8),
+                            Text('Fixed Amount'),
+                          ],
+                        ),
                       ),
                     ),
                     DropdownMenuItem(
                       value: 'percentage',
-                      child: Row(
-                        children: [
-                          Icon(Icons.percent, size: 16),
-                          SizedBox(width: 8),
-                          Text('Percentage'),
-                        ],
+                      child: DropdownOption(
+                        selected: selectedType == 'percentage',
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.percent, size: 16),
+                            SizedBox(width: 8),
+                            Text('Percentage'),
+                          ],
+                        ),
                       ),
+                    ),
+                  ],
+                  selectedItemBuilder: (context) => [
+                    const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.attach_money, size: 16),
+                        SizedBox(width: 8),
+                        Text('Fixed Amount'),
+                      ],
+                    ),
+                    const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.percent, size: 16),
+                        SizedBox(width: 8),
+                        Text('Percentage'),
+                      ],
                     ),
                   ],
                   onChanged: (value) {
@@ -170,14 +201,34 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                 MySpacing.height(12),
                 DropdownButtonFormField<String>(
                   value: selectedChargeTypeFor,
-                  dropdownColor: Theme.of(context).colorScheme.surface,
+                  isExpanded: true,
+                  dropdownColor: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  menuMaxHeight: 300,
+                  elevation: 4,
                   decoration: const InputDecoration(
                     labelText: 'Apply to',
                     border: OutlineInputBorder(),
                   ),
-                  items: const [
-                    DropdownMenuItem(value: 'buyer', child: Text('Buyers')),
-                    DropdownMenuItem(value: 'seller', child: Text('Sellers')),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'buyer',
+                      child: DropdownOption(
+                        selected: selectedChargeTypeFor == 'buyer',
+                        child: const Text('Buyers'),
+                      ),
+                    ),
+                    DropdownMenuItem(
+                      value: 'seller',
+                      child: DropdownOption(
+                        selected: selectedChargeTypeFor == 'seller',
+                        child: const Text('Sellers'),
+                      ),
+                    ),
+                  ],
+                  selectedItemBuilder: (context) => const [
+                    Text('Buyers'),
+                    Text('Sellers'),
                   ],
                   onChanged: (value) {
                     if (value != null) {

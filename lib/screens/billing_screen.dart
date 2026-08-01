@@ -23,6 +23,8 @@ class BillingScreen extends StatefulWidget {
 }
 
 class _BillingScreenState extends State<BillingScreen> {
+  static const double _kControlHeight = 40;
+
   Customer? _selectedCustomer;
   bool _isBuyerMode = true;
   StreamSubscription<String>? _syncSubscription;
@@ -144,34 +146,72 @@ class _BillingScreenState extends State<BillingScreen> {
 
   Widget _buildModeChip() {
     final colors = Theme.of(context).colorScheme;
-    final isBuyer = _isBuyerMode;
-    return GestureDetector(
-      onTap: _toggleMode,
+    return SizedBox(
+      height: _kControlHeight,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
-          color: isBuyer ? colors.tertiaryContainer : colors.secondaryContainer,
+          color: colors.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildModeSegment(
+              label: 'Buyer',
+              icon: Icons.shopping_cart,
+              active: _isBuyerMode,
+              activeColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            _buildModeSegment(
+              label: 'Seller',
+              icon: Icons.store,
+              active: !_isBuyerMode,
+              activeColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModeSegment({
+    required String label,
+    required IconData icon,
+    required bool active,
+    required Color activeColor,
+    required Color foregroundColor,
+  }) {
+    final colors = Theme.of(context).colorScheme;
+    final inactiveColor = colors.onSurfaceVariant;
+    return GestureDetector(
+      onTap: active ? null : _toggleMode,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: active ? activeColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              isBuyer ? Icons.shopping_cart : Icons.store,
-              size: 16,
-              color: isBuyer
-                  ? colors.onTertiaryContainer
-                  : colors.onSecondaryContainer,
+              icon,
+              size: 14,
+              color: active ? foregroundColor : inactiveColor,
             ),
             const SizedBox(width: 4),
             Text(
-              isBuyer ? 'Buyer' : 'Seller',
+              label,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: isBuyer
-                    ? colors.onTertiaryContainer
-                    : colors.onSecondaryContainer,
+                color: active ? foregroundColor : inactiveColor,
               ),
             ),
           ],
@@ -191,54 +231,57 @@ class _BillingScreenState extends State<BillingScreen> {
       },
       fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
         _searchController = controller;
-        return TextField(
-          controller: controller,
-          focusNode: focusNode,
-          decoration: InputDecoration(
-            hintText: _selectedCustomer != null
-                ? _formatCustomer(_selectedCustomer)
-                : 'Search ${_isBuyerMode ? 'buyer' : 'seller'}...',
-            prefixIcon: const Icon(Icons.person, size: 18),
-            suffixIcon: controller.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear, size: 16),
-                    onPressed: () {
-                      controller.clear();
-                      _onCustomerChanged(null);
-                    },
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  )
-                : null,
-            filled: true,
-            fillColor: Theme.of(context)
-                .colorScheme
-                .surfaceContainerHighest
-                .withValues(alpha: 0.5),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: Theme.of(context)
-                    .colorScheme
-                    .outline
-                    .withValues(alpha: 0.2),
+        return SizedBox(
+          height: _kControlHeight,
+          child: TextField(
+            controller: controller,
+            focusNode: focusNode,
+            decoration: InputDecoration(
+              hintText: _selectedCustomer != null
+                  ? _formatCustomer(_selectedCustomer)
+                  : 'Search ${_isBuyerMode ? 'buyer' : 'seller'}...',
+              prefixIcon: const Icon(Icons.person, size: 18),
+              suffixIcon: controller.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, size: 16),
+                      onPressed: () {
+                        controller.clear();
+                        _onCustomerChanged(null);
+                      },
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    )
+                  : null,
+              filled: true,
+              fillColor: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHighest
+                  .withValues(alpha: 0.5),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
               ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.primary,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .outline
+                      .withValues(alpha: 0.2),
+                ),
               ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              isDense: true,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             ),
-            isDense: true,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
         );
       },
       optionsViewBuilder: (context, onSelected, options) {

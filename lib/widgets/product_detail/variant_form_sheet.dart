@@ -8,6 +8,7 @@ import 'package:mandiapp/models/product_variant_model.dart';
 import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/info_controller.dart';
+import 'package:mandiapp/widgets/common/dropdown_option.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 
@@ -226,7 +227,11 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: selectedUnit,
-                    dropdownColor: Theme.of(context).colorScheme.surface,
+                    isExpanded: true,
+                    dropdownColor: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    menuMaxHeight: 300,
+                    elevation: 4,
                     decoration: const InputDecoration(
                       labelText: 'Unit',
                       border: OutlineInputBorder(),
@@ -246,9 +251,25 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
                     ]
                         .map((unit) => DropdownMenuItem(
                               value: unit,
-                              child: Text(unit),
+                              child: DropdownOption(
+                                selected: selectedUnit == unit,
+                                child: Text(unit),
+                              ),
                             ))
                         .toList(),
+                    selectedItemBuilder: (context) => [
+                      'Gram',
+                      'Kilogram',
+                      'Quintal',
+                      'Metric Ton',
+                      'Piece',
+                      'Dozen',
+                      'Box',
+                      'Bag',
+                      'Crate',
+                      'Bundle',
+                      'Tray',
+                    ].map((unit) => Text(unit)).toList(),
                     onChanged: (value) {
                       setState(() => selectedUnit = value!);
                     },

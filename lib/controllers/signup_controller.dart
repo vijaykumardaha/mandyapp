@@ -15,19 +15,19 @@ class SignupController {
       return 'Please enter your name';
     }
     if (text.length < 2) {
-      return 'Name must be at least 2 characters';
+      return 'Name must be at least 2 characters long';
     }
     return null;
   }
 
   String? validateMobileNumber(String? text) {
     if (text == null || text.isEmpty) {
-      return 'Please enter mobile number';
+      return 'Please enter a mobile number';
     }
 
     final RegExp regExp = RegExp(r'^\+?[1-9]\d{9,14}$');
     if (!regExp.hasMatch(text)) {
-      return 'Please enter valid mobile number';
+      return 'Please enter a valid mobile number';
     }
     return null;
   }
@@ -36,7 +36,7 @@ class SignupController {
     if (text == null || text.isEmpty) {
       return 'Please enter password';
     } else if (!MyStringUtils.validateStringRange(text, 6, 100)) {
-      return 'Password must be between 6 to 100';
+      return 'Password must be between 6 and 100 characters';
     }
     return null;
   }

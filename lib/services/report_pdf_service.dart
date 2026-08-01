@@ -51,7 +51,7 @@ class ReportPdfService {
       rows.add([
         (customer.name?.trim().isNotEmpty ?? false)
             ? customer.name!.trim()
-            : 'Unnamed Customer',
+            : 'Customer',
         customer.phone?.trim().isNotEmpty == true ? customer.phone!.trim() : '',
         currencyFormat.format(stats.received),
         currencyFormat.format(stats.paid),
@@ -303,7 +303,7 @@ class ReportPdfService {
         [
           ...state.data.map((item) => [
                 '${item.productName}\n'
-                    'Seller: ${item.sellerName ?? (item.sellerId != null ? 'Seller #${item.sellerId}' : 'Unknown Seller')}',
+                    'Seller: ${item.sellerName ?? 'Seller'}',
                 currencyFormat.format(item.avgPrice),
                 '${item.totalQuantity.toStringAsFixed(2)}\u00A0${item.unit.unitAbbreviation}',
                 currencyFormat.format(item.totalRevenue),
@@ -334,7 +334,7 @@ class ReportPdfService {
         state.data
             .map((item) => [
                   '${item.productName}\n'
-                      'Seller: ${item.sellerName ?? (item.sellerId != null ? 'Seller #${item.sellerId}' : 'Unknown Seller')}',
+                      'Seller: ${item.sellerName ?? 'Seller'}',
                   currencyFormat.format(item.avgPrice),
                   '${item.totalQuantity.toStringAsFixed(2)}\u00A0${item.unit.unitAbbreviation}',
                   currencyFormat.format(item.totalCost),

@@ -15,6 +15,7 @@ import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/info_controller.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/dropdown_option.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/stock/stock_list_item.dart';
@@ -312,8 +313,6 @@ class _StockFormDialogState extends State<_StockFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
         title: MyText.titleMedium(
@@ -338,44 +337,80 @@ class _StockFormDialogState extends State<_StockFormDialog> {
             children: [
               DropdownButtonFormField<Customer>(
                 value: _selectedSeller,
+                isExpanded: true,
+                dropdownColor: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                menuMaxHeight: 300,
+                elevation: 4,
                 decoration: const InputDecoration(
                   labelText: 'Seller',
                   border: OutlineInputBorder(),
                 ),
-                dropdownColor: theme.colorScheme.surface,
                 items: widget.customers
                     .map((c) => DropdownMenuItem(
                           value: c,
-                          child: Text(c.name ?? 'Seller #${c.id}'),
+                          child: DropdownOption(
+                            selected: _selectedSeller == c,
+                            child: Text(c.name ?? 'Seller #${c.id}'),
+                          ),
                         ))
+                    .toList(),
+                selectedItemBuilder: (context) => widget.customers
+                    .map((c) => Text(c.name ?? 'Seller #${c.id}'))
                     .toList(),
                 onChanged: (value) => setState(() => _selectedSeller = value),
               ),
               MySpacing.height(12),
               DropdownButtonFormField<Product>(
                 value: _selectedProduct,
+                isExpanded: true,
+                dropdownColor: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                menuMaxHeight: 300,
+                elevation: 4,
                 decoration: const InputDecoration(
                   labelText: 'Product',
                   border: OutlineInputBorder(),
                 ),
-                dropdownColor: theme.colorScheme.surface,
                 items: widget.products.map((p) {
                   final name =
                       p.defaultVariantModel?.variantName ?? 'Product #${p.id}';
                   final img = p.defaultVariantModel?.imagePath;
                   return DropdownMenuItem(
                     value: p,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: _buildDropdownImage(img, 32),
-                        ),
-                        MySpacing.width(8),
-                        Text(name, overflow: TextOverflow.ellipsis),
-                      ],
+                    child: DropdownOption(
+                      selected: _selectedProduct == p,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: _buildDropdownImage(img, 32),
+                          ),
+                          MySpacing.width(8),
+                          Flexible(
+                            child: Text(name, overflow: TextOverflow.ellipsis),
+                          ),
+                        ],
+                      ),
                     ),
+                  );
+                }).toList(),
+                selectedItemBuilder: (context) => widget.products.map((p) {
+                  final name =
+                      p.defaultVariantModel?.variantName ?? 'Product #${p.id}';
+                  final img = p.defaultVariantModel?.imagePath;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: _buildDropdownImage(img, 32),
+                      ),
+                      MySpacing.width(8),
+                      Flexible(
+                          child: Text(name, overflow: TextOverflow.ellipsis)),
+                    ],
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -388,26 +423,51 @@ class _StockFormDialogState extends State<_StockFormDialog> {
               MySpacing.height(12),
               DropdownButtonFormField<ProductVariant>(
                 value: _selectedVariant,
+                isExpanded: true,
+                dropdownColor: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                menuMaxHeight: 300,
+                elevation: 4,
                 decoration: const InputDecoration(
                   labelText: 'Variant',
                   border: OutlineInputBorder(),
                 ),
-                dropdownColor: theme.colorScheme.surface,
                 items: _getVariants()
                     .map((v) => DropdownMenuItem(
                           value: v,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: _buildDropdownImage(v.imagePath, 32),
-                              ),
-                              MySpacing.width(8),
-                              Text(v.variantName,
-                                  overflow: TextOverflow.ellipsis),
-                            ],
+                          child: DropdownOption(
+                            selected: _selectedVariant == v,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: _buildDropdownImage(v.imagePath, 32),
+                                ),
+                                MySpacing.width(8),
+                                Flexible(
+                                  child: Text(v.variantName,
+                                      overflow: TextOverflow.ellipsis),
+                                ),
+                              ],
+                            ),
                           ),
+                        ))
+                    .toList(),
+                selectedItemBuilder: (context) => _getVariants()
+                    .map((v) => Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: _buildDropdownImage(v.imagePath, 32),
+                            ),
+                            MySpacing.width(8),
+                            Flexible(
+                              child: Text(v.variantName,
+                                  overflow: TextOverflow.ellipsis),
+                            ),
+                          ],
                         ))
                     .toList(),
                 onChanged: (value) => setState(() => _selectedVariant = value),

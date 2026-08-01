@@ -35,17 +35,17 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
           _isLoading = false;
         });
       }
-    } on DioException catch (e) {
+    } on DioException {
       if (mounted) {
         setState(() {
-          _error = e.message ?? 'Failed to load terms & conditions';
+          _error = 'Failed to load terms & conditions. Please try again.';
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Failed to load terms & conditions';
+          _error = 'Failed to load terms & conditions. Please try again.';
           _isLoading = false;
         });
       }

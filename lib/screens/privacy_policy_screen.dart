@@ -35,17 +35,17 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
           _isLoading = false;
         });
       }
-    } on DioException catch (e) {
+    } on DioException {
       if (mounted) {
         setState(() {
-          _error = e.message ?? 'Failed to load privacy policy';
+          _error = 'Failed to load privacy policy. Please try again.';
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Failed to load privacy policy';
+          _error = 'Failed to load privacy policy. Please try again.';
           _isLoading = false;
         });
       }

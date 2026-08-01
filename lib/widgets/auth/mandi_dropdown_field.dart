@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:mandiapp/models/mandi_model.dart';
+import 'package:mandiapp/widgets/common/dropdown_option.dart';
 import 'package:mandiapp/widgets/common/my_text_style.dart';
 
 class AuthMandiDropdownField extends StatelessWidget {
@@ -26,6 +27,10 @@ class AuthMandiDropdownField extends StatelessWidget {
     return DropdownButtonFormField<Mandi>(
       value: value,
       isExpanded: true,
+      dropdownColor: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      menuMaxHeight: 300,
+      elevation: 4,
       style: MyTextStyle.bodyMedium(),
       decoration: InputDecoration(
         hintText: 'Select Mandi',
@@ -45,10 +50,19 @@ class AuthMandiDropdownField extends StatelessWidget {
       items: mandis
           .map((mandi) => DropdownMenuItem<Mandi>(
                 value: mandi,
-                child: Text(
-                  mandi.mandiName,
-                  style: MyTextStyle.bodyMedium(),
+                child: DropdownOption(
+                  selected: value == mandi,
+                  child: Text(
+                    mandi.mandiName,
+                    style: MyTextStyle.bodyMedium(),
+                  ),
                 ),
+              ))
+          .toList(),
+      selectedItemBuilder: (context) => mandis
+          .map((mandi) => Text(
+                mandi.mandiName,
+                style: MyTextStyle.bodyMedium(),
               ))
           .toList(),
       onChanged: onChanged,

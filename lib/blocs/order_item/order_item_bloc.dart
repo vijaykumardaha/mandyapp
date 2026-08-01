@@ -49,7 +49,8 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
 
       emit(OrderItemsLoaded(orderItems));
     } catch (error) {
-      emit(OrderItemError('Failed to load order items: ${error.toString()}'));
+      emit(const OrderItemError(
+          'Failed to load order items. Please try again.'));
     }
   }
 
@@ -64,8 +65,8 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
       emit(
           OrderItemsLoaded(orderItems, message: 'Billable order items loaded'));
     } catch (error) {
-      emit(OrderItemError(
-          'Failed to load billable order items: ${error.toString()}'));
+      emit(const OrderItemError(
+          'Failed to load billable order items. Please try again.'));
     }
   }
 
@@ -81,7 +82,7 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
       emit(OrderItemsLoaded(orderItems,
           message: 'Order item added successfully'));
     } catch (error) {
-      emit(OrderItemError('Failed to add order item: ${error.toString()}'));
+      emit(const OrderItemError('Failed to add order item. Please try again.'));
     }
   }
 
@@ -95,7 +96,8 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
       emit(OrderItemsLoaded(orderItems,
           message: 'Order item updated successfully'));
     } catch (error) {
-      emit(OrderItemError('Failed to update order item: ${error.toString()}'));
+      emit(const OrderItemError(
+          'Failed to update order item. Please try again.'));
     }
   }
 
@@ -120,7 +122,8 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
       }
       emit(OrderItemsLoaded(orderItems));
     } catch (error) {
-      emit(OrderItemError('Failed to delete order item: ${error.toString()}'));
+      emit(const OrderItemError(
+          'Failed to delete order item. Please try again.'));
     }
   }
 
@@ -138,7 +141,8 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
       );
       emit(OrderItemsLoaded(orderItems));
     } catch (error) {
-      emit(OrderItemError('Failed to load order items: ${error.toString()}'));
+      emit(const OrderItemError(
+          'Failed to load order items. Please try again.'));
     }
   }
 }

@@ -4,7 +4,6 @@ import 'package:mandiapp/screens/bill_details_screen.dart';
 import 'package:mandiapp/screens/bills_screen.dart';
 import 'package:mandiapp/screens/charges_screen.dart';
 import 'package:mandiapp/screens/customer_home_screen.dart';
-import 'package:mandiapp/screens/customer_login_screen.dart';
 import 'package:mandiapp/screens/customer_management_screen.dart';
 import 'package:mandiapp/screens/home_screen.dart';
 import 'package:mandiapp/screens/initial_screen.dart';
@@ -14,6 +13,7 @@ import 'package:mandiapp/screens/privacy_policy_screen.dart';
 import 'package:mandiapp/screens/product_list_screen.dart';
 import 'package:mandiapp/screens/profile_screen.dart';
 import 'package:mandiapp/screens/reports_screen.dart';
+import 'package:mandiapp/screens/signup_introduction_screen.dart';
 import 'package:mandiapp/screens/signup_screen.dart';
 import 'package:mandiapp/screens/staff_screen.dart';
 import 'package:mandiapp/screens/stock_screen.dart';
@@ -36,15 +36,15 @@ class AppRoutes {
         },
       ),
       GoRoute(
-        path: '/customer-login',
-        builder: (context, state) {
-          return const CustomerLoginScreen();
-        },
-      ),
-      GoRoute(
         path: '/customer-home',
         builder: (context, state) {
           return const CustomerHomeScreen();
+        },
+      ),
+      GoRoute(
+        path: '/signup-intro',
+        builder: (context, state) {
+          return const SignupIntroductionScreen();
         },
       ),
       GoRoute(

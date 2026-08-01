@@ -59,7 +59,8 @@ class PrinterService {
       }
     } catch (error) {
       permissionGranted.value = false;
-      statusMessage.value = 'Unable to verify Bluetooth permissions: $error';
+      statusMessage.value =
+          'Unable to access Bluetooth. Check device settings.';
     }
   }
 
@@ -102,7 +103,7 @@ class PrinterService {
       return granted;
     } catch (error) {
       permissionGranted.value = false;
-      statusMessage.value = 'Unable to request Bluetooth permissions: $error';
+      statusMessage.value = 'Bluetooth permission was not granted.';
       return false;
     }
   }
@@ -124,7 +125,7 @@ class PrinterService {
       }
     } catch (error) {
       bluetoothEnabled.value = false;
-      statusMessage.value = 'Failed to read Bluetooth status: $error';
+      statusMessage.value = 'Unable to check Bluetooth status.';
     }
   }
 
@@ -150,7 +151,7 @@ class PrinterService {
       }
     } catch (error) {
       pairedDevices.value = [];
-      statusMessage.value = 'Unable to fetch paired devices: $error';
+      statusMessage.value = 'Unable to fetch paired devices.';
     } finally {
       isScanning.value = false;
     }
@@ -165,7 +166,7 @@ class PrinterService {
       }
     } catch (error) {
       connectionStatus.value = false;
-      statusMessage.value = 'Failed to determine connection: $error';
+      statusMessage.value = 'Unable to determine printer connection.';
     }
   }
 
@@ -178,14 +179,14 @@ class PrinterService {
       connectionStatus.value = result;
       connectedDeviceMac.value = result ? macAddress : null;
       _setStatus(
-        result ? 'Connected to printer.' : 'Failed to connect to printer.',
+        result ? 'Connected to printer' : 'Failed to connect to printer',
         autoClear: result,
       );
       return result;
     } catch (error) {
       connectionStatus.value = false;
       connectedDeviceMac.value = null;
-      statusMessage.value = 'Error while connecting: $error';
+      statusMessage.value = 'Failed to connect to printer.';
       return false;
     } finally {
       connectingMac.value = null;
@@ -202,7 +203,7 @@ class PrinterService {
         statusMessage.value = 'Printer disconnected.';
       }
     } catch (error) {
-      statusMessage.value = 'Failed to disconnect: $error';
+      statusMessage.value = 'Failed to disconnect printer.';
     } finally {
       await refreshConnectionStatus();
     }
@@ -328,7 +329,7 @@ class PrinterService {
 
       return result;
     } catch (error) {
-      statusMessage.value = 'Print error: $error';
+      statusMessage.value = 'Printing failed. Please try again.';
       return false;
     }
   }

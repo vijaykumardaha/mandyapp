@@ -4,8 +4,19 @@ import 'package:mandiapp/blocs/customer_payment/customer_payment_bloc.dart';
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/customer_payment_model.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/dropdown_option.dart';
 import 'package:mandiapp/widgets/payment_histories/payment_item.dart';
 import 'package:mandiapp/widgets/payment_histories/type_tab.dart';
+
+const _paymentSources = ['cash', 'upi', 'card', 'credit'];
+
+String _paymentSourceLabel(String source) => switch (source) {
+      'cash' => 'Cash',
+      'upi' => 'UPI',
+      'card' => 'Card',
+      'credit' => 'Credit',
+      _ => source,
+    };
 
 class PaymentHistoriesScreen extends StatefulWidget {
   final Customer customer;
@@ -322,7 +333,11 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                     const SizedBox(height: 14),
                     DropdownButtonFormField<String>(
                       value: selectedSource,
-                      dropdownColor: Theme.of(context).colorScheme.surface,
+                      isExpanded: true,
+                      dropdownColor: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      menuMaxHeight: 300,
+                      elevation: 4,
                       decoration: InputDecoration(
                         labelText: 'Source',
                         border: OutlineInputBorder(
@@ -332,12 +347,19 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                           borderSide: BorderSide(color: accentColor, width: 2),
                         ),
                       ),
-                      items: const [
-                        DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                        DropdownMenuItem(value: 'upi', child: Text('UPI')),
-                        DropdownMenuItem(value: 'card', child: Text('Card')),
-                        DropdownMenuItem(
-                            value: 'credit', child: Text('Credit')),
+                      items: [
+                        for (final source in _paymentSources)
+                          DropdownMenuItem(
+                            value: source,
+                            child: DropdownOption(
+                              selected: selectedSource == source,
+                              child: Text(_paymentSourceLabel(source)),
+                            ),
+                          ),
+                      ],
+                      selectedItemBuilder: (context) => [
+                        for (final source in _paymentSources)
+                          Text(_paymentSourceLabel(source)),
                       ],
                       onChanged: (value) {
                         if (value != null) {

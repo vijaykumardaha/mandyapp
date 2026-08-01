@@ -6,6 +6,7 @@ class AuthNameField extends StatelessWidget {
   final TextEditingController controller;
   final OutlineInputBorder outlineInputBorder;
   final ThemeData theme;
+  final String hintText;
   final String? Function(String?)? validator;
 
   const AuthNameField({
@@ -13,6 +14,7 @@ class AuthNameField extends StatelessWidget {
     required this.controller,
     required this.outlineInputBorder,
     required this.theme,
+    this.hintText = 'Your Name',
     this.validator,
   });
 
@@ -21,7 +23,7 @@ class AuthNameField extends StatelessWidget {
     return TextFormField(
       style: MyTextStyle.bodyMedium(),
       decoration: InputDecoration(
-        hintText: 'Mandi Name',
+        hintText: hintText,
         hintStyle: MyTextStyle.bodyMedium(),
         border: outlineInputBorder,
         enabledBorder: outlineInputBorder,

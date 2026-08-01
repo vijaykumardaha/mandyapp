@@ -65,7 +65,7 @@ class BillCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        order.orderFor == 'seller' ? 'SELLER' : 'BUYER',
+                        order.orderFor == 'seller' ? 'Seller' : 'Buyer',
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.w500,
                           color: order.orderFor == 'buyer'

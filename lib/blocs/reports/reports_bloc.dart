@@ -60,8 +60,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         totalTransactions: totalTransactions,
       ));
     } catch (error) {
-      emit(ReportsError(
-          'Failed to load daily sales report: ${error.toString()}'));
+      emit(const ReportsError(
+          'Failed to load daily sales report. Please try again.'));
     }
   }
 
@@ -97,8 +97,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         totalTransactions: totalTransactions,
       ));
     } catch (error) {
-      emit(ReportsError(
-          'Failed to load daily purchase report: ${error.toString()}'));
+      emit(const ReportsError(
+          'Failed to load daily purchase report. Please try again.'));
     }
   }
 
@@ -133,8 +133,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         totalCost: totalCost,
       ));
     } catch (error) {
-      emit(ReportsError(
-          'Failed to load mandi profit report: ${error.toString()}'));
+      emit(const ReportsError(
+          'Failed to load mandi profit report. Please try again.'));
     }
   }
 
@@ -164,8 +164,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         totalNetBalance: totalNetBalance,
       ));
     } catch (error) {
-      emit(ReportsError(
-          'Failed to load customer ledger report: ${error.toString()}'));
+      emit(const ReportsError(
+          'Failed to load customer ledger report. Please try again.'));
     }
   }
 
@@ -203,8 +203,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         totalSellerPending: totalSellerPending,
       ));
     } catch (error) {
-      emit(ReportsError(
-          'Failed to load pending payment report: ${error.toString()}'));
+      emit(const ReportsError(
+          'Failed to load pending payment report. Please try again.'));
     }
   }
 
@@ -229,7 +229,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
 
       emit(ReportsSummaryLoaded(summary));
     } catch (error) {
-      emit(ReportsError('Failed to load reports summary: ${error.toString()}'));
+      emit(const ReportsError(
+          'Failed to load reports summary. Please try again.'));
     }
   }
 
@@ -288,7 +289,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
           paidToSellers: paymentSummary['total_paid_to_sellers'] ?? 0.0,
           pendingToSellers: paymentSummary['total_pending_to_sellers'] ?? 0.0));
     } catch (error) {
-      emit(ReportsError('Failed to load dashboard data: ${error.toString()}'));
+      emit(const ReportsError(
+          'Failed to load dashboard data. Please try again.'));
     }
   }
 
@@ -308,7 +310,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         pendingToSellers: paymentSummary['total_pending_to_sellers'] ?? 0.0,
       ));
     } catch (error) {
-      emit(ReportsError('Failed to load payment summary: ${error.toString()}'));
+      emit(const ReportsError(
+          'Failed to load payment summary. Please try again.'));
     }
   }
 
@@ -323,7 +326,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
 
       emit(TodayOrdersLoaded(ordersCount));
     } catch (error) {
-      emit(ReportsError('Failed to load today orders: ${error.toString()}'));
+      emit(
+          const ReportsError('Failed to load today orders. Please try again.'));
     }
   }
 
@@ -338,7 +342,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
 
       emit(NetBalanceLoaded(netBalance));
     } catch (error) {
-      emit(ReportsError('Failed to load net balance: ${error.toString()}'));
+      emit(const ReportsError('Failed to load net balance. Please try again.'));
     }
   }
 
@@ -370,8 +374,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         totalAmount: totalAmount,
       ));
     } catch (error) {
-      emit(ReportsError(
-          'Failed to load stock transaction report: ${error.toString()}'));
+      emit(const ReportsError(
+          'Failed to load stock transaction report. Please try again.'));
     }
   }
 
@@ -409,8 +413,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         totalStockQuantity: totalStockQuantity,
       ));
     } catch (error) {
-      emit(ReportsError(
-          'Failed to load stock summary report: ${error.toString()}'));
+      emit(const ReportsError(
+          'Failed to load stock summary report. Please try again.'));
     }
   }
 }

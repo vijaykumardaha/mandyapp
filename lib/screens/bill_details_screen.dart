@@ -22,6 +22,17 @@ import 'package:mandiapp/widgets/bill_details/receipt_payment.dart';
 import 'package:mandiapp/widgets/bill_details/receipt_summary.dart';
 import 'package:mandiapp/widgets/billing/bill_line_item.dart';
 import 'package:mandiapp/widgets/common/common_app_bar.dart';
+import 'package:mandiapp/widgets/common/dropdown_option.dart';
+
+const _paymentSources = ['cash', 'upi', 'card', 'credit'];
+
+String _paymentSourceLabel(String source) => switch (source) {
+      'cash' => 'Cash',
+      'upi' => 'UPI',
+      'card' => 'Card',
+      'credit' => 'Credit',
+      _ => source,
+    };
 
 class BillDetailsScreen extends StatefulWidget {
   final int orderId;
@@ -285,7 +296,11 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                     const SizedBox(height: 14),
                     DropdownButtonFormField<String>(
                       value: selectedSource,
-                      dropdownColor: Theme.of(context).colorScheme.surface,
+                      isExpanded: true,
+                      dropdownColor: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      menuMaxHeight: 300,
+                      elevation: 4,
                       decoration: InputDecoration(
                         labelText: 'Payment Method',
                         border: OutlineInputBorder(
@@ -296,12 +311,19 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                               const BorderSide(color: accentColor, width: 2),
                         ),
                       ),
-                      items: const [
-                        DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                        DropdownMenuItem(value: 'upi', child: Text('UPI')),
-                        DropdownMenuItem(value: 'card', child: Text('Card')),
-                        DropdownMenuItem(
-                            value: 'credit', child: Text('Credit')),
+                      items: [
+                        for (final source in _paymentSources)
+                          DropdownMenuItem(
+                            value: source,
+                            child: DropdownOption(
+                              selected: selectedSource == source,
+                              child: Text(_paymentSourceLabel(source)),
+                            ),
+                          ),
+                      ],
+                      selectedItemBuilder: (context) => [
+                        for (final source in _paymentSources)
+                          Text(_paymentSourceLabel(source)),
                       ],
                       onChanged: (value) {
                         if (value != null) {
@@ -379,12 +401,12 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
         setState(() {
           _billFuture = _loadBillDetails();
         });
-        Info.message('Payment recorded successfully!',
+        Info.message('Payment recorded successfully',
             context: context, duration: const Duration(seconds: 2));
       }
     } catch (e) {
       if (mounted) {
-        Info.error('Failed to record payment: ${e.toString()}',
+        Info.error('Failed to record payment. Please try again.',
             context: context, duration: const Duration(seconds: 3));
       }
     }

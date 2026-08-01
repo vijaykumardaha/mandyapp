@@ -26,7 +26,7 @@ class BillDetailsData {
     final customer = customerById[order.customerId];
     return customer?.name?.trim().isNotEmpty ?? false
         ? customer!.name!.trim()
-        : 'Customer ${order.customerId}';
+        : 'Customer';
   }
 
   double get itemTotal {

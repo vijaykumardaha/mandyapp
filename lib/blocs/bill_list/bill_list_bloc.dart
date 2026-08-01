@@ -183,7 +183,7 @@ class BillListBloc extends Bloc<BillListEvent, BillListState> {
 
       add(const LoadBillSummaries(forceRefresh: true));
     } catch (error) {
-      emit(BillListError('Failed to delete bill: ${error.toString()}'));
+      emit(const BillListError('Failed to delete bill. Please try again.'));
     }
   }
 

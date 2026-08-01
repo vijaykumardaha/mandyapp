@@ -35,7 +35,8 @@ class CustomerPaymentBloc
       emit(CustomerPaymentLoading());
       await _fetchPayments(event.customerId, emit);
     } catch (e) {
-      emit(CustomerPaymentError(message: e.toString()));
+      emit(const CustomerPaymentError(
+          message: 'Something went wrong. Please try again.'));
     }
   }
 
@@ -45,7 +46,8 @@ class CustomerPaymentBloc
       await _dao.insertPayment(event.payment);
       await _fetchPayments(event.payment.customerId, emit);
     } catch (e) {
-      emit(CustomerPaymentError(message: e.toString()));
+      emit(const CustomerPaymentError(
+          message: 'Something went wrong. Please try again.'));
     }
   }
 
@@ -55,7 +57,8 @@ class CustomerPaymentBloc
       await _dao.updatePayment(event.payment);
       await _fetchPayments(event.payment.customerId, emit);
     } catch (e) {
-      emit(CustomerPaymentError(message: e.toString()));
+      emit(const CustomerPaymentError(
+          message: 'Something went wrong. Please try again.'));
     }
   }
 
@@ -65,7 +68,8 @@ class CustomerPaymentBloc
       await _dao.deletePayment(event.paymentId);
       await _fetchPayments(event.customerId, emit);
     } catch (e) {
-      emit(CustomerPaymentError(message: e.toString()));
+      emit(const CustomerPaymentError(
+          message: 'Something went wrong. Please try again.'));
     }
   }
 }

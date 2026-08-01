@@ -191,6 +191,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             },
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return null;
+                          if (value.length < 6 || value.length > 100) {
+                            return 'Password must be between 6 and 100 characters';
+                          }
+                          return null;
+                        },
                       ),
                       MySpacing.height(32),
 
@@ -198,16 +205,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       MyButton.block(
                         padding: MySpacing.y(16),
                         onPressed: () {
-                          if (_passwordController.text.isEmpty) {
-                            Info.error('Please enter a new password',
-                                context: context);
-                            return;
-                          }
+                          if (!_formKey.currentState!.validate()) return;
+                          final password = _passwordController.text;
                           context.read<UserBloc>().add(
                                 UpdateUserProfile(
                                   name: _nameController.text,
                                   mobile: _mobileController.text,
-                                  password: _passwordController.text,
+                                  password: password.isEmpty ? null : password,
                                 ),
                               );
                         },

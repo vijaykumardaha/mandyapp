@@ -54,12 +54,12 @@ class StockListItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       MyText.titleSmall(
-                        productName ?? 'Product #${stock.productId}',
+                        productName ?? 'Product',
                         fontWeight: 600,
                       ),
                       MySpacing.height(2),
                       MyText.bodySmall(
-                        sellerName ?? 'Seller #${stock.sellerId}',
+                        sellerName ?? 'Seller',
                         color:
                             theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
@@ -94,11 +94,11 @@ class StockListItem extends StatelessWidget {
                 _buildStat('Initial', stock.initialQuantity.toStringAsFixed(1)),
                 _buildStat('Current', stock.quantity.toStringAsFixed(1)),
                 _buildStat('Sold', stock.soldQuantity.toStringAsFixed(1)),
-                _buildStat('Loss', stock.lossQuantity.toStringAsFixed(1)),
+                _buildStat('Wastage', stock.lossQuantity.toStringAsFixed(1)),
                 _buildStat(
                     'Purchase', '₹${stock.purchaseAmount.toStringAsFixed(0)}'),
                 _buildStat(
-                    'Sold Amt', '₹${stock.soldAmount.toStringAsFixed(0)}'),
+                    'Sold Amount', '₹${stock.soldAmount.toStringAsFixed(0)}'),
               ],
             ),
           ],

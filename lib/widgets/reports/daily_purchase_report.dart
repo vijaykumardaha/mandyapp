@@ -64,7 +64,7 @@ class DailyPurchaseReportWidget extends StatelessWidget {
                       children: [
                         MyText.bodySmall(item.productName, fontWeight: 600),
                         MyText.bodySmall(
-                          'Seller: ${item.sellerName ?? (item.sellerId != null ? 'Seller #${item.sellerId}' : 'Unknown Seller')}',
+                          'Seller: ${item.sellerName ?? 'Seller'}',
                           color: theme.colorScheme.onSurface
                               .withValues(alpha: 0.7),
                           overflow: TextOverflow.ellipsis,

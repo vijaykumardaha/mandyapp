@@ -112,7 +112,7 @@ class ChargeListItem extends StatelessWidget {
                   ),
                 ),
                 child: MyText.bodySmall(
-                  charge.isActive == 1 ? 'Active' : 'Disabled',
+                  charge.isActive == 1 ? 'Active' : 'Inactive',
                   color: charge.isActive == 1 ? Colors.green : Colors.red,
                   fontWeight: 500,
                   fontSize: 10,

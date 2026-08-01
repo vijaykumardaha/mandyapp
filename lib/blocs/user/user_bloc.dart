@@ -28,7 +28,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           emit(const UserError(errorMsg: 'User not found'));
         }
       } catch (error) {
-        emit(UserError(errorMsg: 'Failed to load user: ${error.toString()}'));
+        emit(const UserError(
+            errorMsg: 'Failed to load user. Please try again.'));
       }
     });
 
@@ -46,8 +47,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           emit(const UserError(errorMsg: 'No user logged in'));
         }
       } catch (error) {
-        emit(UserError(
-            errorMsg: 'Failed to load current user: ${error.toString()}'));
+        emit(const UserError(
+            errorMsg: 'Failed to load current user. Please try again.'));
       }
     });
 
@@ -60,7 +61,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
         emit(UserUpdated(user: event.user));
       } catch (error) {
-        emit(UserError(errorMsg: 'Failed to update user: ${error.toString()}'));
+        emit(const UserError(
+            errorMsg: 'Failed to update user. Please try again.'));
       }
     });
 
@@ -96,8 +98,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
         emit(UserUpdated(user: updatedUser));
       } catch (error) {
-        emit(UserError(
-            errorMsg: 'Failed to update profile: ${error.toString()}'));
+        emit(const UserError(
+            errorMsg: 'Failed to update profile. Please try again.'));
       }
     });
 
@@ -119,7 +121,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
         emit(UserDeleted());
       } catch (error) {
-        emit(UserError(errorMsg: 'Failed to delete user: ${error.toString()}'));
+        emit(const UserError(
+            errorMsg: 'Failed to delete user. Please try again.'));
       }
     });
 
@@ -157,8 +160,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
         emit(UsersByRoleLoaded(users: users, role: event.role));
       } catch (error) {
-        emit(UserError(
-            errorMsg: 'Failed to load users by role: ${error.toString()}'));
+        emit(const UserError(
+            errorMsg: 'Failed to load users by role. Please try again.'));
       }
     });
 
@@ -175,8 +178,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           emit(const UserError(errorMsg: 'No admin user found'));
         }
       } catch (error) {
-        emit(UserError(
-            errorMsg: 'Failed to load admin user: ${error.toString()}'));
+        emit(const UserError(
+            errorMsg: 'Failed to load admin user. Please try again.'));
       }
     });
 
@@ -188,8 +191,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           user: User(id: event.userId, isActive: event.active ? 1 : 0),
         ));
       } catch (error) {
-        emit(UserError(
-            errorMsg: 'Failed to update status: ${error.toString()}'));
+        emit(const UserError(
+            errorMsg: 'Failed to update status. Please try again.'));
       }
     });
   }

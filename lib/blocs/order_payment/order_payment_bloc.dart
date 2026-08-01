@@ -28,7 +28,8 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
       final orderPayments = await _orderPaymentDAO.getAllOrderPayments();
       emit(OrderPaymentsLoaded(orderPayments));
     } catch (e) {
-      emit(OrderPaymentError('Failed to load order payments: $e'));
+      emit(const OrderPaymentError(
+          'Failed to load order payments. Please try again.'));
     }
   }
 
@@ -46,7 +47,8 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
         emit(OrderPaymentEmpty());
       }
     } catch (e) {
-      emit(OrderPaymentError('Failed to load order payments: $e'));
+      emit(const OrderPaymentError(
+          'Failed to load order payments. Please try again.'));
     }
   }
 
@@ -62,7 +64,8 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
       emit(const OrderPaymentOperationSuccess(
           'Order payment added successfully'));
     } catch (e) {
-      emit(OrderPaymentError('Failed to add order payment: $e'));
+      emit(const OrderPaymentError(
+          'Failed to add order payment. Please try again.'));
     }
   }
 
@@ -78,7 +81,8 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
       emit(const OrderPaymentOperationSuccess(
           'Order payment updated successfully'));
     } catch (e) {
-      emit(OrderPaymentError('Failed to update order payment: $e'));
+      emit(const OrderPaymentError(
+          'Failed to update order payment. Please try again.'));
     }
   }
 
@@ -94,7 +98,8 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
       emit(const OrderPaymentOperationSuccess(
           'Order payment deleted successfully'));
     } catch (e) {
-      emit(OrderPaymentError('Failed to delete order payment: $e'));
+      emit(const OrderPaymentError(
+          'Failed to delete order payment. Please try again.'));
     }
   }
 
@@ -112,7 +117,8 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
         emit(const OrderPaymentError('Order payment not found'));
       }
     } catch (e) {
-      emit(OrderPaymentError('Failed to get order payment: $e'));
+      emit(const OrderPaymentError(
+          'Failed to get order payment. Please try again.'));
     }
   }
 
@@ -128,7 +134,8 @@ class OrderPaymentBloc extends Bloc<OrderPaymentEvent, OrderPaymentState> {
       emit(const OrderPaymentOperationSuccess(
           'Order payments deleted successfully'));
     } catch (e) {
-      emit(OrderPaymentError('Failed to delete order payments: $e'));
+      emit(const OrderPaymentError(
+          'Failed to delete order payments. Please try again.'));
     }
   }
 }

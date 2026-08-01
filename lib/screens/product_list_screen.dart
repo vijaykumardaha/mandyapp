@@ -179,6 +179,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               color: theme.colorScheme.onSurface
                                   .withValues(alpha: 0.6),
                             ),
+                            MySpacing.height(4),
+                            MyText.bodySmall(
+                              'Try a different search, or add a new product',
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.4),
+                            ),
                           ],
                         ),
                       );

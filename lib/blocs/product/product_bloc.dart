@@ -16,7 +16,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         final products = await productDAO.getAllProductsWithVariants();
         emit(ProductLoaded(products));
       } catch (error) {
-        emit(ProductError('Failed to load products: ${error.toString()}'));
+        emit(const ProductError('Failed to load products. Please try again.'));
       }
     });
 
@@ -28,7 +28,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         emit(ProductLoaded(products));
         emit(const ProductOperationSuccess('Product added successfully'));
       } catch (error) {
-        emit(ProductError('Failed to add product: ${error.toString()}'));
+        emit(const ProductError('Failed to add product. Please try again.'));
       }
     });
 
@@ -40,7 +40,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         emit(ProductLoaded(products));
         emit(const ProductOperationSuccess('Product updated successfully'));
       } catch (error) {
-        emit(ProductError('Failed to update product: ${error.toString()}'));
+        emit(const ProductError('Failed to update product. Please try again.'));
       }
     });
 
@@ -52,7 +52,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         emit(ProductLoaded(products));
         emit(const ProductOperationSuccess('Product deleted successfully'));
       } catch (error) {
-        emit(ProductError('Failed to delete product: ${error.toString()}'));
+        emit(const ProductError('Failed to delete product. Please try again.'));
       }
     });
 
@@ -73,7 +73,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }).toList();
         emit(ProductLoaded(filteredProducts));
       } catch (error) {
-        emit(ProductError('Failed to search products: ${error.toString()}'));
+        emit(
+            const ProductError('Failed to search products. Please try again.'));
       }
     });
 
@@ -83,7 +84,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         final products = await productDAO.getAllProductsWithVariants();
         emit(ProductLoaded(products));
       } catch (error) {
-        emit(ProductError('Failed to sync products: ${error.toString()}'));
+        emit(const ProductError('Failed to sync products. Please try again.'));
       }
     });
   }

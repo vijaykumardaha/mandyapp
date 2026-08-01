@@ -69,6 +69,6 @@ class BillLineItem {
     if (sellerName != null && sellerName.isNotEmpty) {
       return sellerName;
     }
-    return 'Seller #${sale.sellerId}';
+    return 'Seller';
   }
 }

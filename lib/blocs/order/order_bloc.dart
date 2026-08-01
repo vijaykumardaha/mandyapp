@@ -22,7 +22,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           emit(OrdersLoaded(orders));
         }
       } catch (error) {
-        emit(OrderError('Failed to load orders: ${error.toString()}'));
+        emit(const OrderError('Failed to load orders. Please try again.'));
       }
     });
 
@@ -37,7 +37,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           emit(OrdersLoaded(orders));
         }
       } catch (error) {
-        emit(OrderError('Failed to load orders: ${error.toString()}'));
+        emit(const OrderError('Failed to load orders. Please try again.'));
       }
     });
 
@@ -52,7 +52,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           emit(const OrderError('Order not found'));
         }
       } catch (error) {
-        emit(OrderError('Failed to load order: ${error.toString()}'));
+        emit(const OrderError('Failed to load order. Please try again.'));
       }
     });
 
@@ -68,7 +68,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           emit(const OrderError('Order not found'));
         }
       } catch (error) {
-        emit(OrderError('Failed to load order: ${error.toString()}'));
+        emit(const OrderError('Failed to load order. Please try again.'));
       }
     });
 
@@ -84,7 +84,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           emit(const OrderOperationSuccess('Order created successfully'));
         }
       } catch (error) {
-        emit(OrderError('Failed to create order: ${error.toString()}'));
+        emit(const OrderError('Failed to create order. Please try again.'));
       }
     });
 
@@ -99,7 +99,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           emit(const OrderOperationSuccess('Order updated successfully'));
         }
       } catch (error) {
-        emit(OrderError('Failed to update order: ${error.toString()}'));
+        emit(const OrderError('Failed to update order. Please try again.'));
       }
     });
 
@@ -110,7 +110,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         // Reload orders to get updated list
         add(LoadOrders());
       } catch (error) {
-        emit(OrderError('Failed to delete order: ${error.toString()}'));
+        emit(const OrderError('Failed to delete order. Please try again.'));
       }
     });
 
@@ -121,7 +121,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         // Reload orders to get updated items
         add(LoadOrders());
       } catch (error) {
-        emit(OrderError('Failed to add item: ${error.toString()}'));
+        emit(const OrderError('Failed to add item. Please try again.'));
       }
     });
 
@@ -142,7 +142,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           }
         }
       } catch (error) {
-        emit(OrderError('Failed to update item: ${error.toString()}'));
+        emit(const OrderError('Failed to update item. Please try again.'));
       }
     });
 
@@ -163,7 +163,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           }
         }
       } catch (error) {
-        emit(OrderError('Failed to remove item: ${error.toString()}'));
+        emit(const OrderError('Failed to remove item. Please try again.'));
       }
     });
 
@@ -178,7 +178,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           emit(const OrderOperationSuccess('Order cleared'));
         }
       } catch (error) {
-        emit(OrderError('Failed to clear order: ${error.toString()}'));
+        emit(const OrderError('Failed to clear order. Please try again.'));
       }
     });
   }

@@ -292,7 +292,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
     } catch (e) {
       if (mounted) {
-        Info.error('Failed to place order: $e', context: context);
+        Info.error('Failed to place order. Please try again.',
+            context: context);
         setState(() => _isPlacingOrder = false);
       }
     } finally {
@@ -394,7 +395,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         return Scaffold(
           appBar: CommonAppBar(
             titleWidget: MyText.titleMedium(
-              '${widget.orderFor == 'seller' ? 'Seller' : 'Buyer'} billing for ${_customerName ?? ''}',
+              '${widget.orderFor == 'seller' ? 'Seller' : 'Buyer'} billing for ${_customerName ?? 'Customer'}',
             ),
             foregroundColor: Theme.of(context).colorScheme.onSurface,
             actions: [
@@ -432,7 +433,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            _autoPrint ? 'Print' : 'No Print',
+                            _autoPrint ? 'Print ON' : 'Print OFF',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,

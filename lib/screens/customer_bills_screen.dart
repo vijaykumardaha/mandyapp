@@ -194,7 +194,7 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              'Bills will appear here once created',
+              'Bills for ${widget.customer.name ?? 'this customer'} will appear here once created',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

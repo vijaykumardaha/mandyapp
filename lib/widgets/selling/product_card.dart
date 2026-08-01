@@ -16,8 +16,7 @@ class ProductCard extends StatelessWidget {
   });
 
   static String productTitle(Product product) {
-    return product.defaultVariantModel?.variantName ??
-        'Product #${product.id ?? ''}';
+    return product.defaultVariantModel?.variantName ?? 'Product';
   }
 
   static Widget buildImagePlaceholder(ThemeData theme) {

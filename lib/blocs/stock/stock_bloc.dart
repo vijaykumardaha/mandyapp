@@ -34,7 +34,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       final stocks = await _stockDAO.getAllStocks();
       emit(StockLoaded(stocks));
     } catch (e) {
-      emit(StockError('Failed to load stocks: $e'));
+      emit(const StockError('Failed to load stocks. Please try again.'));
     }
   }
 
@@ -49,7 +49,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       emit(StockLoaded(stocks));
       emit(const StockOperationSuccess('Stock added successfully'));
     } catch (e) {
-      emit(StockError('Failed to add stock: $e'));
+      emit(const StockError('Failed to add stock. Please try again.'));
     }
   }
 
@@ -64,7 +64,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       emit(StockLoaded(stocks));
       emit(const StockOperationSuccess('Stock updated successfully'));
     } catch (e) {
-      emit(StockError('Failed to update stock: $e'));
+      emit(const StockError('Failed to update stock. Please try again.'));
     }
   }
 
@@ -79,7 +79,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       emit(StockLoaded(stocks));
       emit(const StockOperationSuccess('Stock deleted successfully'));
     } catch (e) {
-      emit(StockError('Failed to delete stock: $e'));
+      emit(const StockError('Failed to delete stock. Please try again.'));
     }
   }
 
@@ -102,7 +102,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
           .toList();
       emit(StockLoaded(filtered));
     } catch (e) {
-      emit(StockError('Failed to search stocks: $e'));
+      emit(const StockError('Failed to search stocks. Please try again.'));
     }
   }
 
@@ -117,7 +117,8 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       final transactions = await _stockDAO.getAllStockTransactions();
       emit(StockTransactionsLoaded(transactions));
     } catch (e) {
-      emit(StockError('Failed to load stock transactions: $e'));
+      emit(const StockError(
+          'Failed to load stock transactions. Please try again.'));
     }
   }
 
@@ -131,7 +132,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
           await _stockDAO.getTransactionsByStock(event.stockId);
       emit(StockTransactionsLoaded(transactions));
     } catch (e) {
-      emit(StockError('Failed to load transactions: $e'));
+      emit(const StockError('Failed to load transactions. Please try again.'));
     }
   }
 
@@ -144,7 +145,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       final transactions = await _stockDAO.getTransactionsByBill(event.billId);
       emit(StockTransactionsLoaded(transactions));
     } catch (e) {
-      emit(StockError('Failed to load transactions: $e'));
+      emit(const StockError('Failed to load transactions. Please try again.'));
     }
   }
 
@@ -169,7 +170,8 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       emit(StockTransactionsLoaded(transactions));
       emit(const StockOperationSuccess('Stock transaction added successfully'));
     } catch (e) {
-      emit(StockError('Failed to add stock transaction: $e'));
+      emit(const StockError(
+          'Failed to add stock transaction. Please try again.'));
     }
   }
 
@@ -185,7 +187,8 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       emit(const StockOperationSuccess(
           'Stock transaction deleted successfully'));
     } catch (e) {
-      emit(StockError('Failed to delete stock transaction: $e'));
+      emit(const StockError(
+          'Failed to delete stock transaction. Please try again.'));
     }
   }
 }

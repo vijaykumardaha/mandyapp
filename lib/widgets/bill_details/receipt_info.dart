@@ -27,7 +27,7 @@ class ReceiptInfo extends StatelessWidget {
           const SizedBox(height: 4),
           InfoRow(
               label: 'Type',
-              value: data.order.orderFor.toUpperCase(),
+              value: data.order.orderFor == 'seller' ? 'Seller' : 'Buyer',
               theme: theme),
         ],
       ),

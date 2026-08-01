@@ -29,7 +29,8 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
       final chargeTypes = await _chargeTypeDAO.getAllChargeTypes();
       emit(ChargeTypesLoaded(chargeTypes));
     } catch (e) {
-      emit(ChargeTypesError('Failed to load charge types: $e'));
+      emit(const ChargeTypesError(
+          'Failed to load charge types. Please try again.'));
     }
   }
 
@@ -42,7 +43,8 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
       final chargeTypes = await _chargeTypeDAO.getActiveChargeTypes();
       emit(ChargeTypesLoaded(chargeTypes));
     } catch (e) {
-      emit(ChargeTypesError('Failed to load active charge types: $e'));
+      emit(const ChargeTypesError(
+          'Failed to load active charge types. Please try again.'));
     }
   }
 
@@ -57,7 +59,8 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
       emit(ChargeTypesLoaded(chargeTypes));
       emit(const ChargeTypesOperationSuccess('Charge type added successfully'));
     } catch (e) {
-      emit(ChargeTypesError('Failed to add charge type: $e'));
+      emit(const ChargeTypesError(
+          'Failed to add charge type. Please try again.'));
     }
   }
 
@@ -73,7 +76,8 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
       emit(const ChargeTypesOperationSuccess(
           'Charge type updated successfully'));
     } catch (e) {
-      emit(ChargeTypesError('Failed to update charge type: $e'));
+      emit(const ChargeTypesError(
+          'Failed to update charge type. Please try again.'));
     }
   }
 
@@ -89,7 +93,8 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
       emit(const ChargeTypesOperationSuccess(
           'Charge type deleted successfully'));
     } catch (e) {
-      emit(ChargeTypesError('Failed to delete charge type: $e'));
+      emit(const ChargeTypesError(
+          'Failed to delete charge type. Please try again.'));
     }
   }
 
@@ -109,7 +114,8 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
       emit(const ChargeTypesOperationSuccess(
           'Charge type status updated successfully'));
     } catch (e) {
-      emit(ChargeTypesError('Failed to update charge type status: $e'));
+      emit(const ChargeTypesError(
+          'Failed to update charge type status. Please try again.'));
     }
   }
 
@@ -123,7 +129,8 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
           await _chargeTypeDAO.getChargeTypesByType(event.chargeFor);
       emit(ChargeTypesLoaded(chargeTypes));
     } catch (e) {
-      emit(ChargeTypesError('Failed to load charge types by type: $e'));
+      emit(const ChargeTypesError(
+          'Failed to load charge types by type. Please try again.'));
     }
   }
 
@@ -141,7 +148,8 @@ class ChargeTypesBloc extends Bloc<ChargeTypesEvent, ChargeTypesState> {
         emit(const ChargeTypesError('Charge type not found'));
       }
     } catch (e) {
-      emit(ChargeTypesError('Failed to get charge type: $e'));
+      emit(const ChargeTypesError(
+          'Failed to get charge type. Please try again.'));
     }
   }
 }

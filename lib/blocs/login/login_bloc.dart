@@ -57,8 +57,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         emit(SyncLoading());
         await SyncService.instance.connectAndSync();
         emit(LoginSuccess(user: user));
-      } catch (e) {
-        emit(LoginFailure(error: e.toString().replaceFirst('Exception: ', '')));
+      } catch (_) {
+        emit(const LoginFailure(
+            error:
+                'Login failed. Please check your mobile number and password.'));
       }
     });
 
@@ -74,9 +76,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         await AppHelper.savePreferences(PrefsKeys.user, user.toJson());
         await CustomerService.instance.sync();
         emit(LoginCustomerSuccess(user: user));
-      } catch (e) {
-        emit(LoginCustomerFailure(
-            error: e.toString().replaceFirst('Exception: ', '')));
+      } catch (_) {
+        emit(const LoginCustomerFailure(
+            error: 'Login failed. Please check your mandi and mobile number.'));
       }
     });
 
@@ -126,8 +128,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         emit(SyncLoading());
         await SyncService.instance.connectAndSync();
         emit(LoginSuccess(user: user));
-      } catch (e) {
-        emit(LoginFailure(error: e.toString().replaceFirst('Exception: ', '')));
+      } catch (_) {
+        emit(const LoginFailure(error: 'Signup failed. Please try again.'));
       }
     });
 

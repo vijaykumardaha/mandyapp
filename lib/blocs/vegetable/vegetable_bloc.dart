@@ -17,7 +17,8 @@ class VegetableBloc extends Bloc<VegetableEvent, VegetableState> {
         await vegetableDAO.syncVegetables();
         add(const FetchVegetables());
       } catch (error) {
-        emit(VegetableError(errorMsg: error.toString()));
+        emit(const VegetableError(
+            errorMsg: 'Something went wrong. Please try again.'));
       }
     });
 
@@ -27,7 +28,8 @@ class VegetableBloc extends Bloc<VegetableEvent, VegetableState> {
         final vegetables = await vegetableDAO.getVegetables();
         emit(VegetableLoaded(vegetables: vegetables));
       } catch (error) {
-        emit(VegetableError(errorMsg: error.toString()));
+        emit(const VegetableError(
+            errorMsg: 'Something went wrong. Please try again.'));
       }
     });
 
@@ -39,7 +41,8 @@ class VegetableBloc extends Bloc<VegetableEvent, VegetableState> {
           vegetables: _filterVegetables(vegetables, event.query),
         ));
       } catch (error) {
-        emit(VegetableError(errorMsg: error.toString()));
+        emit(const VegetableError(
+            errorMsg: 'Something went wrong. Please try again.'));
       }
     });
   }
