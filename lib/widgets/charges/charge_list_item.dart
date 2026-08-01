@@ -26,6 +26,16 @@ class ChargeListItem extends StatelessWidget {
     return Card(
       margin: MySpacing.bottom(8),
       child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: charge.isActive == 1
+              ? Colors.green.withValues(alpha: 0.1)
+              : Colors.red.withValues(alpha: 0.1),
+          child: Icon(
+            charge.isActive == 1 ? Icons.check : Icons.close,
+            size: 18,
+            color: charge.isActive == 1 ? Colors.green : Colors.red,
+          ),
+        ),
         title: MyText.bodyLarge(
           charge.chargeName,
           fontWeight: 500,
@@ -98,26 +108,6 @@ class ChargeListItem extends StatelessWidget {
                     fontSize: 10,
                   ),
                 ),
-              Container(
-                padding: MySpacing.xy(6, 2),
-                decoration: BoxDecoration(
-                  color: charge.isActive == 1
-                      ? Colors.green.withValues(alpha: 0.1)
-                      : Colors.red.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: charge.isActive == 1
-                        ? Colors.green.withValues(alpha: 0.3)
-                        : Colors.red.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: MyText.bodySmall(
-                  charge.isActive == 1 ? 'Active' : 'Inactive',
-                  color: charge.isActive == 1 ? Colors.green : Colors.red,
-                  fontWeight: 500,
-                  fontSize: 10,
-                ),
-              ),
             ],
           ),
         ),

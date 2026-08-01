@@ -214,14 +214,14 @@ class SignupSync {
 
   static List<Map<String, dynamic>> defaultCharges = [
     {
-      'charge_name': 'Commission',
+      'charge_name': 'Buyer Commission',
       'charge_type': 'percentage',
       'charge_amount': 10.0,
       'charge_for': 'buyer',
       'is_default': 1,
     },
     {
-      'charge_name': 'Commission',
+      'charge_name': 'Seller Commission',
       'charge_type': 'percentage',
       'charge_amount': 10.0,
       'charge_for': 'seller',

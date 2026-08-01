@@ -176,6 +176,9 @@ class _StaffScreenState extends State<StaffScreen> {
                   final isActive = staff.isEnabled;
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
+                    color: isActive
+                        ? Colors.white
+                        : theme.colorScheme.primary.withAlpha(100),
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor: isActive
@@ -198,22 +201,6 @@ class _StaffScreenState extends State<StaffScreen> {
                             child: MyText.bodyLarge(
                               staff.name ?? 'Unknown',
                               fontWeight: 500,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: isActive
-                                  ? Colors.green.withValues(alpha: 0.1)
-                                  : Colors.red.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: MyText.bodySmall(
-                              isActive ? 'Active' : 'Disabled',
-                              color: isActive ? Colors.green : Colors.red,
-                              fontWeight: 500,
-                              fontSize: 10,
                             ),
                           ),
                         ],
