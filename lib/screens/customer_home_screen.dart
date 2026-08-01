@@ -14,13 +14,16 @@ import 'package:mandiapp/dao/order_expense_dao.dart';
 import 'package:mandiapp/dao/order_payment_dao.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
 import 'package:mandiapp/models/customer_model.dart';
+import 'package:mandiapp/models/customer_payment_model.dart';
 import 'package:mandiapp/models/order_model.dart';
 import 'package:mandiapp/services/socket_service.dart';
 import 'package:mandiapp/services/sync_service.dart';
 import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
 import 'package:mandiapp/widgets/common/my_text_style.dart';
 import 'package:mandiapp/widgets/customer_bills/bill_card.dart';
+import 'package:mandiapp/widgets/customer_bills/customer_summary_card.dart';
 
 class CustomerHomeScreen extends StatelessWidget {
   const CustomerHomeScreen({super.key});
@@ -54,6 +57,10 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
   final OrderExpenseDao _expenseDAO = OrderExpenseDao();
   final OrderPaymentDAO _paymentDAO = OrderPaymentDAO();
   final Map<int, _OrderFinancialSummary> _financialData = {};
+  int _buyerBillCount = 0;
+  double _buyerBillTotal = 0;
+  int _sellerBillCount = 0;
+  double _sellerBillTotal = 0;
   String _userName = 'Customer';
   Customer? _customer;
 
@@ -107,6 +114,21 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
       setState(() {
         _financialData.clear();
         _financialData.addAll(data);
+        _buyerBillCount = 0;
+        _buyerBillTotal = 0;
+        _sellerBillCount = 0;
+        _sellerBillTotal = 0;
+        for (final order in orders) {
+          final financial = order.id != null ? data[order.id] : null;
+          if (financial == null) continue;
+          if (order.orderFor == 'seller') {
+            _sellerBillCount++;
+            _sellerBillTotal += financial.grandTotal;
+          } else {
+            _buyerBillCount++;
+            _buyerBillTotal += financial.grandTotal;
+          }
+        }
       });
     }
   }
@@ -139,7 +161,7 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
         (CustomerBloc bloc) => bloc.state is CurrentCustomerSyncLoading);
 
     return PreferredSize(
-      preferredSize: const Size.fromHeight(kToolbarHeight + 56),
+      preferredSize: const Size.fromHeight(kToolbarHeight + 20),
       child: AppBar(
         backgroundColor: theme.cardColor,
         elevation: 0,
@@ -217,18 +239,6 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
             ),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: theme.colorScheme.primary,
-          labelColor: theme.colorScheme.primary,
-          unselectedLabelColor:
-              theme.colorScheme.onSurface.withValues(alpha: 0.6),
-          labelStyle: MyTextStyle.bodyMedium(fontWeight: 600),
-          tabs: const [
-            Tab(text: 'Bills'),
-            Tab(text: 'Payments'),
-          ],
-        ),
       ),
     );
   }
@@ -279,48 +289,153 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
             }
           }
         },
-        child: Scaffold(
-          appBar: _buildAppBar(context),
-          body: SafeArea(
-            child: BlocBuilder<CustomerBloc, CustomerState>(
-              builder: (context, state) {
-                if (state is CurrentCustomerLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (state is CurrentCustomerError) {
-                  return Center(child: Text(state.message));
-                }
-
-                final customer = state is CurrentCustomerLoaded
-                    ? state.customer
-                    : state is CurrentCustomerSyncSuccess
-                        ? state.customer
-                        : state is CurrentCustomerSyncLoading
-                            ? state.customer
-                            : null;
-
-                if (customer == null) {
-                  return Center(
-                    child: MyText.bodyMedium(
-                      'No customer data found',
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+        child: BlocListener<OrderBloc, OrderState>(
+          listener: (context, state) {
+            if (state is OrdersLoaded && _financialData.isEmpty) {
+              _loadFinancialData(state.orders);
+            }
+          },
+          child: Scaffold(
+            appBar: _buildAppBar(context),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  _buildSummarySection(context),
+                  Container(
+                    color: theme.cardColor,
+                    child: TabBar(
+                      controller: _tabController,
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.start,
+                      indicatorColor: theme.colorScheme.primary,
+                      labelColor: theme.colorScheme.primary,
+                      unselectedLabelColor:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                      labelStyle: MyTextStyle.bodyMedium(fontWeight: 600),
+                      tabs: const [
+                        Tab(text: 'Bills'),
+                        Tab(text: 'Payments'),
+                      ],
                     ),
-                  );
-                }
+                  ),
+                  Expanded(
+                    child: BlocBuilder<CustomerBloc, CustomerState>(
+                      builder: (context, state) {
+                        if (state is CurrentCustomerLoading) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
 
-                return TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildBillsTab(context, customer),
-                    _buildPaymentsTab(),
-                  ],
-                );
-              },
+                        if (state is CurrentCustomerError) {
+                          return Center(child: Text(state.message));
+                        }
+
+                        final customer = state is CurrentCustomerLoaded
+                            ? state.customer
+                            : state is CurrentCustomerSyncSuccess
+                                ? state.customer
+                                : state is CurrentCustomerSyncLoading
+                                    ? state.customer
+                                    : null;
+
+                        if (customer == null) {
+                          return Center(
+                            child: MyText.bodyMedium(
+                              'No customer data found',
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
+                            ),
+                          );
+                        }
+
+                        return TabBarView(
+                          controller: _tabController,
+                          children: [
+                            _buildBillsTab(context, customer),
+                            _buildPaymentsTab(),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSummarySection(BuildContext context) {
+    return BlocBuilder<CustomerPaymentBloc, CustomerPaymentState>(
+      builder: (context, state) {
+        final payments = state is CustomerPaymentsLoaded
+            ? state.payments
+            : <CustomerPayment>[];
+        final paidCount = payments.where((p) => p.type == 'paid').length;
+        final receivedCount =
+            payments.where((p) => p.type == 'received').length;
+        final totalPaid =
+            state is CustomerPaymentsLoaded ? state.totalPaid : 0.0;
+        final totalReceived =
+            state is CustomerPaymentsLoaded ? state.totalReceived : 0.0;
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomerSummaryCard(
+                      label: 'Buyer Bills',
+                      count: '$_buyerBillCount bills',
+                      amount: _currencyFormat.format(_buyerBillTotal),
+                      icon: Icons.shopping_bag_outlined,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  MySpacing.width(12),
+                  Expanded(
+                    child: CustomerSummaryCard(
+                      label: 'Seller Bills',
+                      count: '$_sellerBillCount bills',
+                      amount: _currencyFormat.format(_sellerBillTotal),
+                      icon: Icons.storefront_outlined,
+                      color: Colors.teal,
+                    ),
+                  ),
+                ],
+              ),
+              MySpacing.height(12),
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomerSummaryCard(
+                      label: 'Payments Paid',
+                      count: '$paidCount payments',
+                      amount: _currencyFormat.format(totalPaid),
+                      icon: Icons.arrow_upward_rounded,
+                      color: Colors.red,
+                    ),
+                  ),
+                  MySpacing.width(12),
+                  Expanded(
+                    child: CustomerSummaryCard(
+                      label: 'Payments Received',
+                      count: '$receivedCount payments',
+                      amount: _currencyFormat.format(totalReceived),
+                      icon: Icons.arrow_downward_rounded,
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -340,10 +455,6 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
           if (orders.isEmpty) {
             return _buildEmptyState(
                 Icons.receipt_long_outlined, 'No bills yet');
-          }
-
-          if (_financialData.isEmpty) {
-            _loadFinancialData(orders);
           }
 
           return ListView.builder(
@@ -377,7 +488,6 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
         if (state is CustomerPaymentError) {
           return Center(child: Text(state.message));
         }
-
         if (state is CustomerPaymentsLoaded) {
           final payments = state.payments;
           if (payments.isEmpty) {
