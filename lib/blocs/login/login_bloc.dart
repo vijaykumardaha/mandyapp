@@ -8,8 +8,9 @@ import 'package:mandiapp/dao/vegetable_dao.dart';
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/user_model.dart';
 import 'package:mandiapp/services/auth_api.dart';
-import 'package:mandiapp/services/socket_service.dart';
+import 'package:mandiapp/services/customer_service.dart';
 import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/services/user_service.dart';
 import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/utils/db_helper.dart';
@@ -71,7 +72,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         );
 
         await AppHelper.savePreferences(PrefsKeys.user, user.toJson());
-        await SyncService.instance.customerSync();
+        await CustomerService.instance.sync();
         emit(LoginCustomerSuccess(user: user));
       } catch (e) {
         emit(LoginCustomerFailure(
@@ -133,7 +134,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LogoutSubmit>((event, emit) async {
       try {
         SyncService.instance.stopListening();
-        SocketService.instance.disconnect();
+        UserService.instance.disconnect();
+        CustomerService.instance.disconnect();
         await DBHelper.instance.clearAllTables();
         await AppHelper.removePreferences(PrefsKeys.user);
         emit(LogoutSuccess());

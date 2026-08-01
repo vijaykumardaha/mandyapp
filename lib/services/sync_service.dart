@@ -27,9 +27,7 @@ import 'package:mandiapp/models/product_variant_model.dart';
 import 'package:mandiapp/models/stock_model.dart';
 import 'package:mandiapp/models/user_model.dart';
 import 'package:mandiapp/models/vegetable_model.dart';
-import 'package:mandiapp/services/auth_api.dart';
-import 'package:mandiapp/services/socket_service.dart';
-import 'package:mandiapp/utils/app_helper.dart';
+import 'package:mandiapp/services/user_service.dart';
 import 'package:mandiapp/utils/constants.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 
@@ -72,7 +70,7 @@ class SyncService {
   /// Resume sync activity and trigger a bulk sync to push pending records.
   Future<void> resume() async {
     _paused = false;
-    await SocketService.instance.ensureConnected();
+    await UserService.instance.ensureConnected();
     startListening();
     log('SyncService: resumed');
     await bulkSync();
@@ -86,7 +84,7 @@ class SyncService {
     _messageSubscription?.cancel();
     _messageSubscription = null;
 
-    _messageSubscription = SocketService.instance.messages?.listen(
+    _messageSubscription = UserService.instance.messages?.listen(
       _onMessage,
     );
     log('SyncService: started listening for broadcasts');
@@ -128,7 +126,7 @@ class SyncService {
     required Map<String, dynamic> record,
   }) {
     if (_paused) return;
-    if (!SocketService.instance.isConnected) return;
+    if (!UserService.instance.isConnected) return;
     entitySync(table: table, record: record);
   }
 
@@ -138,7 +136,7 @@ class SyncService {
     required Map<String, dynamic> record,
   }) async {
     if (_paused) return null;
-    final response = await SocketService.instance.push(
+    final response = await UserService.instance.push(
       'entity_sync',
       {
         'table': table,
@@ -186,7 +184,7 @@ class SyncService {
       final pendingTables = await _collectPendingRecords();
       log('SyncService: bulkSync → sending ${pendingTables.length} tables');
 
-      final response = await SocketService.instance.push(
+      final response = await UserService.instance.push(
         'bulk_sync',
         {
           'tables': pendingTables,
@@ -206,7 +204,7 @@ class SyncService {
 
       final tables = body['tables'] as Map<String, dynamic>?;
       if (tables != null) {
-        await _upsertBulkResponse(tables);
+        await upsertBulkResponse(tables);
         log('SyncService: bulkSync → upserted ${tables.length} tables from server');
       }
 
@@ -215,53 +213,6 @@ class SyncService {
       return tables;
     } catch (e, st) {
       log('SyncService: bulkSync failed: $e', stackTrace: st);
-      return null;
-    } finally {
-      _syncing = false;
-    }
-  }
-
-  Future<Map<String, dynamic>?> customerSync() async {
-    if (_paused) return null;
-    if (_syncing) {
-      log('SyncService: customerSync already in progress, skipping');
-      return null;
-    }
-    _syncing = true;
-
-    try {
-      final userData = await AppHelper.getPreferences('user');
-      if (userData == null) {
-        log('SyncService: customerSync → no user data found');
-        return null;
-      }
-
-      final user = userData as Map<String, dynamic>;
-      final mandiId = user['mandi_id'] as int?;
-      final customerId = user['id'] as int?;
-      if (mandiId == null) {
-        log('SyncService: customerSync → no mandi_id found');
-        return null;
-      }
-
-      log('SyncService: customerSync → mandi_id=$mandiId, customer_id=$customerId');
-
-      final tables = await AuthApi().customerSync(
-        mandiId: mandiId,
-        customerId: customerId ?? 0,
-      );
-
-      if (tables.isEmpty) {
-        log('SyncService: customerSync → empty response');
-        return null;
-      }
-
-      await _upsertBulkResponse(tables);
-      log('SyncService: customerSync → upserted ${tables.length} tables from server');
-
-      return tables;
-    } catch (e, st) {
-      log('SyncService: customerSync failed: $e', stackTrace: st);
       return null;
     } finally {
       _syncing = false;
@@ -380,7 +331,7 @@ class SyncService {
   //  Upsert bulk response from server
   // ──────────────────────────────────────────────
 
-  Future<void> _upsertBulkResponse(Map<String, dynamic> tables) async {
+  Future<void> upsertBulkResponse(Map<String, dynamic> tables) async {
     for (final entry in tables.entries) {
       final tableName = entry.key;
       final records = entry.value;
@@ -435,7 +386,7 @@ class SyncService {
   /// Connects the websocket, starts broadcast listener, then runs bulkSync.
   /// Call this after login/registration.
   Future<void> connectAndSync() async {
-    await SocketService.instance.connect();
+    await UserService.instance.connect();
     startListening();
     await bulkSync();
   }

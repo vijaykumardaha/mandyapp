@@ -14,8 +14,8 @@ import 'package:mandiapp/screens/home_tab_screen.dart';
 import 'package:mandiapp/screens/reports_screen.dart';
 import 'package:mandiapp/screens/selling_screen.dart';
 import 'package:mandiapp/screens/settings_screen.dart';
-import 'package:mandiapp/services/socket_service.dart';
 import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/services/user_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final int activeTab;
@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         if (hasConnection && _wasOffline) {
           log('HomeScreen: connectivity restored, reconnecting websocket');
-          if (!SocketService.instance.isConnected) {
+          if (!UserService.instance.isConnected) {
             await SyncService.instance.connectAndSync();
           }
         }

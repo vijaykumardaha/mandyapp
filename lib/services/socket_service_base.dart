@@ -6,16 +6,19 @@ import 'package:mandiapp/services/socket_config.dart';
 import 'package:mandiapp/utils/app_helper.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 
-class SocketService {
-  SocketService._();
+abstract class SocketServiceBase {
+  String get serviceName;
+  String get wsUrl;
+  String get channelTopicPrefix;
 
-  static final SocketService instance = SocketService._();
+  /// Returns the connection params for the given user, or null when a
+  /// required param is missing.
+  Map<String, String>? connectionParams(User user);
 
   PhoenixSocket? _socket;
   PhoenixChannel? _channel;
   bool _isConnecting = false;
   bool _isConnected = false;
-  int? _mandiId;
   final _connectionController = StreamController<bool>.broadcast();
   StreamSubscription? _closeSub;
   StreamSubscription? _errorSub;
@@ -27,19 +30,19 @@ class SocketService {
   Stream<bool> get connectionStream => _connectionController.stream;
 
   void _onSocketClose(PhoenixSocketCloseEvent event) {
-    log('Socket closed: code=${event.code} reason=${event.reason}');
+    log('$serviceName closed: code=${event.code} reason=${event.reason}');
     _isConnected = false;
     _connectionController.add(false);
   }
 
   void _onSocketError(PhoenixSocketErrorEvent event) {
-    log('Socket error: ${event.error}');
+    log('$serviceName error: ${event.error}');
     _isConnected = false;
     _connectionController.add(false);
   }
 
   void _onSocketOpen(PhoenixSocketOpenEvent event) {
-    log('Socket reconnected');
+    log('$serviceName reconnected');
     _isConnected = true;
     _connectionController.add(true);
   }
@@ -56,7 +59,7 @@ class SocketService {
 
   Future<void> connect() async {
     if (_isConnecting || _isConnected) {
-      log('connect() skipped: _isConnecting=$_isConnecting, _isConnected=$_isConnected');
+      log('$serviceName connect() skipped: _isConnecting=$_isConnecting, _isConnected=$_isConnected');
       return;
     }
     _isConnecting = true;
@@ -64,31 +67,28 @@ class SocketService {
     try {
       final userData = await AppHelper.getPreferences(SocketConfig.userKey);
       if (userData == null) {
-        log('No user data found, skipping socket connect');
+        log('$serviceName: no user data found, skipping connect');
         _isConnecting = false;
         _connectionController.add(false);
         return;
       }
 
-      final user = User.fromJson(userData);
-      _mandiId = user.mandiId;
-      if (_mandiId == null) {
-        log('No mandi_id found, skipping socket connect');
+      final params = connectionParams(User.fromJson(userData));
+      if (params == null) {
+        log('$serviceName: required connection params missing');
         _isConnecting = false;
         _connectionController.add(false);
         return;
       }
 
       _socket = PhoenixSocket(
-        SocketConfig.wsUrl,
-        socketOptions: PhoenixSocketOptions(
-          params: {'mandi_id': '$_mandiId'},
-        ),
+        wsUrl,
+        socketOptions: PhoenixSocketOptions(params: params),
       );
 
       final connectedSocket = await _socket!.connect();
       if (connectedSocket == null) {
-        log('PhoenixSocket.connect() returned null - server unreachable?');
+        log('$serviceName connect() returned null - server unreachable?');
         _socket?.dispose();
         _socket = null;
         _isConnecting = false;
@@ -99,18 +99,17 @@ class SocketService {
       _listenToSocket();
 
       _channel = _socket!.addChannel(
-        topic: '${SocketConfig.channelPrefix}$_mandiId',
+        topic: '$channelTopicPrefix${params['mandi_id']}',
       );
-
       final joinPush = _channel!.join();
       await joinPush.future;
 
       _isConnected = true;
       _isConnecting = false;
       _connectionController.add(true);
-      log('Socket connected and channel joined for mandi_id=$_mandiId');
+      log('$serviceName connected and channel joined');
     } catch (e, st) {
-      log('Socket connect failed: $e', stackTrace: st);
+      log('$serviceName connect failed: $e', stackTrace: st);
       _isConnecting = false;
       _isConnected = false;
       _connectionController.add(false);
@@ -151,7 +150,7 @@ class SocketService {
     await ensureConnected();
 
     if (_channel == null || !_isConnected) {
-      log('push() skipped after ensureConnected: _channel=${_channel != null}, _isConnected=$_isConnected');
+      log('$serviceName push() skipped after ensureConnected: _channel=${_channel != null}, _isConnected=$_isConnected');
       return null;
     }
 
@@ -160,7 +159,7 @@ class SocketService {
       final response = await push.future;
       return response;
     } catch (e) {
-      log('push() failed: $e');
+      log('$serviceName push() failed: $e');
       return null;
     }
   }

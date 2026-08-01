@@ -7,8 +7,8 @@ import 'package:mandiapp/blocs/reports/reports_bloc.dart';
 import 'package:mandiapp/helpers/theme/app_theme.dart';
 import 'package:mandiapp/models/user_model.dart';
 import 'package:mandiapp/services/socket_config.dart';
-import 'package:mandiapp/services/socket_service.dart';
 import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/services/user_service.dart';
 import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/utils/constants.dart';
 import 'package:mandiapp/widgets/common/connection_status_indicator.dart';
@@ -179,8 +179,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
 
   Widget _buildSyncButton() {
     return StreamBuilder<bool>(
-      stream: SocketService.instance.connectionStream,
-      initialData: SocketService.instance.isConnected,
+      stream: UserService.instance.connectionStream,
+      initialData: UserService.instance.isConnected,
       builder: (context, snapshot) {
         if (snapshot.data != true) return const SizedBox.shrink();
         return GestureDetector(

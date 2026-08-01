@@ -5,9 +5,12 @@ import 'app_config.dart';
 class SocketConfig {
   SocketConfig._();
 
-  static const String wsUrl = AppConfig.wsUrl;
-  static const String channelPrefix = 'sync:';
+  static const String wsUserUrl = 'ws://${AppConfig.host}/user/websocket';
+  static const String customerWsUrl =
+      'ws://${AppConfig.host}/customer/websocket';
+
+  static const String userChannelPrefix = 'user:';
+  static const String customerChannelPrefix = 'customer:';
+
   static const String userKey = PrefsKeys.user;
-  static const String tokenKey = 'jwt_token';
-  static const String lastSyncKey = 'last_sync';
 }

@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mandiapp/dao/customer_dao.dart';
 import 'package:mandiapp/models/customer_model.dart';
-import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/services/customer_service.dart';
 import 'package:mandiapp/utils/app_helper.dart';
 
 part 'customer_event.dart';
@@ -105,7 +105,7 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
 
     emit(CurrentCustomerSyncLoading(customer: current));
     try {
-      final tables = await SyncService.instance.customerSync();
+      final tables = await CustomerService.instance.sync();
       if (tables == null) {
         emit(const CurrentCustomerError('Sync failed'));
         return;

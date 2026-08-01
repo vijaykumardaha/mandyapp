@@ -16,8 +16,8 @@ import 'package:mandiapp/helpers/theme/app_theme.dart';
 import 'package:mandiapp/models/customer_model.dart';
 import 'package:mandiapp/models/customer_payment_model.dart';
 import 'package:mandiapp/models/order_model.dart';
-import 'package:mandiapp/services/socket_service.dart';
 import 'package:mandiapp/services/sync_service.dart';
+import 'package:mandiapp/services/user_service.dart';
 import 'package:mandiapp/utils/app_helper.dart';
 import 'package:mandiapp/widgets/common/my_spacing.dart';
 import 'package:mandiapp/widgets/common/my_text.dart';
@@ -139,7 +139,7 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
         final hasConnection = results.any((r) => r != ConnectivityResult.none);
 
         if (hasConnection && _wasOffline) {
-          if (!SocketService.instance.isConnected) {
+          if (!UserService.instance.isConnected) {
             await SyncService.instance.connectAndSync();
           }
         }

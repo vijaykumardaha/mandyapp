@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mandiapp/services/socket_service.dart';
+import 'package:mandiapp/services/user_service.dart';
 
 class ConnectionStatusIndicator extends StatefulWidget {
   const ConnectionStatusIndicator({super.key});
@@ -15,7 +15,7 @@ class _ConnectionStatusIndicatorState extends State<ConnectionStatusIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  bool _isConnected = SocketService.instance.isConnected;
+  bool _isConnected = UserService.instance.isConnected;
   StreamSubscription<bool>? _subscription;
 
   @override
@@ -33,7 +33,7 @@ class _ConnectionStatusIndicatorState extends State<ConnectionStatusIndicator>
       _pulseController.repeat(reverse: true);
     }
 
-    _subscription = SocketService.instance.connectionStream.listen((connected) {
+    _subscription = UserService.instance.connectionStream.listen((connected) {
       if (!mounted) return;
       setState(() => _isConnected = connected);
       if (connected) {
