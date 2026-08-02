@@ -75,13 +75,12 @@ class _CartItemListState extends State<CartItemList> {
     }
   }
 
-  // Tapping a card toggles its selection. When no buyer is chosen yet in
-  // buyer mode, it also auto-selects the item's buyer in the search box and
-  // re-selects the item once the list refilters to that buyer's items.
+  // Tapping a card toggles its selection. When no buyer/seller is chosen
+  // yet, it also auto-selects the item's buyer (buyer mode) or seller
+  // (seller mode) in the search box and re-selects the item once the list
+  // refilters to that customer's items.
   void _handleItemTap(OrderItem sale, bool isChecked) {
-    if (widget.buyerMode &&
-        widget.buyerCustomer == null &&
-        widget.onSelectDisabledSale != null) {
+    if (widget.buyerCustomer == null && widget.onSelectDisabledSale != null) {
       widget.onSelectDisabledSale!(sale);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;

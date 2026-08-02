@@ -75,24 +75,24 @@ class _BillingScreenState extends State<BillingScreen> {
     setState(() {
       _selectedCustomer = customer;
     });
-    // Cart items are never filtered by the selected seller — seller mode
-    // keeps the full list of unlinked items.
   }
 
-  // Tapping a disabled buyer-mode card auto-selects that item's buyer in
-  // the search box, which filters the list to that buyer's items.
+  // Tapping an unselected card auto-selects that item's buyer (buyer mode)
+  // or seller (seller mode) in the search box, which filters the list to
+  // that customer's items.
   void _onSelectDisabledSale(OrderItem sale) {
-    if (!_isBuyerMode) return;
+    final targetId = _isBuyerMode ? sale.buyerId : sale.sellerId;
+    final targetName = _isBuyerMode ? sale.buyerName : sale.sellerName;
     Customer? customer;
     for (final c in _allCustomers) {
-      if (c.id == sale.buyerId) {
+      if (c.id == targetId) {
         customer = c;
         break;
       }
     }
-    if (customer == null && sale.buyerName != null) {
+    if (customer == null && targetName != null) {
       for (final c in _allCustomers) {
-        if (c.name == sale.buyerName) {
+        if (c.name == targetName) {
           customer = c;
           break;
         }
@@ -399,13 +399,14 @@ class _BillingScreenState extends State<BillingScreen> {
   }
 
   List<OrderItem> _visibleSales(List<OrderItem> sales) {
-    // Buyer mode: once a buyer is selected, show only that buyer's cart
-    // items. Before any buyer is selected, populate all buyer cart items.
-    if (_isBuyerMode) {
-      final buyer = _selectedCustomer;
-      if (buyer != null && buyer.id != null) {
-        return sales.where((s) => s.buyerId == buyer.id).toList();
+    // Once a buyer/seller is selected, show only that customer's cart
+    // items. Before any selection, show all cart items.
+    final customer = _selectedCustomer;
+    if (customer != null && customer.id != null) {
+      if (_isBuyerMode) {
+        return sales.where((s) => s.buyerId == customer.id).toList();
       }
+      return sales.where((s) => s.sellerId == customer.id).toList();
     }
     return sales;
   }

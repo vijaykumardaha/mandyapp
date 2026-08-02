@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:krishimandi/dao/customer_dao.dart';
-import 'package:krishimandi/dao/customer_payment_dao.dart';
 import 'package:krishimandi/dao/order_charge_dao.dart';
 import 'package:krishimandi/dao/order_dao.dart';
 import 'package:krishimandi/dao/order_expense_dao.dart';
@@ -9,7 +8,6 @@ import 'package:krishimandi/dao/order_payment_dao.dart';
 import 'package:krishimandi/dao/product_dao.dart';
 import 'package:krishimandi/dao/product_variant_dao.dart';
 import 'package:krishimandi/models/customer_model.dart';
-import 'package:krishimandi/models/customer_payment_model.dart';
 import 'package:krishimandi/models/order_payment_model.dart';
 import 'package:krishimandi/services/printer_service.dart' as printer_service;
 import 'package:krishimandi/utils/app_helper.dart';
@@ -47,6 +45,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
   late Future<BillDetailsData> _billFuture;
   String _mandiName = '';
   bool _isCustomer = false;
+  bool _isStaff = false;
 
   @override
   void initState() {
@@ -59,7 +58,10 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
   Future<void> _loadUserRole() async {
     final user = await AppHelper.getCurrentUser();
     if (mounted) {
-      setState(() => _isCustomer = user?.isCustomer ?? false);
+      setState(() {
+        _isCustomer = user?.isCustomer ?? false;
+        _isStaff = user?.isStaff ?? false;
+      });
     }
   }
 
@@ -373,7 +375,6 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
     try {
       final now = DateTime.now().millisecondsSinceEpoch;
       final orderPaymentDAO = OrderPaymentDAO();
-      final customerPaymentDAO = CustomerPaymentDAO();
 
       // 1. Insert into order_payments (reduces bill pending)
       await orderPaymentDAO.insertOrderPayment(OrderPayment(
@@ -384,19 +385,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
         updatedAt: now,
       ));
 
-      // 2. Insert into customer_payments (keeps customer ledger consistent)
-      final transactionType =
-          data.order.orderFor == 'buyer' ? 'paid' : 'received';
-      await customerPaymentDAO.insertPayment(CustomerPayment(
-        customerId: data.order.customerId,
-        amount: amount,
-        type: transactionType,
-        source: source,
-        note: 'Bill #${data.order.id}',
-        paymentDate: now,
-      ));
-
-      // 3. Refresh bill details
+      // 2. Refresh bill details
       if (mounted) {
         setState(() {
           _billFuture = _loadBillDetails();
@@ -642,7 +631,7 @@ class _BillDetailsScreenState extends State<BillDetailsScreen> {
                               ),
                             ),
                           ),
-                          if (data.pendingPayment > 0) ...[
+                          if (!_isStaff && data.pendingPayment > 0) ...[
                             const SizedBox(width: 10),
                             GestureDetector(
                               onTap: () => _showReceivePaymentSheet(data),

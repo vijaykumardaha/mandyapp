@@ -110,17 +110,20 @@ class _TopToastState extends State<_TopToast>
       top: topPadding + 8,
       left: 16,
       right: 16,
-      child: FadeTransition(
-        opacity: _fadeAnimation,
-        child: Material(
-          elevation: 6,
-          borderRadius: BorderRadius.circular(12),
-          color: widget.backgroundColor,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: MyText(
-              widget.message,
-              color: widget.textColor,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Material(
+            elevation: 6,
+            borderRadius: BorderRadius.circular(12),
+            color: widget.backgroundColor,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: MyText(
+                widget.message,
+                color: widget.textColor,
+              ),
             ),
           ),
         ),

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:krishimandi/blocs/customer_payment/customer_payment_bloc.dart';
 import 'package:krishimandi/models/customer_model.dart';
 import 'package:krishimandi/models/customer_payment_model.dart';
+import 'package:krishimandi/utils/app_helper.dart';
 import 'package:krishimandi/widgets/common/common_app_bar.dart';
 import 'package:krishimandi/widgets/common/dropdown_option.dart';
 import 'package:krishimandi/widgets/payment_histories/payment_item.dart';
@@ -31,12 +32,22 @@ class PaymentHistoriesScreen extends StatefulWidget {
 }
 
 class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
+  bool _isStaff = false;
+
   @override
   void initState() {
     super.initState();
     context
         .read<CustomerPaymentBloc>()
         .add(FetchPayments(customerId: widget.customer.id!));
+    _checkStaffRole();
+  }
+
+  Future<void> _checkStaffRole() async {
+    final user = await AppHelper.getCurrentUser();
+    if (mounted && user?.isStaff == true) {
+      setState(() => _isStaff = true);
+    }
   }
 
   @override
@@ -62,14 +73,15 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
           ],
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: IconButton(
-              icon: const Icon(Icons.add_circle_outline, size: 26),
-              tooltip: 'Add Payment',
-              onPressed: () => _showAddPaymentSheet(context),
+          if (!_isStaff)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: IconButton(
+                icon: const Icon(Icons.add_circle_outline, size: 26),
+                tooltip: 'Add Payment',
+                onPressed: () => _showAddPaymentSheet(context),
+              ),
             ),
-          ),
         ],
       ),
       body: SafeArea(

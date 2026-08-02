@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:krishimandi/blocs/order_item/order_item_bloc.dart';
+import 'package:krishimandi/helpers/extensions/string.dart';
 import 'package:krishimandi/models/customer_model.dart';
 import 'package:krishimandi/models/product_variant_model.dart';
 import 'package:krishimandi/widgets/common/my_spacing.dart';
@@ -36,6 +37,8 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
   final Map<int, TextEditingController> _quantityControllers = {};
   final Map<int, TextEditingController> _rateControllers = {};
   String _successMessage = '';
+  String _pendingSuccessMessage = '';
+  Timer? _successTimer;
   int? _selectedSellerId;
 
   Customer? get _selectedSeller {
@@ -114,6 +117,7 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
 
   @override
   void dispose() {
+    _successTimer?.cancel();
     for (final controller in _quantityControllers.values) {
       controller.dispose();
     }
@@ -134,11 +138,20 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
 
     return BlocListener<OrderItemBloc, OrderItemState>(
       listener: (context, state) {
-        if (state is OrderItemsLoaded) {
-          // Show success message; keep the sheet open so more items can be
-          // added in the same session.
+        if (state is OrderItemsLoaded && _pendingSuccessMessage.isNotEmpty) {
+          _successTimer?.cancel();
           setState(() {
-            _successMessage = 'Successfully added to cart.';
+            _successMessage = _pendingSuccessMessage;
+            _pendingSuccessMessage = '';
+          });
+          // Auto-dismiss so the bar doesn't linger; a fresh add clears and
+          // re-shows it with the newly added item's name.
+          _successTimer = Timer(const Duration(seconds: 3), () {
+            if (mounted) {
+              setState(() {
+                _successMessage = '';
+              });
+            }
           });
         }
       },
@@ -148,39 +161,46 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Success message at first position
-            if (_successMessage.isNotEmpty)
-              Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border:
-                      Border.all(color: Colors.green.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        _successMessage,
-                        style: TextStyle(
-                          color: Colors.green.shade700,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
+            // Success message at first position; animates in/out on change.
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              transitionBuilder: (child, animation) =>
+                  FadeTransition(opacity: animation, child: child),
+              child: _successMessage.isEmpty
+                  ? const SizedBox.shrink()
+                  : Container(
+                      key: ValueKey(_successMessage),
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: Colors.green.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _successMessage,
+                              style: TextStyle(
+                                color: Colors.green.shade700,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Column(
@@ -234,6 +254,18 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
                         return;
                       }
 
+                      final qtyLabel = quantity % 1 == 0
+                          ? quantity.toStringAsFixed(0)
+                          : quantity.toStringAsFixed(2);
+                      // Clear any lingering success bar, then stage the
+                      // message naming the item, quantity, and rate added.
+                      _successTimer?.cancel();
+                      setState(() {
+                        _successMessage = '';
+                        _pendingSuccessMessage =
+                            '${variant.variantName} · $qtyLabel ${variant.unit.unitAbbreviation} × ₹${rate.toStringAsFixed(2)} added to cart.';
+                      });
+
                       try {
                         await widget.onSubmit(
                           variant,
@@ -243,6 +275,9 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
                         );
                       } catch (e) {
                         debugPrint('Error adding item to sale: $e');
+                        setState(() {
+                          _pendingSuccessMessage = '';
+                        });
                       }
                     },
                   );
