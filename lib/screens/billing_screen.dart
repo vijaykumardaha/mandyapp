@@ -75,15 +75,33 @@ class _BillingScreenState extends State<BillingScreen> {
     setState(() {
       _selectedCustomer = customer;
     });
-    if (_isBuyerMode) {
-      return;
+    // Cart items are never filtered by the selected seller — seller mode
+    // keeps the full list of unlinked items.
+  }
+
+  // Tapping a disabled buyer-mode card auto-selects that item's buyer in
+  // the search box, which filters the list to that buyer's items.
+  void _onSelectDisabledSale(OrderItem sale) {
+    if (!_isBuyerMode) return;
+    Customer? customer;
+    if (sale.buyerId != null) {
+      for (final c in _allCustomers) {
+        if (c.id == sale.buyerId) {
+          customer = c;
+          break;
+        }
+      }
     }
-    if (customer != null && customer.id != null) {
-      context.read<OrderItemBloc>().add(LoadOrderItems(sellerId: customer.id));
-    } else {
-      context
-          .read<OrderItemBloc>()
-          .add(const LoadAllUnlinkedOrderItems(excludeBuyerOrderLinked: false));
+    if (customer == null && sale.buyerName != null) {
+      for (final c in _allCustomers) {
+        if (c.name == sale.buyerName) {
+          customer = c;
+          break;
+        }
+      }
+    }
+    if (customer != null) {
+      _onCustomerChanged(customer);
     }
   }
 
@@ -382,14 +400,26 @@ class _BillingScreenState extends State<BillingScreen> {
     );
   }
 
+  List<OrderItem> _visibleSales(List<OrderItem> sales) {
+    // Buyer mode: once a buyer is selected, show only that buyer's cart
+    // items. Before any buyer is selected, populate all buyer cart items.
+    if (_isBuyerMode) {
+      final buyer = _selectedCustomer;
+      if (buyer != null && buyer.id != null) {
+        return sales.where((s) => s.buyerId == buyer.id).toList();
+      }
+    }
+    return sales;
+  }
+
   Widget _buildCartContent(List<OrderItem> sales) {
     return CartItemList(
       key: ValueKey(_isBuyerMode),
-      initialSales: sales,
+      initialSales: _visibleSales(sales),
       buyerCustomer: _selectedCustomer,
       onBuyerChanged: _onCustomerChanged,
       formatCustomer: _formatCustomer,
-      sellerNameForSale: (sale) => sale.sellerName,
+      partnerNameForSale: (sale) => sale.buyerName,
       productTitleForSale: (sale) =>
           sale.productName ?? 'Product #${sale.productId}',
       onDeleteSale: (sale, index) async {
@@ -401,6 +431,7 @@ class _BillingScreenState extends State<BillingScreen> {
             ));
         return true;
       },
+      onSelectDisabledSale: _onSelectDisabledSale,
       onCheckout: (selectedSales) async {
         await _createNewCart(selectedSales);
       },

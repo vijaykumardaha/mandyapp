@@ -5,13 +5,14 @@ import 'package:krishimandi/models/order_item_model.dart';
 import 'package:krishimandi/widgets/common/my_text.dart';
 
 typedef SaleSelectionFormatCustomer = String Function(Customer? customer);
-typedef SaleSelectionSellerLookup = String? Function(OrderItem sale);
+typedef SaleSelectionPartnerLookup = String? Function(OrderItem sale);
 typedef SaleSelectionTitleLookup = String Function(OrderItem sale);
 typedef SaleSelectionDeleteCallback = Future<bool> Function(
     OrderItem sale, int index);
 typedef SaleSelectionCheckoutCallback = Future<void> Function(
   List<OrderItem> selectedSales,
 );
+typedef SaleSelectionDisabledTap = void Function(OrderItem sale);
 typedef SaleSelectionCloseCallback = void Function(BuildContext sheetContext);
 
 class CartItemList extends StatefulWidget {
@@ -21,10 +22,11 @@ class CartItemList extends StatefulWidget {
     required this.buyerCustomer,
     required this.onBuyerChanged,
     required this.formatCustomer,
-    required this.sellerNameForSale,
+    required this.partnerNameForSale,
     required this.productTitleForSale,
     required this.onDeleteSale,
     required this.onCheckout,
+    this.onSelectDisabledSale,
     this.buyerMode = false,
   });
 
@@ -32,10 +34,11 @@ class CartItemList extends StatefulWidget {
   final Customer? buyerCustomer;
   final ValueChanged<Customer?> onBuyerChanged;
   final SaleSelectionFormatCustomer formatCustomer;
-  final SaleSelectionSellerLookup sellerNameForSale;
+  final SaleSelectionPartnerLookup partnerNameForSale;
   final SaleSelectionTitleLookup productTitleForSale;
   final SaleSelectionDeleteCallback onDeleteSale;
   final SaleSelectionCheckoutCallback onCheckout;
+  final SaleSelectionDisabledTap? onSelectDisabledSale;
   final bool buyerMode;
 
   @override
@@ -58,9 +61,46 @@ class _CartItemListState extends State<CartItemList> {
     if (oldWidget.initialSales != widget.initialSales) {
       _saleList = List<OrderItem>.from(widget.initialSales);
     }
-    if (oldWidget.buyerMode != widget.buyerMode) {
+    if (oldWidget.buyerMode != widget.buyerMode ||
+        (oldWidget.buyerCustomer != null && widget.buyerCustomer == null)) {
       _selectedIndices.clear();
     }
+  }
+
+  // Tapping a card toggles its selection. When no buyer is chosen yet in
+  // buyer mode, it also auto-selects the item's buyer in the search box and
+  // re-selects the item once the list refilters to that buyer's items.
+  void _handleItemTap(OrderItem sale, bool isChecked) {
+    if (widget.buyerMode &&
+        widget.buyerCustomer == null &&
+        widget.onSelectDisabledSale != null) {
+      widget.onSelectDisabledSale!(sale);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final newIndex = _saleList.indexWhere((s) => s.id == sale.id);
+        if (newIndex >= 0) {
+          setState(() {
+            _selectedIndices
+              ..clear()
+              ..add(newIndex);
+          });
+        }
+      });
+      return;
+    }
+    final index = _saleList.indexWhere((s) => s.id == sale.id);
+    if (index < 0) return;
+    _toggleSelection(!isChecked, index);
+  }
+
+  void _toggleSelection(bool value, int index) {
+    setState(() {
+      if (value) {
+        _selectedIndices.add(index);
+      } else {
+        _selectedIndices.remove(index);
+      }
+    });
   }
 
   void _performCheckout() async {
@@ -134,151 +174,130 @@ class _CartItemListState extends State<CartItemList> {
                         itemBuilder: (context, index) {
                           final sale = _saleList[index];
                           final isChecked = _selectedIndices.contains(index);
-                          final sellerName = widget.sellerNameForSale(sale);
+                          final partnerName = widget.partnerNameForSale(sale);
                           final quantityLabel =
                               '${sale.quantity.toStringAsFixed(sale.quantity % 1 == 0 ? 0 : 2)} ${sale.unit.unitAbbreviation}';
                           final productTitle = widget.productTitleForSale(sale);
                           final titleText = productTitle;
 
-                          void toggleSelection(bool value) {
-                            setState(() {
-                              if (value) {
-                                _selectedIndices.add(index);
-                              } else {
-                                _selectedIndices.remove(index);
-                              }
-                            });
-                          }
-
-                          final canSelect =
-                              widget.buyerMode || widget.buyerCustomer != null;
-
-                          return Opacity(
-                            opacity: canSelect ? 1.0 : 0.55,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(12),
-                                onTap: canSelect
-                                    ? () => toggleSelection(!isChecked)
-                                    : null,
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  curve: Curves.easeOut,
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
+                          return Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () => _handleItemTap(sale, isChecked),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeOut,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: isChecked
+                                      ? Theme.of(context)
+                                          .colorScheme
+                                          .primary
+                                          .withValues(alpha: 0.05)
+                                      : Theme.of(context).colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
                                     color: isChecked
-                                        ? Theme.of(context)
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context)
                                             .colorScheme
-                                            .primary
-                                            .withValues(alpha: 0.05)
-                                        : Theme.of(context).colorScheme.surface,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: isChecked
-                                          ? Theme.of(context)
-                                              .colorScheme
-                                              .primary
-                                          : Theme.of(context)
-                                              .colorScheme
-                                              .outline
-                                              .withValues(alpha: 0.12),
-                                      width: isChecked ? 1.5 : 1,
-                                    ),
+                                            .outline
+                                            .withValues(alpha: 0.12),
+                                    width: isChecked ? 1.5 : 1,
                                   ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 22,
-                                        height: 22,
-                                        decoration: BoxDecoration(
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 22,
+                                      height: 22,
+                                      decoration: BoxDecoration(
+                                        color: isChecked
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
                                           color: isChecked
                                               ? Theme.of(context)
                                                   .colorScheme
                                                   .primary
-                                              : Colors.transparent,
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: isChecked
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                : Theme.of(context)
-                                                    .colorScheme
-                                                    .outline
-                                                    .withValues(alpha: 0.4),
-                                          ),
+                                              : Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withValues(alpha: 0.4),
                                         ),
-                                        child: isChecked
-                                            ? const Icon(Icons.check,
-                                                size: 16, color: Colors.white)
-                                            : null,
                                       ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
+                                      child: isChecked
+                                          ? const Icon(Icons.check,
+                                              size: 16, color: Colors.white)
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: MyText.bodyMedium(
+                                                  titleText,
+                                                  fontWeight: 600,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              MyText.bodyMedium(
+                                                '₹${(sale.quantity * sale.sellingPrice).toStringAsFixed(2)}',
+                                                fontWeight: 600,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                              ),
+                                            ],
+                                          ),
+                                          if (partnerName != null) ...[
+                                            const SizedBox(height: 2),
                                             Row(
                                               children: [
                                                 Expanded(
-                                                  child: MyText.bodyMedium(
-                                                    titleText,
-                                                    fontWeight: 600,
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
+                                                  child: MyText.bodySmall(
+                                                    'Buyer: $partnerName',
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
                                                   ),
                                                 ),
                                                 const SizedBox(width: 8),
-                                                MyText.bodyMedium(
-                                                  '₹${(sale.quantity * sale.sellingPrice).toStringAsFixed(2)}',
-                                                  fontWeight: 600,
+                                                MyText.bodySmall(
+                                                  '$quantityLabel × ₹${sale.sellingPrice.toStringAsFixed(2)}',
                                                   color: Theme.of(context)
                                                       .colorScheme
-                                                      .primary,
+                                                      .onSurface
+                                                      .withValues(alpha: 0.6),
                                                 ),
                                               ],
                                             ),
-                                            if (sellerName != null) ...[
-                                              const SizedBox(height: 2),
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: MyText.bodySmall(
-                                                      'Seller: $sellerName',
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .onSurfaceVariant,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  MyText.bodySmall(
-                                                    '$quantityLabel × ₹${sale.sellingPrice.toStringAsFixed(2)}',
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurface
-                                                        .withValues(alpha: 0.6),
-                                                  ),
-                                                ],
-                                              ),
-                                            ] else ...[
-                                              const SizedBox(height: 4),
-                                              MyText.bodySmall(
-                                                '$quantityLabel × ₹${sale.sellingPrice.toStringAsFixed(2)}',
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .onSurface
-                                                    .withValues(alpha: 0.6),
-                                              ),
-                                            ],
+                                          ] else ...[
+                                            const SizedBox(height: 4),
+                                            MyText.bodySmall(
+                                              '$quantityLabel × ₹${sale.sellingPrice.toStringAsFixed(2)}',
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withValues(alpha: 0.6),
+                                            ),
                                           ],
-                                        ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),

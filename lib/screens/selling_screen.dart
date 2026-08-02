@@ -15,6 +15,7 @@ import 'package:krishimandi/utils/constants.dart';
 import 'package:krishimandi/utils/info_controller.dart';
 import 'package:krishimandi/widgets/common/common_app_bar.dart';
 import 'package:krishimandi/widgets/common/my_text.dart';
+import 'package:krishimandi/widgets/customer_management/customer_form_sheet.dart';
 import 'package:krishimandi/widgets/selling/add_to_sale_bottom_sheet.dart';
 import 'package:krishimandi/widgets/selling/customer_grid.dart';
 import 'package:krishimandi/widgets/selling/product_card.dart';
@@ -28,7 +29,6 @@ class SellingScreen extends StatefulWidget {
 
 class SellingScreenState extends State<SellingScreen> {
   late ThemeData theme;
-  Customer? sellerCustomer;
   Customer? buyerCustomer;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -76,16 +76,16 @@ class SellingScreenState extends State<SellingScreen> {
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return CommonAppBar(
       showBackButton: false,
-      titleWidget: sellerCustomer != null
+      titleWidget: buyerCustomer != null
           ? Text(
-              'Selling to ${sellerCustomer!.name}',
+              'Selling to ${buyerCustomer!.name}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             )
           : TextField(
               controller: _searchController,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               decoration: InputDecoration(
-                hintText: 'Search seller...',
+                hintText: 'Search buyer...',
                 prefixIcon: const Icon(Icons.search, size: 20),
                 isDense: true,
                 contentPadding:
@@ -114,8 +114,11 @@ class SellingScreenState extends State<SellingScreen> {
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_searchQuery.isNotEmpty)
+                      IconButton(
                         icon: const Icon(Icons.clear, size: 18),
                         onPressed: () {
                           setState(() {
@@ -123,8 +126,15 @@ class SellingScreenState extends State<SellingScreen> {
                             _searchController.clear();
                           });
                         },
-                      )
-                    : null,
+                      ),
+                    IconButton(
+                      icon: const Icon(Icons.person_add_outlined, size: 20),
+                      tooltip: 'Add Customer',
+                      onPressed: _showAddCustomerSheet,
+                    ),
+                  ],
+                ),
+                suffixIconConstraints: const BoxConstraints(minWidth: 40),
               ),
               onChanged: (value) {
                 setState(() {
@@ -133,7 +143,7 @@ class SellingScreenState extends State<SellingScreen> {
               },
             ),
       actions: [
-        if (sellerCustomer != null)
+        if (buyerCustomer != null)
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Tooltip(
@@ -141,7 +151,7 @@ class SellingScreenState extends State<SellingScreen> {
               child: GestureDetector(
                 onTap: () {
                   setState(() {
-                    sellerCustomer = null;
+                    buyerCustomer = null;
                   });
                 },
                 child: Container(
@@ -162,7 +172,7 @@ class SellingScreenState extends State<SellingScreen> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Change Seller',
+                        'Change Buyer',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -185,15 +195,22 @@ class SellingScreenState extends State<SellingScreen> {
       searchQuery: _searchQuery,
       onCustomerSelected: (customer) {
         setState(() {
-          sellerCustomer = customer;
+          buyerCustomer = customer;
         });
       },
     );
   }
 
+  void _showAddCustomerSheet() {
+    CustomerFormSheet.show(
+      context,
+      query: _searchQuery,
+    );
+  }
+
   void _showAddToSaleBottomSheet(Product product) {
-    if (sellerCustomer == null) {
-      Info.message('Please select a customer before recording sales',
+    if (buyerCustomer == null) {
+      Info.message('Please select a buyer before recording sales',
           context: context);
       return;
     }
@@ -240,8 +257,8 @@ class SellingScreenState extends State<SellingScreen> {
   }) async {
     final effectiveSellingPrice = overrideSellingPrice ?? variant.sellingPrice;
     final sale = OrderItem(
-      sellerId: sellerCustomer!.id!,
-      sellerName: sellerCustomer!.name,
+      buyerId: buyerCustomer!.id!,
+      buyerName: buyerCustomer!.name,
       productId: product.id ?? 0,
       variantId: variant.id!,
       sellingPrice: effectiveSellingPrice,
@@ -266,7 +283,7 @@ class SellingScreenState extends State<SellingScreen> {
               Info.error(saleState.message, context: context);
             }
           },
-          child: sellerCustomer == null
+          child: buyerCustomer == null
               ? _buildCustomerGrid()
               : BlocBuilder<ProductBloc, ProductState>(
                   builder: (context, productState) {
@@ -276,11 +293,10 @@ class SellingScreenState extends State<SellingScreen> {
 
                     if (productState is ProductLoaded) {
                       var products = productState.products;
-                      final customerProductIds =
-                          sellerCustomer!.selectedProductIds;
-                      if (customerProductIds.isNotEmpty) {
+                      final buyerProductIds = buyerCustomer!.selectedProductIds;
+                      if (buyerProductIds.isNotEmpty) {
                         products = products
-                            .where((p) => customerProductIds.contains(p.id))
+                            .where((p) => buyerProductIds.contains(p.id))
                             .toList();
                       }
 

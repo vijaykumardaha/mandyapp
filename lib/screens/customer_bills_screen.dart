@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:krishimandi/blocs/order/order_bloc.dart';
 import 'package:krishimandi/dao/order_charge_dao.dart';
 import 'package:krishimandi/dao/order_expense_dao.dart';
@@ -10,7 +11,9 @@ import 'package:krishimandi/models/order_model.dart';
 import 'package:krishimandi/services/sync_service.dart';
 import 'package:krishimandi/utils/constants.dart';
 import 'package:krishimandi/widgets/common/common_app_bar.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
 import 'package:krishimandi/widgets/customer_bills/bill_card.dart';
+import 'package:krishimandi/widgets/customer_bills/customer_summary_card.dart';
 
 class CustomerBillsScreen extends StatefulWidget {
   final Customer customer;
@@ -30,6 +33,16 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
   final OrderExpenseDao _expenseDAO = OrderExpenseDao();
   final OrderPaymentDAO _paymentDAO = OrderPaymentDAO();
   final Map<int, _OrderFinancialSummary> _financialData = {};
+  final NumberFormat _currencyFormat =
+      NumberFormat.currency(locale: 'en_IN', symbol: '₹');
+  int _buyerBillCount = 0;
+  double _buyerBillTotal = 0;
+  int _sellerBillCount = 0;
+  double _sellerBillTotal = 0;
+  int _buyerDueCount = 0;
+  double _buyerDuesTotal = 0;
+  int _sellerDueCount = 0;
+  double _sellerDuesTotal = 0;
 
   @override
   void initState() {
@@ -86,6 +99,34 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
       setState(() {
         _financialData.clear();
         _financialData.addAll(data);
+        _buyerBillCount = 0;
+        _buyerBillTotal = 0;
+        _sellerBillCount = 0;
+        _sellerBillTotal = 0;
+        _buyerDueCount = 0;
+        _buyerDuesTotal = 0;
+        _sellerDueCount = 0;
+        _sellerDuesTotal = 0;
+        for (final order in orders) {
+          final financial = order.id != null ? data[order.id] : null;
+          if (financial == null) continue;
+          final due = financial.grandTotal - financial.receivedAmount;
+          if (order.orderFor == 'seller') {
+            _sellerBillCount++;
+            _sellerBillTotal += financial.grandTotal;
+            if (due > 0.01) {
+              _sellerDueCount++;
+              _sellerDuesTotal += due;
+            }
+          } else {
+            _buyerBillCount++;
+            _buyerBillTotal += financial.grandTotal;
+            if (due > 0.01) {
+              _buyerDueCount++;
+              _buyerDuesTotal += due;
+            }
+          }
+        }
       });
     }
   }
@@ -152,9 +193,12 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
   Widget _buildBillsList(List<Order> orders) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: orders.length,
+      itemCount: orders.length + 1,
       itemBuilder: (context, index) {
-        final order = orders[index];
+        if (index == 0) {
+          return _buildSummarySection();
+        }
+        final order = orders[index - 1];
         final financial = order.id != null ? _financialData[order.id] : null;
         return BillCard(
           order: order,
@@ -162,6 +206,57 @@ class _CustomerBillsScreenState extends State<CustomerBillsScreen> {
           receivedAmount: financial?.receivedAmount,
         );
       },
+    );
+  }
+
+  Widget _buildSummarySection() {
+    return SizedBox(
+      height: 110,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        children: [
+          SizedBox(
+            width: 160,
+            child: CustomerSummaryCard(
+              label: 'Buyer Bills',
+              count: '$_buyerBillCount bills',
+              amount: _currencyFormat.format(_buyerBillTotal),
+              color: Colors.blue,
+            ),
+          ),
+          MySpacing.width(12),
+          SizedBox(
+            width: 160,
+            child: CustomerSummaryCard(
+              label: 'Seller Bills',
+              count: '$_sellerBillCount bills',
+              amount: _currencyFormat.format(_sellerBillTotal),
+              color: Colors.teal,
+            ),
+          ),
+          MySpacing.width(12),
+          SizedBox(
+            width: 160,
+            child: CustomerSummaryCard(
+              label: 'Buyer Dues',
+              count: '$_buyerDueCount bills',
+              amount: _currencyFormat.format(_buyerDuesTotal),
+              color: Colors.red,
+            ),
+          ),
+          MySpacing.width(12),
+          SizedBox(
+            width: 160,
+            child: CustomerSummaryCard(
+              label: 'Seller Dues',
+              count: '$_sellerDueCount bills',
+              amount: _currencyFormat.format(_sellerDuesTotal),
+              color: Colors.green,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

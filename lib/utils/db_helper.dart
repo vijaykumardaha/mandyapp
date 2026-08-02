@@ -44,7 +44,7 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 11,
+      version: 12,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS users (
@@ -174,7 +174,7 @@ class DBHelper {
           CREATE TABLE order_items (
             id INTEGER PRIMARY KEY,
             mandi_id INTEGER NOT NULL,
-            seller_id INTEGER NOT NULL,
+            seller_id INTEGER,
             buyer_order_id INTEGER,
             seller_order_id INTEGER,
             buyer_id INTEGER,
@@ -260,7 +260,51 @@ class DBHelper {
           )
         ''');
       },
-      onUpgrade: (db, oldVersion, newVersion) async {},
+      onUpgrade: (db, oldVersion, newVersion) async {
+        // v12: order_items.seller_id became nullable so cart items can be
+        // created buyer-first (seller is attached later). SQLite has no
+        // ALTER COLUMN, so rebuild the table to drop NOT NULL.
+        if (oldVersion < 12) {
+          await db.execute('''
+            CREATE TABLE order_items_v12 (
+              id INTEGER PRIMARY KEY,
+              mandi_id INTEGER NOT NULL,
+              seller_id INTEGER,
+              buyer_order_id INTEGER,
+              seller_order_id INTEGER,
+              buyer_id INTEGER,
+              product_id INTEGER NOT NULL,
+              variant_id INTEGER NOT NULL,
+              selling_price REAL NOT NULL,
+              quantity REAL NOT NULL,
+              unit TEXT DEFAULT 'Kilogram',
+              product_name TEXT,
+              image_path TEXT,
+              seller_name TEXT,
+              buyer_name TEXT,
+              updated_at INTEGER NOT NULL,
+              is_deleted INTEGER DEFAULT 0,
+              sync_status INTEGER DEFAULT 0
+            )
+          ''');
+          await db.execute('''
+            INSERT INTO order_items_v12 (
+              id, mandi_id, seller_id, buyer_order_id, seller_order_id, buyer_id,
+              product_id, variant_id, selling_price, quantity,
+              unit, product_name, image_path, seller_name, buyer_name,
+              updated_at, is_deleted, sync_status
+            )
+            SELECT
+              id, mandi_id, seller_id, buyer_order_id, seller_order_id, buyer_id,
+              product_id, variant_id, selling_price, quantity,
+              unit, product_name, image_path, seller_name, buyer_name,
+              updated_at, is_deleted, sync_status
+            FROM order_items
+          ''');
+          await db.execute('DROP TABLE order_items');
+          await db.execute('ALTER TABLE order_items_v12 RENAME TO order_items');
+        }
+      },
     );
   }
 }
