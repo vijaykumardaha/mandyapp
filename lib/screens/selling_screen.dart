@@ -229,19 +229,29 @@ class SellingScreenState extends State<SellingScreen> {
 
     FocusScope.of(context).unfocus();
 
+    final customerState = context.read<CustomerBloc>().state;
+    final sellers = customerState is CustomerLoaded
+        ? customerState.customers
+        : <Customer>[];
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       builder: (sheetContext) {
         return AddToSaleBottomSheet(
           variants: variants,
-          onSubmit: (variant, quantity, rate) async {
+          sellers: sellers,
+          onSubmit: (variant, quantity, rate, seller) async {
             await _submitCartItem(
               product,
               variant,
               quantity: quantity,
               overrideSellingPrice: rate,
+              seller: seller,
             );
           },
         );
@@ -254,9 +264,12 @@ class SellingScreenState extends State<SellingScreen> {
     ProductVariant variant, {
     required double quantity,
     double? overrideSellingPrice,
+    required Customer seller,
   }) async {
     final effectiveSellingPrice = overrideSellingPrice ?? variant.sellingPrice;
     final sale = OrderItem(
+      sellerId: seller.id ?? 0,
+      sellerName: seller.name,
       buyerId: buyerCustomer!.id!,
       buyerName: buyerCustomer!.name,
       productId: product.id ?? 0,

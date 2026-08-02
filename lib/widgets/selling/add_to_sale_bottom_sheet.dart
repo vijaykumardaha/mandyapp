@@ -3,22 +3,28 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:krishimandi/blocs/order_item/order_item_bloc.dart';
+import 'package:krishimandi/models/customer_model.dart';
 import 'package:krishimandi/models/product_variant_model.dart';
+import 'package:krishimandi/widgets/common/my_spacing.dart';
+import 'package:krishimandi/widgets/common/my_text.dart';
 import 'package:krishimandi/widgets/selling/variant_item_card.dart';
 
 typedef AddToSaleSubmitCallback = Future<void> Function(
   ProductVariant variant,
   double quantity,
   double rate,
+  Customer seller,
 );
 
 class AddToSaleBottomSheet extends StatefulWidget {
   final List<ProductVariant> variants;
+  final List<Customer> sellers;
   final AddToSaleSubmitCallback onSubmit;
 
   const AddToSaleBottomSheet({
     super.key,
     required this.variants,
+    required this.sellers,
     required this.onSubmit,
   });
 
@@ -30,6 +36,65 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
   final Map<int, TextEditingController> _quantityControllers = {};
   final Map<int, TextEditingController> _rateControllers = {};
   String _successMessage = '';
+  int? _selectedSellerId;
+
+  Customer? get _selectedSeller {
+    for (final seller in widget.sellers) {
+      if (seller.id == _selectedSellerId) return seller;
+    }
+    return null;
+  }
+
+  Widget _buildSellerSearchField(ThemeData theme) {
+    return InkWell(
+      onTap: _openSellerPicker,
+      borderRadius: BorderRadius.circular(4),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          hintText: 'Search seller...',
+          prefixIcon: const Icon(Icons.person_outline, size: 20),
+          suffixIcon: _selectedSeller != null
+              ? IconButton(
+                  icon: const Icon(Icons.clear, size: 18),
+                  onPressed: () {
+                    setState(() {
+                      _selectedSellerId = null;
+                    });
+                  },
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                )
+              : null,
+          border: const OutlineInputBorder(),
+          isDense: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        ),
+        child: Text(
+          _selectedSeller?.name ?? 'Select seller',
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openSellerPicker() async {
+    final selected = await Navigator.of(context).push<Customer>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => _SellerPickerScreen(
+          sellers: widget.sellers,
+          selectedSellerId: _selectedSellerId,
+        ),
+      ),
+    );
+    if (selected != null && mounted) {
+      setState(() {
+        _selectedSellerId = selected.id;
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -70,37 +135,19 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
     return BlocListener<OrderItemBloc, OrderItemState>(
       listener: (context, state) {
         if (state is OrderItemsLoaded) {
-          // Show success message, then close the sheet automatically.
+          // Show success message; keep the sheet open so more items can be
+          // added in the same session.
           setState(() {
             _successMessage = 'Successfully added to cart.';
-          });
-          final navigator = Navigator.of(context);
-          final route = ModalRoute.of(context);
-          Future.delayed(const Duration(seconds: 1), () {
-            if (!mounted) return;
-            if (route != null && route.isCurrent) {
-              navigator.pop();
-            }
           });
         }
       },
       child: Padding(
-        padding: EdgeInsets.only(bottom: bottomInset + 24),
+        padding: EdgeInsets.fromLTRB(0, 24, 0, bottomInset + 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 4, right: 4),
-                child: IconButton(
-                  icon: const Icon(Icons.close),
-                  tooltip: 'Close',
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ),
-            ),
             // Success message at first position
             if (_successMessage.isNotEmpty)
               Container(
@@ -134,8 +181,23 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
                   ],
                 ),
               ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MyText.bodySmall(
+                    'Seller',
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontWeight: 600,
+                  ),
+                  MySpacing.height(4),
+                  _buildSellerSearchField(theme),
+                ],
+              ),
+            ),
             ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 360),
+              constraints: const BoxConstraints(maxHeight: 480),
               child: ListView.separated(
                 shrinkWrap: true,
                 physics: const BouncingScrollPhysics(),
@@ -152,7 +214,13 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
                     qtyController: qtyController,
                     rateController: rateController,
                     theme: theme,
+                    isAddEnabled: _selectedSeller != null,
                     onAddPressed: () async {
+                      final seller = _selectedSeller;
+                      if (seller == null) {
+                        return;
+                      }
+
                       final quantity =
                           double.tryParse(qtyController.text.trim());
                       if (quantity == null || quantity <= 0) {
@@ -171,6 +239,7 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
                           variant,
                           quantity,
                           rate,
+                          seller,
                         );
                       } catch (e) {
                         debugPrint('Error adding item to sale: $e');
@@ -183,6 +252,96 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
             const SizedBox(height: 12),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SellerPickerScreen extends StatefulWidget {
+  final List<Customer> sellers;
+  final int? selectedSellerId;
+
+  const _SellerPickerScreen({
+    required this.sellers,
+    this.selectedSellerId,
+  });
+
+  @override
+  State<_SellerPickerScreen> createState() => _SellerPickerScreenState();
+}
+
+class _SellerPickerScreenState extends State<_SellerPickerScreen> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final q = _query.toLowerCase();
+    final sellers = widget.sellers.where((s) {
+      final name = (s.name ?? '').toLowerCase();
+      final phone = (s.phone ?? '').toLowerCase();
+      return name.contains(q) || phone.contains(q);
+    }).toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: TextField(
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Search seller...',
+            border: InputBorder.none,
+          ),
+          onChanged: (value) {
+            setState(() {
+              _query = value;
+            });
+          },
+        ),
+      ),
+      body: ListView.separated(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        itemCount: sellers.length,
+        separatorBuilder: (_, __) => const Divider(height: 1, indent: 16),
+        itemBuilder: (context, index) {
+          final seller = sellers[index];
+          final name = seller.name ?? 'Unnamed';
+          final initials = name.length >= 2
+              ? name.substring(0, 2).toUpperCase()
+              : name.toUpperCase();
+          final isSelected =
+              seller.id != null && seller.id == widget.selectedSellerId;
+          return ListTile(
+            leading: CircleAvatar(
+              radius: 16,
+              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+              child: MyText.bodySmall(
+                initials,
+                color: theme.colorScheme.primary,
+                fontWeight: 600,
+                fontSize: 11,
+              ),
+            ),
+            title: MyText.bodyMedium(
+              name,
+              fontWeight: 600,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: seller.phone != null
+                ? MyText.bodySmall(
+                    seller.phone!,
+                    color: theme.colorScheme.onSurfaceVariant,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : null,
+            trailing: isSelected
+                ? Icon(Icons.check, color: theme.colorScheme.primary)
+                : null,
+            onTap: () => Navigator.of(context).pop(seller),
+          );
+        },
       ),
     );
   }

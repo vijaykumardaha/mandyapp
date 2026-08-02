@@ -75,18 +75,10 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
     emit(const OrderItemLoading());
     try {
       await _orderItemDAO.insertOrderItem(event.orderItem);
-      final List<OrderItem> orderItems;
-      if (event.orderItem.buyerId != null) {
-        orderItems = await _orderItemDAO.getOrderItems(
-          buyerId: event.orderItem.buyerId,
-          excludeBuyerOrderLinked: true,
-        );
-      } else {
-        orderItems = await _orderItemDAO.getOrderItems(
-          sellerId: event.orderItem.sellerId,
-          excludeSellerOrderLinked: true,
-        );
-      }
+      final orderItems = await _orderItemDAO.getOrderItems(
+        buyerId: event.orderItem.buyerId,
+        excludeBuyerOrderLinked: true,
+      );
       emit(OrderItemsLoaded(orderItems,
           message: 'Order item added successfully'));
     } catch (error) {
@@ -99,18 +91,10 @@ class OrderItemBloc extends Bloc<OrderItemEvent, OrderItemState> {
     emit(const OrderItemLoading());
     try {
       await _orderItemDAO.updateOrderItem(event.orderItem);
-      final List<OrderItem> orderItems;
-      if (event.orderItem.buyerId != null) {
-        orderItems = await _orderItemDAO.getOrderItems(
-          buyerId: event.orderItem.buyerId,
-          excludeBuyerOrderLinked: true,
-        );
-      } else {
-        orderItems = await _orderItemDAO.getOrderItems(
-          sellerId: event.orderItem.sellerId,
-          excludeSellerOrderLinked: true,
-        );
-      }
+      final orderItems = await _orderItemDAO.getOrderItems(
+        buyerId: event.orderItem.buyerId,
+        excludeBuyerOrderLinked: true,
+      );
       emit(OrderItemsLoaded(orderItems,
           message: 'Order item updated successfully'));
     } catch (error) {

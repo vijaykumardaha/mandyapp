@@ -6,6 +6,7 @@ import 'package:krishimandi/widgets/common/my_text.dart';
 
 typedef SaleSelectionFormatCustomer = String Function(Customer? customer);
 typedef SaleSelectionPartnerLookup = String? Function(OrderItem sale);
+typedef SaleSelectionNameLookup = String? Function(OrderItem sale);
 typedef SaleSelectionTitleLookup = String Function(OrderItem sale);
 typedef SaleSelectionDeleteCallback = Future<bool> Function(
     OrderItem sale, int index);
@@ -22,7 +23,8 @@ class CartItemList extends StatefulWidget {
     required this.buyerCustomer,
     required this.onBuyerChanged,
     required this.formatCustomer,
-    required this.partnerNameForSale,
+    required this.buyerNameForSale,
+    required this.sellerNameForSale,
     required this.productTitleForSale,
     required this.onDeleteSale,
     required this.onCheckout,
@@ -34,7 +36,8 @@ class CartItemList extends StatefulWidget {
   final Customer? buyerCustomer;
   final ValueChanged<Customer?> onBuyerChanged;
   final SaleSelectionFormatCustomer formatCustomer;
-  final SaleSelectionPartnerLookup partnerNameForSale;
+  final SaleSelectionNameLookup buyerNameForSale;
+  final SaleSelectionNameLookup sellerNameForSale;
   final SaleSelectionTitleLookup productTitleForSale;
   final SaleSelectionDeleteCallback onDeleteSale;
   final SaleSelectionCheckoutCallback onCheckout;
@@ -48,6 +51,11 @@ class CartItemList extends StatefulWidget {
 class _CartItemListState extends State<CartItemList> {
   final Set<int> _selectedIndices = <int>{};
   List<OrderItem> _saleList = [];
+
+  static String _truncate(String text, {int maxLength = 25}) {
+    if (text.length <= maxLength) return text;
+    return '${text.substring(0, maxLength)}…';
+  }
 
   @override
   void initState() {
@@ -174,7 +182,8 @@ class _CartItemListState extends State<CartItemList> {
                         itemBuilder: (context, index) {
                           final sale = _saleList[index];
                           final isChecked = _selectedIndices.contains(index);
-                          final partnerName = widget.partnerNameForSale(sale);
+                          final buyerName = widget.buyerNameForSale(sale);
+                          final sellerName = widget.sellerNameForSale(sale);
                           final quantityLabel =
                               '${sale.quantity.toStringAsFixed(sale.quantity % 1 == 0 ? 0 : 2)} ${sale.unit.unitAbbreviation}';
                           final productTitle = widget.productTitleForSale(sale);
@@ -262,16 +271,43 @@ class _CartItemListState extends State<CartItemList> {
                                               ),
                                             ],
                                           ),
-                                          if (partnerName != null) ...[
+                                          if (buyerName != null ||
+                                              sellerName != null) ...[
                                             const SizedBox(height: 2),
                                             Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Expanded(
-                                                  child: MyText.bodySmall(
-                                                    'Buyer: $partnerName',
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurfaceVariant,
+                                                  child: Wrap(
+                                                    spacing: 12,
+                                                    runSpacing: 2,
+                                                    children: [
+                                                      if (buyerName != null)
+                                                        MyText.bodySmall(
+                                                          _truncate(
+                                                              'Buyer: $buyerName'),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          color: Theme.of(
+                                                                  context)
+                                                              .colorScheme
+                                                              .onSurfaceVariant,
+                                                        ),
+                                                      if (sellerName != null)
+                                                        MyText.bodySmall(
+                                                          _truncate(
+                                                              'Seller: $sellerName'),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          color: Theme.of(
+                                                                  context)
+                                                              .colorScheme
+                                                              .onSurfaceVariant,
+                                                        ),
+                                                    ],
                                                   ),
                                                 ),
                                                 const SizedBox(width: 8),

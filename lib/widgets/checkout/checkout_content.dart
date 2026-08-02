@@ -44,6 +44,11 @@ class CheckoutContent extends StatefulWidget {
 }
 
 class _CheckoutContentState extends State<CheckoutContent> {
+  static String _truncate(String text, {int maxLength = 25}) {
+    if (text.length <= maxLength) return text;
+    return '${text.substring(0, maxLength)}…';
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.cartItems == null || widget.cartItems!.isEmpty) {
@@ -143,11 +148,30 @@ class _CheckoutContentState extends State<CheckoutContent> {
                           fontWeight: 500,
                         ),
                         MySpacing.height(4),
-                        if (item.sellerName != null)
-                          MyText.bodySmall(
-                            'Seller: ${item.sellerName}',
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                        if (item.buyerName != null || item.sellerName != null)
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 2,
+                            children: [
+                              if (item.buyerName != null)
+                                MyText.bodySmall(
+                                  _truncate('Buyer: ${item.buyerName}'),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                              if (item.sellerName != null)
+                                MyText.bodySmall(
+                                  _truncate('Seller: ${item.sellerName}'),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                            ],
                           )
                         else
                           MyText.bodySmall(
@@ -168,7 +192,8 @@ class _CheckoutContentState extends State<CheckoutContent> {
                         fontWeight: 600,
                         color: Theme.of(context).colorScheme.primary,
                       ),
-                      if (item.sellerName != null) ...[
+                      if (item.buyerName != null ||
+                          item.sellerName != null) ...[
                         MySpacing.height(4),
                         MyText.bodySmall(
                           '${item.quantity} × ₹${item.sellingPrice.toStringAsFixed(2)}',

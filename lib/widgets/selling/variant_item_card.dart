@@ -11,6 +11,7 @@ class VariantItemCard extends StatefulWidget {
 
   final ThemeData theme;
   final bool isLoading;
+  final bool isAddEnabled;
   final Future<void> Function()? onAddPressed;
   const VariantItemCard({
     super.key,
@@ -19,6 +20,7 @@ class VariantItemCard extends StatefulWidget {
     required this.rateController,
     required this.theme,
     this.isLoading = false,
+    this.isAddEnabled = true,
     this.onAddPressed,
   });
 
@@ -161,7 +163,8 @@ class _VariantItemCardState extends State<VariantItemCard> {
                                 flex: 3,
                                 child: OutlinedButton(
                                   onPressed: widget.variant.id == null ||
-                                          widget.isLoading
+                                          widget.isLoading ||
+                                          !widget.isAddEnabled
                                       ? null
                                       : () async {
                                           final quantity = double.tryParse(

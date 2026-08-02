@@ -84,12 +84,10 @@ class _BillingScreenState extends State<BillingScreen> {
   void _onSelectDisabledSale(OrderItem sale) {
     if (!_isBuyerMode) return;
     Customer? customer;
-    if (sale.buyerId != null) {
-      for (final c in _allCustomers) {
-        if (c.id == sale.buyerId) {
-          customer = c;
-          break;
-        }
+    for (final c in _allCustomers) {
+      if (c.id == sale.buyerId) {
+        customer = c;
+        break;
       }
     }
     if (customer == null && sale.buyerName != null) {
@@ -419,7 +417,8 @@ class _BillingScreenState extends State<BillingScreen> {
       buyerCustomer: _selectedCustomer,
       onBuyerChanged: _onCustomerChanged,
       formatCustomer: _formatCustomer,
-      partnerNameForSale: (sale) => sale.buyerName,
+      buyerNameForSale: (sale) => sale.buyerName,
+      sellerNameForSale: (sale) => sale.sellerName,
       productTitleForSale: (sale) =>
           sale.productName ?? 'Product #${sale.productId}',
       onDeleteSale: (sale, index) async {

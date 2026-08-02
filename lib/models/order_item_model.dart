@@ -1,10 +1,10 @@
 class OrderItem {
   int? id;
   int? mandiId;
-  int? sellerId;
+  int sellerId;
   int? buyerOrderId;
   int? sellerOrderId;
-  int? buyerId;
+  int buyerId;
   int productId;
   int variantId;
   double sellingPrice;
@@ -21,10 +21,10 @@ class OrderItem {
   OrderItem({
     this.id,
     this.mandiId,
-    this.sellerId,
+    required this.sellerId,
     this.buyerOrderId,
     this.sellerOrderId,
-    this.buyerId,
+    required this.buyerId,
     required this.productId,
     required this.variantId,
     required this.sellingPrice,
@@ -39,20 +39,14 @@ class OrderItem {
     this.buyerName,
   });
 
-  /// Whether this item carries seller info (from a seller-first cart).
-  bool get isSellerAnchored => sellerId != null || sellerName != null;
-
-  /// Whether this item carries buyer info (from a buyer-first cart).
-  bool get isBuyerAnchored => buyerId != null || buyerName != null;
-
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     return OrderItem(
       id: json['id'] as int?,
       mandiId: json['mandi_id'] as int?,
-      sellerId: json['seller_id'] as int?,
+      sellerId: json['seller_id'] as int,
       buyerOrderId: json['buyer_order_id'] as int?,
       sellerOrderId: json['seller_order_id'] as int?,
-      buyerId: json['buyer_id'] as int?,
+      buyerId: json['buyer_id'] as int,
       productId: json['product_id'] as int,
       variantId: json['variant_id'] as int,
       sellingPrice: (json['selling_price'] as num).toDouble(),

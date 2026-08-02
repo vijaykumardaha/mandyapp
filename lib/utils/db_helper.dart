@@ -44,7 +44,7 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 12,
+      version: 13,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS users (
@@ -174,10 +174,10 @@ class DBHelper {
           CREATE TABLE order_items (
             id INTEGER PRIMARY KEY,
             mandi_id INTEGER NOT NULL,
-            seller_id INTEGER,
+            seller_id INTEGER NOT NULL,
             buyer_order_id INTEGER,
             seller_order_id INTEGER,
-            buyer_id INTEGER,
+            buyer_id INTEGER NOT NULL,
             product_id INTEGER NOT NULL,
             variant_id INTEGER NOT NULL,
             selling_price REAL NOT NULL,
@@ -303,6 +303,50 @@ class DBHelper {
           ''');
           await db.execute('DROP TABLE order_items');
           await db.execute('ALTER TABLE order_items_v12 RENAME TO order_items');
+        }
+        // v13: order_items.seller_id and buyer_id became mandatory (NOT NULL)
+        // so every cart item records both sides of the sale. Backfill rows
+        // that only carry one side with 0 to satisfy the constraint.
+        if (oldVersion < 13) {
+          await db.execute('''
+            CREATE TABLE order_items_v13 (
+              id INTEGER PRIMARY KEY,
+              mandi_id INTEGER NOT NULL,
+              seller_id INTEGER NOT NULL,
+              buyer_order_id INTEGER,
+              seller_order_id INTEGER,
+              buyer_id INTEGER NOT NULL,
+              product_id INTEGER NOT NULL,
+              variant_id INTEGER NOT NULL,
+              selling_price REAL NOT NULL,
+              quantity REAL NOT NULL,
+              unit TEXT DEFAULT 'Kilogram',
+              product_name TEXT,
+              image_path TEXT,
+              seller_name TEXT,
+              buyer_name TEXT,
+              updated_at INTEGER NOT NULL,
+              is_deleted INTEGER DEFAULT 0,
+              sync_status INTEGER DEFAULT 0
+            )
+          ''');
+          await db.execute('''
+            INSERT INTO order_items_v13 (
+              id, mandi_id, seller_id, buyer_order_id, seller_order_id, buyer_id,
+              product_id, variant_id, selling_price, quantity,
+              unit, product_name, image_path, seller_name, buyer_name,
+              updated_at, is_deleted, sync_status
+            )
+            SELECT
+              id, mandi_id, COALESCE(seller_id, 0), buyer_order_id,
+              seller_order_id, COALESCE(buyer_id, 0),
+              product_id, variant_id, selling_price, quantity,
+              unit, product_name, image_path, seller_name, buyer_name,
+              updated_at, is_deleted, sync_status
+            FROM order_items
+          ''');
+          await db.execute('DROP TABLE order_items');
+          await db.execute('ALTER TABLE order_items_v13 RENAME TO order_items');
         }
       },
     );
