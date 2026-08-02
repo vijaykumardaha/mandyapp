@@ -23,6 +23,11 @@ class CustomerDAO {
         await txn.insert(DbTables.customers, customer.toJson());
       }
     });
+
+    // txn.insert bypasses the SyncedDatabase sync hook; push explicitly.
+    for (final customer in customers) {
+      db.syncRecord(DbTables.customers, customer.toJson());
+    }
   }
 
   Future<List<Customer>> getCustomers() async {

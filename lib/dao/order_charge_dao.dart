@@ -28,6 +28,11 @@ class OrderChargeDAO {
         await txn.insert(DbTables.orderCharges, charge.toMap());
       }
     });
+
+    // txn.insert bypasses the SyncedDatabase sync hook; push explicitly.
+    for (final charge in charges) {
+      db.syncRecord(DbTables.orderCharges, charge.toMap());
+    }
   }
 
   // Get all charges for a specific order

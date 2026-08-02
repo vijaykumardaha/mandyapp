@@ -104,6 +104,13 @@ class SyncedDatabase {
 
   // ── Internal ──────────────────────────────────────────
 
+  /// Trigger a sync push for a record written inside a raw transaction.
+  /// `txn.insert`/`txn.update` bypass the normal sync hook, so DAOs that
+  /// write inside [transaction] must call this explicitly afterwards.
+  void syncRecord(String table, Map<String, dynamic> record) {
+    _sync(table, record);
+  }
+
   void _sync(String table, Map<String, dynamic> record) {
     if (!_syncedTables.contains(table)) return;
     SyncService.instance.syncRecord(table: table, record: record);
