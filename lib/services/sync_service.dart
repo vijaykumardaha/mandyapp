@@ -336,8 +336,9 @@ class SyncService {
     final db = await _customerDAO.dbHelper.database;
     final tables = [...DbTables.synced, DbTables.vegetables];
     for (final table in tables) {
-      await db.update(table, {'sync_status': 1},
-          where: 'sync_status = ?', whereArgs: [0]);
+      await db.execute(
+        'UPDATE $table SET sync_status = 1 WHERE sync_status = 0',
+      );
     }
   }
 
@@ -350,11 +351,11 @@ class SyncService {
     final db = await _customerDAO.dbHelper.database;
     final id = record['id'];
     if (id == null) return;
-    await db.update(
-      table,
-      {'sync_status': 1},
-      where: 'id = ?',
-      whereArgs: [id],
+    // Raw write: must NOT go through SyncedDatabase.update, which would
+    // trigger another sync push and cause an infinite entity_sync loop.
+    await db.execute(
+      'UPDATE $table SET sync_status = 1 WHERE id = ?',
+      [id],
     );
   }
 
