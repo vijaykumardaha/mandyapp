@@ -8,7 +8,6 @@ import 'package:krishimandi/helpers/theme/app_theme.dart';
 import 'package:krishimandi/models/user_model.dart';
 import 'package:krishimandi/services/socket_config.dart';
 import 'package:krishimandi/services/sync_service.dart';
-import 'package:krishimandi/services/user_service.dart';
 import 'package:krishimandi/utils/app_helper.dart';
 import 'package:krishimandi/utils/constants.dart';
 import 'package:krishimandi/widgets/common/connection_status_indicator.dart';
@@ -31,7 +30,6 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   bool _hasLoadedData = false;
   DashboardDataLoaded? _cachedData;
   String _userName = 'Dashboard';
-  bool _isSyncing = false;
   StreamSubscription<String>? _syncSubscription;
 
   @override
@@ -177,88 +175,26 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     );
   }
 
-  Widget _buildSyncButton() {
-    return StreamBuilder<bool>(
-      stream: UserService.instance.connectionStream,
-      initialData: UserService.instance.isConnected,
-      builder: (context, snapshot) {
-        if (snapshot.data != true) return const SizedBox.shrink();
-        return GestureDetector(
-          onTap: _isSyncing
-              ? null
-              : () async {
-                  setState(() => _isSyncing = true);
-                  await SyncService.instance.bulkSync();
-                  if (mounted) {
-                    setState(() => _isSyncing = false);
-                    _loadDashboardData(forceRefresh: true);
-                  }
-                },
-          child: Container(
-            margin: const EdgeInsets.only(top: 2),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest
-                  .withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _isSyncing
-                    ? SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      )
-                    : Icon(Icons.sync_rounded,
-                        size: 16, color: theme.colorScheme.onSurfaceVariant),
-                const SizedBox(width: 4),
-                Text(
-                  _isSyncing ? 'Data Syncing...' : 'Data Sync',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildDashboard(DashboardDataLoaded data) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header with reports link
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      MyText.titleLarge(_userName, fontWeight: 700),
-                      const SizedBox(width: 8),
-                      const ConnectionStatusIndicator(),
-                    ],
-                  ),
-                  MyText.bodyMedium(
-                    _dateFormat.format(DateTime.now()),
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
+                  MyText.titleLarge(_userName, fontWeight: 700),
+                  const SizedBox(width: 8),
+                  const ConnectionStatusIndicator(),
                 ],
               ),
-              _buildSyncButton(),
+              MyText.bodyMedium(
+                _dateFormat.format(DateTime.now()),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
             ],
           ),
           const SizedBox(height: 24),

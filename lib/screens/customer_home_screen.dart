@@ -287,6 +287,15 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
       listener: (context, state) {
         if (state is LogoutSuccess) {
           context.go('/login');
+        } else if (state is LogoutBlocked) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Cannot logout. ${state.pendingCount} record(s) pending sync. '
+                'Please sync your data and try again.',
+              ),
+            ),
+          );
         }
       },
       child: BlocListener<CustomerBloc, CustomerState>(

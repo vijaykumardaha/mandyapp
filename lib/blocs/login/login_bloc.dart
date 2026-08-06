@@ -135,6 +135,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
     on<LogoutSubmit>((event, emit) async {
       try {
+        final pendingCount = await SyncService.instance.pendingRecordCount();
+        if (pendingCount > 0) {
+          emit(LogoutBlocked(pendingCount: pendingCount));
+          return;
+        }
         SyncService.instance.stopListening();
         UserService.instance.disconnect();
         CustomerService.instance.disconnect();

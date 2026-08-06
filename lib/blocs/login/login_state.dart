@@ -56,3 +56,12 @@ final class LoginCustomerFailure extends LoginState {
 }
 
 final class LogoutSuccess extends LoginState {}
+
+final class LogoutBlocked extends LoginState {
+  final int pendingCount;
+
+  const LogoutBlocked({required this.pendingCount});
+
+  @override
+  List<Object> get props => [pendingCount];
+}

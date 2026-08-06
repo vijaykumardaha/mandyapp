@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:krishimandi/utils/constants.dart';
 import 'package:krishimandi/utils/synced_database.dart';
 import 'package:path/path.dart';

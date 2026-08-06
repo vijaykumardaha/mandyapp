@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:krishimandi/blocs/login/login_bloc.dart';
-import 'package:krishimandi/blocs/reports/reports_bloc.dart';
 import 'package:krishimandi/helpers/theme/app_theme.dart';
-import 'package:krishimandi/services/sync_service.dart';
-import 'package:krishimandi/services/user_service.dart';
 import 'package:krishimandi/widgets/common/common_app_bar.dart';
 import 'package:krishimandi/widgets/common/my_spacing.dart';
 import 'package:krishimandi/widgets/common/my_text.dart';
@@ -20,7 +17,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late ThemeData theme;
-  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -31,68 +27,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CommonAppBar(
+      appBar: const CommonAppBar(
         showBackButton: false,
         title: 'Mandi Settings',
-        actions: [
-          StreamBuilder<bool>(
-            stream: UserService.instance.connectionStream,
-            initialData: UserService.instance.isConnected,
-            builder: (context, snapshot) {
-              if (snapshot.data != true) return const SizedBox.shrink();
-              return GestureDetector(
-                onTap: _isSyncing
-                    ? null
-                    : () async {
-                        setState(() => _isSyncing = true);
-                        await SyncService.instance.bulkSync();
-                        if (mounted) {
-                          setState(() => _isSyncing = false);
-                          this
-                              .context
-                              .read<ReportsBloc>()
-                              .add(const LoadDashboardData());
-                        }
-                      },
-                child: Container(
-                  margin: const EdgeInsets.only(right: 15),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _isSyncing
-                          ? SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            )
-                          : Icon(Icons.sync_rounded,
-                              size: 16,
-                              color: theme.colorScheme.onSurfaceVariant),
-                      const SizedBox(width: 4),
-                      Text(
-                        _isSyncing ? 'Data Syncing...' : 'Data Sync',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: SafeArea(
         child: BlocListener<LoginBloc, LoginState>(

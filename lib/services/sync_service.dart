@@ -59,6 +59,25 @@ class SyncService {
   bool get isSyncing => _syncing;
 
   // ──────────────────────────────────────────────
+  //  Pending record check
+  // ──────────────────────────────────────────────
+
+  /// Counts records with sync_status=0 across all synced tables
+  /// (plus vegetables). Used to guard destructive actions like logout.
+  Future<int> pendingRecordCount() async {
+    final db = await _customerDAO.dbHelper.database;
+    final tables = [...DbTables.synced, DbTables.vegetables];
+    var count = 0;
+    for (final table in tables) {
+      final result = await db.rawQuery(
+        'SELECT COUNT(*) AS count FROM $table WHERE sync_status = 0',
+      );
+      count += (result.first['count'] as int?) ?? 0;
+    }
+    return count;
+  }
+
+  // ──────────────────────────────────────────────
   //  Broadcast listeners
   // ──────────────────────────────────────────────
 
