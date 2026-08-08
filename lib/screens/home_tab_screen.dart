@@ -117,41 +117,53 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            MyText.titleLarge(_userName, fontWeight: 700),
-            InkWell(
-              onTap: _pickDate,
-              borderRadius: BorderRadius.circular(6),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  MyText.bodyMedium(
-                    _dateFormat.format(_selectedDate),
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                  Icon(
-                    Icons.arrow_drop_down,
-                    size: 20,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          const Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: ConnectionStatusIndicator(),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 20),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(20),
+            bottomRight: Radius.circular(20),
           ),
-        ],
+          child: AppBar(
+            backgroundColor: theme.colorScheme.surfaceContainer,
+            elevation: 0,
+            toolbarHeight: kToolbarHeight + 20,
+            automaticallyImplyLeading: false,
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                MyText.titleLarge(_userName, fontWeight: 700),
+                InkWell(
+                  onTap: _pickDate,
+                  borderRadius: BorderRadius.circular(6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      MyText.bodyMedium(
+                        _dateFormat.format(_selectedDate),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                      Icon(
+                        Icons.arrow_drop_down,
+                        size: 20,
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              const Padding(
+                padding: EdgeInsets.only(right: 16),
+                child: ConnectionStatusIndicator(),
+              ),
+            ],
+          ),
+        ),
       ),
       body: SafeArea(
         child: Padding(

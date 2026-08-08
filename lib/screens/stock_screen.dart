@@ -315,6 +315,7 @@ class _StockFormDialogState extends State<_StockFormDialog> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: kToolbarHeight + 20,
         title: MyText.titleMedium(
           _isEditing ? 'Edit Stock' : 'Add Stock',
           fontWeight: 600,

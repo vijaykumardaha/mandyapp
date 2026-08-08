@@ -209,66 +209,73 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight + 20),
-      child: AppBar(
-        backgroundColor: theme.cardColor,
-        elevation: 0,
-        centerTitle: false,
-        toolbarHeight: kToolbarHeight + 20,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            MyText.titleLarge(_userName, fontWeight: 700),
-            MyText.bodyMedium(
-              _dateFormat.format(DateTime.now()),
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ],
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
-        titleTextStyle: MyTextStyle.bodyMedium(),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 15),
-            child: BlocBuilder<CustomerBloc, CustomerState>(
-              builder: (context, state) {
-                final isSyncing = state is CurrentCustomerSyncLoading;
-                return GestureDetector(
-                  onTap: isSyncing ? null : _showLogoutDialog,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      if (isSyncing)
-                        const SizedBox(
-                          width: 44,
-                          height: 44,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
+        child: AppBar(
+          backgroundColor: theme.colorScheme.surfaceContainer,
+          elevation: 0,
+          centerTitle: false,
+          toolbarHeight: kToolbarHeight + 20,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              MyText.titleLarge(_userName, fontWeight: 700),
+              MyText.bodyMedium(
+                _dateFormat.format(DateTime.now()),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ],
+          ),
+          titleTextStyle: MyTextStyle.bodyMedium(),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 15),
+              child: BlocBuilder<CustomerBloc, CustomerState>(
+                builder: (context, state) {
+                  final isSyncing = state is CurrentCustomerSyncLoading;
+                  return GestureDetector(
+                    onTap: isSyncing ? null : _showLogoutDialog,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        if (isSyncing)
+                          const SizedBox(
+                            width: 44,
+                            height: 44,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.red,
+                            ),
+                          ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color:
+                                  isSyncing ? Colors.red : Colors.transparent,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.logout_rounded,
+                            size: 16,
                             color: Colors.red,
                           ),
                         ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isSyncing ? Colors.red : Colors.transparent,
-                            width: 1.5,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.logout_rounded,
-                          size: 16,
-                          color: Colors.red,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

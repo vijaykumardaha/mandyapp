@@ -132,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: BottomNavigationBar(
               currentIndex: initialIndex,
               type: BottomNavigationBarType.fixed,
-              backgroundColor: theme.cardColor,
+              backgroundColor: theme.colorScheme.surfaceContainerHigh,
               selectedItemColor: theme.primaryColor,
               unselectedItemColor:
                   theme.colorScheme.onSurface.withValues(alpha: 0.6),

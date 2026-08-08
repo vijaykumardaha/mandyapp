@@ -15,6 +15,13 @@ ThemeData get theme => AppTheme.theme;
 class AppTheme {
   AppTheme._();
 
+  static final ColorScheme _colorScheme = ColorScheme.fromSeed(
+    seedColor: const Color(0xff3C4EC5),
+  ).copyWith(
+    surface: const Color(0xffffffff),
+    error: const Color(0xfff0323c),
+  );
+
   static final ThemeData lightTheme = ThemeData(
     /// Brightness
     brightness: Brightness.light,
@@ -25,10 +32,10 @@ class AppTheme {
     canvasColor: const Color(0xffffffff),
 
     /// AppBar Theme
-    appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xffffffff),
-        iconTheme: IconThemeData(color: Color(0xff495057)),
-        actionsIconTheme: IconThemeData(color: Color(0xff495057))),
+    appBarTheme: AppBarTheme(
+        backgroundColor: _colorScheme.surfaceContainer,
+        iconTheme: const IconThemeData(color: Color(0xff495057)),
+        actionsIconTheme: const IconThemeData(color: Color(0xff495057))),
 
     /// Card Theme
     cardTheme: const CardThemeData(color: Color(0xffffffff)),
@@ -126,9 +133,7 @@ class AppTheme {
     splashColor: Colors.white.withAlpha(100),
     indicatorColor: const Color(0xffeeeeee),
     highlightColor: const Color(0xffeeeeee),
-    colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff3C4EC5))
-        .copyWith(surface: const Color(0xffffffff))
-        .copyWith(error: const Color(0xfff0323c)),
+    colorScheme: _colorScheme,
   );
 
   static CustomTheme customTheme = CustomTheme.lightCustomTheme;

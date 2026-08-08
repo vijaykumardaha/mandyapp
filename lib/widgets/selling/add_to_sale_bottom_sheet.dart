@@ -320,6 +320,7 @@ class _BuyerPickerScreenState extends State<_BuyerPickerScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: kToolbarHeight + 20,
         title: TextField(
           autofocus: true,
           decoration: const InputDecoration(
