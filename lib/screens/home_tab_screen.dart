@@ -235,177 +235,192 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   }
 
   Widget _buildDashboard(DashboardDataLoaded data) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 4),
-
-          // Financial Overview Card (Single unified card)
-          DashboardOverviewCard(
-            title: 'Financial Overview',
-            theme: theme,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: FinancialMetric(
-                      title: 'Net Balance',
-                      value: _currencyFormat.format(data.netBalance),
-                      icon: Icons.account_balance,
-                      color: data.netBalance >= 0 ? Colors.green : Colors.red,
-                      theme: theme,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: FinancialMetric(
-                      title: 'Profit Today',
-                      value: _currencyFormat.format(data.grossProfit),
-                      icon: Icons.trending_up,
-                      color: data.grossProfit >= 0 ? Colors.green : Colors.red,
-                      theme: theme,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: FinancialMetric(
-                      title: "Today's Sales",
-                      value: _currencyFormat.format(data.todaySales),
-                      icon: Icons.shopping_cart,
-                      color: Colors.blue,
-                      theme: theme,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Purchase Overview Card (Single unified card)
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.shadowColor.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-              border: Border.all(
-                color: theme.colorScheme.outline.withValues(alpha: 0.1),
-              ),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const MyText.titleMedium('Buyer Overview', fontWeight: 600),
-                const SizedBox(height: 20),
-                Row(
+                const SizedBox(height: 4),
+
+                // Financial Overview Card (Single unified card)
+                DashboardOverviewCard(
+                  title: 'Financial Overview',
+                  theme: theme,
                   children: [
-                    Expanded(
-                      child: FinancialMetric(
-                        title: 'Total Received',
-                        value: _currencyFormat.format(data.totalReceived),
-                        icon: Icons.account_balance_wallet,
-                        color: Colors.green,
-                        theme: theme,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: FinancialMetric(
-                        title: 'Pending Payments',
-                        value: _currencyFormat.format(data.totalPending),
-                        icon: Icons.pending,
-                        color: Colors.orange,
-                        theme: theme,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: FinancialMetric(
-                        title: 'Pending Checkout',
-                        value:
-                            _currencyFormat.format(data.buyerPendingCheckout),
-                        icon: Icons.shopping_cart_checkout,
-                        color: Colors.purple,
-                        theme: theme,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FinancialMetric(
+                            title: 'Net Balance',
+                            value: _currencyFormat.format(data.netBalance),
+                            icon: Icons.account_balance,
+                            color: data.netBalance >= 0
+                                ? Colors.green
+                                : Colors.red,
+                            theme: theme,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: FinancialMetric(
+                            title: 'Profit Today',
+                            value: _currencyFormat.format(data.grossProfit),
+                            icon: Icons.trending_up,
+                            color: data.grossProfit >= 0
+                                ? Colors.green
+                                : Colors.red,
+                            theme: theme,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: FinancialMetric(
+                            title: "Today's Sales",
+                            value: _currencyFormat.format(data.todaySales),
+                            icon: Icons.shopping_cart,
+                            color: Colors.blue,
+                            theme: theme,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-          // Seller Overview Card (Single unified card)
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.shadowColor.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                // Purchase Overview Card (Single unified card)
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.shadowColor.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                    border: Border.all(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const MyText.titleMedium('Buyer Overview',
+                          fontWeight: 600),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FinancialMetric(
+                              title: 'Total Received',
+                              value: _currencyFormat.format(data.totalReceived),
+                              icon: Icons.account_balance_wallet,
+                              color: Colors.green,
+                              theme: theme,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: FinancialMetric(
+                              title: 'Pending Payments',
+                              value: _currencyFormat.format(data.totalPending),
+                              icon: Icons.pending,
+                              color: Colors.orange,
+                              theme: theme,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: FinancialMetric(
+                              title: 'Pending Checkout',
+                              value: _currencyFormat
+                                  .format(data.buyerPendingCheckout),
+                              icon: Icons.shopping_cart_checkout,
+                              color: Colors.purple,
+                              theme: theme,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-              border: Border.all(
-                color: theme.colorScheme.outline.withValues(alpha: 0.1),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const MyText.titleMedium('Seller Overview', fontWeight: 600),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: FinancialMetric(
-                        title: 'Paid to Sellers',
-                        value: _currencyFormat.format(data.paidToSellers),
-                        icon: Icons.payments,
-                        color: Colors.teal,
-                        theme: theme,
+                const SizedBox(height: 16),
+
+                // Seller Overview Card (Single unified card)
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.shadowColor.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
+                    ],
+                    border: Border.all(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.1),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: FinancialMetric(
-                        title: 'Pending to Sellers',
-                        value: _currencyFormat.format(data.pendingToSellers),
-                        icon: Icons.schedule,
-                        color: Colors.red,
-                        theme: theme,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const MyText.titleMedium('Seller Overview',
+                          fontWeight: 600),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FinancialMetric(
+                              title: 'Paid to Sellers',
+                              value: _currencyFormat.format(data.paidToSellers),
+                              icon: Icons.payments,
+                              color: Colors.teal,
+                              theme: theme,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: FinancialMetric(
+                              title: 'Pending to Sellers',
+                              value:
+                                  _currencyFormat.format(data.pendingToSellers),
+                              icon: Icons.schedule,
+                              color: Colors.red,
+                              theme: theme,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: FinancialMetric(
+                              title: 'Pending Checkout',
+                              value: _currencyFormat
+                                  .format(data.sellerPendingCheckout),
+                              icon: Icons.shopping_cart_checkout,
+                              color: Colors.purple,
+                              theme: theme,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: FinancialMetric(
-                        title: 'Pending Checkout',
-                        value:
-                            _currencyFormat.format(data.sellerPendingCheckout),
-                        icon: Icons.shopping_cart_checkout,
-                        color: Colors.purple,
-                        theme: theme,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-        ],
-      ),
+        );
+      },
     );
   }
 }
