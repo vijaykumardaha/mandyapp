@@ -351,7 +351,7 @@ class OrderDAO {
           order.orderFor,
           order.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           order.isDeleted ?? 0,
-          order.syncStatus ?? 1,
+          1,
         ]);
       }
 

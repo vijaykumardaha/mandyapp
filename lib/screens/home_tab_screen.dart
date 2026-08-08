@@ -94,6 +94,28 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            MyText.titleLarge(_userName, fontWeight: 700),
+            MyText.bodyMedium(
+              _dateFormat.format(DateTime.now()),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ],
+        ),
+        actions: [
+          const Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: ConnectionStatusIndicator(),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -180,24 +202,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with reports link
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  MyText.titleLarge(_userName, fontWeight: 700),
-                  const SizedBox(width: 8),
-                  const ConnectionStatusIndicator(),
-                ],
-              ),
-              MyText.bodyMedium(
-                _dateFormat.format(DateTime.now()),
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 4),
 
           // Financial Overview Card (Single unified card)
           DashboardOverviewCard(

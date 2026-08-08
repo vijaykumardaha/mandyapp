@@ -118,7 +118,7 @@ class CustomerPaymentDAO {
           payment.paymentDate,
           payment.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           payment.isDeleted ?? 0,
-          payment.syncStatus ?? 1,
+          1,
         ]);
       }
 

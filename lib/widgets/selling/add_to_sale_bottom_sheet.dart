@@ -14,18 +14,18 @@ typedef AddToSaleSubmitCallback = Future<void> Function(
   ProductVariant variant,
   double quantity,
   double rate,
-  Customer seller,
+  Customer buyer,
 );
 
 class AddToSaleBottomSheet extends StatefulWidget {
   final List<ProductVariant> variants;
-  final List<Customer> sellers;
+  final List<Customer> buyers;
   final AddToSaleSubmitCallback onSubmit;
 
   const AddToSaleBottomSheet({
     super.key,
     required this.variants,
-    required this.sellers,
+    required this.buyers,
     required this.onSubmit,
   });
 
@@ -39,29 +39,29 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
   String _successMessage = '';
   String _pendingSuccessMessage = '';
   Timer? _successTimer;
-  int? _selectedSellerId;
+  int? _selectedBuyerId;
 
-  Customer? get _selectedSeller {
-    for (final seller in widget.sellers) {
-      if (seller.id == _selectedSellerId) return seller;
+  Customer? get _selectedBuyer {
+    for (final buyer in widget.buyers) {
+      if (buyer.id == _selectedBuyerId) return buyer;
     }
     return null;
   }
 
-  Widget _buildSellerSearchField(ThemeData theme) {
+  Widget _buildBuyerSearchField(ThemeData theme) {
     return InkWell(
-      onTap: _openSellerPicker,
+      onTap: _openBuyerPicker,
       borderRadius: BorderRadius.circular(4),
       child: InputDecorator(
         decoration: InputDecoration(
-          hintText: 'Search seller...',
+          hintText: 'Search buyer...',
           prefixIcon: const Icon(Icons.person_outline, size: 20),
-          suffixIcon: _selectedSeller != null
+          suffixIcon: _selectedBuyer != null
               ? IconButton(
                   icon: const Icon(Icons.clear, size: 18),
                   onPressed: () {
                     setState(() {
-                      _selectedSellerId = null;
+                      _selectedBuyerId = null;
                     });
                   },
                   padding: EdgeInsets.zero,
@@ -74,7 +74,7 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
               const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         ),
         child: Text(
-          _selectedSeller?.name ?? 'Select seller',
+          _selectedBuyer?.name ?? 'Select buyer',
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           overflow: TextOverflow.ellipsis,
         ),
@@ -82,19 +82,19 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
     );
   }
 
-  Future<void> _openSellerPicker() async {
+  Future<void> _openBuyerPicker() async {
     final selected = await Navigator.of(context).push<Customer>(
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) => _SellerPickerScreen(
-          sellers: widget.sellers,
-          selectedSellerId: _selectedSellerId,
+        builder: (_) => _BuyerPickerScreen(
+          buyers: widget.buyers,
+          selectedBuyerId: _selectedBuyerId,
         ),
       ),
     );
     if (selected != null && mounted) {
       setState(() {
-        _selectedSellerId = selected.id;
+        _selectedBuyerId = selected.id;
       });
     }
   }
@@ -207,12 +207,12 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   MyText.bodySmall(
-                    'Seller',
+                    'Buyer',
                     color: theme.colorScheme.onSurfaceVariant,
                     fontWeight: 600,
                   ),
                   MySpacing.height(4),
-                  _buildSellerSearchField(theme),
+                  _buildBuyerSearchField(theme),
                 ],
               ),
             ),
@@ -234,10 +234,10 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
                     qtyController: qtyController,
                     rateController: rateController,
                     theme: theme,
-                    isAddEnabled: _selectedSeller != null,
+                    isAddEnabled: _selectedBuyer != null,
                     onAddPressed: () async {
-                      final seller = _selectedSeller;
-                      if (seller == null) {
+                      final buyer = _selectedBuyer;
+                      if (buyer == null) {
                         return;
                       }
 
@@ -271,7 +271,7 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
                           variant,
                           quantity,
                           rate,
-                          seller,
+                          buyer,
                         );
                       } catch (e) {
                         debugPrint('Error adding item to sale: $e');
@@ -292,29 +292,29 @@ class _AddToSaleBottomSheetState extends State<AddToSaleBottomSheet> {
   }
 }
 
-class _SellerPickerScreen extends StatefulWidget {
-  final List<Customer> sellers;
-  final int? selectedSellerId;
+class _BuyerPickerScreen extends StatefulWidget {
+  final List<Customer> buyers;
+  final int? selectedBuyerId;
 
-  const _SellerPickerScreen({
-    required this.sellers,
-    this.selectedSellerId,
+  const _BuyerPickerScreen({
+    required this.buyers,
+    this.selectedBuyerId,
   });
 
   @override
-  State<_SellerPickerScreen> createState() => _SellerPickerScreenState();
+  State<_BuyerPickerScreen> createState() => _BuyerPickerScreenState();
 }
 
-class _SellerPickerScreenState extends State<_SellerPickerScreen> {
+class _BuyerPickerScreenState extends State<_BuyerPickerScreen> {
   String _query = '';
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final q = _query.toLowerCase();
-    final sellers = widget.sellers.where((s) {
-      final name = (s.name ?? '').toLowerCase();
-      final phone = (s.phone ?? '').toLowerCase();
+    final buyers = widget.buyers.where((b) {
+      final name = (b.name ?? '').toLowerCase();
+      final phone = (b.phone ?? '').toLowerCase();
       return name.contains(q) || phone.contains(q);
     }).toList();
 
@@ -323,7 +323,7 @@ class _SellerPickerScreenState extends State<_SellerPickerScreen> {
         title: TextField(
           autofocus: true,
           decoration: const InputDecoration(
-            hintText: 'Search seller...',
+            hintText: 'Search buyer...',
             border: InputBorder.none,
           ),
           onChanged: (value) {
@@ -336,16 +336,16 @@ class _SellerPickerScreenState extends State<_SellerPickerScreen> {
       body: ListView.separated(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: sellers.length,
+        itemCount: buyers.length,
         separatorBuilder: (_, __) => const Divider(height: 1, indent: 16),
         itemBuilder: (context, index) {
-          final seller = sellers[index];
-          final name = seller.name ?? 'Unnamed';
+          final buyer = buyers[index];
+          final name = buyer.name ?? 'Unnamed';
           final initials = name.length >= 2
               ? name.substring(0, 2).toUpperCase()
               : name.toUpperCase();
           final isSelected =
-              seller.id != null && seller.id == widget.selectedSellerId;
+              buyer.id != null && buyer.id == widget.selectedBuyerId;
           return ListTile(
             leading: CircleAvatar(
               radius: 16,
@@ -363,9 +363,9 @@ class _SellerPickerScreenState extends State<_SellerPickerScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            subtitle: seller.phone != null
+            subtitle: buyer.phone != null
                 ? MyText.bodySmall(
-                    seller.phone!,
+                    buyer.phone!,
                     color: theme.colorScheme.onSurfaceVariant,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -374,7 +374,7 @@ class _SellerPickerScreenState extends State<_SellerPickerScreen> {
             trailing: isSelected
                 ? Icon(Icons.check, color: theme.colorScheme.primary)
                 : null,
-            onTap: () => Navigator.of(context).pop(seller),
+            onTap: () => Navigator.of(context).pop(buyer),
           );
         },
       ),

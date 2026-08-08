@@ -146,7 +146,7 @@ class StockDAO {
           stock.purchaseAmount,
           stock.soldAmount,
           stock.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
-          stock.syncStatus,
+          1,
           stock.isDeleted,
         ]);
       }
@@ -295,7 +295,7 @@ class StockDAO {
           txn.buyQuantity,
           txn.totalAmount,
           txn.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
-          txn.syncStatus,
+          1,
           txn.isDeleted,
         ]);
       }

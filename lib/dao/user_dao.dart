@@ -161,7 +161,7 @@ class UserDAO {
           user.isActive ?? 1,
           user.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           user.isDeleted ?? 0,
-          user.syncStatus ?? 1,
+          1,
         ]);
       }
 

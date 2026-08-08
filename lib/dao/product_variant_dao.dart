@@ -143,7 +143,7 @@ class ProductVariantDAO {
           variant.imagePath,
           variant.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           variant.isDeleted ?? 0,
-          variant.syncStatus ?? 1,
+          1,
         ]);
       }
 

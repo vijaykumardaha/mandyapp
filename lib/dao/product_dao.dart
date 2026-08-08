@@ -120,7 +120,7 @@ class ProductDAO {
           product.defaultVariant,
           product.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           product.isDeleted ?? 0,
-          product.syncStatus ?? 1,
+          1,
         ]);
       }
 

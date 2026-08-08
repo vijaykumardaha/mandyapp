@@ -16,8 +16,7 @@ import 'package:krishimandi/helpers/theme/app_theme.dart';
 import 'package:krishimandi/models/customer_model.dart';
 import 'package:krishimandi/models/customer_payment_model.dart';
 import 'package:krishimandi/models/order_model.dart';
-import 'package:krishimandi/services/sync_service.dart';
-import 'package:krishimandi/services/user_service.dart';
+import 'package:krishimandi/services/customer_service.dart';
 import 'package:krishimandi/utils/app_helper.dart';
 import 'package:krishimandi/widgets/common/my_spacing.dart';
 import 'package:krishimandi/widgets/common/my_text.dart';
@@ -156,14 +155,18 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
         final hasConnection = results.any((r) => r != ConnectivityResult.none);
 
         if (hasConnection && _wasOffline) {
-          if (!UserService.instance.isConnected) {
-            await SyncService.instance.connectAndSync();
-          }
+          await _handleInternetRestored();
         }
 
         _wasOffline = !hasConnection;
       },
     );
+  }
+
+  Future<void> _handleInternetRestored() async {
+    await CustomerService.instance.ensureConnected();
+    if (!mounted) return;
+    context.read<CustomerBloc>().add(const SyncCurrentCustomer());
   }
 
   @override
@@ -173,10 +176,37 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
     super.dispose();
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    final isSyncing = context.select(
-        (CustomerBloc bloc) => bloc.state is CurrentCustomerSyncLoading);
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const MyText.titleMedium('Logout', fontWeight: 600),
+        content: const MyText.bodyMedium('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: MyText.bodyMedium(
+              'Cancel',
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<LoginBloc>().add(LogoutSubmit());
+            },
+            child: const MyText.bodyMedium(
+              'Logout',
+              color: Colors.red,
+              fontWeight: 600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight + 20),
       child: AppBar(
@@ -198,82 +228,44 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 15),
-            child: GestureDetector(
-              onTap: isSyncing
-                  ? null
-                  : () {
-                      context
-                          .read<CustomerBloc>()
-                          .add(const SyncCurrentCustomer());
-                    },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest
-                      .withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    isSyncing
-                        ? SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          )
-                        : Icon(Icons.sync_rounded,
-                            size: 16,
-                            color: theme.colorScheme.onSurfaceVariant),
-                    const SizedBox(width: 4),
-                    Text(
-                      isSyncing ? 'Syncing...' : 'Data Sync',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
+            child: BlocBuilder<CustomerBloc, CustomerState>(
+              builder: (context, state) {
+                final isSyncing = state is CurrentCustomerSyncLoading;
+                return GestureDetector(
+                  onTap: isSyncing ? null : _showLogoutDialog,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (isSyncing)
+                        const SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.red,
+                          ),
+                        ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSyncing ? Colors.red : Colors.transparent,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.logout_rounded,
+                          size: 16,
+                          color: Colors.red,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 15),
-            child: GestureDetector(
-              onTap: () {
-                context.read<LoginBloc>().add(LogoutSubmit());
+                    ],
+                  ),
+                );
               },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.logout_rounded,
-                      size: 16,
-                      color: Colors.red,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Logout',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.red,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ),
         ],
@@ -360,8 +352,8 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
                           theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       labelStyle: MyTextStyle.bodyMedium(fontWeight: 600),
                       tabs: const [
+                        Tab(text: 'Your Bills'),
                         Tab(text: 'Payments'),
-                        Tab(text: 'Bills'),
                       ],
                     ),
                   ),
@@ -398,8 +390,8 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
                         return TabBarView(
                           controller: _tabController,
                           children: [
-                            _buildPaymentsTab(),
                             _buildBillsTab(context, customer),
+                            _buildPaymentsTab(),
                           ],
                         );
                       },
@@ -431,7 +423,7 @@ class _CustomerHomeScreenViewState extends State<_CustomerHomeScreenView>
         return AnimatedBuilder(
           animation: _tabController,
           builder: (context, _) {
-            final isPaymentsTab = _tabController.index == 0;
+            final isPaymentsTab = _tabController.index == 1;
             return SizedBox(
               height: 110,
               child: ListView(

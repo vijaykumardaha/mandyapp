@@ -31,7 +31,7 @@ class AppTheme {
         actionsIconTheme: IconThemeData(color: Color(0xff495057))),
 
     /// Card Theme
-    cardTheme: const CardTheme(color: Color(0xffffffff)),
+    cardTheme: const CardThemeData(color: Color(0xffffffff)),
     cardColor: const Color(0xffffffff),
 
     textTheme: TextTheme(
@@ -54,10 +54,10 @@ class AppTheme {
 
     /// Bottom AppBar Theme
     bottomAppBarTheme:
-        const BottomAppBarTheme(color: Color(0xffeeeeee), elevation: 2),
+        const BottomAppBarThemeData(color: Color(0xffeeeeee), elevation: 2),
 
     /// Tab bar Theme
-    tabBarTheme: const TabBarTheme(
+    tabBarTheme: const TabBarThemeData(
       unselectedLabelColor: Color(0xff495057),
       labelColor: Color(0xff3d63ff),
       indicatorSize: TabBarIndicatorSize.label,

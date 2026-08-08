@@ -241,7 +241,7 @@ class OrderItemDAO {
           orderItem.buyerName,
           orderItem.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           orderItem.isDeleted ?? 0,
-          orderItem.syncStatus ?? 1,
+          1,
         ]);
       }
 

@@ -30,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late CustomerLoginController customerController;
   late OutlineInputBorder outlineInputBorder;
 
-  _LoginMode _mode = _LoginMode.customer;
+  _LoginMode _mode = _LoginMode.staff;
 
   List<Mandi> _mandis = [];
   bool _loadingMandis = false;
@@ -243,19 +243,11 @@ class _LoginScreenState extends State<LoginScreen> {
           if (state is LoginLoading ||
               state is SyncLoading ||
               state is LoginCustomerLoading) {
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CircularProgressIndicator(),
-                  if (state is SyncLoading)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Text(
-                        'Syncing your data...',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ),
+                  CircularProgressIndicator(),
                 ],
               ),
             );
@@ -285,12 +277,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: SegmentedButton<_LoginMode>(
                       segments: const [
                         ButtonSegment(
-                          value: _LoginMode.customer,
-                          label: Text('Buyer / Seller'),
+                          value: _LoginMode.staff,
+                          label: Text('Mandi Login'),
                         ),
                         ButtonSegment(
-                          value: _LoginMode.staff,
-                          label: Text('Mandi / Staff'),
+                          value: _LoginMode.customer,
+                          label: Text('Customer Login'),
                         ),
                       ],
                       selected: {_mode},
@@ -354,7 +346,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           InkWell(
                             onTap: () => context.go('/signup-intro'),
                             child: MyText.bodyMedium(
-                              'Register Now',
+                              'Register Mandi',
                               fontWeight: 700,
                               color: theme.colorScheme.primary,
                               decoration: TextDecoration.underline,

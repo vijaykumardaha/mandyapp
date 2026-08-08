@@ -42,6 +42,9 @@ class SyncService {
   final _tableUpdateController = StreamController<String>.broadcast();
   Stream<String> get tableUpdates => _tableUpdateController.stream;
 
+  final _syncingController = StreamController<bool>.broadcast();
+  Stream<bool> get syncingStream => _syncingController.stream;
+
   final CustomerDAO _customerDAO = CustomerDAO();
   final ProductDAO _productDAO = ProductDAO();
   final ProductVariantDAO _variantDAO = ProductVariantDAO();
@@ -177,6 +180,7 @@ class SyncService {
       return null;
     }
     _syncing = true;
+    _syncingController.add(true);
 
     try {
       final pendingTables = await _collectPendingRecords();
@@ -200,6 +204,11 @@ class SyncService {
         return null;
       }
 
+      if (!response.isOk) {
+        log('SyncService: bulkSync → rejected (status: ${response.status}): ${body['message']}');
+        return null;
+      }
+
       final tables = body['tables'] as Map<String, dynamic>?;
       if (tables != null) {
         await upsertBulkResponse(tables);
@@ -214,6 +223,7 @@ class SyncService {
       return null;
     } finally {
       _syncing = false;
+      _syncingController.add(false);
     }
   }
 

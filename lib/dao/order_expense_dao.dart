@@ -165,7 +165,7 @@ class OrderExpenseDao {
           orderExpense.expenseNote,
           orderExpense.updatedAt,
           orderExpense.isDeleted ?? 0,
-          orderExpense.syncStatus ?? 0,
+          1,
         ]);
       }
 

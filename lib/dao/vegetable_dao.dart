@@ -124,7 +124,7 @@ class VegetableDAO {
           veg.common,
           veg.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           veg.isDeleted ?? 0,
-          veg.syncStatus ?? 1,
+          1,
         ]);
       }
 

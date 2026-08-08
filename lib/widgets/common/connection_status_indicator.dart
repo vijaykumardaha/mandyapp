@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:krishimandi/services/sync_service.dart';
 import 'package:krishimandi/services/user_service.dart';
 
 class ConnectionStatusIndicator extends StatefulWidget {
@@ -16,7 +17,9 @@ class _ConnectionStatusIndicatorState extends State<ConnectionStatusIndicator>
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   bool _isConnected = UserService.instance.isConnected;
+  bool _isSyncing = SyncService.instance.isSyncing;
   StreamSubscription<bool>? _subscription;
+  StreamSubscription<bool>? _syncSubscription;
 
   @override
   void initState() {
@@ -43,11 +46,17 @@ class _ConnectionStatusIndicatorState extends State<ConnectionStatusIndicator>
         _pulseController.value = 1.0;
       }
     });
+
+    _syncSubscription = SyncService.instance.syncingStream.listen((syncing) {
+      if (!mounted) return;
+      setState(() => _isSyncing = syncing);
+    });
   }
 
   @override
   void dispose() {
     _subscription?.cancel();
+    _syncSubscription?.cancel();
     _pulseController.dispose();
     super.dispose();
   }
@@ -65,6 +74,10 @@ class _ConnectionStatusIndicatorState extends State<ConnectionStatusIndicator>
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: _isSyncing ? Colors.red : Colors.transparent,
+              width: 1.5,
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

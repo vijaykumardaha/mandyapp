@@ -29,7 +29,7 @@ class SellingScreen extends StatefulWidget {
 
 class SellingScreenState extends State<SellingScreen> {
   late ThemeData theme;
-  Customer? buyerCustomer;
+  Customer? sellerCustomer;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
   final List<StreamSubscription<String>> _syncSubscriptions = [];
@@ -76,16 +76,16 @@ class SellingScreenState extends State<SellingScreen> {
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return CommonAppBar(
       showBackButton: false,
-      titleWidget: buyerCustomer != null
+      titleWidget: sellerCustomer != null
           ? Text(
-              'Selling to ${buyerCustomer!.name}',
+              'Selling for ${sellerCustomer!.name}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             )
           : TextField(
               controller: _searchController,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               decoration: InputDecoration(
-                hintText: 'Search buyer...',
+                hintText: 'Search seller...',
                 prefixIcon: const Icon(Icons.search, size: 20),
                 isDense: true,
                 contentPadding:
@@ -143,7 +143,7 @@ class SellingScreenState extends State<SellingScreen> {
               },
             ),
       actions: [
-        if (buyerCustomer != null)
+        if (sellerCustomer != null)
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Tooltip(
@@ -151,7 +151,7 @@ class SellingScreenState extends State<SellingScreen> {
               child: GestureDetector(
                 onTap: () {
                   setState(() {
-                    buyerCustomer = null;
+                    sellerCustomer = null;
                   });
                 },
                 child: Container(
@@ -172,7 +172,7 @@ class SellingScreenState extends State<SellingScreen> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Change Buyer',
+                        'Change Seller',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -195,7 +195,7 @@ class SellingScreenState extends State<SellingScreen> {
       searchQuery: _searchQuery,
       onCustomerSelected: (customer) {
         setState(() {
-          buyerCustomer = customer;
+          sellerCustomer = customer;
         });
       },
     );
@@ -209,8 +209,8 @@ class SellingScreenState extends State<SellingScreen> {
   }
 
   void _showAddToSaleBottomSheet(Product product) {
-    if (buyerCustomer == null) {
-      Info.message('Please select a buyer before recording sales',
+    if (sellerCustomer == null) {
+      Info.message('Please select a seller before recording sales',
           context: context);
       return;
     }
@@ -230,7 +230,7 @@ class SellingScreenState extends State<SellingScreen> {
     FocusScope.of(context).unfocus();
 
     final customerState = context.read<CustomerBloc>().state;
-    final sellers = customerState is CustomerLoaded
+    final buyers = customerState is CustomerLoaded
         ? customerState.customers
         : <Customer>[];
 
@@ -244,14 +244,14 @@ class SellingScreenState extends State<SellingScreen> {
       builder: (sheetContext) {
         return AddToSaleBottomSheet(
           variants: variants,
-          sellers: sellers,
-          onSubmit: (variant, quantity, rate, seller) async {
+          buyers: buyers,
+          onSubmit: (variant, quantity, rate, buyer) async {
             await _submitCartItem(
               product,
               variant,
               quantity: quantity,
               overrideSellingPrice: rate,
-              seller: seller,
+              buyer: buyer,
             );
           },
         );
@@ -264,14 +264,14 @@ class SellingScreenState extends State<SellingScreen> {
     ProductVariant variant, {
     required double quantity,
     double? overrideSellingPrice,
-    required Customer seller,
+    required Customer buyer,
   }) async {
     final effectiveSellingPrice = overrideSellingPrice ?? variant.sellingPrice;
     final sale = OrderItem(
-      sellerId: seller.id ?? 0,
-      sellerName: seller.name,
-      buyerId: buyerCustomer!.id!,
-      buyerName: buyerCustomer!.name,
+      sellerId: sellerCustomer!.id ?? 0,
+      sellerName: sellerCustomer!.name,
+      buyerId: buyer.id ?? 0,
+      buyerName: buyer.name,
       productId: product.id ?? 0,
       variantId: variant.id!,
       sellingPrice: effectiveSellingPrice,
@@ -296,7 +296,7 @@ class SellingScreenState extends State<SellingScreen> {
               Info.error(saleState.message, context: context);
             }
           },
-          child: buyerCustomer == null
+          child: sellerCustomer == null
               ? _buildCustomerGrid()
               : BlocBuilder<ProductBloc, ProductState>(
                   builder: (context, productState) {
@@ -306,10 +306,11 @@ class SellingScreenState extends State<SellingScreen> {
 
                     if (productState is ProductLoaded) {
                       var products = productState.products;
-                      final buyerProductIds = buyerCustomer!.selectedProductIds;
-                      if (buyerProductIds.isNotEmpty) {
+                      final sellerProductIds =
+                          sellerCustomer!.selectedProductIds;
+                      if (sellerProductIds.isNotEmpty) {
                         products = products
-                            .where((p) => buyerProductIds.contains(p.id))
+                            .where((p) => sellerProductIds.contains(p.id))
                             .toList();
                       }
 

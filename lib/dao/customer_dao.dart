@@ -159,7 +159,7 @@ class CustomerDAO {
           customer.productIds ?? '',
           customer.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           customer.isDeleted ?? 0,
-          customer.syncStatus ?? 1,
+          1,
         ]);
       }
 

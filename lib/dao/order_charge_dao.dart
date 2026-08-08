@@ -162,7 +162,7 @@ class OrderChargeDAO {
           orderCharge.chargeAmount,
           orderCharge.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           orderCharge.isDeleted ?? 0,
-          orderCharge.syncStatus ?? 1,
+          1,
         ]);
       }
 

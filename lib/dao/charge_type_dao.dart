@@ -223,7 +223,7 @@ class ChargeTypeDAO {
           chargeType.isActive,
           chargeType.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
           chargeType.isDeleted ?? 0,
-          chargeType.syncStatus ?? 1,
+          1,
         ]);
       }
 

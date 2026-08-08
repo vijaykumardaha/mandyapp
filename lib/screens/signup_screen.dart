@@ -59,19 +59,11 @@ class _SignupScreenState extends State<SignupScreen> {
         },
         builder: (context, state) {
           if (state is LoginLoading || state is SyncLoading) {
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CircularProgressIndicator(),
-                  if (state is SyncLoading)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Text(
-                        'Syncing your data...',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ),
+                  CircularProgressIndicator(),
                 ],
               ),
             );

@@ -32,22 +32,13 @@ class _InitialScreenState extends State<InitialScreen> {
         }
       },
       builder: (context, state) {
-        return Scaffold(
+        return const Scaffold(
           body: SafeArea(
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CircularProgressIndicator(),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Text(
-                      state is SyncLoading
-                          ? 'Syncing your data...'
-                          : 'Checking login status...',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
+                  CircularProgressIndicator(),
                 ],
               ),
             ),
