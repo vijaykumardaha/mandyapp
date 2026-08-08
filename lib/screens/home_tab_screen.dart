@@ -30,6 +30,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   bool _hasLoadedData = false;
   DashboardDataLoaded? _cachedData;
   String _userName = 'Dashboard';
+  DateTime _selectedDate = DateTime.now();
   StreamSubscription<String>? _syncSubscription;
 
   @override
@@ -56,7 +57,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       if (relevantTables.contains(table)) {
         final state = context.read<ReportsBloc>().state;
         if (state is DashboardDataLoaded) {
-          context.read<ReportsBloc>().add(const LoadDashboardData());
+          _loadDashboardData(forceRefresh: true);
         }
       }
     });
@@ -77,11 +78,33 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     // Only load if we explicitly force refresh OR we have no data at all
     if (forceRefresh || (_cachedData == null && !_hasLoadedData)) {
       debugPrint('Loading dashboard data...');
-      context.read<ReportsBloc>().add(const LoadDashboardData());
+      final date = _selectedDate;
+      final fromDate = DateTime(date.year, date.month, date.day);
+      final toDate = DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
+      context.read<ReportsBloc>().add(LoadDashboardData(
+            fromDate: fromDate,
+            toDate: toDate,
+          ));
       _hasLoadedData = true;
     } else {
       debugPrint('Skipping dashboard data load - using cached data');
     }
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(DateTime.now().year - 5),
+      lastDate: DateTime.now(),
+    );
+    if (picked == null || picked == _selectedDate) return;
+    setState(() {
+      _selectedDate = picked;
+      _cachedData = null;
+      _hasLoadedData = false;
+    });
+    _loadDashboardData(forceRefresh: true);
   }
 
   @override
@@ -103,9 +126,23 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             MyText.titleLarge(_userName, fontWeight: 700),
-            MyText.bodyMedium(
-              _dateFormat.format(DateTime.now()),
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            InkWell(
+              onTap: _pickDate,
+              borderRadius: BorderRadius.circular(6),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  MyText.bodyMedium(
+                    _dateFormat.format(_selectedDate),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                  Icon(
+                    Icons.arrow_drop_down,
+                    size: 20,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -213,6 +250,16 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                 children: [
                   Expanded(
                     child: FinancialMetric(
+                      title: 'Net Balance',
+                      value: _currencyFormat.format(data.netBalance),
+                      icon: Icons.account_balance,
+                      color: data.netBalance >= 0 ? Colors.green : Colors.red,
+                      theme: theme,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: FinancialMetric(
                       title: 'Profit Today',
                       value: _currencyFormat.format(data.grossProfit),
                       icon: Icons.trending_up,
@@ -279,6 +326,17 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                         theme: theme,
                       ),
                     ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: FinancialMetric(
+                        title: 'Pending Checkout',
+                        value:
+                            _currencyFormat.format(data.buyerPendingCheckout),
+                        icon: Icons.shopping_cart_checkout,
+                        color: Colors.purple,
+                        theme: theme,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -326,6 +384,17 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                         value: _currencyFormat.format(data.pendingToSellers),
                         icon: Icons.schedule,
                         color: Colors.red,
+                        theme: theme,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: FinancialMetric(
+                        title: 'Pending Checkout',
+                        value:
+                            _currencyFormat.format(data.sellerPendingCheckout),
+                        icon: Icons.shopping_cart_checkout,
+                        color: Colors.purple,
                         theme: theme,
                       ),
                     ),

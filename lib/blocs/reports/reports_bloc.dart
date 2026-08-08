@@ -241,43 +241,45 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     emit(ReportsLoading());
 
     try {
-      // Get today's date range
-      final today = DateTime.now();
-      final fromDate = DateTime(today.year, today.month, today.day);
-      final toDate = DateTime(today.year, today.month, today.day, 23, 59, 59);
+      final fromDate = event.fromDate;
+      final toDate = event.toDate;
 
       // Get all dashboard data in parallel
       final todaySalesFuture =
-          reportDAO.getDailySalesReport(fromDate: fromDate, toDate: toDate);
+          reportDAO.getTodaySalesAmount(fromDate: fromDate, toDate: toDate);
       final profitFuture =
           reportDAO.getMandiProfitReport(fromDate: fromDate, toDate: toDate);
       final paymentSummaryFuture =
           reportDAO.getPaymentSummary(fromDate: fromDate, toDate: toDate);
       final ordersFuture = reportDAO.getTodayOrdersCount();
-      final netBalanceFuture =
-          reportDAO.getNetBalance(fromDate: fromDate, toDate: toDate);
+      final pendingCheckoutFuture = reportDAO.getPendingCheckoutAmounts(
+        fromDate: fromDate,
+        toDate: toDate,
+      );
 
       final results = await Future.wait([
         todaySalesFuture,
         profitFuture,
         paymentSummaryFuture,
         ordersFuture,
-        netBalanceFuture,
+        pendingCheckoutFuture,
       ]);
 
-      final todaySalesData = results[0] as List<Map<String, dynamic>>;
+      final todaySales = results[0] as double;
       final profitData = results[1] as List<Map<String, dynamic>>;
       final paymentSummary = results[2] as Map<String, dynamic>;
       final ordersCount = results[3] as int;
-      final netBalance = results[4] as double;
-
-      // Calculate today's sales
-      final todaySales = todaySalesData.fold(
-          0.0, (sum, item) => sum + (item['total_revenue'] as num).toDouble());
+      final pendingCheckout = results[4] as Map<String, dynamic>;
 
       // Calculate today's profit
       final todayProfit = profitData.fold(
           0.0, (sum, item) => sum + (item['daily_profit'] as num).toDouble());
+
+      // Net balance = today's buyer receipts minus today's payments to sellers
+      final netBalance =
+          ((paymentSummary['total_received'] as num?)?.toDouble() ?? 0.0) -
+              ((paymentSummary['total_paid_to_sellers'] as num?)?.toDouble() ??
+                  0.0);
 
       emit(DashboardDataLoaded(
           todaySales: todaySales,
@@ -287,7 +289,9 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
           totalReceived: paymentSummary['total_received'] ?? 0.0,
           totalPending: paymentSummary['total_pending'] ?? 0.0,
           paidToSellers: paymentSummary['total_paid_to_sellers'] ?? 0.0,
-          pendingToSellers: paymentSummary['total_pending_to_sellers'] ?? 0.0));
+          pendingToSellers: paymentSummary['total_pending_to_sellers'] ?? 0.0,
+          buyerPendingCheckout: pendingCheckout['buyer_amount'] ?? 0.0,
+          sellerPendingCheckout: pendingCheckout['seller_amount'] ?? 0.0));
     } catch (error) {
       emit(const ReportsError(
           'Failed to load dashboard data. Please try again.'));

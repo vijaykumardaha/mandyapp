@@ -77,11 +77,6 @@ class PrinterService {
         Permission.bluetoothAdvertise,
       ];
 
-      final locationStatus = await Permission.locationWhenInUse.status;
-      if (!locationStatus.isGranted) {
-        permissions.add(Permission.locationWhenInUse);
-      }
-
       final Map<Permission, PermissionStatus> statuses =
           await permissions.request();
       final bool granted = statuses.entries

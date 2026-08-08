@@ -150,6 +150,8 @@ class DashboardDataLoaded extends ReportsState {
   final double totalPending;
   final double paidToSellers;
   final double pendingToSellers;
+  final double buyerPendingCheckout;
+  final double sellerPendingCheckout;
 
   const DashboardDataLoaded({
     required this.todaySales,
@@ -160,6 +162,8 @@ class DashboardDataLoaded extends ReportsState {
     required this.totalPending,
     required this.paidToSellers,
     required this.pendingToSellers,
+    required this.buyerPendingCheckout,
+    required this.sellerPendingCheckout,
   });
 
   @override
@@ -172,6 +176,8 @@ class DashboardDataLoaded extends ReportsState {
         totalPending,
         paidToSellers,
         pendingToSellers,
+        buyerPendingCheckout,
+        sellerPendingCheckout,
       ];
 }
 
