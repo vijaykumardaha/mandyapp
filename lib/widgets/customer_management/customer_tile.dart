@@ -15,6 +15,7 @@ class CustomerTile extends StatefulWidget {
   final ThemeData theme;
   final bool isAdmin;
   final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   const CustomerTile({
     super.key,
@@ -22,6 +23,7 @@ class CustomerTile extends StatefulWidget {
     required this.theme,
     this.isAdmin = true,
     required this.onEdit,
+    required this.onDelete,
   });
 
   @override
@@ -181,12 +183,16 @@ class _CustomerTileState extends State<CustomerTile> {
                     ),
                   );
                   _loadStats();
+                } else if (value == 'delete') {
+                  widget.onDelete();
                 }
               },
               itemBuilder: (context) => [
                 if (widget.isAdmin)
                   const PopupMenuItem(value: 'edit', child: Text('Edit')),
                 const PopupMenuItem(value: 'bills', child: Text('Bills')),
+                if (widget.isAdmin)
+                  const PopupMenuItem(value: 'delete', child: Text('Delete')),
               ],
             ),
           ],

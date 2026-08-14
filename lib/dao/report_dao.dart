@@ -85,6 +85,53 @@ class ReportDAO {
     return (result.first['total_sales'] as num?)?.toDouble() ?? 0.0;
   }
 
+  // 1aa. Today's total expenses amount
+  Future<double> getTodayExpensesAmount({
+    required DateTime fromDate,
+    required DateTime toDate,
+  }) async {
+    final db = await dbHelper.database;
+    const sql = '''
+      SELECT COALESCE(SUM(expense_amount), 0) as total_expenses
+      FROM order_expenses
+      WHERE is_deleted = 0
+        AND date(updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
+    ''';
+
+    final result = await db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      toDate.toIso8601String().split('T')[0],
+    ]);
+    return (result.first['total_expenses'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  // 1b. Expenses Report
+  Future<List<Map<String, dynamic>>> getExpensesReport({
+    required DateTime fromDate,
+    required DateTime toDate,
+  }) async {
+    final db = await dbHelper.database;
+    const sql = '''
+      SELECT
+        date(updated_at / 1000, 'unixepoch', 'localtime') as date,
+        order_id,
+        COALESCE(NULLIF(TRIM(expense_name), ''), 'General Expense') as expense_name,
+        SUM(expense_amount) as total_amount
+      FROM order_expenses
+      WHERE is_deleted = 0
+        AND date(updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
+      GROUP BY date, order_id, expense_name
+      ORDER BY date DESC, total_amount DESC
+    ''';
+
+    return db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      toDate.toIso8601String().split('T')[0],
+    ]);
+  }
+
   // 1b. Daily Purchase Report
   Future<List<Map<String, dynamic>>> getDailyPurchaseReport({
     required DateTime fromDate,
@@ -110,6 +157,7 @@ class ReportDAO {
       WHERE date(oi.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
         AND date(oi.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
         AND oi.seller_order_id IS NOT NULL
+        AND oi.is_deleted = 0
       GROUP BY date(oi.updated_at / 1000, 'unixepoch', 'localtime'), oi.product_id, oi.variant_id, oi.seller_id, c.name, pv.variant_name, pv.unit
       ORDER BY date DESC, total_cost DESC
     ''';
@@ -220,11 +268,12 @@ class ReportDAO {
                 WHERE oc.order_id = order_items.buyer_order_id AND oc.is_deleted = 0), 0)
             + COALESCE((SELECT SUM(oe.expense_amount) FROM order_expenses oe
                 WHERE oe.order_id = order_items.buyer_order_id AND oe.is_deleted = 0), 0)) as bill_amount,
-          COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = order_items.buyer_order_id), 0) as paid_amount,
+          COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = order_items.buyer_order_id AND op.is_deleted = 0), 0) as paid_amount,
           MIN(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as oldest_bill_date,
           MAX(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as latest_bill_date
         FROM order_items
         WHERE order_items.buyer_order_id IS NOT NULL
+          AND order_items.is_deleted = 0
           AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
           AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
         GROUP BY order_items.buyer_order_id, order_items.buyer_id
@@ -238,11 +287,12 @@ class ReportDAO {
                 WHERE oc.order_id = order_items.seller_order_id AND oc.is_deleted = 0), 0)
             - COALESCE((SELECT SUM(oe.expense_amount) FROM order_expenses oe
                 WHERE oe.order_id = order_items.seller_order_id AND oe.is_deleted = 0), 0)) as bill_amount,
-          COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = order_items.seller_order_id), 0) as paid_amount,
+          COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = order_items.seller_order_id AND op.is_deleted = 0), 0) as paid_amount,
           MIN(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as oldest_bill_date,
           MAX(date(order_items.updated_at / 1000, 'unixepoch', 'localtime')) as latest_bill_date
         FROM order_items
         WHERE order_items.seller_order_id IS NOT NULL
+          AND order_items.is_deleted = 0
           AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
           AND date(order_items.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
         GROUP BY order_items.seller_order_id, order_items.seller_id
@@ -275,7 +325,9 @@ class ReportDAO {
         0.0 as total_cost,
         COALESCE((SELECT SUM(oc.charge_amount) FROM order_charges oc
           JOIN order_items oi2 ON oc.order_id = oi2.buyer_order_id
-          WHERE date(oc.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+          WHERE oc.is_deleted = 0
+            AND oi2.is_deleted = 0
+            AND date(oc.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
             AND date(oc.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
             AND oi2.buyer_order_id IS NOT NULL), 0) as total_profit,
         COUNT(DISTINCT oi.product_id) as unique_products,
@@ -283,7 +335,8 @@ class ReportDAO {
         COUNT(DISTINCT CASE WHEN oi.seller_order_id IS NOT NULL THEN oi.seller_id END) as unique_sellers,
         AVG(oi.quantity * oi.selling_price) as avg_transaction_value
       FROM order_items oi
-      WHERE date(oi.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+      WHERE oi.is_deleted = 0
+        AND date(oi.updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
         AND date(oi.updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
     ''';
 
@@ -320,14 +373,16 @@ class ReportDAO {
       SELECT COALESCE(SUM(op.amount), 0) as total_received
       FROM order_payments op
       WHERE op.amount > 0
+        AND op.is_deleted = 0
         ${filter('op')}
         AND op.order_id IN (
           SELECT DISTINCT buyer_order_id FROM order_items
           WHERE buyer_order_id IS NOT NULL
+            AND is_deleted = 0
         )
     ''';
 
-    // Get pending payments from buyers: bill pending only (excludes unbilled cart items)
+    // Get pending payments from buyers: bill pending only (excludes un billed cart items)
     final pendingPaymentsSql = '''
       SELECT COALESCE(SUM(pending_amount), 0) as total_pending
       FROM (
@@ -347,16 +402,19 @@ class ReportDAO {
         LEFT JOIN (
           SELECT CAST(order_id AS INTEGER) as order_id, SUM(charge_amount) as total_charges
           FROM order_charges
+          WHERE is_deleted = 0
           GROUP BY order_id
         ) charge_totals ON item_totals.order_id = charge_totals.order_id
         LEFT JOIN (
           SELECT order_id, SUM(expense_amount) as total_expenses
           FROM order_expenses
+          WHERE is_deleted = 0
           GROUP BY order_id
         ) expense_totals ON item_totals.order_id = expense_totals.order_id
         LEFT JOIN (
           SELECT order_id, SUM(amount) as total_paid
           FROM order_payments
+          WHERE is_deleted = 0
           GROUP BY order_id
         ) payment_totals ON item_totals.order_id = payment_totals.order_id
       ) sub
@@ -368,10 +426,12 @@ class ReportDAO {
       SELECT COALESCE(SUM(op.amount), 0) as total_paid_to_sellers
       FROM order_payments op
       WHERE op.amount > 0
+        AND op.is_deleted = 0
         ${filter('op')}
         AND op.order_id IN (
           SELECT DISTINCT seller_order_id FROM order_items
           WHERE seller_order_id IS NOT NULL
+            AND is_deleted = 0
         )
     ''';
 
@@ -395,16 +455,19 @@ class ReportDAO {
         LEFT JOIN (
           SELECT CAST(order_id AS INTEGER) as order_id, SUM(charge_amount) as total_charges
           FROM order_charges
+          WHERE is_deleted = 0
           GROUP BY order_id
         ) charge_totals ON item_totals.order_id = charge_totals.order_id
         LEFT JOIN (
           SELECT order_id, SUM(expense_amount) as total_expenses
           FROM order_expenses
+          WHERE is_deleted = 0
           GROUP BY order_id
         ) expense_totals ON item_totals.order_id = expense_totals.order_id
         LEFT JOIN (
           SELECT order_id, SUM(amount) as total_paid
           FROM order_payments
+          WHERE is_deleted = 0
           GROUP BY order_id
         ) payment_totals ON item_totals.order_id = payment_totals.order_id
       ) sub
@@ -489,6 +552,7 @@ class ReportDAO {
       FROM order_items
       WHERE date(updated_at / 1000, 'unixepoch', 'localtime') = date(?)
         AND buyer_order_id IS NOT NULL
+        AND is_deleted = 0
     ''';
 
     final result = await db.rawQuery(sql, [today]);
@@ -514,6 +578,7 @@ class ReportDAO {
       SELECT COALESCE(SUM(amount), 0) as total_received
       FROM order_payments
       WHERE amount > 0
+        AND is_deleted = 0
         ${filter(DbTables.orderPayments)}
     ''';
 
@@ -524,6 +589,8 @@ class ReportDAO {
       JOIN order_items oi ON order_charges.order_id = oi.buyer_order_id
       WHERE oi.seller_order_id IS NULL
         AND oi.buyer_order_id IS NOT NULL
+        AND order_charges.is_deleted = 0
+        AND oi.is_deleted = 0
         ${filter(DbTables.orderCharges)}
     ''';
 

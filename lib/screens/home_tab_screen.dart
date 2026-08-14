@@ -291,14 +291,32 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: FinancialMetric(
-                            title: "Today's Sales",
-                            value: _currencyFormat.format(data.todaySales),
-                            icon: Icons.shopping_cart,
-                            color: Colors.blue,
+                            title: "Today's Expense",
+                            value: _currencyFormat.format(data.todayExpenses),
+                            icon: Icons.receipt_long,
+                            color: Colors.red,
                             theme: theme,
                           ),
                         ),
                       ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Mandi Overview Card (Today's sales)
+                DashboardOverviewCard(
+                  title: 'Mandi Overview',
+                  theme: theme,
+                  children: [
+                    Center(
+                      child: FinancialMetric(
+                        title: "Today's Sales",
+                        value: _currencyFormat.format(data.todaySales),
+                        icon: Icons.shopping_cart,
+                        color: Colors.blue,
+                        theme: theme,
+                      ),
                     ),
                   ],
                 ),

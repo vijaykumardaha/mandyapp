@@ -130,7 +130,7 @@ class ReportPdfService {
                   pw.SizedBox(height: 4),
                   pw.Text(
                     title,
-                    style: pw.TextStyle(
+                    style: const pw.TextStyle(
                       fontSize: 16,
                       fontWeight: pw.FontWeight.bold,
                       color: PdfColors.grey800,
@@ -148,7 +148,7 @@ class ReportPdfService {
                   ),
                   pw.Text(
                     dateRange,
-                    style: pw.TextStyle(
+                    style: const pw.TextStyle(
                       fontSize: 12,
                       fontWeight: pw.FontWeight.bold,
                       color: PdfColors.grey800,
@@ -199,6 +199,8 @@ class ReportPdfService {
         return _buildDailySalesContent(state as DailySalesReportLoaded);
       case ReportType.dailyPurchase:
         return _buildDailyPurchaseContent(state as DailyPurchaseReportLoaded);
+      case ReportType.expenses:
+        return _buildExpensesContent(state as ExpensesReportLoaded);
       case ReportType.mandiProfit:
         return _buildMandiProfitContent(state as MandiProfitReportLoaded);
       case ReportType.pendingPayment:
@@ -247,7 +249,7 @@ class ReportPdfService {
 
   static pw.Widget _buildTable(List<String> headers, List<List<String>> rows) {
     return pw.TableHelper.fromTextArray(
-      headerStyle: pw.TextStyle(
+      headerStyle: const pw.TextStyle(
         fontSize: 10,
         fontWeight: pw.FontWeight.bold,
         color: PdfColors.white,
@@ -296,7 +298,8 @@ class ReportPdfService {
       ]),
       pw.SizedBox(height: 16),
       pw.Text('Sales Details',
-          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+          style:
+              const pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Product', 'Rate', 'Quantity', 'Totals'],
@@ -327,7 +330,8 @@ class ReportPdfService {
       ]),
       pw.SizedBox(height: 16),
       pw.Text('Purchase Details',
-          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+          style:
+              const pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Product', 'Rate', 'Quantity', 'Cost'],
@@ -338,6 +342,34 @@ class ReportPdfService {
                   currencyFormat.format(item.avgPrice),
                   '${item.totalQuantity.toStringAsFixed(2)}\u00A0${item.unit.unitAbbreviation}',
                   currencyFormat.format(item.totalCost),
+                ])
+            .toList(),
+      ),
+    ];
+  }
+
+  // ── Expenses ────────────────────────────────────────────────
+  static List<pw.Widget> _buildExpensesContent(ExpensesReportLoaded state) {
+    return [
+      _buildSummaryRow([
+        _summaryCard('Total Expenses', currencyFormat.format(state.totalAmount),
+            PdfColor.fromHex('#C62828')),
+        _summaryCard('Transactions', '${state.totalTransactions}',
+            PdfColor.fromHex('#E65100')),
+      ]),
+      pw.SizedBox(height: 16),
+      pw.Text('Expense Details',
+          style:
+              const pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+      pw.SizedBox(height: 8),
+      _buildTable(
+        ['Date', 'Bill #', 'Expense', 'Amount'],
+        state.data
+            .map((item) => [
+                  item.date,
+                  item.orderId != null ? '#${item.orderId}' : '-',
+                  item.expenseName,
+                  currencyFormat.format(item.totalAmount),
                 ])
             .toList(),
       ),
@@ -358,7 +390,8 @@ class ReportPdfService {
       ]),
       pw.SizedBox(height: 16),
       pw.Text('Daily Breakdown',
-          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+          style:
+              const pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Date', 'Total Sales', 'Total Profit'],
@@ -389,7 +422,8 @@ class ReportPdfService {
       ]),
       pw.SizedBox(height: 16),
       pw.Text('Pending Details',
-          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+          style:
+              const pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Customer', 'Billing ID', 'Type', 'Phone', 'Bills', 'Total Amount'],
@@ -412,7 +446,8 @@ class ReportPdfService {
       CustomerLedgerReportLoaded state) {
     return [
       pw.Text('Customer Details',
-          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+          style:
+              const pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Customer', 'Phone', 'Paid', 'Received', 'Balance'],
@@ -440,7 +475,8 @@ class ReportPdfService {
           PdfColor.fromHex('#6A1B9A')),
       pw.SizedBox(height: 16),
       pw.Text('Stock Transactions',
-          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+          style:
+              const pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Date', 'Product', 'Buyer Name', 'Rate', 'Quantity', 'Amount'],
@@ -486,7 +522,8 @@ class ReportPdfService {
           PdfColor.fromHex('#E65100')),
       pw.SizedBox(height: 16),
       pw.Text('Stock Details',
-          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+          style:
+              const pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
       _buildTable(
         ['Product', 'Initial Stock', 'Sold Qty', 'Remaining Qty', 'Profit'],

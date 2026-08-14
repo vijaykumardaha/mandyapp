@@ -9,6 +9,7 @@ import 'package:krishimandi/widgets/common/my_text.dart';
 import 'package:krishimandi/widgets/reports/customer_ledger_report.dart';
 import 'package:krishimandi/widgets/reports/daily_purchase_report.dart';
 import 'package:krishimandi/widgets/reports/daily_sales_report.dart';
+import 'package:krishimandi/widgets/reports/expenses_report.dart';
 import 'package:krishimandi/widgets/reports/mandi_profit_report.dart';
 import 'package:krishimandi/widgets/reports/pending_payment_report.dart';
 import 'package:krishimandi/widgets/reports/report_filter_sheet.dart';
@@ -50,6 +51,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
       case ReportType.dailyPurchase:
         if (state is DailyPurchaseReportLoaded) {
           return DailyPurchaseReportWidget(
+              state: state, theme: theme, currencyFormat: currencyFormat);
+        }
+        break;
+      case ReportType.expenses:
+        if (state is ExpensesReportLoaded) {
+          return ExpensesReportWidget(
               state: state, theme: theme, currencyFormat: currencyFormat);
         }
         break;
@@ -177,6 +184,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
         break;
       case ReportType.dailyPurchase:
         reportsBloc.add(LoadDailyPurchaseReport(
+          fromDate: _getStartDate(),
+          toDate: _getEndDate(),
+        ));
+        break;
+      case ReportType.expenses:
+        reportsBloc.add(LoadExpensesReport(
           fromDate: _getStartDate(),
           toDate: _getEndDate(),
         ));

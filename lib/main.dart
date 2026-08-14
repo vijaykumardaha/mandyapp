@@ -4,12 +4,9 @@
  * Version : 13
  * */
 
-import 'dart:io' show Platform;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:krishimandi/blocs/bill_list/bill_list_bloc.dart';
 import 'package:krishimandi/blocs/charge_types/charge_types_bloc.dart';
 import 'package:krishimandi/blocs/customer/customer_bloc.dart';
@@ -41,9 +38,6 @@ Future<void> main() async {
   await DBHelper.instance.database;
 
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  if (!Platform.isMacOS && !Platform.isLinux && !Platform.isWindows) {
-    await FlutterContacts.requestPermission(readonly: true);
-  }
 
   runApp(const MyApp());
 }

@@ -25,7 +25,7 @@ class AuthMandiDropdownField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<Mandi>(
-      value: value,
+      initialValue: value,
       isExpanded: true,
       dropdownColor: Colors.white,
       borderRadius: BorderRadius.circular(12),

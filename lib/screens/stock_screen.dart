@@ -337,7 +337,7 @@ class _StockFormDialogState extends State<_StockFormDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               DropdownButtonFormField<Customer>(
-                value: _selectedSeller,
+                initialValue: _selectedSeller,
                 isExpanded: true,
                 dropdownColor: Colors.white,
                 borderRadius: BorderRadius.circular(12),
@@ -363,7 +363,7 @@ class _StockFormDialogState extends State<_StockFormDialog> {
               ),
               MySpacing.height(12),
               DropdownButtonFormField<Product>(
-                value: _selectedProduct,
+                initialValue: _selectedProduct,
                 isExpanded: true,
                 dropdownColor: Colors.white,
                 borderRadius: BorderRadius.circular(12),
@@ -423,7 +423,7 @@ class _StockFormDialogState extends State<_StockFormDialog> {
               ),
               MySpacing.height(12),
               DropdownButtonFormField<ProductVariant>(
-                value: _selectedVariant,
+                initialValue: _selectedVariant,
                 isExpanded: true,
                 dropdownColor: Colors.white,
                 borderRadius: BorderRadius.circular(12),

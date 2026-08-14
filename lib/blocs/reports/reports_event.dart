@@ -33,6 +33,19 @@ class LoadDailyPurchaseReport extends ReportsEvent {
   List<Object?> get props => [fromDate, toDate];
 }
 
+class LoadExpensesReport extends ReportsEvent {
+  final DateTime fromDate;
+  final DateTime toDate;
+
+  const LoadExpensesReport({
+    required this.fromDate,
+    required this.toDate,
+  });
+
+  @override
+  List<Object?> get props => [fromDate, toDate];
+}
+
 class LoadMandiProfitReport extends ReportsEvent {
   final DateTime fromDate;
   final DateTime toDate;

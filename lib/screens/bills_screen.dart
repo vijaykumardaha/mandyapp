@@ -367,15 +367,13 @@ class _BillsScreenState extends State<BillsScreen> {
           children: [
             CircleAvatar(
               radius: 20,
-              backgroundColor: (order.orderFor == 'buyer'
-                      ? Colors.blue
-                      : Colors.teal)
-                  .withValues(alpha: 0.1),
+              backgroundColor:
+                  (order.orderFor == 'buyer' ? Colors.blue : Colors.teal)
+                      .withValues(alpha: 0.1),
               child: Icon(
                 Icons.receipt_long_outlined,
                 size: 20,
-                color:
-                    order.orderFor == 'buyer' ? Colors.blue : Colors.teal,
+                color: order.orderFor == 'buyer' ? Colors.blue : Colors.teal,
               ),
             ),
             const SizedBox(width: 12),
@@ -398,8 +396,8 @@ class _BillsScreenState extends State<BillsScreen> {
                           _shortDateFormat.format(
                               DateTime.fromMillisecondsSinceEpoch(
                                   order.updatedAt ?? 0)),
-                          color:
-                              theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.5),
                         ),
                       ),
                     ],

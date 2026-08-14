@@ -40,8 +40,8 @@ class OrderChargeDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       DbTables.orderCharges,
-      where: 'order_id = ?',
-      whereArgs: [orderId],
+      where: 'order_id = ? AND is_deleted = ?',
+      whereArgs: [orderId, 0],
       orderBy: 'charge_name ASC',
     );
 
@@ -109,7 +109,7 @@ class OrderChargeDAO {
   Future<double> getOrderChargesTotal(String orderId) async {
     final db = await dbHelper.database;
     final result = await db.rawQuery(
-      'SELECT SUM(charge_amount) as total FROM order_charges WHERE order_id = ?',
+      'SELECT SUM(charge_amount) as total FROM order_charges WHERE order_id = ? AND is_deleted = 0',
       [orderId],
     );
 
@@ -123,8 +123,8 @@ class OrderChargeDAO {
     final db = await dbHelper.database;
     final result = await db.query(
       DbTables.orderCharges,
-      where: 'order_id = ? AND charge_name = ?',
-      whereArgs: [orderId, chargeName],
+      where: 'order_id = ? AND charge_name = ? AND is_deleted = ?',
+      whereArgs: [orderId, chargeName, 0],
     );
 
     return result.isNotEmpty;

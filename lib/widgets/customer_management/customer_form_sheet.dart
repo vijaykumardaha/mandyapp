@@ -33,6 +33,7 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
   late TextEditingController phoneController;
   late Set<int> selectedProductIds;
   late ThemeData theme;
+  bool _preselectedAllForAdd = false;
 
   bool get isEditing => widget.customer != null;
 
@@ -114,6 +115,18 @@ class _CustomerFormSheetState extends State<CustomerFormSheet> {
                       );
                     }
                     if (productState is ProductLoaded) {
+                      if (!isEditing &&
+                          !_preselectedAllForAdd &&
+                          productState.products.isNotEmpty) {
+                        _preselectedAllForAdd = true;
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (!mounted) return;
+                          setSheetState(() {
+                            selectedProductIds =
+                                productState.products.map((p) => p.id!).toSet();
+                          });
+                        });
+                      }
                       if (productState.products.isEmpty) {
                         return Center(
                           child: Padding(

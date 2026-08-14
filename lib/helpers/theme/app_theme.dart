@@ -71,6 +71,7 @@ class AppTheme {
       indicator: UnderlineTabIndicator(
         borderSide: BorderSide(color: Color(0xff3d63ff), width: 2.0),
       ),
+      indicatorColor: Color(0xffeeeeee),
     ),
 
     /// CheckBox theme
@@ -131,7 +132,6 @@ class AppTheme {
 
     /// Other Colors
     splashColor: Colors.white.withAlpha(100),
-    indicatorColor: const Color(0xffeeeeee),
     highlightColor: const Color(0xffeeeeee),
     colorScheme: _colorScheme,
   );

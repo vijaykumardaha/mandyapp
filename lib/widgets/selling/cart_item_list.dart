@@ -30,6 +30,7 @@ class CartItemList extends StatefulWidget {
     required this.onCheckout,
     this.onSelectDisabledSale,
     this.buyerMode = false,
+    this.isAdmin = true,
   });
 
   final List<OrderItem> initialSales;
@@ -43,6 +44,7 @@ class CartItemList extends StatefulWidget {
   final SaleSelectionCheckoutCallback onCheckout;
   final SaleSelectionDisabledTap? onSelectDisabledSale;
   final bool buyerMode;
+  final bool isAdmin;
 
   @override
   State<CartItemList> createState() => _CartItemListState();
@@ -107,6 +109,22 @@ class _CartItemListState extends State<CartItemList> {
       } else {
         _selectedIndices.remove(index);
       }
+    });
+  }
+
+  Future<void> _handleDelete(OrderItem sale, int index) async {
+    final deleted = await widget.onDeleteSale(sale, index);
+    if (!mounted || !deleted) return;
+    setState(() {
+      _saleList.removeAt(index);
+      final shifted = <int>{};
+      for (final i in _selectedIndices) {
+        if (i == index) continue;
+        shifted.add(i > index ? i - 1 : i);
+      }
+      _selectedIndices
+        ..clear()
+        ..addAll(shifted);
     });
   }
 
@@ -332,6 +350,24 @@ class _CartItemListState extends State<CartItemList> {
                                         ],
                                       ),
                                     ),
+                                    if (widget.isAdmin) ...[
+                                      const SizedBox(width: 8),
+                                      IconButton(
+                                        onPressed: () =>
+                                            _handleDelete(sale, index),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        visualDensity: VisualDensity.compact,
+                                        icon: Icon(
+                                          Icons.delete_outline,
+                                          size: 20,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .error,
+                                        ),
+                                        tooltip: 'Delete item',
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),

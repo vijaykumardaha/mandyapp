@@ -136,8 +136,8 @@ class OrderDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> orderMaps = await db.query(
       DbTables.orders,
-      where: 'id = ?',
-      whereArgs: [orderId],
+      where: 'id = ? AND is_deleted = ?',
+      whereArgs: [orderId, 0],
     );
 
     if (orderMaps.isNotEmpty) {

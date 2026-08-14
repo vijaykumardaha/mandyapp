@@ -371,3 +371,26 @@ class StockSummaryData {
     );
   }
 }
+
+class ExpensesReportData {
+  final String date;
+  final int? orderId;
+  final String expenseName;
+  final double totalAmount;
+
+  const ExpensesReportData({
+    required this.date,
+    required this.orderId,
+    required this.expenseName,
+    required this.totalAmount,
+  });
+
+  factory ExpensesReportData.fromJson(Map<String, dynamic> json) {
+    return ExpensesReportData(
+      date: json['date'] as String,
+      orderId: (json['order_id'] as num?)?.toInt(),
+      expenseName: json['expense_name'] as String? ?? 'General Expense',
+      totalAmount: (json['total_amount'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+}

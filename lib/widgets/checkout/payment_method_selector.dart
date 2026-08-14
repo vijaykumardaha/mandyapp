@@ -40,22 +40,18 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   bool _initialized = false;
 
   List<PaymentMethod> get _availablePaymentMethods {
-    final methods = [PaymentMethod.cash, PaymentMethod.upi, PaymentMethod.card];
-    if (widget.orderFor != 'seller') {
-      methods.add(PaymentMethod.credit);
-    }
-    return methods;
+    return [
+      PaymentMethod.cash,
+      PaymentMethod.upi,
+      PaymentMethod.card,
+      PaymentMethod.credit,
+    ];
   }
 
   @override
   void initState() {
     super.initState();
     _selectedPaymentMethods = Set.from(widget.selectedPaymentMethods);
-
-    if (widget.orderFor == 'seller' &&
-        _selectedPaymentMethods.contains(PaymentMethod.credit)) {
-      _selectedPaymentMethods.remove(PaymentMethod.credit);
-    }
 
     _controllers = {};
     _focusNodes = {};
@@ -91,21 +87,19 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.orderFor != widget.orderFor) {
-      if (widget.orderFor == 'seller' &&
-          _selectedPaymentMethods.contains(PaymentMethod.credit)) {
-        _selectedPaymentMethods.remove(PaymentMethod.credit);
-        _controllers[PaymentMethod.credit]?.dispose();
-        _focusNodes[PaymentMethod.credit]?.dispose();
-        _controllers.remove(PaymentMethod.credit);
-        _focusNodes.remove(PaymentMethod.credit);
-        final updatedAmounts =
-            Map<PaymentMethod, double>.from(widget.paymentAmounts);
-        updatedAmounts.remove(PaymentMethod.credit);
-        final selected = Set<PaymentMethod>.from(_selectedPaymentMethods);
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          widget.onSelectionChanged(selected, updatedAmounts);
-        });
-      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _selectedPaymentMethods.isNotEmpty) {
+          final method = _selectedPaymentMethods.first;
+          final controller = _controllers[method];
+          if (controller != null) {
+            controller.text = widget.grandTotal.toStringAsFixed(2);
+            final updatedAmounts =
+                Map<PaymentMethod, double>.from(widget.paymentAmounts);
+            updatedAmounts[method] = widget.grandTotal;
+            widget.onSelectionChanged(_selectedPaymentMethods, updatedAmounts);
+          }
+        }
+      });
     }
 
     if (oldWidget.grandTotal != widget.grandTotal) {
@@ -170,10 +164,6 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   }
 
   void _togglePaymentMethod(PaymentMethod method) {
-    if (widget.orderFor == 'seller' && method == PaymentMethod.credit) {
-      return;
-    }
-
     final updatedSelected = Set<PaymentMethod>.from(_selectedPaymentMethods);
     final updatedAmounts =
         Map<PaymentMethod, double>.from(widget.paymentAmounts);

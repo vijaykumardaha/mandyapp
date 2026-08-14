@@ -344,7 +344,7 @@ class _PaymentHistoriesScreenState extends State<PaymentHistoriesScreen> {
                     ),
                     const SizedBox(height: 14),
                     DropdownButtonFormField<String>(
-                      value: selectedSource,
+                      initialValue: selectedSource,
                       isExpanded: true,
                       dropdownColor: Colors.white,
                       borderRadius: BorderRadius.circular(12),

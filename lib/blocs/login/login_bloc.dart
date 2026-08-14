@@ -1,11 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:krishimandi/dao/charge_type_dao.dart';
-import 'package:krishimandi/dao/customer_dao.dart';
 import 'package:krishimandi/dao/product_dao.dart';
 import 'package:krishimandi/dao/vegetable_dao.dart';
-import 'package:krishimandi/models/customer_model.dart';
 import 'package:krishimandi/models/user_model.dart';
 import 'package:krishimandi/services/auth_api.dart';
 import 'package:krishimandi/services/customer_service.dart';
@@ -94,32 +91,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         );
 
         await AppHelper.savePreferences(PrefsKeys.user, user.toJson());
-
-        // Seed customers from phone contacts
-        final customerDao = CustomerDAO();
-        final existingCount = await customerDao.getCustomerCount();
-        if (existingCount <= 1) {
-          final hasPermission =
-              await FlutterContacts.requestPermission(readonly: true);
-          if (hasPermission) {
-            final phoneContacts =
-                await FlutterContacts.getContacts(withProperties: true);
-            final converted = phoneContacts
-                .where((c) =>
-                    c.phones.isNotEmpty &&
-                    c.phones.first.normalizedNumber.isNotEmpty)
-                .map((c) {
-              final phone = c.phones.first.normalizedNumber;
-              final last10 = phone.length >= 10
-                  ? phone.substring(phone.length - 10)
-                  : phone;
-              return Customer(name: c.displayName, phone: last10);
-            }).toList();
-            if (converted.isNotEmpty) {
-              await customerDao.bulkInsert(converted);
-            }
-          }
-        }
 
         await VegetableDAO().syncVegetables();
         await ProductDAO().productsSync();

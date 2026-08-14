@@ -226,7 +226,7 @@ class _VariantFormSheetState extends State<VariantFormSheet> {
                 MySpacing.width(12),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: selectedUnit,
+                    initialValue: selectedUnit,
                     isExpanded: true,
                     dropdownColor: Colors.white,
                     borderRadius: BorderRadius.circular(12),

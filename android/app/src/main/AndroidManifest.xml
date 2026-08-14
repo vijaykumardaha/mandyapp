@@ -1,39 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.READ_CONTACTS" />  
-    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
         android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
-    <!-- Restrict publishing to devices that have Bluetooth and a contact list -->
+    <!-- Restrict publishing to devices that have Bluetooth -->
     <uses-feature android:name="android.hardware.bluetooth" android:required="true" />
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
-    <uses-feature android:name="android.permission.READ_CONTACTS" android:required="true" />
-
-    <!-- Restrict publishing to handset (phone) screen sizes only -->
-    <compatible-screens>
-        <screen android:screenSize="small" android:screenDensity="ldpi" />
-        <screen android:screenSize="small" android:screenDensity="mdpi" />
-        <screen android:screenSize="small" android:screenDensity="hdpi" />
-        <screen android:screenSize="small" android:screenDensity="xhdpi" />
-        <screen android:screenSize="small" android:screenDensity="280" />
-        <screen android:screenSize="small" android:screenDensity="360" />
-        <screen android:screenSize="small" android:screenDensity="420" />
-        <screen android:screenSize="small" android:screenDensity="480" />
-        <screen android:screenSize="small" android:screenDensity="560" />
-        <screen android:screenSize="normal" android:screenDensity="ldpi" />
-        <screen android:screenSize="normal" android:screenDensity="mdpi" />
-        <screen android:screenSize="normal" android:screenDensity="hdpi" />
-        <screen android:screenSize="normal" android:screenDensity="xhdpi" />
-        <screen android:screenSize="normal" android:screenDensity="280" />
-        <screen android:screenSize="normal" android:screenDensity="360" />
-        <screen android:screenSize="normal" android:screenDensity="420" />
-        <screen android:screenSize="normal" android:screenDensity="480" />
-        <screen android:screenSize="normal" android:screenDensity="560" />
-    </compatible-screens>
 
 
     <application

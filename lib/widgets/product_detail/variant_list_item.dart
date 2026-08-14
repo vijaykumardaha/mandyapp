@@ -41,10 +41,10 @@ class VariantListItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Radio<String>(
-            value: variantKey,
+          RadioGroup<String>(
             groupValue: isDefault ? variantKey : null,
             onChanged: onDefaultChanged,
+            child: Radio<String>(value: variantKey),
           ),
           if (variant.imagePath.isNotEmpty)
             Container(

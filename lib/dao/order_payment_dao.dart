@@ -76,6 +76,8 @@ class OrderPaymentDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       DbTables.orderPayments,
+      where: 'is_deleted = ?',
+      whereArgs: [0],
       orderBy: 'updated_at DESC',
     );
 
@@ -88,8 +90,8 @@ class OrderPaymentDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       DbTables.orderPayments,
-      where: 'order_id = ?',
-      whereArgs: [orderId],
+      where: 'order_id = ? AND is_deleted = ?',
+      whereArgs: [orderId, 0],
       orderBy: 'updated_at DESC',
     );
 
@@ -101,7 +103,7 @@ class OrderPaymentDAO {
   Future<double> getTotalPaymentAmount(int orderId) async {
     final db = await dbHelper.database;
     final result = await db.rawQuery(
-      'SELECT SUM(amount) as total FROM order_payments WHERE order_id = ?',
+      'SELECT SUM(amount) as total FROM order_payments WHERE order_id = ? AND is_deleted = 0',
       [orderId],
     );
     return (result.first['total'] as num?)?.toDouble() ?? 0.0;
@@ -110,7 +112,7 @@ class OrderPaymentDAO {
   Future<int> getPaymentCount(int orderId) async {
     final db = await dbHelper.database;
     final result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM order_payments WHERE order_id = ?',
+      'SELECT COUNT(*) as count FROM order_payments WHERE order_id = ? AND is_deleted = 0',
       [orderId],
     );
     return Sqflite.firstIntValue(result) ?? 0;
@@ -121,8 +123,8 @@ class OrderPaymentDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       DbTables.orderPayments,
-      where: 'updated_at BETWEEN ? AND ?',
-      whereArgs: [startDate, endDate],
+      where: 'updated_at BETWEEN ? AND ? AND is_deleted = ?',
+      whereArgs: [startDate, endDate, 0],
       orderBy: 'updated_at DESC',
     );
 
@@ -135,6 +137,8 @@ class OrderPaymentDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       DbTables.orderPayments,
+      where: 'is_deleted = ?',
+      whereArgs: [0],
       orderBy: 'updated_at DESC',
       limit: limit,
     );
@@ -148,8 +152,8 @@ class OrderPaymentDAO {
     final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       DbTables.orderPayments,
-      where: 'source = ?',
-      whereArgs: [source],
+      where: 'source = ? AND is_deleted = ?',
+      whereArgs: [source, 0],
       orderBy: 'updated_at DESC',
     );
 
@@ -161,7 +165,7 @@ class OrderPaymentDAO {
   Future<double> getTotalAmountBySource(int orderId, String source) async {
     final db = await dbHelper.database;
     final result = await db.rawQuery(
-      'SELECT SUM(amount) as total FROM order_payments WHERE order_id = ? AND source = ?',
+      'SELECT SUM(amount) as total FROM order_payments WHERE order_id = ? AND source = ? AND is_deleted = 0',
       [orderId, source],
     );
     return (result.first['total'] as num?)?.toDouble() ?? 0.0;
@@ -170,7 +174,7 @@ class OrderPaymentDAO {
   Future<Map<String, double>> getPaymentSummaryBySource(int orderId) async {
     final db = await dbHelper.database;
     final result = await db.rawQuery(
-      'SELECT source, SUM(amount) as total FROM order_payments WHERE order_id = ? GROUP BY source',
+      'SELECT source, SUM(amount) as total FROM order_payments WHERE order_id = ? AND is_deleted = 0 GROUP BY source',
       [orderId],
     );
 

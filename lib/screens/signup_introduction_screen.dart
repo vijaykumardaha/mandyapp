@@ -11,13 +11,6 @@ class SignupIntroductionScreen extends StatelessWidget {
     return IntroductionScreen(
       items: const [
         IntroductionItem(
-          icon: LucideIcons.contact_round,
-          color: Colors.teal,
-          title: 'Customers from your contacts',
-          description: 'Turn your phone contacts into mandi customer records. '
-              'We sync them automatically, so nobody has to be added by hand.',
-        ),
-        IntroductionItem(
           icon: LucideIcons.badge_indian_rupee,
           color: Colors.orange,
           title: 'Billing charges pre-set',

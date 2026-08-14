@@ -22,8 +22,8 @@ class OrderExpenseDao {
     final db = await dbHelper.database;
     final maps = await db.query(
       DbTables.orderExpenses,
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'id = ? AND is_deleted = ?',
+      whereArgs: [id, 0],
     );
 
     if (maps.isNotEmpty) {
@@ -34,8 +34,8 @@ class OrderExpenseDao {
 
   Future<List<OrderExpense>> getAll() async {
     final db = await dbHelper.database;
-    final maps =
-        await db.query(DbTables.orderExpenses, orderBy: 'updated_at DESC');
+    final maps = await db.query(DbTables.orderExpenses,
+        where: 'is_deleted = ?', whereArgs: [0], orderBy: 'updated_at DESC');
     return List.generate(maps.length, (i) => OrderExpense.fromMap(maps[i]));
   }
 
@@ -43,8 +43,8 @@ class OrderExpenseDao {
     final db = await dbHelper.database;
     final maps = await db.query(
       DbTables.orderExpenses,
-      where: 'order_id = ?',
-      whereArgs: [orderId],
+      where: 'order_id = ? AND is_deleted = ?',
+      whereArgs: [orderId, 0],
       orderBy: 'updated_at DESC',
     );
     return List.generate(maps.length, (i) => OrderExpense.fromMap(maps[i]));
@@ -54,8 +54,8 @@ class OrderExpenseDao {
     final db = await dbHelper.database;
     final maps = await db.query(
       DbTables.orderExpenses,
-      where: 'order_id = ? OR order_id IS NULL',
-      whereArgs: [orderId],
+      where: '(order_id = ? OR order_id IS NULL) AND is_deleted = ?',
+      whereArgs: [orderId, 0],
       orderBy: 'updated_at DESC',
     );
     return List.generate(maps.length, (i) => OrderExpense.fromMap(maps[i]));
@@ -105,7 +105,7 @@ class OrderExpenseDao {
   Future<double> getTotalExpensesByOrderId(int orderId) async {
     final db = await dbHelper.database;
     final result = await db.rawQuery(
-      'SELECT SUM(expense_amount) as total FROM order_expenses WHERE order_id = ?',
+      'SELECT SUM(expense_amount) as total FROM order_expenses WHERE order_id = ? AND is_deleted = 0',
       [orderId],
     );
 
@@ -117,15 +117,15 @@ class OrderExpenseDao {
 
   Future<int> count() async {
     final db = await dbHelper.database;
-    final result =
-        await db.rawQuery('SELECT COUNT(*) as count FROM order_expenses');
+    final result = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM order_expenses WHERE is_deleted = 0');
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
   Future<int> countByOrderId(int orderId) async {
     final db = await dbHelper.database;
     final result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM order_expenses WHERE order_id = ?',
+      'SELECT COUNT(*) as count FROM order_expenses WHERE order_id = ? AND is_deleted = 0',
       [orderId],
     );
     return Sqflite.firstIntValue(result) ?? 0;

@@ -15,6 +15,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   }) : super(ReportsInitial()) {
     on<LoadDailySalesReport>(_onLoadDailySalesReport);
     on<LoadDailyPurchaseReport>(_onLoadDailyPurchaseReport);
+    on<LoadExpensesReport>(_onLoadExpensesReport);
     on<LoadMandiProfitReport>(_onLoadMandiProfitReport);
     on<LoadCustomerLedgerReport>(_onLoadCustomerLedgerReport);
     on<LoadPendingPaymentReport>(_onLoadPendingPaymentReport);
@@ -99,6 +100,38 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     } catch (error) {
       emit(const ReportsError(
           'Failed to load daily purchase report. Please try again.'));
+    }
+  }
+
+  Future<void> _onLoadExpensesReport(
+    LoadExpensesReport event,
+    Emitter<ReportsState> emit,
+  ) async {
+    emit(ReportsLoading());
+
+    try {
+      final rawData = await reportDAO.getExpensesReport(
+        fromDate: event.fromDate,
+        toDate: event.toDate,
+      );
+
+      if (rawData.isEmpty) {
+        emit(ReportsEmpty());
+        return;
+      }
+      final data = rawData.map(ExpensesReportData.fromJson).toList();
+
+      final totalAmount = data.fold(0.0, (sum, item) => sum + item.totalAmount);
+      final totalTransactions = data.length;
+
+      emit(ExpensesReportLoaded(
+        data: data,
+        totalAmount: totalAmount,
+        totalTransactions: totalTransactions,
+      ));
+    } catch (error) {
+      emit(const ReportsError(
+          'Failed to load expenses report. Please try again.'));
     }
   }
 
@@ -249,6 +282,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
           reportDAO.getTodaySalesAmount(fromDate: fromDate, toDate: toDate);
       final profitFuture =
           reportDAO.getMandiProfitReport(fromDate: fromDate, toDate: toDate);
+      final todayExpensesFuture =
+          reportDAO.getTodayExpensesAmount(fromDate: fromDate, toDate: toDate);
       final paymentSummaryFuture =
           reportDAO.getPaymentSummary(fromDate: fromDate, toDate: toDate);
       final ordersFuture = reportDAO.getTodayOrdersCount();
@@ -263,6 +298,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         paymentSummaryFuture,
         ordersFuture,
         pendingCheckoutFuture,
+        todayExpensesFuture,
       ]);
 
       final todaySales = results[0] as double;
@@ -270,6 +306,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       final paymentSummary = results[2] as Map<String, dynamic>;
       final ordersCount = results[3] as int;
       final pendingCheckout = results[4] as Map<String, dynamic>;
+      final todayExpenses = results[5] as double;
 
       // Calculate today's profit
       final todayProfit = profitData.fold(
@@ -284,6 +321,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       emit(DashboardDataLoaded(
           todaySales: todaySales,
           grossProfit: todayProfit,
+          todayExpenses: todayExpenses,
           todayOrders: ordersCount,
           netBalance: netBalance,
           totalReceived: paymentSummary['total_received'] ?? 0.0,

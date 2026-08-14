@@ -115,9 +115,8 @@ class BillCard extends StatelessWidget {
                 Text(
                   order.orderFor == 'seller' ? 'Seller' : 'Buyer',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: order.orderFor == 'buyer'
-                        ? Colors.blue
-                        : Colors.teal,
+                    color:
+                        order.orderFor == 'buyer' ? Colors.blue : Colors.teal,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

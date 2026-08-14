@@ -117,7 +117,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                 ),
                 MySpacing.height(12),
                 DropdownButtonFormField<String>(
-                  value: selectedType,
+                  initialValue: selectedType,
                   isExpanded: true,
                   dropdownColor: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -200,7 +200,7 @@ class _ChargeTypesScreenState extends State<ChargeTypesScreen> {
                 ),
                 MySpacing.height(12),
                 DropdownButtonFormField<String>(
-                  value: selectedChargeTypeFor,
+                  initialValue: selectedChargeTypeFor,
                   isExpanded: true,
                   dropdownColor: Colors.white,
                   borderRadius: BorderRadius.circular(12),

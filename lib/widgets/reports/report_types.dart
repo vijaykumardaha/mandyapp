@@ -10,6 +10,7 @@ enum ReportType {
   customerLedger,
   stockTransaction,
   stockSummary,
+  expenses,
 }
 
 class ReportHelpers {
@@ -44,6 +45,8 @@ class ReportHelpers {
         return 'Stock Transaction';
       case ReportType.stockSummary:
         return 'Stock Summary';
+      case ReportType.expenses:
+        return 'Expenses';
     }
   }
 
@@ -63,6 +66,8 @@ class ReportHelpers {
         return Icons.receipt_long;
       case ReportType.stockSummary:
         return Icons.inventory_2;
+      case ReportType.expenses:
+        return Icons.trending_down;
     }
   }
 

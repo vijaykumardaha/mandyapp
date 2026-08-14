@@ -9,6 +9,7 @@ import 'package:krishimandi/models/customer_model.dart';
 import 'package:krishimandi/models/order_item_model.dart';
 import 'package:krishimandi/screens/checkout_screen.dart';
 import 'package:krishimandi/services/sync_service.dart';
+import 'package:krishimandi/utils/app_helper.dart';
 import 'package:krishimandi/utils/constants.dart';
 import 'package:krishimandi/utils/info_controller.dart';
 import 'package:krishimandi/widgets/common/common_app_bar.dart';
@@ -27,11 +28,21 @@ class _BillingScreenState extends State<BillingScreen> {
 
   Customer? _selectedCustomer;
   bool _isBuyerMode = true;
+  bool _isAdmin = true;
   StreamSubscription<String>? _syncSubscription;
   TextEditingController? _searchController;
   List<Customer> _allCustomers = [];
 
   String get _orderFor => _isBuyerMode ? 'buyer' : 'seller';
+
+  Future<void> _loadRole() async {
+    final user = await AppHelper.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        _isAdmin = user?.isAdmin ?? true;
+      });
+    }
+  }
 
   LoadAllUnlinkedOrderItems get _loadEventForMode => LoadAllUnlinkedOrderItems(
         excludeBuyerOrderLinked: _isBuyerMode,
@@ -41,6 +52,7 @@ class _BillingScreenState extends State<BillingScreen> {
   @override
   void initState() {
     super.initState();
+    _loadRole();
     context.read<OrderItemBloc>().add(_loadEventForMode);
     context.read<CustomerBloc>().add(const FetchCustomer(query: ''));
 
@@ -436,6 +448,7 @@ class _BillingScreenState extends State<BillingScreen> {
         await _createNewCart(selectedSales);
       },
       buyerMode: _isBuyerMode,
+      isAdmin: _isAdmin,
     );
   }
 }

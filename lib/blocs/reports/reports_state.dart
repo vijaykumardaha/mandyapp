@@ -84,6 +84,21 @@ class DailyPurchaseReportLoaded extends ReportsState {
       [data, totalCost, totalQuantity, totalTransactions];
 }
 
+class ExpensesReportLoaded extends ReportsState {
+  final List<ExpensesReportData> data;
+  final double totalAmount;
+  final int totalTransactions;
+
+  const ExpensesReportLoaded({
+    required this.data,
+    required this.totalAmount,
+    required this.totalTransactions,
+  });
+
+  @override
+  List<Object?> get props => [data, totalAmount, totalTransactions];
+}
+
 class MandiProfitReportLoaded extends ReportsState {
   final List<MandiProfitData> data;
   final double totalProfit;
@@ -144,6 +159,7 @@ class ReportsSummaryLoaded extends ReportsState {
 class DashboardDataLoaded extends ReportsState {
   final double todaySales;
   final double grossProfit;
+  final double todayExpenses;
   final int todayOrders;
   final double netBalance;
   final double totalReceived;
@@ -156,6 +172,7 @@ class DashboardDataLoaded extends ReportsState {
   const DashboardDataLoaded({
     required this.todaySales,
     required this.grossProfit,
+    required this.todayExpenses,
     required this.todayOrders,
     required this.netBalance,
     required this.totalReceived,
@@ -170,6 +187,7 @@ class DashboardDataLoaded extends ReportsState {
   List<Object?> get props => [
         todaySales,
         grossProfit,
+        todayExpenses,
         todayOrders,
         netBalance,
         totalReceived,

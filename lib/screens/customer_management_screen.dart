@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:krishimandi/blocs/customer/customer_bloc.dart';
+import 'package:krishimandi/dao/customer_payment_dao.dart';
+import 'package:krishimandi/dao/order_dao.dart';
 import 'package:krishimandi/helpers/theme/app_theme.dart';
 import 'package:krishimandi/models/customer_model.dart';
 import 'package:krishimandi/services/report_pdf_service.dart';
@@ -146,6 +148,7 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
                       theme: theme,
                       isAdmin: _isAdmin,
                       onEdit: () => _showAddCustomerSheet(customer: customer),
+                      onDelete: () => _confirmDeleteCustomer(customer),
                     );
                   },
                 ),
@@ -229,6 +232,60 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
       context,
       customer: customer,
       query: _searchController.text.trim(),
+    );
+  }
+
+  Future<void> _confirmDeleteCustomer(Customer customer) async {
+    final orders = await OrderDAO().getOrdersByCustomer(customer.id!);
+    final payments =
+        await CustomerPaymentDAO().getPaymentsByCustomerId(customer.id!);
+
+    if (orders.isNotEmpty || payments.isNotEmpty) {
+      if (!mounted) return;
+      final reasons = <String>[
+        if (orders.isNotEmpty) '${orders.length} order(s)',
+        if (payments.isNotEmpty) '${payments.length} payment record(s)',
+      ];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Cannot delete customer: ${reasons.join(' and ')} found against them.',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const MyText.titleMedium('Delete Customer', fontWeight: 600),
+        content: MyText.bodyMedium(
+          'Are you sure you want to delete '
+          '${(customer.name?.trim().isNotEmpty == true ? customer.name!.trim() : 'this customer')}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const MyText.bodyMedium('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              context.read<CustomerBloc>().add(
+                    DeleteCustomer(
+                      customerId: customer.id!,
+                      query: _searchController.text.trim(),
+                    ),
+                  );
+              Navigator.pop(dialogContext);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const MyText.bodyMedium('Delete'),
+          ),
+        ],
+      ),
     );
   }
 
