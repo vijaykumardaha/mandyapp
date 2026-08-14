@@ -8,6 +8,7 @@ import 'package:krishimandi/screens/customer_management_screen.dart';
 import 'package:krishimandi/screens/home_screen.dart';
 import 'package:krishimandi/screens/initial_screen.dart';
 import 'package:krishimandi/screens/login_screen.dart';
+import 'package:krishimandi/screens/other_transactions_screen.dart';
 import 'package:krishimandi/screens/printer_settings_screen.dart';
 import 'package:krishimandi/screens/privacy_policy_screen.dart';
 import 'package:krishimandi/screens/product_list_screen.dart';
@@ -89,6 +90,12 @@ class AppRoutes {
         path: '/charges',
         builder: (context, state) {
           return const ChargeTypesScreen();
+        },
+      ),
+      GoRoute(
+        path: '/other-transactions',
+        builder: (context, state) {
+          return const OtherTransactionsScreen();
         },
       ),
       GoRoute(

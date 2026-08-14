@@ -106,6 +106,59 @@ class ReportDAO {
     return (result.first['total_expenses'] as num?)?.toDouble() ?? 0.0;
   }
 
+  // 1ab. Other transaction totals for the period (debit = paid, credit = receive)
+  Future<Map<String, dynamic>> getOtherTransactionTotals({
+    required DateTime fromDate,
+    required DateTime toDate,
+  }) async {
+    final db = await dbHelper.database;
+    const sql = '''
+      SELECT
+        COALESCE(SUM(CASE WHEN transaction_type = 'debit'
+          THEN amount ELSE 0 END), 0) as total_paid,
+        COALESCE(SUM(CASE WHEN transaction_type = 'credit'
+          THEN amount ELSE 0 END), 0) as total_receive
+      FROM ${DbTables.otherTransactions}
+      WHERE is_deleted = 0
+        AND date(updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
+    ''';
+
+    final result = await db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      toDate.toIso8601String().split('T')[0],
+    ]);
+    return result.isNotEmpty
+        ? result.first
+        : {'total_paid': 0.0, 'total_receive': 0.0};
+  }
+
+  // 1ac. Mandi Transaction Report (other_transactions detail)
+  Future<List<Map<String, dynamic>>> getMandiTransactionReport({
+    required DateTime fromDate,
+    required DateTime toDate,
+  }) async {
+    final db = await dbHelper.database;
+    const sql = '''
+      SELECT
+        id,
+        date(updated_at / 1000, 'unixepoch', 'localtime') as date,
+        transaction_note,
+        transaction_type,
+        amount
+      FROM ${DbTables.otherTransactions}
+      WHERE is_deleted = 0
+        AND date(updated_at / 1000, 'unixepoch', 'localtime') >= date(?)
+        AND date(updated_at / 1000, 'unixepoch', 'localtime') <= date(?)
+      ORDER BY updated_at DESC
+    ''';
+
+    return db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      toDate.toIso8601String().split('T')[0],
+    ]);
+  }
+
   // 1b. Expenses Report
   Future<List<Map<String, dynamic>>> getExpensesReport({
     required DateTime fromDate,

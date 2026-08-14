@@ -26,6 +26,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     on<LoadNetBalance>(_onLoadNetBalance);
     on<LoadStockTransactionReport>(_onLoadStockTransactionReport);
     on<LoadStockSummaryReport>(_onLoadStockSummaryReport);
+    on<LoadMandiTransactionReport>(_onLoadMandiTransactionReport);
   }
 
   Future<void> _onLoadDailySalesReport(
@@ -291,6 +292,10 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         fromDate: fromDate,
         toDate: toDate,
       );
+      final otherTransactionsFuture = reportDAO.getOtherTransactionTotals(
+        fromDate: fromDate,
+        toDate: toDate,
+      );
 
       final results = await Future.wait([
         todaySalesFuture,
@@ -299,6 +304,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         ordersFuture,
         pendingCheckoutFuture,
         todayExpensesFuture,
+        otherTransactionsFuture,
       ]);
 
       final todaySales = results[0] as double;
@@ -307,16 +313,25 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       final ordersCount = results[3] as int;
       final pendingCheckout = results[4] as Map<String, dynamic>;
       final todayExpenses = results[5] as double;
+      final otherTransactions = results[6] as Map<String, dynamic>;
 
       // Calculate today's profit
       final todayProfit = profitData.fold(
           0.0, (sum, item) => sum + (item['daily_profit'] as num).toDouble());
 
-      // Net balance = today's buyer receipts minus today's payments to sellers
+      final totalPaid =
+          (otherTransactions['total_paid'] as num?)?.toDouble() ?? 0.0;
+      final totalReceive =
+          (otherTransactions['total_receive'] as num?)?.toDouble() ?? 0.0;
+
+      // Net balance = today's buyer receipts minus today's payments to sellers,
+      // adjusted for other transactions (credit adds, debit subtracts)
       final netBalance =
           ((paymentSummary['total_received'] as num?)?.toDouble() ?? 0.0) -
               ((paymentSummary['total_paid_to_sellers'] as num?)?.toDouble() ??
-                  0.0);
+                  0.0) +
+              totalReceive -
+              totalPaid;
 
       emit(DashboardDataLoaded(
           todaySales: todaySales,
@@ -329,7 +344,9 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
           paidToSellers: paymentSummary['total_paid_to_sellers'] ?? 0.0,
           pendingToSellers: paymentSummary['total_pending_to_sellers'] ?? 0.0,
           buyerPendingCheckout: pendingCheckout['buyer_amount'] ?? 0.0,
-          sellerPendingCheckout: pendingCheckout['seller_amount'] ?? 0.0));
+          sellerPendingCheckout: pendingCheckout['seller_amount'] ?? 0.0,
+          totalPaid: totalPaid,
+          totalReceive: totalReceive));
     } catch (error) {
       emit(const ReportsError(
           'Failed to load dashboard data. Please try again.'));
@@ -457,6 +474,43 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     } catch (error) {
       emit(const ReportsError(
           'Failed to load stock summary report. Please try again.'));
+    }
+  }
+
+  Future<void> _onLoadMandiTransactionReport(
+    LoadMandiTransactionReport event,
+    Emitter<ReportsState> emit,
+  ) async {
+    emit(ReportsLoading());
+
+    try {
+      final rawData = await reportDAO.getMandiTransactionReport(
+        fromDate: event.fromDate,
+        toDate: event.toDate,
+      );
+
+      if (rawData.isEmpty) {
+        emit(ReportsEmpty());
+        return;
+      }
+
+      final data = rawData.map(MandiTransactionReportData.fromJson).toList();
+      final totalPaid = data
+          .where((item) => item.isDebit)
+          .fold(0.0, (sum, item) => sum + item.amount);
+      final totalReceive = data
+          .where((item) => item.isCredit)
+          .fold(0.0, (sum, item) => sum + item.amount);
+
+      emit(MandiTransactionReportLoaded(
+        data: data,
+        totalPaid: totalPaid,
+        totalReceive: totalReceive,
+        totalTransactions: data.length,
+      ));
+    } catch (error) {
+      emit(const ReportsError(
+          'Failed to load mandi transaction report. Please try again.'));
     }
   }
 }

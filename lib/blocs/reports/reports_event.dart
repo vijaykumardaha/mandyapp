@@ -148,3 +148,16 @@ class LoadStockSummaryReport extends ReportsEvent {
   @override
   List<Object?> get props => [fromDate, toDate];
 }
+
+class LoadMandiTransactionReport extends ReportsEvent {
+  final DateTime fromDate;
+  final DateTime toDate;
+
+  const LoadMandiTransactionReport({
+    required this.fromDate,
+    required this.toDate,
+  });
+
+  @override
+  List<Object?> get props => [fromDate, toDate];
+}

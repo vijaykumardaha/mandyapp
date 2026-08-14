@@ -394,3 +394,32 @@ class ExpensesReportData {
     );
   }
 }
+
+class MandiTransactionReportData {
+  final int id;
+  final String date;
+  final String transactionNote;
+  final String transactionType;
+  final double amount;
+
+  const MandiTransactionReportData({
+    required this.id,
+    required this.date,
+    required this.transactionNote,
+    required this.transactionType,
+    required this.amount,
+  });
+
+  bool get isDebit => transactionType == 'debit';
+  bool get isCredit => transactionType == 'credit';
+
+  factory MandiTransactionReportData.fromJson(Map<String, dynamic> json) {
+    return MandiTransactionReportData(
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      date: json['date'] as String,
+      transactionNote: json['transaction_note'] as String? ?? '',
+      transactionType: (json['transaction_type'] as String?) ?? 'debit',
+      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+}

@@ -16,6 +16,7 @@ import 'package:krishimandi/blocs/order/order_bloc.dart';
 import 'package:krishimandi/blocs/order_expense/order_expense_bloc.dart';
 import 'package:krishimandi/blocs/order_item/order_item_bloc.dart';
 import 'package:krishimandi/blocs/order_payment/order_payment_bloc.dart';
+import 'package:krishimandi/blocs/other_transaction/other_transaction_bloc.dart';
 import 'package:krishimandi/blocs/product/product_bloc.dart';
 import 'package:krishimandi/blocs/reports/reports_bloc.dart';
 import 'package:krishimandi/blocs/stock/stock_bloc.dart';
@@ -60,6 +61,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ChargeTypesBloc>(
           create: (context) => ChargeTypesBloc(),
+        ),
+        BlocProvider<OtherTransactionBloc>(
+          create: (context) => OtherTransactionBloc(),
         ),
         BlocProvider<OrderBloc>(
           create: (context) => OrderBloc(),

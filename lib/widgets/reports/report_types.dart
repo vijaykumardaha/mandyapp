@@ -11,6 +11,7 @@ enum ReportType {
   stockTransaction,
   stockSummary,
   expenses,
+  mandiTransaction,
 }
 
 class ReportHelpers {
@@ -47,6 +48,8 @@ class ReportHelpers {
         return 'Stock Summary';
       case ReportType.expenses:
         return 'Expenses';
+      case ReportType.mandiTransaction:
+        return 'Mandi Transaction';
     }
   }
 
@@ -68,6 +71,8 @@ class ReportHelpers {
         return Icons.inventory_2;
       case ReportType.expenses:
         return Icons.trending_down;
+      case ReportType.mandiTransaction:
+        return Icons.swap_horiz;
     }
   }
 

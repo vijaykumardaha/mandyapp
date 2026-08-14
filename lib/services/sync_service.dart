@@ -9,6 +9,7 @@ import 'package:krishimandi/dao/order_dao.dart';
 import 'package:krishimandi/dao/order_expense_dao.dart';
 import 'package:krishimandi/dao/order_item_dao.dart';
 import 'package:krishimandi/dao/order_payment_dao.dart';
+import 'package:krishimandi/dao/other_transaction_dao.dart';
 import 'package:krishimandi/dao/product_dao.dart';
 import 'package:krishimandi/dao/product_variant_dao.dart';
 import 'package:krishimandi/dao/stock_dao.dart';
@@ -22,6 +23,7 @@ import 'package:krishimandi/models/order_expense_model.dart';
 import 'package:krishimandi/models/order_item_model.dart';
 import 'package:krishimandi/models/order_model.dart';
 import 'package:krishimandi/models/order_payment_model.dart';
+import 'package:krishimandi/models/other_transaction_model.dart';
 import 'package:krishimandi/models/product_model.dart';
 import 'package:krishimandi/models/product_variant_model.dart';
 import 'package:krishimandi/models/stock_model.dart';
@@ -58,6 +60,7 @@ class SyncService {
   final CustomerPaymentDAO _customerPaymentDAO = CustomerPaymentDAO();
   final VegetableDAO _vegetableDAO = VegetableDAO();
   final StockDAO _stockDAO = StockDAO();
+  final OtherTransactionDAO _otherTransactionDAO = OtherTransactionDAO();
 
   bool get isSyncing => _syncing;
 
@@ -332,6 +335,14 @@ class SyncService {
           .toList();
     }
 
+    final otherTransactions = await db.query(DbTables.otherTransactions,
+        where: 'sync_status = ?', whereArgs: [0]);
+    if (otherTransactions.isNotEmpty) {
+      tables[DbTables.otherTransactions] = otherTransactions
+          .map((m) => OtherTransaction.fromJson(m).toJson())
+          .toList();
+    }
+
     return tables;
   }
 
@@ -452,6 +463,10 @@ class SyncService {
       case DbTables.stockTransactions:
         await _stockDAO
             .bulkUpsertStockTransactions([StockTransaction.fromJson(record)]);
+        break;
+      case DbTables.otherTransactions:
+        await _otherTransactionDAO
+            .bulkUpsertTransactions([OtherTransaction.fromJson(record)]);
         break;
       default:
         log('SyncService: unknown table "$table", skipping');

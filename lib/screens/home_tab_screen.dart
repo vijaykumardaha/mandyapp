@@ -51,6 +51,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       DbTables.orderExpenses,
       DbTables.customerPayments,
       DbTables.customers,
+      DbTables.otherTransactions,
     };
     _syncSubscription = SyncService.instance.tableUpdates.listen((table) {
       if (!mounted) return;
@@ -309,14 +310,38 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                   title: 'Mandi Overview',
                   theme: theme,
                   children: [
-                    Center(
-                      child: FinancialMetric(
-                        title: "Today's Sales",
-                        value: _currencyFormat.format(data.todaySales),
-                        icon: Icons.shopping_cart,
-                        color: Colors.blue,
-                        theme: theme,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FinancialMetric(
+                            title: "Today's Sales",
+                            value: _currencyFormat.format(data.todaySales),
+                            icon: Icons.shopping_cart,
+                            color: Colors.blue,
+                            theme: theme,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: FinancialMetric(
+                            title: 'Total Paid',
+                            value: _currencyFormat.format(data.totalPaid),
+                            icon: Icons.arrow_upward,
+                            color: Colors.red,
+                            theme: theme,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: FinancialMetric(
+                            title: 'Total Receive',
+                            value: _currencyFormat.format(data.totalReceive),
+                            icon: Icons.arrow_downward,
+                            color: Colors.green,
+                            theme: theme,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

@@ -168,6 +168,8 @@ class DashboardDataLoaded extends ReportsState {
   final double pendingToSellers;
   final double buyerPendingCheckout;
   final double sellerPendingCheckout;
+  final double totalPaid;
+  final double totalReceive;
 
   const DashboardDataLoaded({
     required this.todaySales,
@@ -181,6 +183,8 @@ class DashboardDataLoaded extends ReportsState {
     required this.pendingToSellers,
     required this.buyerPendingCheckout,
     required this.sellerPendingCheckout,
+    required this.totalPaid,
+    required this.totalReceive,
   });
 
   @override
@@ -196,6 +200,8 @@ class DashboardDataLoaded extends ReportsState {
         pendingToSellers,
         buyerPendingCheckout,
         sellerPendingCheckout,
+        totalPaid,
+        totalReceive,
       ];
 }
 
@@ -291,4 +297,21 @@ class StockSummaryReportLoaded extends ReportsState {
         totalProfit,
         totalStockQuantity
       ];
+}
+
+class MandiTransactionReportLoaded extends ReportsState {
+  final List<MandiTransactionReportData> data;
+  final double totalPaid;
+  final double totalReceive;
+  final int totalTransactions;
+
+  const MandiTransactionReportLoaded({
+    required this.data,
+    required this.totalPaid,
+    required this.totalReceive,
+    required this.totalTransactions,
+  });
+
+  @override
+  List<Object?> get props => [data, totalPaid, totalReceive, totalTransactions];
 }

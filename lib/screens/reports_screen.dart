@@ -11,6 +11,7 @@ import 'package:krishimandi/widgets/reports/daily_purchase_report.dart';
 import 'package:krishimandi/widgets/reports/daily_sales_report.dart';
 import 'package:krishimandi/widgets/reports/expenses_report.dart';
 import 'package:krishimandi/widgets/reports/mandi_profit_report.dart';
+import 'package:krishimandi/widgets/reports/mandi_transaction_report.dart';
 import 'package:krishimandi/widgets/reports/pending_payment_report.dart';
 import 'package:krishimandi/widgets/reports/report_filter_sheet.dart';
 import 'package:krishimandi/widgets/reports/report_types.dart';
@@ -87,6 +88,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
       case ReportType.stockSummary:
         if (state is StockSummaryReportLoaded) {
           return StockSummaryReportWidget(
+              state: state, theme: theme, currencyFormat: currencyFormat);
+        }
+        break;
+      case ReportType.mandiTransaction:
+        if (state is MandiTransactionReportLoaded) {
+          return MandiTransactionReportWidget(
               state: state, theme: theme, currencyFormat: currencyFormat);
         }
         break;
@@ -220,6 +227,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
         break;
       case ReportType.stockSummary:
         reportsBloc.add(LoadStockSummaryReport(
+          fromDate: _getStartDate(),
+          toDate: _getEndDate(),
+        ));
+        break;
+      case ReportType.mandiTransaction:
+        reportsBloc.add(LoadMandiTransactionReport(
           fromDate: _getStartDate(),
           toDate: _getEndDate(),
         ));

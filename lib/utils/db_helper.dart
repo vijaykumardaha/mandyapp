@@ -42,7 +42,7 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 13,
+      version: 15,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS users (
@@ -257,6 +257,48 @@ class DBHelper {
             is_deleted INTEGER NOT NULL DEFAULT 0
           )
         ''');
+
+        await db.execute('''
+          CREATE TABLE other_transactions (
+            id INTEGER PRIMARY KEY,
+            mandi_id INTEGER NOT NULL,
+            transaction_note TEXT NOT NULL,
+            transaction_type TEXT NOT NULL DEFAULT 'debit'
+              CHECK(transaction_type IN ('debit', 'credit')),
+            amount REAL NOT NULL DEFAULT 0,
+            updated_at INTEGER NOT NULL,
+            is_deleted INTEGER DEFAULT 0,
+            sync_status INTEGER DEFAULT 0
+          )
+        ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 14) {
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS ${DbTables.otherTransactions} (
+              id INTEGER PRIMARY KEY,
+              mandi_id INTEGER NOT NULL,
+              transaction_note TEXT NOT NULL,
+              transaction_type TEXT NOT NULL DEFAULT 'debit'
+                CHECK(transaction_type IN ('debit', 'credit')),
+              updated_at INTEGER NOT NULL,
+              is_deleted INTEGER DEFAULT 0,
+              sync_status INTEGER DEFAULT 0
+            )
+          ''');
+        }
+        if (oldVersion < 15) {
+          final columns = await db
+              .rawQuery('PRAGMA table_info(${DbTables.otherTransactions})');
+          final hasAmount =
+              columns.any((c) => c['name'] == DbColumns.transactionAmount);
+          if (!hasAmount) {
+            await db.execute('''
+              ALTER TABLE ${DbTables.otherTransactions}
+              ADD COLUMN ${DbColumns.transactionAmount} REAL NOT NULL DEFAULT 0
+            ''');
+          }
+        }
       },
     );
   }

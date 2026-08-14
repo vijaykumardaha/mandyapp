@@ -212,6 +212,9 @@ class ReportPdfService {
             state as StockTransactionReportLoaded);
       case ReportType.stockSummary:
         return _buildStockSummaryContent(state as StockSummaryReportLoaded);
+      case ReportType.mandiTransaction:
+        return _buildMandiTransactionContent(
+            state as MandiTransactionReportLoaded);
     }
   }
 
@@ -534,6 +537,37 @@ class ReportPdfService {
                   '${item.soldQuantity.toStringAsFixed(2)} ${item.unit?.unitAbbreviation ?? ''}',
                   '${item.quantity.toStringAsFixed(2)} ${item.unit?.unitAbbreviation ?? ''}',
                   currencyFormat.format(item.profit),
+                ])
+            .toList(),
+      ),
+    ];
+  }
+
+  // ── Mandi Transaction ─────────────────────────────────────────
+  static List<pw.Widget> _buildMandiTransactionContent(
+      MandiTransactionReportLoaded state) {
+    return [
+      _buildSummaryRow([
+        _summaryCard('Total Paid', currencyFormat.format(state.totalPaid),
+            PdfColor.fromHex('#C62828')),
+        _summaryCard('Total Receive', currencyFormat.format(state.totalReceive),
+            PdfColor.fromHex('#2E7D32')),
+        _summaryCard('Transactions', '${state.totalTransactions}',
+            PdfColor.fromHex('#E65100')),
+      ]),
+      pw.SizedBox(height: 16),
+      pw.Text('Transaction Details',
+          style:
+              const pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+      pw.SizedBox(height: 8),
+      _buildTable(
+        ['Date', 'Type', 'Note', 'Amount'],
+        state.data
+            .map((item) => [
+                  item.date,
+                  item.isDebit ? 'Paid' : 'Receive',
+                  item.transactionNote,
+                  currencyFormat.format(item.amount),
                 ])
             .toList(),
       ),

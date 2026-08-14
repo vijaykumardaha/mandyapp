@@ -20,6 +20,7 @@ class DbTables {
   static const String vegetables = 'vegetables';
   static const String stocks = 'stocks';
   static const String stockTransactions = 'stock_transactions';
+  static const String otherTransactions = 'other_transactions';
 
   /// Tables that participate in dirty-record sync.
   ///
@@ -39,7 +40,25 @@ class DbTables {
     customerPayments,
     stocks,
     stockTransactions,
+    otherTransactions,
   ];
+}
+
+/// Centralized column names for the database tables.
+class DbColumns {
+  DbColumns._();
+
+  /// Columns shared across tables.
+  static const String id = 'id';
+  static const String mandiId = 'mandi_id';
+  static const String updatedAt = 'updated_at';
+  static const String isDeleted = 'is_deleted';
+  static const String syncStatus = 'sync_status';
+
+  /// `other_transactions` columns.
+  static const String transactionNote = 'transaction_note';
+  static const String transactionType = 'transaction_type';
+  static const String transactionAmount = 'amount';
 }
 
 class PrefsKeys {
