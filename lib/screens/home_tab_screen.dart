@@ -345,7 +345,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: FinancialMetric(
-                            title: 'Profit Today',
+                            title: 'Total Profit',
                             value: _currencyFormat.format(data.grossProfit),
                             icon: Icons.trending_up,
                             color: data.grossProfit >= 0
@@ -353,7 +353,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                                 : Colors.red,
                             theme: theme,
                             onTap: () => _showCalculationDialog(
-                              title: 'Profit Today',
+                              title: 'Total Profit',
                               icon: Icons.trending_up,
                               color: data.grossProfit >= 0
                                   ? Colors.green
@@ -367,23 +367,23 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                                 ),
                               ],
                               summary:
-                                  'Profit Today is the total commission (mandi charges) '
-                                  'added to buyer bills for the selected date.',
+                                  'Total Profit is the total commission (mandi '
+                                  'charges) added to buyer bills for the selected date.',
                             ),
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: FinancialMetric(
-                            title: "Today's Expense",
+                            title: 'Billed Expense',
                             value: _currencyFormat.format(data.todayExpenses),
                             icon: Icons.receipt_long,
-                            color: Colors.red,
+                            color: Colors.green,
                             theme: theme,
                             onTap: () => _showCalculationDialog(
-                              title: "Today's Expense",
+                              title: 'Billed Expense',
                               icon: Icons.receipt_long,
-                              color: Colors.red,
+                              color: Colors.green,
                               steps: [
                                 CalculationStep(
                                   label: 'All expenses on orders',
@@ -392,7 +392,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                                 ),
                               ],
                               summary:
-                                  "Today's Expense is the total of all expenses "
+                                  'Billed Expense is the total of all expenses '
                                   '(labor, packing, transport, etc.) recorded for the selected date.',
                             ),
                           ),
@@ -412,13 +412,13 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                       children: [
                         Expanded(
                           child: FinancialMetric(
-                            title: "Today's Sales",
+                            title: 'Total Sales',
                             value: _currencyFormat.format(data.todaySales),
                             icon: Icons.shopping_cart,
                             color: Colors.blue,
                             theme: theme,
                             onTap: () => _showCalculationDialog(
-                              title: "Today's Sales",
+                              title: 'Total Sales',
                               icon: Icons.shopping_cart,
                               color: Colors.blue,
                               steps: [
@@ -428,7 +428,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                                       _currencyFormat.format(data.todaySales),
                                 ),
                               ],
-                              summary: "Today's Sales is the total bill value "
+                              summary: 'Total Sales is the total bill value '
                                   '(items + charges + expenses) raised for buyers on the selected date.',
                             ),
                           ),

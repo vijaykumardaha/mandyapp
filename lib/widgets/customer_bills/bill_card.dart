@@ -20,6 +20,9 @@ class BillCard extends StatelessWidget {
     final theme = Theme.of(context);
     final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
     final orderDate = DateTime.fromMillisecondsSinceEpoch(order.updatedAt ?? 0);
+    final hasDue = receivedAmount != null &&
+        grandTotal != null &&
+        grandTotal! - receivedAmount! > 0.01;
 
     return GestureDetector(
       onTap: () {
@@ -52,13 +55,20 @@ class BillCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 20,
-              backgroundColor:
-                  (order.orderFor == 'buyer' ? Colors.blue : Colors.teal)
-                      .withValues(alpha: 0.1),
+              backgroundColor: (hasDue
+                      ? Colors.red
+                      : order.orderFor == 'buyer'
+                          ? Colors.blue
+                          : Colors.teal)
+                  .withValues(alpha: 0.1),
               child: Icon(
                 Icons.receipt_long_outlined,
                 size: 20,
-                color: order.orderFor == 'buyer' ? Colors.blue : Colors.teal,
+                color: hasDue
+                    ? Colors.red
+                    : order.orderFor == 'buyer'
+                        ? Colors.blue
+                        : Colors.teal,
               ),
             ),
             const SizedBox(width: 12),

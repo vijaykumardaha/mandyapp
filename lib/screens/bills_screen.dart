@@ -341,6 +341,7 @@ class _BillsScreenState extends State<BillsScreen> {
 
   Widget _buildBillTile(_BillSearchResult result) {
     final order = result.order;
+    final hasDue = result.pendingAmount > 0.01;
 
     return GestureDetector(
       onTap: () async {
@@ -367,13 +368,20 @@ class _BillsScreenState extends State<BillsScreen> {
           children: [
             CircleAvatar(
               radius: 20,
-              backgroundColor:
-                  (order.orderFor == 'buyer' ? Colors.blue : Colors.teal)
-                      .withValues(alpha: 0.1),
+              backgroundColor: (hasDue
+                      ? Colors.red
+                      : order.orderFor == 'buyer'
+                          ? Colors.blue
+                          : Colors.teal)
+                  .withValues(alpha: 0.1),
               child: Icon(
                 Icons.receipt_long_outlined,
                 size: 20,
-                color: order.orderFor == 'buyer' ? Colors.blue : Colors.teal,
+                color: hasDue
+                    ? Colors.red
+                    : order.orderFor == 'buyer'
+                        ? Colors.blue
+                        : Colors.teal,
               ),
             ),
             const SizedBox(width: 12),
