@@ -423,3 +423,43 @@ class MandiTransactionReportData {
     );
   }
 }
+
+class BalanceSheetReportData {
+  final String date;
+  final double totalReceived;
+  final double totalPaidToSellers;
+  final double totalReceive;
+  final double totalPaid;
+  final double totalProfit;
+  final double totalExpenses;
+
+  const BalanceSheetReportData({
+    required this.date,
+    required this.totalReceived,
+    required this.totalPaidToSellers,
+    required this.totalReceive,
+    required this.totalPaid,
+    required this.totalProfit,
+    required this.totalExpenses,
+  });
+
+  double get netBalance =>
+      totalReceived - totalPaidToSellers + totalReceive - totalPaid;
+
+  double get totalDebit => totalPaid + totalPaidToSellers;
+
+  double get totalCredit => totalExpenses + totalReceive + totalReceived;
+
+  factory BalanceSheetReportData.fromJson(Map<String, dynamic> json) {
+    return BalanceSheetReportData(
+      date: json['date'] as String,
+      totalReceived: (json['total_received'] as num?)?.toDouble() ?? 0.0,
+      totalPaidToSellers:
+          (json['total_paid_to_sellers'] as num?)?.toDouble() ?? 0.0,
+      totalReceive: (json['total_receive'] as num?)?.toDouble() ?? 0.0,
+      totalPaid: (json['total_paid'] as num?)?.toDouble() ?? 0.0,
+      totalProfit: (json['total_profit'] as num?)?.toDouble() ?? 0.0,
+      totalExpenses: (json['total_expenses'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+}

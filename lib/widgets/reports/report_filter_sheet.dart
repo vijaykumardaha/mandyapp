@@ -48,7 +48,7 @@ class _ReportFilterSheetState extends State<ReportFilterSheet> {
     final picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime(now.year - 1),
-      lastDate: DateTime(now.year + 1),
+      lastDate: DateTime(now.year, now.month, now.day),
       initialDateRange: _customDateRange ??
           DateTimeRange(
             start: DateTime(now.year, now.month, now.day - 7),

@@ -6,6 +6,7 @@ import 'package:krishimandi/services/report_pdf_service.dart';
 import 'package:krishimandi/widgets/common/common_app_bar.dart';
 import 'package:krishimandi/widgets/common/my_spacing.dart';
 import 'package:krishimandi/widgets/common/my_text.dart';
+import 'package:krishimandi/widgets/reports/balance_sheet_report.dart';
 import 'package:krishimandi/widgets/reports/customer_ledger_report.dart';
 import 'package:krishimandi/widgets/reports/daily_purchase_report.dart';
 import 'package:krishimandi/widgets/reports/daily_sales_report.dart';
@@ -94,6 +95,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
       case ReportType.mandiTransaction:
         if (state is MandiTransactionReportLoaded) {
           return MandiTransactionReportWidget(
+              state: state, theme: theme, currencyFormat: currencyFormat);
+        }
+        break;
+      case ReportType.balanceSheet:
+        if (state is BalanceSheetReportLoaded) {
+          return BalanceSheetReportWidget(
               state: state, theme: theme, currencyFormat: currencyFormat);
         }
         break;
@@ -233,6 +240,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
         break;
       case ReportType.mandiTransaction:
         reportsBloc.add(LoadMandiTransactionReport(
+          fromDate: _getStartDate(),
+          toDate: _getEndDate(),
+        ));
+        break;
+      case ReportType.balanceSheet:
+        reportsBloc.add(LoadBalanceSheetReport(
           fromDate: _getStartDate(),
           toDate: _getEndDate(),
         ));

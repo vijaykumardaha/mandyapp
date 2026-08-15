@@ -162,6 +162,7 @@ class DashboardDataLoaded extends ReportsState {
   final double todayExpenses;
   final int todayOrders;
   final double netBalance;
+  final double openingBalance;
   final double totalReceived;
   final double totalPending;
   final double paidToSellers;
@@ -177,6 +178,7 @@ class DashboardDataLoaded extends ReportsState {
     required this.todayExpenses,
     required this.todayOrders,
     required this.netBalance,
+    required this.openingBalance,
     required this.totalReceived,
     required this.totalPending,
     required this.paidToSellers,
@@ -194,6 +196,7 @@ class DashboardDataLoaded extends ReportsState {
         todayExpenses,
         todayOrders,
         netBalance,
+        openingBalance,
         totalReceived,
         totalPending,
         paidToSellers,
@@ -314,4 +317,37 @@ class MandiTransactionReportLoaded extends ReportsState {
 
   @override
   List<Object?> get props => [data, totalPaid, totalReceive, totalTransactions];
+}
+
+class BalanceSheetReportLoaded extends ReportsState {
+  final List<BalanceSheetReportData> data;
+  final double openingBalance;
+  final double totalNetBalance;
+  final double totalProfit;
+  final double totalExpenses;
+  final double totalMandiPaid;
+  final double totalMandiReceive;
+
+  const BalanceSheetReportLoaded({
+    required this.data,
+    required this.openingBalance,
+    required this.totalNetBalance,
+    required this.totalProfit,
+    required this.totalExpenses,
+    required this.totalMandiPaid,
+    required this.totalMandiReceive,
+  });
+
+  double get totalClosingBalance => openingBalance + totalNetBalance;
+
+  @override
+  List<Object?> get props => [
+        data,
+        openingBalance,
+        totalNetBalance,
+        totalProfit,
+        totalExpenses,
+        totalMandiPaid,
+        totalMandiReceive,
+      ];
 }

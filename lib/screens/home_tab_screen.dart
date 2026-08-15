@@ -10,6 +10,7 @@ import 'package:krishimandi/services/socket_config.dart';
 import 'package:krishimandi/services/sync_service.dart';
 import 'package:krishimandi/utils/app_helper.dart';
 import 'package:krishimandi/utils/constants.dart';
+import 'package:krishimandi/widgets/common/calculation_info_dialog.dart';
 import 'package:krishimandi/widgets/common/connection_status_indicator.dart';
 import 'package:krishimandi/widgets/common/my_text.dart';
 import 'package:krishimandi/widgets/home_tab/dashboard_overview_card.dart';
@@ -90,6 +91,27 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     } else {
       debugPrint('Skipping dashboard data load - using cached data');
     }
+  }
+
+  void _showCalculationDialog({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required List<CalculationStep> steps,
+    required String summary,
+    String? description,
+  }) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => CalculationInfoDialog(
+        title: title,
+        icon: icon,
+        color: color,
+        steps: steps,
+        summary: summary,
+        description: description,
+      ),
+    );
   }
 
   Future<void> _pickDate() async {
@@ -262,6 +284,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                 // Financial Overview Card (Single unified card)
                 DashboardOverviewCard(
                   title: 'Financial Overview',
+                  subtitle:
+                      'Opening Balance: ${_currencyFormat.format(data.openingBalance)}',
                   theme: theme,
                   children: [
                     Row(
@@ -275,6 +299,47 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                                 ? Colors.green
                                 : Colors.red,
                             theme: theme,
+                            onTap: () => _showCalculationDialog(
+                              title: 'Net Balance',
+                              icon: Icons.account_balance,
+                              color: data.netBalance >= 0
+                                  ? Colors.green
+                                  : Colors.red,
+                              steps: [
+                                CalculationStep(
+                                  label: 'Opening balance (brought forward)',
+                                  amount: _currencyFormat
+                                      .format(data.openingBalance),
+                                ),
+                                CalculationStep(
+                                  label: 'Total Received from buyers',
+                                  amount: _currencyFormat
+                                      .format(data.totalReceived),
+                                ),
+                                CalculationStep(
+                                  label: 'Total Receive (other transactions)',
+                                  amount:
+                                      _currencyFormat.format(data.totalReceive),
+                                ),
+                                CalculationStep(
+                                  label: 'Paid to Sellers',
+                                  amount: _currencyFormat
+                                      .format(data.paidToSellers),
+                                  isDeduction: true,
+                                ),
+                                CalculationStep(
+                                  label: 'Total Paid (other transactions)',
+                                  amount:
+                                      _currencyFormat.format(data.totalPaid),
+                                  isDeduction: true,
+                                ),
+                              ],
+                              summary:
+                                  'Net Balance = opening balance carried forward '
+                                  'plus money received minus money paid for the '
+                                  'selected date. This matches the closing balance '
+                                  'of that day.',
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -287,6 +352,24 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                                 ? Colors.green
                                 : Colors.red,
                             theme: theme,
+                            onTap: () => _showCalculationDialog(
+                              title: 'Profit Today',
+                              icon: Icons.trending_up,
+                              color: data.grossProfit >= 0
+                                  ? Colors.green
+                                  : Colors.red,
+                              steps: [
+                                CalculationStep(
+                                  label:
+                                      'Mandi charges collected on buyer bills',
+                                  amount:
+                                      _currencyFormat.format(data.grossProfit),
+                                ),
+                              ],
+                              summary:
+                                  'Profit Today is the total commission (mandi charges) '
+                                  'added to buyer bills for the selected date.',
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -297,6 +380,21 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                             icon: Icons.receipt_long,
                             color: Colors.red,
                             theme: theme,
+                            onTap: () => _showCalculationDialog(
+                              title: "Today's Expense",
+                              icon: Icons.receipt_long,
+                              color: Colors.red,
+                              steps: [
+                                CalculationStep(
+                                  label: 'All expenses on orders',
+                                  amount: _currencyFormat
+                                      .format(data.todayExpenses),
+                                ),
+                              ],
+                              summary:
+                                  "Today's Expense is the total of all expenses "
+                                  '(labor, packing, transport, etc.) recorded for the selected date.',
+                            ),
                           ),
                         ),
                       ],
@@ -319,6 +417,20 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                             icon: Icons.shopping_cart,
                             color: Colors.blue,
                             theme: theme,
+                            onTap: () => _showCalculationDialog(
+                              title: "Today's Sales",
+                              icon: Icons.shopping_cart,
+                              color: Colors.blue,
+                              steps: [
+                                CalculationStep(
+                                  label: 'Total value of all buyer bills',
+                                  amount:
+                                      _currencyFormat.format(data.todaySales),
+                                ),
+                              ],
+                              summary: "Today's Sales is the total bill value "
+                                  '(items + charges + expenses) raised for buyers on the selected date.',
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -329,6 +441,21 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                             icon: Icons.arrow_upward,
                             color: Colors.red,
                             theme: theme,
+                            onTap: () => _showCalculationDialog(
+                              title: 'Total Paid',
+                              icon: Icons.arrow_upward,
+                              color: Colors.red,
+                              steps: [
+                                CalculationStep(
+                                  label: 'Debit (money out) transactions',
+                                  amount:
+                                      _currencyFormat.format(data.totalPaid),
+                                ),
+                              ],
+                              summary:
+                                  'Total Paid is the sum of all money going out '
+                                  'recorded in Transactions for the selected date.',
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -339,6 +466,21 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                             icon: Icons.arrow_downward,
                             color: Colors.green,
                             theme: theme,
+                            onTap: () => _showCalculationDialog(
+                              title: 'Total Receive',
+                              icon: Icons.arrow_downward,
+                              color: Colors.green,
+                              steps: [
+                                CalculationStep(
+                                  label: 'Credit (money in) transactions',
+                                  amount:
+                                      _currencyFormat.format(data.totalReceive),
+                                ),
+                              ],
+                              summary:
+                                  'Total Receive is the sum of all money coming in '
+                                  'recorded in Transactions for the selected date.',
+                            ),
                           ),
                         ),
                       ],
@@ -379,6 +521,21 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                               icon: Icons.account_balance_wallet,
                               color: Colors.green,
                               theme: theme,
+                              onTap: () => _showCalculationDialog(
+                                title: 'Total Received',
+                                icon: Icons.account_balance_wallet,
+                                color: Colors.green,
+                                steps: [
+                                  CalculationStep(
+                                    label: 'Payments received from buyers',
+                                    amount: _currencyFormat
+                                        .format(data.totalReceived),
+                                  ),
+                                ],
+                                summary:
+                                    'Total Received is the payments taken from '
+                                    'buyers for their bills on the selected date.',
+                              ),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -389,6 +546,21 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                               icon: Icons.pending,
                               color: Colors.orange,
                               theme: theme,
+                              onTap: () => _showCalculationDialog(
+                                title: 'Pending Payments',
+                                icon: Icons.pending,
+                                color: Colors.orange,
+                                steps: [
+                                  CalculationStep(
+                                    label: 'Amount still owed on buyer bills',
+                                    amount: _currencyFormat
+                                        .format(data.totalPending),
+                                  ),
+                                ],
+                                summary:
+                                    'Pending Payments is the amount buyers still '
+                                    'owe for their bills after payments received.',
+                              ),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -400,6 +572,21 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                               icon: Icons.shopping_cart_checkout,
                               color: Colors.purple,
                               theme: theme,
+                              onTap: () => _showCalculationDialog(
+                                title: 'Pending Checkout',
+                                icon: Icons.shopping_cart_checkout,
+                                color: Colors.purple,
+                                steps: [
+                                  CalculationStep(
+                                    label: 'Unbilled items in buyer carts',
+                                    amount: _currencyFormat
+                                        .format(data.buyerPendingCheckout),
+                                  ),
+                                ],
+                                summary:
+                                    'Pending Checkout is the value of items in '
+                                    "buyers' carts that have not been billed yet.",
+                              ),
                             ),
                           ),
                         ],
@@ -441,6 +628,21 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                               icon: Icons.payments,
                               color: Colors.teal,
                               theme: theme,
+                              onTap: () => _showCalculationDialog(
+                                title: 'Paid to Sellers',
+                                icon: Icons.payments,
+                                color: Colors.teal,
+                                steps: [
+                                  CalculationStep(
+                                    label: 'Payments made to sellers',
+                                    amount: _currencyFormat
+                                        .format(data.paidToSellers),
+                                  ),
+                                ],
+                                summary:
+                                    'Paid to Sellers is the total payments you '
+                                    'made to sellers for the selected date.',
+                              ),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -452,6 +654,21 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                               icon: Icons.schedule,
                               color: Colors.red,
                               theme: theme,
+                              onTap: () => _showCalculationDialog(
+                                title: 'Pending to Sellers',
+                                icon: Icons.schedule,
+                                color: Colors.red,
+                                steps: [
+                                  CalculationStep(
+                                    label: 'Amount still owed on seller bills',
+                                    amount: _currencyFormat
+                                        .format(data.pendingToSellers),
+                                  ),
+                                ],
+                                summary:
+                                    'Pending to Sellers is the amount you still '
+                                    'owe to sellers after payments made.',
+                              ),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -463,6 +680,21 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                               icon: Icons.shopping_cart_checkout,
                               color: Colors.purple,
                               theme: theme,
+                              onTap: () => _showCalculationDialog(
+                                title: 'Pending Checkout',
+                                icon: Icons.shopping_cart_checkout,
+                                color: Colors.purple,
+                                steps: [
+                                  CalculationStep(
+                                    label: 'Unbilled items in seller carts',
+                                    amount: _currencyFormat
+                                        .format(data.sellerPendingCheckout),
+                                  ),
+                                ],
+                                summary:
+                                    'Pending Checkout is the value of items in '
+                                    "sellers' carts that have not been billed yet.",
+                              ),
                             ),
                           ),
                         ],

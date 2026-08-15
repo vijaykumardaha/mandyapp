@@ -3,12 +3,14 @@ import 'package:krishimandi/widgets/common/my_text.dart';
 
 class DashboardOverviewCard extends StatelessWidget {
   final String title;
+  final String? subtitle;
   final List<Widget> children;
   final ThemeData theme;
 
   const DashboardOverviewCard({
     super.key,
     required this.title,
+    this.subtitle,
     required this.children,
     required this.theme,
   });
@@ -34,7 +36,18 @@ class DashboardOverviewCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MyText.titleMedium(title, fontWeight: 600),
+          Row(
+            children: [
+              Expanded(
+                child: MyText.titleMedium(title, fontWeight: 600),
+              ),
+              if (subtitle != null)
+                MyText.bodySmall(
+                  subtitle!,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+            ],
+          ),
           const SizedBox(height: 20),
           ...children,
         ],

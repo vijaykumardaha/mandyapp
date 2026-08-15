@@ -159,7 +159,118 @@ class ReportDAO {
     ]);
   }
 
-  // 1b. Expenses Report
+  // 1ad. Balance Sheet Report (per-date net balance breakdown)
+  Future<List<Map<String, dynamic>>> getBalanceSheetReport({
+    required DateTime fromDate,
+    required DateTime toDate,
+  }) async {
+    final db = await dbHelper.database;
+    const sql = '''
+      WITH RECURSIVE dates(d) AS (
+        SELECT date(?)
+        UNION ALL
+        SELECT date(d, '+1 day') FROM dates WHERE d < date(?)
+      )
+      SELECT
+        dates.d as date,
+        COALESCE(p.total_received, 0) as total_received,
+        COALESCE(p.total_paid_to_sellers, 0) as total_paid_to_sellers,
+        COALESCE(o.total_receive, 0) as total_receive,
+        COALESCE(o.total_paid, 0) as total_paid,
+        COALESCE(c.total_profit, 0) as total_profit,
+        COALESCE(e.total_expenses, 0) as total_expenses
+      FROM dates
+      LEFT JOIN (
+        SELECT
+          date(op.updated_at / 1000, 'unixepoch', 'localtime') as d,
+          SUM(CASE WHEN op.order_id IN (
+            SELECT DISTINCT oi.buyer_order_id FROM order_items oi
+            WHERE oi.buyer_order_id IS NOT NULL AND oi.is_deleted = 0
+          ) THEN op.amount ELSE 0 END) as total_received,
+          SUM(CASE WHEN op.order_id IN (
+            SELECT DISTINCT oi.seller_order_id FROM order_items oi
+            WHERE oi.seller_order_id IS NOT NULL AND oi.is_deleted = 0
+          ) THEN op.amount ELSE 0 END) as total_paid_to_sellers
+        FROM order_payments op
+        WHERE op.amount > 0 AND op.is_deleted = 0
+        GROUP BY date(op.updated_at / 1000, 'unixepoch', 'localtime')
+      ) p ON p.d = dates.d
+      LEFT JOIN (
+        SELECT
+          date(updated_at / 1000, 'unixepoch', 'localtime') as d,
+          SUM(CASE WHEN transaction_type = 'credit' THEN amount ELSE 0 END) as total_receive,
+          SUM(CASE WHEN transaction_type = 'debit' THEN amount ELSE 0 END) as total_paid
+        FROM ${DbTables.otherTransactions}
+        WHERE is_deleted = 0
+        GROUP BY date(updated_at / 1000, 'unixepoch', 'localtime')
+      ) o ON o.d = dates.d
+      LEFT JOIN (
+        SELECT
+          date(updated_at / 1000, 'unixepoch', 'localtime') as d,
+          SUM(charge_amount) as total_profit
+        FROM order_charges
+        WHERE is_deleted = 0
+        GROUP BY date(updated_at / 1000, 'unixepoch', 'localtime')
+      ) c ON c.d = dates.d
+      LEFT JOIN (
+        SELECT
+          date(updated_at / 1000, 'unixepoch', 'localtime') as d,
+          SUM(expense_amount) as total_expenses
+        FROM order_expenses
+        WHERE is_deleted = 0
+        GROUP BY date(updated_at / 1000, 'unixepoch', 'localtime')
+      ) e ON e.d = dates.d
+      ORDER BY dates.d DESC
+    ''';
+
+    return db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      toDate.toIso8601String().split('T')[0],
+    ]);
+  }
+
+  // 1ae. Balance Sheet opening balance (cumulative net balance before the period)
+  Future<double> getBalanceSheetOpeningBalance({
+    required DateTime fromDate,
+  }) async {
+    final db = await dbHelper.database;
+    const sql = '''
+      SELECT
+        COALESCE(p.total_received, 0)
+        - COALESCE(p.total_paid_to_sellers, 0)
+        + COALESCE(o.total_receive, 0)
+        - COALESCE(o.total_paid, 0) as opening_balance
+      FROM (
+        SELECT
+          SUM(CASE WHEN op.order_id IN (
+            SELECT DISTINCT oi.buyer_order_id FROM order_items oi
+            WHERE oi.buyer_order_id IS NOT NULL AND oi.is_deleted = 0
+          ) THEN op.amount ELSE 0 END) as total_received,
+          SUM(CASE WHEN op.order_id IN (
+            SELECT DISTINCT oi.seller_order_id FROM order_items oi
+            WHERE oi.seller_order_id IS NOT NULL AND oi.is_deleted = 0
+          ) THEN op.amount ELSE 0 END) as total_paid_to_sellers
+        FROM order_payments op
+        WHERE op.amount > 0 AND op.is_deleted = 0
+          AND date(op.updated_at / 1000, 'unixepoch', 'localtime') < date(?)
+      ) p,
+      (
+        SELECT
+          SUM(CASE WHEN transaction_type = 'credit' THEN amount ELSE 0 END) as total_receive,
+          SUM(CASE WHEN transaction_type = 'debit' THEN amount ELSE 0 END) as total_paid
+        FROM ${DbTables.otherTransactions}
+        WHERE is_deleted = 0
+          AND date(updated_at / 1000, 'unixepoch', 'localtime') < date(?)
+      ) o
+    ''';
+
+    final result = await db.rawQuery(sql, [
+      fromDate.toIso8601String().split('T')[0],
+      fromDate.toIso8601String().split('T')[0],
+    ]);
+    return (result.first['opening_balance'] as num?)?.toDouble() ?? 0.0;
+  }
+
   Future<List<Map<String, dynamic>>> getExpensesReport({
     required DateTime fromDate,
     required DateTime toDate,

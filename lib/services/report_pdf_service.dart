@@ -215,6 +215,8 @@ class ReportPdfService {
       case ReportType.mandiTransaction:
         return _buildMandiTransactionContent(
             state as MandiTransactionReportLoaded);
+      case ReportType.balanceSheet:
+        return _buildBalanceSheetContent(state as BalanceSheetReportLoaded);
     }
   }
 
@@ -571,6 +573,30 @@ class ReportPdfService {
                 ])
             .toList(),
       ),
+    ];
+  }
+
+  // ── Balance Sheet ─────────────────────────────────────────────
+  static List<pw.Widget> _buildBalanceSheetContent(
+      BalanceSheetReportLoaded state) {
+    final dailyRows = <List<String>>[];
+    var balance = state.openingBalance;
+    for (final item in state.data.reversed) {
+      final opening = balance;
+      balance += item.netBalance;
+      dailyRows.add([
+        item.date,
+        currencyFormat.format(opening),
+        currencyFormat.format(item.totalDebit),
+        currencyFormat.format(item.totalCredit),
+        currencyFormat.format(balance),
+      ]);
+    }
+
+    return [
+      pw.SizedBox(height: 4),
+      _buildTable(['Date', 'Opening', 'Debit', 'Credit', 'Closing'],
+          dailyRows.reversed.toList()),
     ];
   }
 }

@@ -27,6 +27,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     on<LoadStockTransactionReport>(_onLoadStockTransactionReport);
     on<LoadStockSummaryReport>(_onLoadStockSummaryReport);
     on<LoadMandiTransactionReport>(_onLoadMandiTransactionReport);
+    on<LoadBalanceSheetReport>(_onLoadBalanceSheetReport);
   }
 
   Future<void> _onLoadDailySalesReport(
@@ -296,6 +297,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         fromDate: fromDate,
         toDate: toDate,
       );
+      final openingBalanceFuture =
+          reportDAO.getBalanceSheetOpeningBalance(fromDate: fromDate);
 
       final results = await Future.wait([
         todaySalesFuture,
@@ -305,6 +308,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         pendingCheckoutFuture,
         todayExpensesFuture,
         otherTransactionsFuture,
+        openingBalanceFuture,
       ]);
 
       final todaySales = results[0] as double;
@@ -314,6 +318,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       final pendingCheckout = results[4] as Map<String, dynamic>;
       final todayExpenses = results[5] as double;
       final otherTransactions = results[6] as Map<String, dynamic>;
+      final openingBalance = results[7] as double;
 
       // Calculate today's profit
       final todayProfit = profitData.fold(
@@ -324,14 +329,16 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       final totalReceive =
           (otherTransactions['total_receive'] as num?)?.toDouble() ?? 0.0;
 
-      // Net balance = today's buyer receipts minus today's payments to sellers,
-      // adjusted for other transactions (credit adds, debit subtracts)
-      final netBalance =
+      // Net balance = opening balance carried forward plus the day's buyer
+      // receipts minus payments to sellers, adjusted for other transactions
+      // (credit adds, debit subtracts). Matches the balance sheet closing
+      // balance for the selected date.
+      final netBalance = openingBalance +
           ((paymentSummary['total_received'] as num?)?.toDouble() ?? 0.0) -
-              ((paymentSummary['total_paid_to_sellers'] as num?)?.toDouble() ??
-                  0.0) +
-              totalReceive -
-              totalPaid;
+          ((paymentSummary['total_paid_to_sellers'] as num?)?.toDouble() ??
+              0.0) +
+          totalReceive -
+          totalPaid;
 
       emit(DashboardDataLoaded(
           todaySales: todaySales,
@@ -339,6 +346,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
           todayExpenses: todayExpenses,
           todayOrders: ordersCount,
           netBalance: netBalance,
+          openingBalance: openingBalance,
           totalReceived: paymentSummary['total_received'] ?? 0.0,
           totalPending: paymentSummary['total_pending'] ?? 0.0,
           paidToSellers: paymentSummary['total_paid_to_sellers'] ?? 0.0,
@@ -511,6 +519,54 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     } catch (error) {
       emit(const ReportsError(
           'Failed to load mandi transaction report. Please try again.'));
+    }
+  }
+
+  Future<void> _onLoadBalanceSheetReport(
+    LoadBalanceSheetReport event,
+    Emitter<ReportsState> emit,
+  ) async {
+    emit(ReportsLoading());
+    try {
+      final results = await Future.wait([
+        reportDAO.getBalanceSheetReport(
+          fromDate: event.fromDate,
+          toDate: event.toDate,
+        ),
+        reportDAO.getBalanceSheetOpeningBalance(fromDate: event.fromDate),
+      ]);
+
+      final rawData = results[0] as List<Map<String, dynamic>>;
+      final openingBalance = results[1] as double;
+
+      if (rawData.isEmpty) {
+        emit(ReportsEmpty());
+        return;
+      }
+
+      final data = rawData.map(BalanceSheetReportData.fromJson).toList();
+      final totalNetBalance =
+          data.fold(0.0, (sum, item) => sum + item.netBalance);
+      final totalProfit = data.fold(0.0, (sum, item) => sum + item.totalProfit);
+      final totalExpenses =
+          data.fold(0.0, (sum, item) => sum + item.totalExpenses);
+      final totalMandiPaid =
+          data.fold(0.0, (sum, item) => sum + item.totalPaid);
+      final totalMandiReceive =
+          data.fold(0.0, (sum, item) => sum + item.totalReceive);
+
+      emit(BalanceSheetReportLoaded(
+        data: data,
+        openingBalance: openingBalance,
+        totalNetBalance: totalNetBalance,
+        totalProfit: totalProfit,
+        totalExpenses: totalExpenses,
+        totalMandiPaid: totalMandiPaid,
+        totalMandiReceive: totalMandiReceive,
+      ));
+    } catch (error) {
+      emit(const ReportsError(
+          'Failed to load balance sheet report. Please try again.'));
     }
   }
 }
